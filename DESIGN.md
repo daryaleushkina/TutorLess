@@ -351,12 +351,25 @@ fontFamilies:
   text: "Geologica, Onest, system-ui, sans-serif"
   mono: "'IBM Plex Mono', ui-monospace, Menlo, monospace"
   math: "'Source Serif 4', Georgia, serif"
+  system: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif"
 fontWeights:
   regular: 400
   medium: 500
   semibold: 600
   thin: 300
   thin-dark: 200
+signIn:
+  apple:
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif"
+    fontSize: "17px"
+    fontWeight: 500
+    lineHeight: "20px"
+  google:
+    fontFamily: "Roboto, sans-serif"
+    fontSize: "14px"
+    fontWeight: 500
+    tracking: "0.25px"
+    lineHeight: "20px"
 shadows:
   glow: "0px 10px 28px -8px rgb(59 63 176 / 0.4)"
   glow-dark: "0px 10px 32px -6px rgb(92 207 255 / 0.5)"
@@ -383,6 +396,19 @@ spacing:
   "56": "56px"
   "64": "64px"
   "72": "72px"
+layout:
+  "gutter": "22px"
+  "gutter-wide": "64px"
+  "main-top": "12px"
+  "main-top-wide": "44px"
+  "main-bottom-nav": "96px"
+  "nav-bottom": "28px"
+  "sidebar-width": "232px"
+  "content-max": "720px"
+  "breakpoint-wide": "900px"
+  "auth-column-max": "400px"
+  "text-max": "320px"
+  "session-max": "1040px"
 opacity:
   disabled: 0.5
 components:

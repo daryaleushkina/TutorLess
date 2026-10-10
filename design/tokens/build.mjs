@@ -140,7 +140,7 @@ function emitCss({ common, themed }) {
 const camel = (parts) => parts.join('-').split('-').map((p, i) => (i ? p[0].toUpperCase() + p.slice(1) : p)).join('');
 const swiftName = (parts) => { const n = camel(parts); return /^\d/.test(n) ? 's' + n : n; };
 
-// Каталог цветов: у каждого цвета два внешних вида, систему переключает сама ОС.
+// Смысловые цвета имеют два внешних вида; bgDark для системной заставки — один, всегда тёмный.
 // Компонент — всегда с десятичной точкой: число без неё Xcode читает как целое 0–255, и «1» становится 1/255
 // (непрозрачный цвет почти исчезает). Тест — test/xcassets.test.mjs.
 function emitColorAssets({ themed }) {
@@ -161,6 +161,12 @@ function emitColorAssets({ themed }) {
       info: { author: 'xcode', version: 1 },
     };
   }
+  // Экран запуска рисует ОС до процесса: цвет не должен зависеть от её темы,
+  // потому что приложение по умолчанию тёмное (решение Даши 10.10.2026).
+  files['GPColors.xcassets/bgDark.colorset/Contents.json'] = {
+    colors: [{ color: comp(dark.get('color.bg').$value), idiom: 'universal' }],
+    info: { author: 'xcode', version: 1 },
+  };
   return Object.fromEntries(Object.entries(files).map(([k, v]) => [k, JSON.stringify(v, null, 2) + '\n']));
 }
 
@@ -185,6 +191,11 @@ function emitSwift({ common, themed }) {
     '}',
   ].join('\n');
   const get = (p) => common.find((t) => t.path.join('.') === p).$value;
+  const systemDescription = common.find((t) => t.path.join('.') === 'font.family.system').$description;
+  const googleWeight = SWIFT_WEIGHT[get('sign-in.google.font-weight')];
+  if (!googleWeight) throw new Error('нет веса кнопки Google для Swift');
+  const appleWeight = SWIFT_WEIGHT[get('sign-in.apple.font-weight')];
+  if (!appleWeight) throw new Error('нет веса кнопки Apple для Swift');
   const style = (t, role) => {
     const v = t.$value;
     const rel = RELATIVE[role];
@@ -223,6 +234,26 @@ public enum GPOpacity {
 ${common.filter((t) => t.path[0] === 'opacity').map((t) => `    public static let ${swiftName(t.path.slice(1))}: Double = ${fmt(t.$value)}`).join('\n')}
 }
 
+/// Типографика кнопки Google по правилам Google. Размер и разрядка — pt.
+public enum GPSignInGoogle {
+    public static let fontFamily = ${JSON.stringify(get('sign-in.google.font-family')[0])}
+    public static let fontFallbacks = ${JSON.stringify(get('sign-in.google.font-family').slice(1)).replaceAll(',', ', ')}
+    public static let fontSize: CGFloat = ${fmt(get('sign-in.google.font-size').value)}
+    public static let fontWeight: Font.Weight = ${googleWeight}
+    public static let tracking: CGFloat = ${fmt(get('sign-in.google.tracking').value)}
+    public static let lineHeight: CGFloat = ${fmt(get('sign-in.google.line-height').value)}
+}
+
+/// Типографика кнопки Apple. Семейство — системное; размер и межстрочный — pt.
+public enum GPSignInApple {
+    public static let fontSize: CGFloat = ${fmt(get('sign-in.apple.font-size').value)}
+    public static let fontWeight: Font.Weight = ${appleWeight}
+    public static let lineHeight: CGFloat = ${fmt(get('sign-in.apple.line-height').value)}
+    public static var font: Font {
+        GPType.systemFont(size: fontSize, weight: fontWeight)
+    }
+}
+
 /// Роль текста: размер и межстрочный — pt, трекинг — доля размера (em), relativeTo — с каким стилем Dynamic Type растёт.
 public struct GPTextStyle: Sendable {
     public let size: CGFloat
@@ -256,6 +287,10 @@ public struct GPType: Sendable {
     public static let monoFontFamily = "${get('font.family.mono')[0]}"
     public static let mathFontFamily = "${get('font.family.math')[0]}"
     public static let mathFontFallbacks = ${JSON.stringify(get('font.family.math').slice(1)).replaceAll(',', ', ')}
+    /// ${systemDescription}
+    public static func systemFont(size: CGFloat, weight: Font.Weight = .regular) -> Font {
+        .system(size: size, weight: weight)
+    }
     /// Настройка «Крупнее»: множитель размера поверх Dynamic Type.
     public static let textScaleLarge: CGFloat = ${fmt(get('font.text-scale-large'))}
 ${declarations.join('\n')}
@@ -364,6 +399,24 @@ object GpOpacity {
 ${common.filter((t) => t.path[0] === 'opacity').map((t) => `    const val ${t.path.slice(1).join('_').replace(/-/g, '_').toUpperCase()} = ${fmt(t.$value)}f`).join('\n')}
 }
 
+/** Типографика кнопки Google. Размер и разрядка — sp, чтобы следовать системному масштабу текста. */
+object GpSignInGoogle {
+    const val FONT_FAMILY = ${JSON.stringify(get('sign-in.google.font-family')[0])}
+    val FONT_FALLBACKS = listOf(${get('sign-in.google.font-family').slice(1).map((name) => JSON.stringify(name)).join(', ')})
+    val fontSize = ${fmt(get('sign-in.google.font-size').value)}.sp
+    val fontWeight = FontWeight.W${get('sign-in.google.font-weight')}
+    val tracking = ${fmt(get('sign-in.google.tracking').value)}.sp
+    val lineHeight = ${fmt(get('sign-in.google.line-height').value)}.sp
+}
+
+/** Типографика кнопки Apple: системный шрифт Android, размеры текста — sp. */
+object GpSignInApple {
+    val fontFamily = GpTypography.SYSTEM_FONT_FAMILY
+    val fontSize = ${fmt(get('sign-in.apple.font-size').value)}.sp
+    val fontWeight = FontWeight.W${get('sign-in.apple.font-weight')}
+    val lineHeight = ${fmt(get('sign-in.apple.line-height').value)}.sp
+}
+
 /** family — Geologica, monoFamily — IBM Plex Mono из ресурсов. sp растут с системным масштабом. */
 @Immutable
 class GpTypography private constructor(family: FontFamily, monoFamily: FontFamily, theme: GpThemeTokens) {
@@ -376,6 +429,8 @@ ${typeTokens(common).map((t) => `${t.$description ? `    /** ${t.$description} *
         const val MONO_FONT_FAMILY = "${get('font.family.mono')[0]}"
         const val MATH_FONT_FAMILY = "${get('font.family.math')[0]}"
         val MATH_FONT_FALLBACKS = listOf(${get('font.family.math').slice(1).map((name) => JSON.stringify(name)).join(', ')})
+        /** ${common.find((t) => t.path.join('.') === 'font.family.system').$description} */
+        val SYSTEM_FONT_FAMILY = FontFamily.Default
         fun light(family: FontFamily, monoFamily: FontFamily) = GpTypography(family, monoFamily, GpLightTheme)
         fun dark(family: FontFamily, monoFamily: FontFamily) = GpTypography(family, monoFamily, GpDarkTheme)
     }
@@ -401,12 +456,18 @@ function emitAndroidColorResources({ themed }) {
     const a = Math.round(alphaOf(c) * 255);
     return '#' + [a, r, g, b].map((x) => x.toString(16).padStart(2, '0')).join('').toUpperCase();
   };
-  const file = (m) => `<?xml version="1.0" encoding="utf-8"?>
+  const file = (m) => {
+    const colors = themed[m].filter((t) => t.$type === 'color').map((t) => `    <color name="${xName(t)}">${xColor(t.$value)}</color>`);
+    // Без ночного квалификатора: ОС рисует заставку до процесса, а приложение
+    // по умолчанию тёмное (решение Даши 10.10.2026). Значение берётся из той же палитры.
+    if (m === 'light') colors.push(`    <color name="gp_bg_dark">${xColor(themed.dark.find((t) => t.path.join('.') === 'color.bg').$value)}</color>`);
+    return `<?xml version="1.0" encoding="utf-8"?>
 <!-- ${HEADER} -->
 <resources>
-${themed[m].filter((t) => t.$type === 'color').map((t) => `    <color name="${xName(t)}">${xColor(t.$value)}</color>`).join('\n')}
+${colors.join('\n')}
 </resources>
 `;
+  };
   return { 'android/res/values/gp_colors.xml': file('light'), 'android/res/values-night/gp_colors.xml': file('dark') };
 }
 
@@ -431,15 +492,23 @@ function emitFrontmatter({ common, themed }) {
     if (usesThin(t)) lines.push(`    fontWeightDark: ${themed.dark.find((token) => token.path.join('.') === 'font.weight.thin').$value}`);
   }
   lines.push('fontFamilies:');
-  for (const t of common.filter((t) => t.$type === 'fontFamily')) lines.push(`  ${t.path.at(-1)}: ${q(family(t.$value))}`);
+  for (const t of common.filter((t) => t.path[0] === 'font' && t.$type === 'fontFamily')) lines.push(`  ${t.path.at(-1)}: ${q(family(t.$value))}`);
   lines.push('fontWeights:');
-  for (const t of common.filter((t) => t.$type === 'fontWeight')) lines.push(`  ${t.path.at(-1)}: ${t.$value}`);
+  for (const t of common.filter((t) => t.path[0] === 'font' && t.$type === 'fontWeight')) lines.push(`  ${t.path.at(-1)}: ${t.$value}`);
   for (const mode of MODES) lines.push(`  thin${mode === 'dark' ? '-dark' : ''}: ${themed[mode].find((t) => t.path.join('.') === 'font.weight.thin').$value}`);
+  const signIn = common.filter((t) => t.path[0] === 'sign-in');
+  lines.push('signIn:');
+  for (const provider of new Set(signIn.map((t) => t.path[1]))) {
+    lines.push(`  ${provider}:`);
+    for (const t of signIn.filter((token) => token.path[1] === provider)) {
+      lines.push(`    ${camel(t.path.slice(2))}: ${t.$type === 'fontWeight' ? t.$value : q(cssValue(t))}`);
+    }
+  }
   lines.push('shadows:');
   for (const mode of MODES) {
     for (const t of themed[mode].filter((t) => t.$type === 'shadow')) lines.push(`  ${t.path.at(-1)}${mode === 'dark' ? '-dark' : ''}: ${q(shadow(t.$value))}`);
   }
-  for (const [key, head] of [['rounded', 'radius'], ['spacing', 'space']]) {
+  for (const [key, head] of [['rounded', 'radius'], ['spacing', 'space'], ['layout', 'layout']]) {
     lines.push(`${key}:`);
     for (const t of common.filter((t) => t.path[0] === head)) lines.push(`  ${q(t.path.slice(1).join('-'))}: ${q(px(t.$value))}`);
   }
