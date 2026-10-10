@@ -84,7 +84,36 @@ struct AppearanceTests {
             let math = try #require(NSFont(name: GPType.mathFontFamily, size: GPType.dark.qText.size))
         #endif
         #expect(math.familyName == GPType.mathFontFamily)
+        #if os(iOS)
+            let google = try #require(UIFont(name: Fonts.googleMediumName, size: GPSignInGoogle.fontSize))
+            let googleFamily = google.familyName
+        #else
+            let google = try #require(NSFont(name: Fonts.googleMediumName, size: GPSignInGoogle.fontSize))
+            let googleFamily = try #require(google.familyName)
+        #endif
+        #expect(googleFamily.contains(GPSignInGoogle.fontFamily))
     }
+
+    #if os(iOS)
+        @Test("крупный и обычный заголовки родной панели используют Geologica")
+        func navigationFont() throws {
+            let appearance = NativeAppearance.navigation()
+            for attributes in [appearance.titleTextAttributes, appearance.largeTitleTextAttributes] {
+                let font = try #require(attributes[.font] as? UIFont)
+                #expect(font.familyName == GPType.fontFamily)
+                #expect(attributes[.foregroundColor] as? UIColor == UIColor(resource: .text))
+            }
+        }
+
+        @Test("мост задаёт стиль окна до присоединения представления", arguments: [AppTheme.light, .dark])
+        func windowTheme(theme: AppTheme) {
+            let window = UIWindow()
+            let bridge = ThemeWindowView()
+            bridge.theme = theme
+            bridge.willMove(toWindow: window)
+            #expect(window.overrideUserInterfaceStyle == (theme == .dark ? .dark : .light))
+        }
+    #endif
 }
 
 @MainActor private final class TokenProbe {

@@ -5,19 +5,27 @@ struct GrePrepApp: App {
     /// nil — приложение запущено хостом юнит-тестов: тогда оно не трогает ни Keychain, ни сеть.
     @State private var app: AppModel?
     @AppStorage(AppTheme.storageKey) private var storedTheme = AppTheme.dark.rawValue
+    #if os(macOS)
+        @NSApplicationDelegateAdaptor(AppearanceApplicationDelegate.self) private var appearanceDelegate
+    #endif
 
-    private var theme: AppTheme { AppTheme(rawValue: storedTheme) ?? .dark }
+    private var theme: AppTheme { AppTheme(stored: storedTheme) }
 
     init() {
         Fonts.register()
-        #if os(macOS)
-            AppTheme.load().applyToApplication()
-        #endif
         #if DEBUG
             // Сценарии UI начинают с чистого устройства: без входа и без прошлого плана.
             if ProcessInfo.processInfo.arguments.contains("-GPResetState") {
                 AppModel.resetLocalState()
             }
+            // Аргумент осмотра задаёт тот же сохранённый выбор, который позже меняет настройка приложения.
+            let arguments = ProcessInfo.processInfo.arguments
+            if let index = arguments.firstIndex(of: "-GPColorTheme"), arguments.indices.contains(index + 1) {
+                UserDefaults.standard.set(AppTheme(stored: arguments[index + 1]).rawValue, forKey: AppTheme.storageKey)
+            }
+        #endif
+        #if os(iOS)
+            NativeAppearance.configureNavigation()
         #endif
         if !AppConfig.isRunningUnitTests {
             _app = State(initialValue: AppModel.live())
@@ -33,9 +41,12 @@ struct GrePrepApp: App {
                 }
             }
             .gpDesignTokens()
+            .environment(\.colorScheme, theme.colorScheme)
             .preferredColorScheme(theme.colorScheme)
-            #if os(macOS)
-                .onChange(of: storedTheme) { _, _ in theme.applyToApplication() }
+            #if os(iOS)
+                .background(WindowThemeBridge(theme: theme).frame(width: 0, height: 0).allowsHitTesting(false))
+            #else
+                .onChange(of: storedTheme) { _, newValue in AppTheme(stored: newValue).applyToApplication() }
             #endif
         }
         #if os(macOS)

@@ -1,6 +1,10 @@
 import GPAPI
 import SwiftUI
 
+#if os(iOS)
+    import UIKit
+#endif
+
 /// Названия GRE не переводятся; тексты режима и сложности совпадают с Android.
 extension Components.Schemas.QuestionType {
     var label: String {
@@ -97,6 +101,8 @@ struct TrainingBuilderView: View {
     var onStarted: (String) -> Void = { _ in }
     @Environment(AppModel.self) private var app
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.textScale) private var textScale
+    @ScaledMetric(relativeTo: .body) private var countSize = GPSize.tapTarget
     @State private var countText: String
     @FocusState private var countFocused: Bool
 
@@ -169,38 +175,57 @@ struct TrainingBuilderView: View {
     }
 
     private func ready(wide: Bool) -> some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: GPSpace.s24) {
-                if wide {
-                    Text("Новая тренировка").gpText(\.startTitleWide)
-                    HStack(alignment: .top, spacing: GPSpace.s24) {
-                        if !model.presets.isEmpty { presets.frame(maxWidth: .infinity) }
-                        custom.frame(maxWidth: .infinity)
+        ScrollViewReader { proxy in
+            VStack(spacing: 0) {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: GPSpace.s24) {
+                        if wide {
+                            Text("Новая тренировка").gpText(\.startTitleWide)
+                            HStack(alignment: .top, spacing: GPSpace.s24) {
+                                if !model.presets.isEmpty { presets.frame(maxWidth: .infinity) }
+                                custom.frame(maxWidth: .infinity)
+                            }
+                        } else {
+                            if !model.presets.isEmpty { presets }
+                            custom
+                        }
+                        if let problem = model.problem {
+                            problemText(problem).gpText(\.meta)
+                                .foregroundStyle(Color(.text2)).accessibilityIdentifier("builder.problem")
+                        }
+                        if wide {
+                            startButton.fixedSize(horizontal: true, vertical: false).frame(
+                                maxWidth: .infinity, alignment: .trailing)
+                        }
                     }
-                } else {
-                    if !model.presets.isEmpty { presets }
-                    custom
+                    .frame(maxWidth: wide ? GPLayout.sessionMax : GPLayout.contentMax)
+                    .padding(GPLayout.gutter)
+                    .frame(maxWidth: .infinity)
                 }
-                if let problem = model.problem {
-                    problemText(problem).gpText(\.meta)
-                        .foregroundStyle(Color(.text2)).accessibilityIdentifier("builder.problem")
-                }
-                if wide {
-                    startButton.fixedSize(horizontal: true, vertical: false).frame(
-                        maxWidth: .infinity, alignment: .trailing)
+                .scrollBounceBehavior(.basedOnSize)
+                if !wide {
+                    startButton.padding(.horizontal, GPLayout.gutter).padding(.vertical, GPSpace.s12)
+                        .frame(maxWidth: GPLayout.contentMax + GPLayout.gutter * 2).frame(maxWidth: .infinity)
+                        .background(Color(.bg))
                 }
             }
-            .frame(maxWidth: wide ? GPLayout.contentMax + GPLayout.sidebarWidth : GPLayout.contentMax)
-            .padding(GPLayout.gutter)
-            .frame(maxWidth: .infinity)
-        }
-        .scrollBounceBehavior(.basedOnSize)
-        .safeAreaInset(edge: .bottom) {
-            if !wide {
-                startButton.padding(.horizontal, GPLayout.gutter).padding(.vertical, GPSpace.s12)
-                    .frame(maxWidth: GPLayout.contentMax + GPLayout.gutter * 2).frame(maxWidth: .infinity)
-                    .background(Color(.bg))
-            }
+            #if os(iOS)
+                .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidShowNotification)) { _ in
+                    // Прокрутка после раскладки клавиатуры не спорит с её автоматическим сдвигом поля.
+                    if countFocused { proxy.scrollTo("builder.count-row", anchor: .top) }
+                }
+                .toolbar {
+                    ToolbarItemGroup(placement: .keyboard) {
+                        Spacer()
+                        Button("Готово") { countFocused = false }
+                        .accessibilityIdentifier("builder.keyboardDone")
+                    }
+                }
+            #else
+                .onChange(of: countFocused) { _, focused in
+                    if focused { proxy.scrollTo("builder.count-row", anchor: .top) }
+                }
+            #endif
         }
     }
 
@@ -277,12 +302,12 @@ struct TrainingBuilderView: View {
                 TextField("Вопросов", text: $countText)
                     .focused($countFocused)
                     .textFieldStyle(.plain).multilineTextAlignment(.center).monospacedDigit()
-                    .frame(width: GPSpace.s72 + GPSpace.s4, height: GPSize.tapTarget)
+                    .frame(width: countSize * textScale, height: countSize * textScale)
                     .background(Color(.surface2), in: Capsule()).accessibilityIdentifier("builder.count")
                     #if os(iOS)
                         .keyboardType(.numberPad)
                     #endif
-            }
+            }.id("builder.count-row")
             line
             VStack(alignment: .leading, spacing: GPSpace.s8) {
                 ViewThatFits(in: .horizontal) {
@@ -309,7 +334,7 @@ struct TrainingBuilderView: View {
                     Text("Темы и сложность")
                     Spacer()
                     Text(verbatim: topicSummary).foregroundStyle(Color(.text2))
-                    Image(systemName: "chevron.forward").foregroundStyle(Color(.text2))
+                    Image(systemName: "chevron.forward").foregroundStyle(Color(.text3))
                 }.frame(minHeight: GPSize.sectionRow).contentShape(Rectangle())
             }.buttonStyle(.plain).padding(.horizontal, GPSpace.s16).accessibilityIdentifier("builder.topics")
         }
@@ -348,9 +373,9 @@ struct TrainingBuilderView: View {
                 } else {
                     Text("Заданий пока нет")
                 }
-            }.opacity(model.starting ? 0 : 1).overlay { if model.starting { ProgressView().tint(Color(.onAccent)) } }
+            }.opacity(model.starting ? 0 : 1).overlay { if model.starting { BusyIndicator() } }
         }
-        .buttonStyle(PrimaryCapsuleStyle())
+        .buttonStyle(PrimaryCapsuleStyle(isBusy: model.starting))
         .disabled(model.starting || model.request == nil).keyboardShortcut(.defaultAction)
         .accessibilityIdentifier("builder.start")
     }
@@ -416,7 +441,7 @@ struct TrainingTopicsView: View {
                         Text(model.available(in: topic), format: .number).gpText(\.meta).monospacedDigit()
                             .foregroundStyle(Color(.text2))
                     }
-                }.tint(StudySection(model.form.section).color).frame(minHeight: GPSize.opt)
+                }.tint(StudySection(model.form.section).color).frame(minHeight: GPSize.tapTarget)
                     .padding(.vertical, GPSpace.s8).accessibilityIdentifier("builder.topic.\(topic.id)")
             }
         }.padding(.horizontal, GPSpace.s16).background(

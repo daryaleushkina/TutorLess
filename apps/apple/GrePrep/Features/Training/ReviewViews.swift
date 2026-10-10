@@ -55,7 +55,7 @@ private struct TrainingReviewContent: View {
                                         )
                                         .id(p).frame(maxWidth: GPLayout.contentMax)
                                     }
-                                }.frame(maxWidth: GPLayout.contentMax * 1.5, alignment: .leading)
+                                }.frame(maxWidth: GPLayout.sessionMax, alignment: .leading)
                             } else {
                                 list(t, wide: false).frame(maxWidth: GPLayout.contentMax)
                             }
@@ -158,7 +158,7 @@ private struct TrainingReviewContent: View {
                                             ? Color(.wrong) : outcome == .correct ? Color(.right) : Color(.text2))
                             }.frame(maxWidth: .infinity, alignment: .leading)
                             Image(systemName: "chevron.right").accessibilityHidden(true)
-                        }.foregroundStyle(Color(.text)).padding(GPSpace.s12).frame(minHeight: GPSize.opt)
+                        }.foregroundStyle(Color(.text)).padding(GPSpace.s12).frame(minHeight: GPSize.tapTarget)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .background(
                                 wide && selectedPosition == p ? Color(.surface2) : Color.clear,
@@ -278,8 +278,6 @@ struct ReviewQuestionView: View {
 struct QuestionReportView: View {
     @State var model: QuestionReportModel
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.textScale) private var textScale
-    @ScaledMetric(relativeTo: .callout) private var kindWidth = GPSize.opt * 2
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -291,10 +289,7 @@ struct QuestionReportView: View {
                         Text("Вопрос \(model.position + 1) · \(TrainingText.typeLabel(q))").gpText(\.meta)
                             .foregroundStyle(Color(.text2))
                         Text("Где ошибка").gpText(\.h3).accessibilityAddTraits(.isHeader)
-                        LazyVGrid(
-                            columns: [GridItem(.adaptive(minimum: kindWidth * textScale), spacing: GPSpace.s8)],
-                            spacing: GPSpace.s8
-                        ) {
+                        FlowLayout {
                             ForEach(ReportKind.allCases, id: \.self) { kind in
                                 Button {
                                     model.setKind(kind)
@@ -302,9 +297,16 @@ struct QuestionReportView: View {
                                     Text(kind.label).gpText(\.button).fixedSize(horizontal: false, vertical: true)
                                         .padding(.horizontal, GPSpace.s12).padding(.vertical, GPSpace.s8)
                                         .frame(maxWidth: .infinity, minHeight: GPSize.tapTarget)
-                                        .foregroundStyle(model.draft.kind == kind ? Color(.onAccent) : Color(.text))
+                                        .foregroundStyle(Color(.text))
                                         .background(
-                                            model.draft.kind == kind ? Color(.accent) : Color(.surface), in: Capsule())
+                                            model.draft.kind == kind ? Color(.accentSoft) : Color(.surface),
+                                            in: Capsule()
+                                        )
+                                        .overlay {
+                                            if model.draft.kind == kind {
+                                                Capsule().strokeBorder(Color(.accent), lineWidth: GPSize.hairline)
+                                            }
+                                        }
                                 }.buttonStyle(PressScaleStyle()).accessibilityAddTraits(
                                     model.draft.kind == kind ? .isSelected : []
                                 )
@@ -317,7 +319,7 @@ struct QuestionReportView: View {
                             prompt: Text("Что не так").foregroundStyle(Color(.text2)), axis: .vertical
                         )
                         .lineLimit(4...8).gpText(\.body).textFieldStyle(.plain)
-                        .padding(GPSpace.s14).frame(minHeight: GPSize.opt * 2, alignment: .topLeading)
+                        .padding(GPSpace.s14).frame(maxWidth: .infinity, alignment: .topLeading)
                         .background(Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.l))
                         .overlay {
                             RoundedRectangle(cornerRadius: GPRadius.l).stroke(Color(.line), lineWidth: GPSize.hairline)
@@ -362,9 +364,9 @@ struct QuestionReportView: View {
                     } else {
                         Button(action: model.send) {
                             Text("Отправить").opacity(model.saving ? 0 : 1).overlay {
-                                if model.saving { ProgressView() }
+                                if model.saving { BusyIndicator() }
                             }
-                        }.buttonStyle(PrimaryCapsuleStyle()).disabled(!model.canSend)
+                        }.buttonStyle(PrimaryCapsuleStyle(isBusy: model.saving)).disabled(!model.canSend)
                             .accessibilityIdentifier("report.send").frame(maxWidth: GPLayout.contentMax).padding(
                                 GPLayout.gutter
                             )

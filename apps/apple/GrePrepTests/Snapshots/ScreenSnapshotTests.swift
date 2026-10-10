@@ -321,6 +321,23 @@ struct ScreenSnapshotTests {
         assertScreens(NavigationStack { TrainingTopicsView(model: model) }.environment(app), named: "training-topics")
     }
 
+    @Test("ожидание старта: акцентная кнопка и индикатор")
+    func trainingBusyStart() async throws {
+        let app = try signedInApp(cached: nil, today: .json(200, Fixture.todayJSON))
+        try app.didSignIn(.init(token: "t", user: Fixture.user))
+        let model = BuilderModel(trainings: app.trainings, loadsOnInit: false)
+        model.use(TrainingFixture.options)
+        let gate = StubServer.Gate()
+        server.on("POST /api/trainings", .gated(gate, 201, TrainingFixture.json(TrainingFixture.session)))
+        let start = Task { await model.start() }
+        await eventually { model.starting }
+        defer { gate.open() }
+        assertScreens(
+            NavigationStack { TrainingBuilderView(model: model) }.environment(app), named: "training-start-busy")
+        gate.open()
+        _ = await start.value
+    }
+
     @Test("«Сегодня» — продолжить тренировку")
     func todayWithTraining() async throws {
         let app = try signedInApp(cached: nil, today: .json(200, Fixture.todayJSON))
@@ -827,13 +844,13 @@ struct ScreenSnapshotTests {
         #endif
     }
 
-    /// Стекло в снимках выключено, кадр детерминирован: допуск — доли пикселей сглаживания, а не пропавший значок
-    /// или цифра (0,5 % пропускали и то и другое).
+    /// Системные панели снимаются в настоящем окне; наши поверхности плоские.
+    /// Строгий допуск ловит пропавший значок или цифру (0,5 % пропускали и то и другое).
     static let precision: Float = 0.9999
     static let perceptual: Float = 0.98
 
     #if os(iOS)
-        /// iPhone 18 Pro: 402 × 874 pt, вырез сверху 62, полоса жестов 34.
+        /// iPhone 17 Pro: 402 × 874 pt, вырез сверху 62, полоса жестов 34.
         static let phone = ViewImageConfig(
             safeArea: UIEdgeInsets(top: 62, left: 0, bottom: 34, right: 0),
             size: CGSize(width: 402, height: 874),
@@ -881,7 +898,9 @@ struct ScreenSnapshotTests {
         line: UInt = #line,
         column: UInt = #column
     ) {
-        let view = screen.gpDesignTokens()
+        // Эталон фиксирует неподвижное состояние: символ загрузки не меняет фазу между кадрами.
+        // Нативные панели всё равно снимаются настоящей иерархией, их материал не подменяется.
+        let view = screen.gpDesignTokens().symbolEffectsRemoved()
         #if os(iOS)
             let current: Device = UIDevice.current.userInterfaceIdiom == .pad ? .pad : .phone
             for device in devices where device == current {
@@ -911,11 +930,7 @@ struct ScreenSnapshotTests {
                         assertSnapshot(
                             of: view.environment(\.colorScheme, style == .dark ? .dark : .light),
                             as: .image(
-                                // Слои в окне проверяют нашу раскладку, цвета и шрифты. drawHierarchy
-                                // включает меняющийся GPU-дизеринг системного стекла: одинаковый экран
-                                // расходится на 1–5 уровней цвета в тулбаре и вкладках. Живой материал
-                                // проверяется UI-сценариями и осмотром, допуски снимков остаются прежними.
-                                drawHierarchyInKeyWindow: false,
+                                drawHierarchyInKeyWindow: true,
                                 precision: precision, perceptualPrecision: Self.perceptual,
                                 layout: .device(config: config),
                                 traits: UITraitCollection(userInterfaceStyle: style)

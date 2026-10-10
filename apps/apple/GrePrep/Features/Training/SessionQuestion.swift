@@ -143,7 +143,7 @@ struct SessionQuestion: View {
                 } else if question.groups.count > 1 {
                     VStack(alignment: .leading, spacing: GPSpace.s8) {
                         Text(verbatim: TrainingText.blankLabel(index)).gpText(\.meta)
-                            .foregroundStyle(Color(.text2)).accessibilityLabel("Пропуск \(index + 1)")
+                            .foregroundStyle(Color(.text3)).accessibilityLabel("Пропуск \(index + 1)")
                         ViewThatFits(in: .horizontal) {
                             HStack(spacing: GPSpace.s8) { chips(group, index: index) }
                             VStack(alignment: .leading, spacing: GPSpace.s8) { chips(group, index: index) }
@@ -174,8 +174,8 @@ struct SessionQuestion: View {
         Text(verbatim: TrainingText.typeLabel(question)).gpText(\.meta)
             .foregroundStyle(section.color).accessibilityAddTraits(.isHeader)
         if let onReport {
-            Button("Сообщить об ошибке", action: onReport).gpText(\.meta)
-                .buttonStyle(.plain).foregroundStyle(Color(.text2))
+            Button("Сообщить об ошибке", action: onReport).gpText(\.caption)
+                .buttonStyle(.plain).foregroundStyle(Color(.text3))
                 .frame(minHeight: GPSize.tapTarget).accessibilityIdentifier("question.report")
         }
     }
@@ -230,7 +230,7 @@ struct SessionQuestion: View {
     }
     private func quantity(_ label: LocalizedStringKey, value: String) -> some View {
         VStack(spacing: GPSpace.s8) {
-            Text(label).gpText(\.meta).foregroundStyle(Color(.text2))
+            Text(label).gpText(\.meta).foregroundStyle(Color(.text3))
             Text(verbatim: value).gpMath(\.opt).fixedSize(horizontal: false, vertical: true)
         }.multilineTextAlignment(.center).frame(maxWidth: .infinity).padding(GPSpace.s16)
             .background(Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.l))
@@ -311,7 +311,7 @@ struct SessionQuestion: View {
                 VStack(alignment: .leading, spacing: GPSpace.s4) {
                     optionRow(option, mark: question.answer.contains(option.id) ? .correct : .wrong)
                     if question.answer.contains(option.id), screen.selection.contains(option.id) {
-                        Text("ваш ответ").gpText(\.meta).foregroundStyle(Color(.wrong))
+                        Text("ваш ответ").gpText(\.meta).foregroundStyle(Color(.right))
                             .padding(.horizontal, GPSpace.s12)
                     }
                 }
@@ -327,7 +327,7 @@ struct SessionQuestion: View {
             let rest = group.options.filter { !question.answer.contains($0.id) && !screen.selection.contains($0.id) }
             if !rest.isEmpty {
                 Text(verbatim: rest.map { "\($0.id) \($0.text)" }.joined(separator: "   "))
-                    .gpText(\.meta).foregroundStyle(Color(.text2)).padding(.horizontal, GPSpace.s12)
+                    .gpText(\.meta).foregroundStyle(Color(.text3)).padding(.horizontal, GPSpace.s12)
                     .accessibilityLabel("Остальные варианты: \(rest.map(\.text).joined(separator: ", "))")
             }
         }

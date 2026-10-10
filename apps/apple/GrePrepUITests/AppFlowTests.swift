@@ -19,19 +19,116 @@ final class AppFlowTests: XCTestCase {
         continueAfterFailure = false
     }
 
-    private func launch(reset: Bool, server: String? = nil, largeText: Bool = false, language: String = "ru")
+    private func launch(
+        reset: Bool, server: String? = nil, largeText: Bool = false, language: String = "ru", theme: String? = nil
+    )
         -> XCUIApplication
     {
         let app = XCUIApplication()
         app.launchArguments =
             ["-AppleLanguages", "(\(language))", "-AppleLocale", language == "ru" ? "ru_RU" : "en_US"]
             + (reset ? ["-GPResetState"] : [])
+        if let theme = theme ?? ProcessInfo.processInfo.environment["GP_REVIEW_THEME"] {
+            guard ["light", "dark"].contains(theme) else {
+                XCTFail("Неизвестное значение GP_REVIEW_THEME: \(theme)")
+                return app
+            }
+            app.launchArguments += ["-GPColorTheme", theme]
+        }
         if largeText {
             app.launchArguments += ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
         }
         app.launchEnvironment["GP_API_BASE_URL"] = server ?? serverURL
         app.launch()
         return app
+    }
+
+    func testFirstLaunchOverridesLightSystemAndAppleIsWhite() throws {
+        // Перед прогоном симулятор получает системную light через simctl; выбора приложения ещё нет.
+        let app = launch(reset: true)
+        let apple = app.buttons["signin.apple"]
+        XCTAssertTrue(apple.waitForExistence(timeout: 10))
+        let image = XCUIScreen.main.screenshot().image
+        try expectPixel(image, at: CGPoint(x: 4, y: image.size.height / 2), rgb: (10, 15, 31))
+        try expectPixel(
+            image, at: CGPoint(x: apple.frame.minX + apple.frame.height / 2, y: apple.frame.midY), rgb: (255, 255, 255))
+        if let path = ProcessInfo.processInfo.environment["GP_REVIEW_OUTPUT"] {
+            try XCUIScreen.main.screenshot().pngRepresentation.write(
+                to: URL(filePath: path).appending(path: "first-launch-system-light-app-dark.png"))
+        }
+    }
+
+    func testFoundationScreensForReview() throws {
+        XCUIDevice.shared.orientation = .portrait
+        let app = launch(reset: true)
+        XCTAssertTrue(app.buttons["signin.apple"].waitForExistence(timeout: 10))
+        try capture("signin")
+        signIn(app)
+        try capture("today")
+        // На iPad родная навигация переезжает в верхнюю панель и не имеет роли TabBar.
+        app.buttons["Прогресс"].firstMatch.tap()
+        app.buttons["progress.settings"].firstMatch.tap()
+        XCTAssertTrue(app.staticTexts["settings.etsDisclaimer"].waitForExistence(timeout: 5))
+        try capture("settings")
+    }
+
+    func testStoredLightThemeSurvivesLaunchAndResetReturnsDark() throws {
+        var app = launch(reset: true, theme: "light")
+        XCTAssertTrue(app.buttons["signin.apple"].waitForExistence(timeout: 10))
+        var image = XCUIScreen.main.screenshot().image
+        try expectPixel(image, at: CGPoint(x: 4, y: image.size.height / 2), rgb: (226, 227, 241))
+        app.terminate()
+        app = launch(reset: false)
+        XCTAssertTrue(app.buttons["signin.apple"].waitForExistence(timeout: 10))
+        image = XCUIScreen.main.screenshot().image
+        try expectPixel(image, at: CGPoint(x: 4, y: image.size.height / 2), rgb: (226, 227, 241))
+        app.terminate()
+        app = launch(reset: true)
+        XCTAssertTrue(app.buttons["signin.apple"].waitForExistence(timeout: 10))
+        image = XCUIScreen.main.screenshot().image
+        try expectPixel(image, at: CGPoint(x: 4, y: image.size.height / 2), rgb: (10, 15, 31))
+    }
+
+    func testBuilderModeDoesNotOverlapStartWhileKeyboardIsOpen() {
+        let app = launch(reset: true)
+        signIn(app)
+        app.swipeUp()
+        app.buttons["today.newTraining"].tap()
+        let count = app.textFields["builder.count"]
+        XCTAssertTrue(count.waitForExistence(timeout: 10))
+        count.tap()
+        count.typeText(XCUIKeyboardKey.delete.rawValue + "3")
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
+        let mode = app.segmentedControls["builder.mode"].buttons["Проверка"]
+        XCTAssertTrue(mode.exists)
+        let fits = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in
+                mode.frame.maxY <= app.buttons["builder.start"].frame.minY && mode.isHittable
+            }, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [fits], timeout: 5), .completed)
+    }
+
+    private func expectPixel(
+        _ image: UIImage, at point: CGPoint, rgb: (Int, Int, Int), file: StaticString = #filePath, line: UInt = #line
+    ) throws {
+        let cg = try XCTUnwrap(image.cgImage, file: file, line: line)
+        let scale = CGFloat(cg.width) / image.size.width
+        let pixel = try XCTUnwrap(
+            cg.cropping(to: CGRect(x: point.x * scale, y: point.y * scale, width: 1, height: 1)), file: file, line: line
+        )
+        var data = [UInt8](repeating: 0, count: 4)
+        let space = try XCTUnwrap(CGColorSpace(name: CGColorSpace.sRGB), file: file, line: line)
+        try data.withUnsafeMutableBytes { buffer in
+            let context = try XCTUnwrap(
+                CGContext(
+                    data: buffer.baseAddress, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4, space: space,
+                    bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue), file: file, line: line)
+            context.draw(pixel, in: CGRect(x: 0, y: 0, width: 1, height: 1))
+        }
+        for (index, expected) in [rgb.0, rgb.1, rgb.2].enumerated() {
+            XCTAssertLessThanOrEqual(
+                abs(Int(data[index]) - expected), 3, "Цвет пикселя \(point)", file: file, line: line)
+        }
     }
 
     @discardableResult
@@ -219,14 +316,15 @@ final class AppFlowTests: XCTestCase {
         let count = app.textFields["builder.count"]
         count.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
         count.typeText(XCUIKeyboardKey.delete.rawValue + XCUIKeyboardKey.delete.rawValue + (threeBlanks ? "1" : "3"))
+        let done = app.buttons["builder.keyboardDone"]
+        XCTAssertTrue(done.waitForExistence(timeout: 5))
+        done.tap()
         if check {
-            // С цифровой клавиатурой закреплённое действие может закрывать переключатель.
-            // Явно листаем форму перед выбором и проверяем выбранное состояние.
-            app.scrollViews.containing(.segmentedControl, identifier: "builder.mode").firstMatch.swipeUp()
             let mode = app.segmentedControls["builder.mode"].buttons["Проверка"]
-            XCTAssertTrue(mode.isHittable)
+            XCTAssertTrue(mode.waitForExistence(timeout: 5))
             mode.tap()
-            XCTAssertTrue(mode.isSelected)
+            let selected = XCTNSPredicateExpectation(predicate: NSPredicate(format: "selected == true"), object: mode)
+            XCTAssertEqual(XCTWaiter.wait(for: [selected], timeout: 5), .completed)
         }
         app.buttons["builder.topics"].tap()
         XCTAssertTrue(app.buttons["builder.topics.done"].waitForExistence(timeout: 5))
@@ -251,7 +349,9 @@ final class AppFlowTests: XCTestCase {
     private func capture(_ name: String) throws {
         if let path = ProcessInfo.processInfo.environment["GP_REVIEW_OUTPUT"] {
             let theme = ProcessInfo.processInfo.environment["GP_REVIEW_THEME"] ?? "dark"
-            let device = UIDevice.current.userInterfaceIdiom == .pad ? "ipad-landscape" : "iphone"
+            let device =
+                UIDevice.current.userInterfaceIdiom == .pad
+                ? (XCUIDevice.shared.orientation.isLandscape ? "ipad-landscape" : "ipad") : "iphone"
             try XCUIScreen.main.screenshot().pngRepresentation.write(
                 to: URL(filePath: path).appending(path: "\(name)-\(device)-\(theme).png"))
         }
@@ -345,8 +445,12 @@ final class AppFlowTests: XCTestCase {
         for id in ["D", "G"] {
             let option = app.buttons["option.\(id)"]
             if !option.isHittable { app.swipeUp() }
+            if id == "G" {
+                XCTAssertFalse(option.frame.intersects(app.buttons["question.next"].frame))
+            }
             option.tap()
-            XCTAssertTrue(option.isSelected)
+            let selected = XCTNSPredicateExpectation(predicate: NSPredicate(format: "selected == true"), object: option)
+            XCTAssertEqual(XCTWaiter.wait(for: [selected], timeout: 5), .completed)
         }
         app.buttons["question.overview"].tap()
         XCTAssertEqual(app.staticTexts["overview.status"].label, "Отвечено 1 из 1 · отмечено 0")

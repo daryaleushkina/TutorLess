@@ -10,8 +10,12 @@ enum AppTheme: String, Sendable {
 
     static let storageKey = "GPColorTheme"
 
+    init(stored: String?) {
+        self = stored.flatMap(Self.init(rawValue:)) ?? .dark
+    }
+
     static func load(from defaults: UserDefaults = .standard) -> AppTheme {
-        defaults.string(forKey: storageKey).flatMap(AppTheme.init(rawValue:)) ?? .dark
+        AppTheme(stored: defaults.string(forKey: storageKey))
     }
 
     var colorScheme: ColorScheme { self == .dark ? .dark : .light }

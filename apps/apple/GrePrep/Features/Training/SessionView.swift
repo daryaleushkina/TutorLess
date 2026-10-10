@@ -171,43 +171,49 @@ private struct TrainingSessionContent: View {
     }
 
     private func content(_ s: SessionModel.Screen, wide: Bool) -> some View {
-        ScrollView {
-            Group {
-                if let result = s.result {
-                    VStack(alignment: .leading, spacing: GPSpace.s24) {
-                        SessionSummary(screen: s, result: result, wide: wide)
-                        Button("Все ответы и разборы") { review = true }
-                            .gpText(\.button).frame(minHeight: GPSize.tapTarget)
-                            .accessibilityIdentifier("summary.review")
-                    }.frame(maxWidth: GPLayout.contentMax, alignment: .leading)
-                } else if wide && (s.revealed || s.training.isCheck) {
-                    HStack(alignment: .top, spacing: GPSpace.s32) {
-                        SessionQuestion(screen: s, onSelect: model.select, onReport: { reportPosition = s.position })
+        VStack(spacing: 0) {
+            ScrollView {
+                Group {
+                    if let result = s.result {
+                        VStack(alignment: .leading, spacing: GPSpace.s24) {
+                            SessionSummary(screen: s, result: result, wide: wide)
+                            Button("Все ответы и разборы") { review = true }
+                                .gpText(\.button).frame(minHeight: GPSize.tapTarget)
+                                .accessibilityIdentifier("summary.review")
+                        }.frame(maxWidth: GPLayout.contentMax, alignment: .leading)
+                    } else if wide && (s.revealed || s.training.isCheck) {
+                        HStack(alignment: .top, spacing: GPSpace.s32) {
+                            SessionQuestion(
+                                screen: s, onSelect: model.select, onReport: { reportPosition = s.position }
+                            )
                             .frame(maxWidth: GPLayout.contentMax)
-                        Group {
-                            if s.revealed {
-                                SessionExplanation(model: model, screen: s)
-                            } else {
-                                SessionOverview(model: model, screen: s)
-                            }
-                        }.frame(maxWidth: GPLayout.contentMax / 2)
-                    }.frame(maxWidth: GPLayout.contentMax * 1.5, alignment: .top)
-                } else if model.overview {
-                    SessionOverview(model: model, screen: s).frame(maxWidth: GPLayout.contentMax)
-                } else {
-                    VStack(alignment: .leading, spacing: GPSpace.s24) {
-                        SessionQuestion(screen: s, onSelect: model.select, onReport: { reportPosition = s.position })
-                        if s.revealed { SessionExplanation(model: model, screen: s) }
-                    }.frame(maxWidth: GPLayout.contentMax)
-                }
-            }.padding(GPLayout.gutter).frame(maxWidth: .infinity, alignment: .top)
-        }.scrollBounceBehavior(.basedOnSize)
-            .safeAreaInset(edge: .bottom) {
-                actions(s).frame(maxWidth: GPLayout.contentMax).padding(.horizontal, GPLayout.gutter)
-                    .padding(.vertical, GPSpace.s12).frame(maxWidth: .infinity).background(Color(.bg))
-            }
-            // Новый вопрос начинается сверху; разбор добавляется рядом с условием без принудительной прокрутки.
-            .id(s.result != nil ? "summary" : model.overview ? "overview" : "question-\(s.position)")
+                            Group {
+                                if s.revealed {
+                                    SessionExplanation(model: model, screen: s)
+                                } else {
+                                    SessionOverview(model: model, screen: s)
+                                }
+                            }.frame(maxWidth: GPLayout.contentMax / 2)
+                        }.frame(maxWidth: GPLayout.sessionMax, alignment: .top)
+                    } else if model.overview {
+                        SessionOverview(model: model, screen: s).frame(maxWidth: GPLayout.contentMax)
+                    } else {
+                        VStack(alignment: .leading, spacing: GPSpace.s24) {
+                            SessionQuestion(
+                                screen: s, onSelect: model.select, onReport: { reportPosition = s.position })
+                            if s.revealed { SessionExplanation(model: model, screen: s) }
+                        }.frame(maxWidth: GPLayout.contentMax)
+                    }
+                }.padding(GPLayout.gutter).frame(maxWidth: .infinity, alignment: .top)
+            }.scrollBounceBehavior(.basedOnSize)
+                .accessibilityIdentifier("session.content")
+            actions(s).frame(maxWidth: wide ? GPLayout.sessionMax : GPLayout.contentMax).padding(
+                .horizontal, GPLayout.gutter
+            )
+            .padding(.vertical, GPSpace.s12).frame(maxWidth: .infinity).background(Color(.bg))
+        }
+        // Новый вопрос начинается сверху; разбор добавляется рядом с условием без принудительной прокрутки.
+        .id(s.result != nil ? "summary" : model.overview ? "overview" : "question-\(s.position)")
     }
 
     private func actions(_ s: SessionModel.Screen) -> some View {
@@ -236,7 +242,7 @@ private struct TrainingSessionContent: View {
                     } else {
                         Text("\(s.selectionKeys) — выбрать · Enter — проверить / дальше · → — дальше")
                     }
-                }.gpText(\.caption).foregroundStyle(Color(.text2)).accessibilityIdentifier("session.keys")
+                }.gpText(\.caption).foregroundStyle(Color(.text3)).accessibilityIdentifier("session.keys")
             }
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: GPSpace.s12) { buttons(s) }
@@ -259,10 +265,11 @@ private struct TrainingSessionContent: View {
                         "Повторить · \(TrainingCopy.questions(TrainingRules.repeatCount(result.review.reduce(0) { $0 + $1.mistakes })))"
                     )
                     .opacity(model.startingRepeat ? 0 : 1).overlay {
-                        if model.startingRepeat { ProgressView().tint(Color(.onAccent)) }
+                        if model.startingRepeat { BusyIndicator() }
                     }
-                }.buttonStyle(PrimaryCapsuleStyle()).disabled(model.startingRepeat).accessibilityIdentifier(
-                    "summary.repeat")
+                }.buttonStyle(PrimaryCapsuleStyle(isBusy: model.startingRepeat)).disabled(model.startingRepeat)
+                    .accessibilityIdentifier(
+                        "summary.repeat")
             }
         } else if model.overview {
             secondary(
@@ -289,8 +296,7 @@ private struct TrainingSessionContent: View {
         Button(action: action) {
             Text(title).gpText(\.button).fixedSize(horizontal: false, vertical: true)
         }
-        .buttonStyle(.bordered).buttonBorderShape(.capsule).controlSize(.large)
-        .frame(minHeight: GPSize.button).accessibilityIdentifier(id)
+        .buttonStyle(SecondaryCapsuleStyle()).accessibilityIdentifier(id)
     }
 
     private func primary() {
@@ -316,10 +322,14 @@ struct SessionProgress: View {
     var body: some View {
         HStack(spacing: GPSpace.s8) {
             if let remaining = screen.remaining {
-                Image(systemName: "timer").accessibilityHidden(true)
-                Text(verbatim: String(format: "%d:%02d", remaining / 60, remaining % 60)).gpText(\.sessionCount)
-                    .accessibilityLabel("Осталось \(remaining / 60) минут \(remaining % 60) секунд")
-                    .accessibilityIdentifier("session.timer")
+                HStack(spacing: GPSpace.s6) {
+                    Image(systemName: "timer").accessibilityHidden(true)
+                    Text(verbatim: String(format: "%d:%02d", remaining / 60, remaining % 60))
+                        .accessibilityLabel("Осталось \(remaining / 60) минут \(remaining % 60) секунд")
+                        .accessibilityIdentifier("session.timer")
+                }.gpText(\.meta).foregroundStyle(Color(.text2))
+                    .padding(.horizontal, GPSpace.s12).padding(.vertical, GPSpace.s6)
+                    .background(Color(.surface2), in: Capsule())
             }
             Text("\(screen.position + 1) из \(screen.training.total)").gpText(\.sessionCount)
                 .foregroundStyle(Color(.text2)).accessibilityLabel(
@@ -341,7 +351,9 @@ struct SessionOverview: View {
             let flagged = screen.training.answers.values.filter(\.flagged).count
             Text("Отвечено \(answered) из \(screen.training.total) · отмечено \(flagged)").gpText(\.meta)
                 .foregroundStyle(Color(.text2)).accessibilityIdentifier("overview.status")
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: GPSize.opt), spacing: GPSpace.s8)], spacing: GPSpace.s8) {
+            LazyVGrid(
+                columns: [GridItem(.adaptive(minimum: GPSize.tapTarget), spacing: GPSpace.s8)], spacing: GPSpace.s8
+            ) {
                 ForEach(0..<screen.training.total, id: \.self) { index in
                     let answer = screen.training.answers[index]
                     let answered = screen.isAnswered(index)
@@ -356,7 +368,7 @@ struct SessionOverview: View {
                             } else if answered {
                                 Image(systemName: "checkmark").gpText(\.caption)
                             }
-                        }.frame(maxWidth: .infinity, minHeight: GPSize.opt).padding(.vertical, GPSpace.s4)
+                        }.frame(maxWidth: .infinity, minHeight: GPSize.tapTarget).padding(.vertical, GPSpace.s4)
                             .foregroundStyle(answered ? section.color : Color(.text))
                             .background(
                                 answered ? section.tint : Color(.surface),
@@ -391,9 +403,9 @@ struct SessionSummary: View {
     var body: some View {
         VStack(alignment: .leading, spacing: GPSpace.s24) {
             HStack(alignment: .firstTextBaseline, spacing: GPSpace.s12) {
-                Text(result.correct, format: .number).gpText(wide ? \.scoreNumWide : \.scoreNum)
+                Text(result.correct, format: .number).gpText(wide ? \.headwordWide : \.headword)
                     .accessibilityIdentifier("summary.correct")
-                Text(verbatim: TrainingCopy.correctOf(result.total)).gpText(\.scoreLabel)
+                Text(verbatim: TrainingCopy.correctOf(result.total)).gpText(\.h2).foregroundStyle(Color(.text2))
             }.accessibilityElement(children: .combine)
             Text(verbatim: summaryLine).gpText(\.meta).foregroundStyle(Color(.text2))
             if screen.training.finish?.timedOut == true {

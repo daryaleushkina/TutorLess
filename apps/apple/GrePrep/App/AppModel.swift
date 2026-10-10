@@ -80,6 +80,7 @@ final class AppModel {
     #if DEBUG
         /// Чистое устройство для сценариев UI (аргумент запуска -GPResetState, только отладочная сборка).
         static func resetLocalState() {
+            UserDefaults.standard.removeObject(forKey: AppTheme.storageKey)
             // Необязательный фон: стереть то, чего может и не быть.
             _ = try? KeychainTokenStore.live().clear()
             _ = try? TodayCache.live().clear()

@@ -1,4 +1,5 @@
 import SwiftUI
+import os
 
 #if os(iOS)
     import UIKit
@@ -8,18 +9,38 @@ import SwiftUI
 
 /// Вшитые шрифты одинаково доступны приложению, превью и снимкам на iPhone, iPad и Mac.
 enum Fonts {
+    private static let logger = Logger(subsystem: "dev.greprepapp.app", category: "fonts")
+    static let googleMediumName = "Roboto-Medium"
+
+    static func isAlreadyAvailable(_ code: CFIndex) -> Bool {
+        switch code {
+        case CTFontManagerError.alreadyRegistered.rawValue, CTFontManagerError.duplicatedName.rawValue: true
+        default: false
+        }
+    }
+
     static func register() {
-        for name in ["Geologica-Variable", "IBMPlexMono-Regular", "SourceSerif4-Variable"] {
+        for name in ["Geologica-Variable", "IBMPlexMono-Regular", "SourceSerif4-Variable", googleMediumName] {
             guard let url = Bundle.main.url(forResource: name, withExtension: "ttf") else {
-                preconditionFailure("\(name).ttf is missing from the app bundle")
+                reportFailure("В наборе приложения нет \(name).ttf")
+                continue
             }
             var error: Unmanaged<CFError>?
-            guard !CTFontManagerRegisterFontsForURL(url as CFURL, .process, &error), let error else { continue }
-            let failure = error.takeRetainedValue()
-            // Повторная регистрация (второе окно на Mac, хост тестов) отвечает «уже есть» — это не ошибка.
-            guard CFErrorGetCode(failure) != CTFontManagerError.alreadyRegistered.rawValue else { continue }
-            preconditionFailure("\(name) registration failed: \(failure)")
+            guard !CTFontManagerRegisterFontsForURL(url as CFURL, .process, &error) else { continue }
+            guard let failure = error?.takeRetainedValue() else {
+                reportFailure("CoreText не зарегистрировал \(name) и не вернул причину")
+                continue
+            }
+            // Установленный в системе шрифт может отвечать duplicatedName вместо alreadyRegistered.
+            guard !isAlreadyAvailable(CFErrorGetCode(failure)) else { continue }
+            reportFailure("Не удалось зарегистрировать \(name): \(failure)")
         }
+    }
+
+    private static func reportFailure(_ message: String) {
+        logger.error("\(message, privacy: .public)")
+        // В релизе недоступное семейство заменяет системный шрифт SwiftUI; ошибка ресурса не мешает запуску.
+        assertionFailure(message)
     }
 
     static func naturalLineHeight(for family: String) -> CGFloat {
@@ -36,6 +57,10 @@ enum Fonts {
 }
 
 extension Font {
+    static var googleSignIn: Font {
+        // Статический экземпляр веса 500 из Roboto; PostScript-имя, а не браузерный стек fallback.
+        .custom(Fonts.googleMediumName, size: GPSignInGoogle.fontSize).weight(GPSignInGoogle.fontWeight)
+    }
     /// Семейство роли из токенов; растёт с Dynamic Type вместе со своим системным стилем.
     static func gp(_ style: GPTextStyle, scale: CGFloat = 1) -> Font {
         .custom(style.fontFamily, size: style.size * scale, relativeTo: style.relativeTo).weight(style.weight)

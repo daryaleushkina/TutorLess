@@ -114,7 +114,13 @@ final class SignInModel {
         _ provider: WebProvider,
         authenticate: (URL, URL) async throws -> URL
     ) async {
-        let method: Method = .google
+        let method: Method
+        let apiProvider: Components.Schemas.IdentityProvider
+        switch provider {
+        case .google:
+            method = .google
+            apiProvider = .google
+        }
         guard let config = app.config.webProviders[provider] else {
             // Аккаунтов у провайдеров ещё нет (ROADMAP §2): кнопка есть, вход — когда Даша их заведёт.
             message = .notConnectedYet(method)
@@ -150,7 +156,7 @@ final class SignInModel {
             let code = try WebSignIn.code(from: callback, expectedState: attempt.state)
             try finish(
                 await app.api.signInWithAuthorizationCode(
-                    provider: .google,
+                    provider: apiProvider,
                     code: code, codeVerifier: attempt.codeVerifier,
                     redirectURI: attempt.redirectURI.absoluteString, nonce: attempt.nonce, locale: locale
                 ))

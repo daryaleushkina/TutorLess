@@ -94,8 +94,8 @@ struct TodayView: View {
                                     .fixedSize(horizontal: false, vertical: true)
                             }
                             Spacer(minLength: GPSpace.s8)
-                            Image(systemName: "chevron.forward").foregroundStyle(Color(.text2))
-                        }.frame(minHeight: GPSize.opt).padding(GPSpace.s16)
+                            Image(systemName: "chevron.forward").foregroundStyle(Color(.text3))
+                        }.frame(minHeight: GPSize.tapTarget).padding(GPSpace.s16)
                             .background(Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.l))
                             .contentShape(RoundedRectangle(cornerRadius: GPRadius.l))
                     }.buttonStyle(PressScaleStyle()).padding(.top, GPSpace.s20)
@@ -209,10 +209,10 @@ private struct TodayUnavailableView: View {
                 Text("Повторить")
                     .opacity(isRetrying ? 0 : 1)
                     .overlay {
-                        if isRetrying { ProgressView().tint(Color(.onAccent)) }
+                        if isRetrying { BusyIndicator() }
                     }
             }
-            .buttonStyle(PrimaryCapsuleStyle())
+            .buttonStyle(PrimaryCapsuleStyle(isBusy: isRetrying))
             .fixedSize()
             .disabled(isRetrying)
             .accessibilityIdentifier("today.retry")

@@ -61,7 +61,7 @@ private struct SignInContent: View {
                         }
                     #endif
                 }
-                .frame(maxWidth: GPLayout.contentMax / 2)
+                .frame(maxWidth: GPLayout.authColumnMax)
                 .padding(.horizontal, GPSpace.s24)
                 .padding(.bottom, GPSpace.s28)
                 .frame(maxWidth: .infinity, minHeight: proxy.size.height)
@@ -88,7 +88,7 @@ private struct SignInContent: View {
                 Text("Подготовка к GRE® с разбором каждой ошибки — по-русски и по-английски.")
                     .gpText(\.lead)
                     .foregroundStyle(Color(.text2))
-                    .frame(maxWidth: GPLayout.contentMax / 2, alignment: .leading)
+                    .frame(maxWidth: GPLayout.textMax, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -111,7 +111,7 @@ private struct SignInContent: View {
                 .environment(\.locale, Locale(identifier: "en"))
         }
         .gpText(\.caption)
-        .foregroundStyle(Color(.text2))
+        .foregroundStyle(Color(.text3))
         .multilineTextAlignment(.center)
         .frame(maxWidth: .infinity)
         .fixedSize(horizontal: false, vertical: true)
