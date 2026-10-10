@@ -21,6 +21,23 @@ const HEADER = 'Сгенерировано design/tokens/build.mjs из design/t
 
 // ---------- Чтение ----------
 
+// Сохраняем происхождение составного профиля: ссылка на роль должна наследовать
+// тематический thin и моноширинное семейство, а не превращаться в фиксированный вес.
+export function resolveTypographySources(tokens) {
+  const byPath = new Map(tokens.map((t) => [t.path.join('.'), t]));
+  const sourceOf = (token, seen = new Set()) => {
+    const key = token.path.join('.');
+    if (seen.has(key)) throw new Error(`цикл ссылок типографики: ${key}`);
+    const value = token.original.$value;
+    if (typeof value !== 'string') return value;
+    const reference = value.match(/^\{([^}]+)\}$/);
+    const target = reference && byPath.get(reference[1]);
+    if (!target || target.$type !== 'typography') throw new Error(`нет роли типографики для ссылки ${key}: ${value}`);
+    return sourceOf(target, new Set([...seen, key]));
+  };
+  return tokens.map((t) => t.$type === 'typography' ? { ...t, typographySource: sourceOf(t) } : t);
+}
+
 export async function resolveModes() {
   const modes = {};
   for (const mode of MODES) {
@@ -37,14 +54,14 @@ export async function resolveModes() {
     });
     const { allTokens } = await sd.getPlatformTokens('raw');
     // Палитра — только сырьё для смысловых токенов, наружу не выходит.
-    modes[mode] = allTokens.filter((t) => t.path[0] !== 'palette');
+    modes[mode] = resolveTypographySources(allTokens.filter((t) => t.path[0] !== 'palette'));
   }
   return modes;
 }
 
 const THEMED = new Set(['color', 'gradient', 'shadow']);
-const usesThin = (t) => t.$type === 'typography' && t.original.$value.fontWeight === '{font.weight.thin}';
-const usesMono = (t) => t.$type === 'typography' && t.original.$value.fontFamily === '{font.family.mono}';
+const usesThin = (t) => t.$type === 'typography' && (t.typographySource ?? t.original.$value).fontWeight === '{font.weight.thin}';
+const usesMono = (t) => t.$type === 'typography' && (t.typographySource ?? t.original.$value).fontFamily === '{font.family.mono}';
 const isThemed = (t) => THEMED.has(t.$type) || (t.$type === 'fontWeight' && t.path.join('.') === 'font.weight.thin');
 
 // Нетематические токены обязаны совпадать в обеих темах, иначе тема протекла не туда.
@@ -125,9 +142,15 @@ function emitCss({ common, themed }) {
   const large = common.find((t) => t.path.join('.') === 'font.text-scale-large').$value;
   const wide = common.find((t) => t.path.join('.') === 'layout.breakpoint-wide').$value;
   const wides = baseRoles(common).filter((t) => wideOf(common, roleName(t)));
+  // Помимо автоматического переключения нужны явные профили: компактный счётчик
+  // может оставаться компактным на компьютере. Нативные выходы уже дают оба свойства.
+  const fixedVariants = wides.flatMap((t) => [
+    ...typeVars(t, roleName(t) + '-base'),
+    ...typeVars(wideOf(common, roleName(t))),
+  ]);
   return [
     `/* ${HEADER}\n * Тема: data-theme="light" | "dark" на <html>; без атрибута — как в системе (до запуска JS).\n * Размер текста: data-text-size="large" на <html>. Роли текста: font: var(--font-body); letter-spacing: var(--tracking-body). */\n`,
-    block(':root', [...plain, ...themed.light], ['  color-scheme: light;', ...baseRoles(common).flatMap((t) => typeVars(t))]),
+    block(':root', [...plain, ...themed.light], ['  color-scheme: light;', ...baseRoles(common).flatMap((t) => typeVars(t)), ...fixedVariants]),
     block(':root[data-theme="dark"]', themed.dark, ['  color-scheme: dark;']),
     `@media (prefers-color-scheme: dark) {\n${block(':root:not([data-theme="light"])', themed.dark, ['  color-scheme: dark;']).replace(/^/gm, '  ').trimEnd()}\n}\n`,
     `:root[data-text-size="large"] {\n  font-size: ${fmt(large * 100)}%;\n}\n`,
@@ -172,13 +195,54 @@ function emitColorAssets({ themed }) {
 
 // Роль текста → стиль Dynamic Type, с которым она растёт (Font.custom(_:size:relativeTo:)).
 const RELATIVE = {
-  body: 'body', h1: 'largeTitle', h2: 'title3', h3: 'headline', eyebrow: 'caption', lead: 'body',
-  button: 'headline', 'exam-switch': 'subheadline', 'start-title': 'largeTitle', meta: 'footnote',
-  'section-name': 'headline', caption: 'caption', 'section-stat': 'title2', 'session-count': 'title3',
-  'q-text': 'body', opt: 'body', answer: 'callout', 'explain-body': 'body', action: 'callout', seg: 'caption',
-  'score-label': 'caption', 'score-num': 'largeTitle', 'stat-value': 'body', 'exam-title': 'largeTitle',
-  'exam-name': 'largeTitle', headword: 'largeTitle', 'sense-en': 'body', 'word-meta': 'callout',
-  example: 'body', 'nav-label': 'caption2', 'week-count': 'title2', ipa: 'footnote',
+  'body': 'body',
+  'h1': 'largeTitle',
+  'h2': 'title3',
+  'h3': 'headline',
+  'eyebrow': 'caption',
+  'lead': 'body',
+  'button': 'headline',
+  'exam-switch': 'subheadline',
+  'start-title': 'largeTitle',
+  'meta': 'footnote',
+  'section-name': 'headline',
+  'caption': 'caption',
+  'section-stat': 'title2',
+  'session-count': 'title3',
+  'q-text': 'body',
+  'opt': 'body',
+  'answer': 'callout',
+  'explain-body': 'body',
+  'action': 'callout',
+  'seg': 'caption',
+  'score-label': 'caption',
+  'score-num': 'largeTitle',
+  'stat-value': 'body',
+  'exam-title': 'largeTitle',
+  'exam-name': 'largeTitle',
+  'headword': 'largeTitle',
+  'sense-en': 'body',
+  'word-meta': 'callout',
+  'example': 'body',
+  'nav-label': 'caption2',
+  'week-count': 'title2',
+  'ipa': 'footnote',
+  'complete-words-text': 'body',
+  'sentence-assembly': 'body',
+  'num-label': 'title2',
+  'num-unit': 'title3',
+  'prompt-title': 'title2',
+  'input-compact': 'body',
+  'input-letter': 'title2',
+  'input-display': 'title2',
+  'h1-compact': 'largeTitle',
+  'num-s': 'largeTitle',
+  'num-m': 'largeTitle',
+  'num-l': 'largeTitle',
+  'num-xl': 'largeTitle',
+  'num-xxl': 'largeTitle',
+  'word-title': 'largeTitle',
+  'num-compact': 'title',
 };
 const SWIFT_WEIGHT = { 200: '.ultraLight', 300: '.light', 400: '.regular', 500: '.medium', 600: '.semibold' };
 

@@ -59,7 +59,7 @@
   },
   "type": {
     "$type": "typography",
-    "$description": "Итоговые правила core.css: .frame переопределяет базовые классы; -wide — с 900 px. Тонкие роли ссылаются на тематический font.weight.thin.",
+    "$description": "Роли ядра и общие профили текста; крупные тонкие числа — пять ступеней num-s…num-xxl. Псевдонимы ссылаются на ступени; тонкий вес тематический.",
     "body": {
       "$value": {
         "fontFamily": "{font.family.text}",
@@ -550,66 +550,20 @@
       }
     },
     "exam-name": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 44,
-          "unit": "px"
-        },
-        "fontWeight": "{font.weight.thin}",
-        "lineHeight": 1,
-        "letterSpacing": {
-          "value": -0.04,
-          "unit": "em"
-        }
-      },
-      "$description": "Название экзамена крупными тонкими буквами."
+      "$value": "{type.num-s}",
+      "$description": "Псевдоним num-s для совместимости платформ; значения задаёт общая ступень."
     },
     "exam-name-wide": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 64,
-          "unit": "px"
-        },
-        "fontWeight": "{font.weight.thin}",
-        "lineHeight": 1,
-        "letterSpacing": {
-          "value": -0.04,
-          "unit": "em"
-        }
-      }
+      "$value": "{type.num-s-wide}",
+      "$description": "Псевдоним num-s-wide для совместимости платформ; значения задаёт общая ступень."
     },
     "headword": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 56,
-          "unit": "px"
-        },
-        "fontWeight": "{font.weight.thin}",
-        "lineHeight": 1,
-        "letterSpacing": {
-          "value": -0.04,
-          "unit": "em"
-        }
-      },
-      "$description": "Слово в словаре."
+      "$value": "{type.num-m}",
+      "$description": "Псевдоним num-m для совместимости платформ; значения задаёт общая ступень."
     },
     "headword-wide": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 88,
-          "unit": "px"
-        },
-        "fontWeight": "{font.weight.thin}",
-        "lineHeight": 1,
-        "letterSpacing": {
-          "value": -0.04,
-          "unit": "em"
-        }
-      }
+      "$value": "{type.num-l-wide}",
+      "$description": "Псевдоним num-l-wide для совместимости платформ; значения задаёт общая ступень."
     },
     "sense-en": {
       "$value": {
@@ -721,6 +675,446 @@
         }
       },
       "$description": "Тонкий счётчик недели на компьютере."
+    },
+    "num-label": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 20,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.medium}",
+        "lineHeight": 1.2,
+        "letterSpacing": {
+          "value": -0.015,
+          "unit": "em"
+        }
+      },
+      "$description": "Подпись крупного результата: основной и компактный итоги тренировки."
+    },
+    "num-label-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 28,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.medium}",
+        "lineHeight": 1.2,
+        "letterSpacing": {
+          "value": -0.015,
+          "unit": "em"
+        }
+      },
+      "$description": "Подпись основного результата на широком экране."
+    },
+    "num-unit": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 22,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.semibold}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.015,
+          "unit": "em"
+        }
+      },
+      "$description": "Единица счёта: число слов на старте и в итоге изучения."
+    },
+    "prompt-title": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 24,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.semibold}",
+        "lineHeight": 1.25,
+        "letterSpacing": {
+          "value": -0.015,
+          "unit": "em"
+        }
+      },
+      "$description": "Заголовок задания слов: перевод в нескольких упражнениях."
+    },
+    "prompt-title-wide": {
+      "$value": "{type.start-title}",
+      "$description": "Широкий заголовок задания слов — существующая роль start-title."
+    },
+    "input-compact": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 17,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.medium}",
+        "lineHeight": 1,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "em"
+        }
+      },
+      "$description": "Однострочный ввод: поиск слова и ячейки Complete the Words."
+    },
+    "input-compact-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 19,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.medium}",
+        "lineHeight": 1,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "em"
+        }
+      },
+      "$description": "Однострочный ввод на широком экране."
+    },
+    "input-letter": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 26,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.medium}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.08,
+          "unit": "px"
+        }
+      },
+      "$description": "Буквы: сборка слова и сравнение введённого ответа; один размер для обоих экранов."
+    },
+    "input-display": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 26,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.medium}",
+        "lineHeight": 1.2,
+        "letterSpacing": {
+          "value": 0.01,
+          "unit": "em"
+        }
+      },
+      "$description": "Ввод ответа словом: несколько упражнений W12–W14."
+    },
+    "h1-compact": {
+      "$value": "{type.h1}",
+      "$description": "Компактный заголовок прогресса: на телефоне совпадает с h1."
+    },
+    "h1-compact-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 40,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.semibold}",
+        "lineHeight": 1.15,
+        "letterSpacing": {
+          "value": -0.03,
+          "unit": "em"
+        }
+      },
+      "$description": "Компактный заголовок на широких экранах G1 и G6."
+    },
+    "complete-words-text": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 18,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 2.15,
+        "letterSpacing": {
+          "value": -0.005,
+          "unit": "em"
+        }
+      },
+      "$description": ".frame .l-ctw-text в screens/l.css."
+    },
+    "complete-words-text-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 22,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 2.2,
+        "letterSpacing": {
+          "value": -0.005,
+          "unit": "em"
+        }
+      },
+      "$description": ".frame .l-ctw-text в screens/l.css; широкая раскладка от 900 px."
+    },
+    "sentence-assembly": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 20,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 2.3,
+        "letterSpacing": {
+          "value": -0.08,
+          "unit": "px"
+        }
+      },
+      "$description": ".frame .l-frame в screens/l.css."
+    },
+    "sentence-assembly-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 24,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 2.3,
+        "letterSpacing": {
+          "value": -0.08,
+          "unit": "px"
+        }
+      },
+      "$description": ".frame .l-frame в screens/l.css; широкая раскладка от 900 px."
+    },
+    "num-s": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 48,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.thin}",
+        "lineHeight": 1,
+        "letterSpacing": {
+          "value": -0.04,
+          "unit": "em"
+        }
+      },
+      "$description": "Малое крупное число или короткое слово."
+    },
+    "num-s-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 60,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.thin}",
+        "lineHeight": 1,
+        "letterSpacing": {
+          "value": -0.04,
+          "unit": "em"
+        }
+      },
+      "$description": "Малое крупное число или короткое слово. Широкий профиль."
+    },
+    "num-m": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 56,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.thin}",
+        "lineHeight": 1,
+        "letterSpacing": {
+          "value": -0.04,
+          "unit": "em"
+        }
+      },
+      "$description": "Среднее крупное число или слово."
+    },
+    "num-m-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 72,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.thin}",
+        "lineHeight": 1,
+        "letterSpacing": {
+          "value": -0.04,
+          "unit": "em"
+        }
+      },
+      "$description": "Среднее крупное число или слово. Широкий профиль."
+    },
+    "num-l": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 70,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.thin}",
+        "lineHeight": 1,
+        "letterSpacing": {
+          "value": -0.04,
+          "unit": "em"
+        }
+      },
+      "$description": "Крупная статистика, компактный итог и обратный отсчёт."
+    },
+    "num-l-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 88,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.thin}",
+        "lineHeight": 1,
+        "letterSpacing": {
+          "value": -0.04,
+          "unit": "em"
+        }
+      },
+      "$description": "Крупная статистика, компактный итог и обратный отсчёт. Широкий профиль."
+    },
+    "num-xl": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 88,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.thin}",
+        "lineHeight": 0.95,
+        "letterSpacing": {
+          "value": -0.04,
+          "unit": "em"
+        }
+      },
+      "$description": "Баллы и итог изучения слов."
+    },
+    "num-xl-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 120,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.thin}",
+        "lineHeight": 0.95,
+        "letterSpacing": {
+          "value": -0.04,
+          "unit": "em"
+        }
+      },
+      "$description": "Баллы и итог изучения слов. Широкий профиль."
+    },
+    "num-xxl": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 104,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.thin}",
+        "lineHeight": 0.9,
+        "letterSpacing": {
+          "value": -0.04,
+          "unit": "em"
+        }
+      },
+      "$description": "Основное число итогового экрана."
+    },
+    "num-xxl-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 144,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.thin}",
+        "lineHeight": 0.9,
+        "letterSpacing": {
+          "value": -0.04,
+          "unit": "em"
+        }
+      },
+      "$description": "Основное число итогового экрана. Широкий профиль."
+    },
+    "num-compact": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 36,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.thin}",
+        "lineHeight": 1.05,
+        "letterSpacing": {
+          "value": -0.03,
+          "unit": "em"
+        }
+      },
+      "$description": "Промежуточное малое число, которое не попало в роли ядра."
+    },
+    "num-compact-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 52,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.thin}",
+        "lineHeight": 1.05,
+        "letterSpacing": {
+          "value": -0.03,
+          "unit": "em"
+        }
+      },
+      "$description": "Широкий промежуточный профиль малого числа."
+    },
+    "word-title": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 40,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.thin}",
+        "lineHeight": 1.1,
+        "letterSpacing": {
+          "value": -0.02,
+          "unit": "em"
+        }
+      },
+      "$description": "Слово-заголовок, не попавшее в крупную числовую шкалу."
+    },
+    "word-title-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 56,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.thin}",
+        "lineHeight": 1.1,
+        "letterSpacing": {
+          "value": -0.02,
+          "unit": "em"
+        }
+      },
+      "$description": "Широкий профиль слова-заголовка вне числовой шкалы."
     }
   }
 }

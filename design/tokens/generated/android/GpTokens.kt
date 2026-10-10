@@ -340,11 +340,13 @@ class GpTypography private constructor(family: FontFamily, monoFamily: FontFamil
     /** Заголовок выбора экзамена. */
     val examTitle = TextStyle(fontFamily = family, fontSize = 36.sp, lineHeight = 41.4.sp, fontWeight = FontWeight.W600, letterSpacing = (-0.03).em)
     val examTitleWide = TextStyle(fontFamily = family, fontSize = 48.sp, lineHeight = 55.2.sp, fontWeight = FontWeight.W600, letterSpacing = (-0.03).em)
-    /** Название экзамена крупными тонкими буквами. */
-    val examName = TextStyle(fontFamily = family, fontSize = 44.sp, lineHeight = 44.sp, fontWeight = theme.thin, letterSpacing = (-0.04).em)
-    val examNameWide = TextStyle(fontFamily = family, fontSize = 64.sp, lineHeight = 64.sp, fontWeight = theme.thin, letterSpacing = (-0.04).em)
-    /** Слово в словаре. */
+    /** Псевдоним num-s для совместимости платформ; значения задаёт общая ступень. */
+    val examName = TextStyle(fontFamily = family, fontSize = 48.sp, lineHeight = 48.sp, fontWeight = theme.thin, letterSpacing = (-0.04).em)
+    /** Псевдоним num-s-wide для совместимости платформ; значения задаёт общая ступень. */
+    val examNameWide = TextStyle(fontFamily = family, fontSize = 60.sp, lineHeight = 60.sp, fontWeight = theme.thin, letterSpacing = (-0.04).em)
+    /** Псевдоним num-m для совместимости платформ; значения задаёт общая ступень. */
     val headword = TextStyle(fontFamily = family, fontSize = 56.sp, lineHeight = 56.sp, fontWeight = theme.thin, letterSpacing = (-0.04).em)
+    /** Псевдоним num-l-wide для совместимости платформ; значения задаёт общая ступень. */
     val headwordWide = TextStyle(fontFamily = family, fontSize = 88.sp, lineHeight = 88.sp, fontWeight = theme.thin, letterSpacing = (-0.04).em)
     /** Значение слова на английском. */
     val senseEn = TextStyle(fontFamily = family, fontSize = 20.sp, lineHeight = 28.sp, fontWeight = FontWeight.W400, letterSpacing = (-0.01).em)
@@ -359,6 +361,64 @@ class GpTypography private constructor(family: FontFamily, monoFamily: FontFamil
     val ipa = TextStyle(fontFamily = monoFamily, fontSize = 14.sp, lineHeight = 20.3.sp, fontWeight = FontWeight.W400, letterSpacing = (-0.005).em)
     /** Тонкий счётчик недели на компьютере. */
     val weekCount = TextStyle(fontFamily = family, fontSize = 28.sp, lineHeight = 40.6.sp, fontWeight = theme.thin, letterSpacing = (-0.03).em)
+    /** Подпись крупного результата: основной и компактный итоги тренировки. */
+    val numLabel = TextStyle(fontFamily = family, fontSize = 20.sp, lineHeight = 24.sp, fontWeight = FontWeight.W500, letterSpacing = (-0.015).em)
+    /** Подпись основного результата на широком экране. */
+    val numLabelWide = TextStyle(fontFamily = family, fontSize = 28.sp, lineHeight = 33.6.sp, fontWeight = FontWeight.W500, letterSpacing = (-0.015).em)
+    /** Единица счёта: число слов на старте и в итоге изучения. */
+    val numUnit = TextStyle(fontFamily = family, fontSize = 22.sp, lineHeight = 31.9.sp, fontWeight = FontWeight.W600, letterSpacing = (-0.015).em)
+    /** Заголовок задания слов: перевод в нескольких упражнениях. */
+    val promptTitle = TextStyle(fontFamily = family, fontSize = 24.sp, lineHeight = 30.sp, fontWeight = FontWeight.W600, letterSpacing = (-0.015).em)
+    /** Широкий заголовок задания слов — существующая роль start-title. */
+    val promptTitleWide = TextStyle(fontFamily = family, fontSize = 30.sp, lineHeight = 34.5.sp, fontWeight = FontWeight.W600, letterSpacing = (-0.03).em)
+    /** Однострочный ввод: поиск слова и ячейки Complete the Words. */
+    val inputCompact = TextStyle(fontFamily = family, fontSize = 17.sp, lineHeight = 17.sp, fontWeight = FontWeight.W500, letterSpacing = (0).em)
+    /** Однострочный ввод на широком экране. */
+    val inputCompactWide = TextStyle(fontFamily = family, fontSize = 19.sp, lineHeight = 19.sp, fontWeight = FontWeight.W500, letterSpacing = (0).em)
+    /** Буквы: сборка слова и сравнение введённого ответа; один размер для обоих экранов. */
+    val inputLetter = TextStyle(fontFamily = family, fontSize = 26.sp, lineHeight = 37.7.sp, fontWeight = FontWeight.W500, letterSpacing = (-0.0031).em)
+    /** Ввод ответа словом: несколько упражнений W12–W14. */
+    val inputDisplay = TextStyle(fontFamily = family, fontSize = 26.sp, lineHeight = 31.2.sp, fontWeight = FontWeight.W500, letterSpacing = (0.01).em)
+    /** Компактный заголовок прогресса: на телефоне совпадает с h1. */
+    val h1Compact = TextStyle(fontFamily = family, fontSize = 34.sp, lineHeight = 39.1.sp, fontWeight = FontWeight.W600, letterSpacing = (-0.03).em)
+    /** Компактный заголовок на широких экранах G1 и G6. */
+    val h1CompactWide = TextStyle(fontFamily = family, fontSize = 40.sp, lineHeight = 46.sp, fontWeight = FontWeight.W600, letterSpacing = (-0.03).em)
+    /** .frame .l-ctw-text в screens/l.css. */
+    val completeWordsText = TextStyle(fontFamily = family, fontSize = 18.sp, lineHeight = 38.7.sp, fontWeight = FontWeight.W400, letterSpacing = (-0.005).em)
+    /** .frame .l-ctw-text в screens/l.css; широкая раскладка от 900 px. */
+    val completeWordsTextWide = TextStyle(fontFamily = family, fontSize = 22.sp, lineHeight = 48.4.sp, fontWeight = FontWeight.W400, letterSpacing = (-0.005).em)
+    /** .frame .l-frame в screens/l.css. */
+    val sentenceAssembly = TextStyle(fontFamily = family, fontSize = 20.sp, lineHeight = 46.sp, fontWeight = FontWeight.W400, letterSpacing = (-0.004).em)
+    /** .frame .l-frame в screens/l.css; широкая раскладка от 900 px. */
+    val sentenceAssemblyWide = TextStyle(fontFamily = family, fontSize = 24.sp, lineHeight = 55.2.sp, fontWeight = FontWeight.W400, letterSpacing = (-0.0033).em)
+    /** Малое крупное число или короткое слово. */
+    val numS = TextStyle(fontFamily = family, fontSize = 48.sp, lineHeight = 48.sp, fontWeight = theme.thin, letterSpacing = (-0.04).em)
+    /** Малое крупное число или короткое слово. Широкий профиль. */
+    val numSWide = TextStyle(fontFamily = family, fontSize = 60.sp, lineHeight = 60.sp, fontWeight = theme.thin, letterSpacing = (-0.04).em)
+    /** Среднее крупное число или слово. */
+    val numM = TextStyle(fontFamily = family, fontSize = 56.sp, lineHeight = 56.sp, fontWeight = theme.thin, letterSpacing = (-0.04).em)
+    /** Среднее крупное число или слово. Широкий профиль. */
+    val numMWide = TextStyle(fontFamily = family, fontSize = 72.sp, lineHeight = 72.sp, fontWeight = theme.thin, letterSpacing = (-0.04).em)
+    /** Крупная статистика, компактный итог и обратный отсчёт. */
+    val numL = TextStyle(fontFamily = family, fontSize = 70.sp, lineHeight = 70.sp, fontWeight = theme.thin, letterSpacing = (-0.04).em)
+    /** Крупная статистика, компактный итог и обратный отсчёт. Широкий профиль. */
+    val numLWide = TextStyle(fontFamily = family, fontSize = 88.sp, lineHeight = 88.sp, fontWeight = theme.thin, letterSpacing = (-0.04).em)
+    /** Баллы и итог изучения слов. */
+    val numXl = TextStyle(fontFamily = family, fontSize = 88.sp, lineHeight = 83.6.sp, fontWeight = theme.thin, letterSpacing = (-0.04).em)
+    /** Баллы и итог изучения слов. Широкий профиль. */
+    val numXlWide = TextStyle(fontFamily = family, fontSize = 120.sp, lineHeight = 114.sp, fontWeight = theme.thin, letterSpacing = (-0.04).em)
+    /** Основное число итогового экрана. */
+    val numXxl = TextStyle(fontFamily = family, fontSize = 104.sp, lineHeight = 93.6.sp, fontWeight = theme.thin, letterSpacing = (-0.04).em)
+    /** Основное число итогового экрана. Широкий профиль. */
+    val numXxlWide = TextStyle(fontFamily = family, fontSize = 144.sp, lineHeight = 129.6.sp, fontWeight = theme.thin, letterSpacing = (-0.04).em)
+    /** Промежуточное малое число, которое не попало в роли ядра. */
+    val numCompact = TextStyle(fontFamily = family, fontSize = 36.sp, lineHeight = 37.8.sp, fontWeight = theme.thin, letterSpacing = (-0.03).em)
+    /** Широкий промежуточный профиль малого числа. */
+    val numCompactWide = TextStyle(fontFamily = family, fontSize = 52.sp, lineHeight = 54.6.sp, fontWeight = theme.thin, letterSpacing = (-0.03).em)
+    /** Слово-заголовок, не попавшее в крупную числовую шкалу. */
+    val wordTitle = TextStyle(fontFamily = family, fontSize = 40.sp, lineHeight = 44.sp, fontWeight = theme.thin, letterSpacing = (-0.02).em)
+    /** Широкий профиль слова-заголовка вне числовой шкалы. */
+    val wordTitleWide = TextStyle(fontFamily = family, fontSize = 56.sp, lineHeight = 61.6.sp, fontWeight = theme.thin, letterSpacing = (-0.02).em)
 
     companion object {
         /** Настройка «Крупнее»: множитель поверх системного масштаба шрифта. */

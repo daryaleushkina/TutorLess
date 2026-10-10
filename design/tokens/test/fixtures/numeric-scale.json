@@ -1,0 +1,380 @@
+[
+  {
+    "file": "core",
+    "selector": ".frame .section-stat b",
+    "category": "small",
+    "role": "section-stat",
+    "wideRole": "section-stat-wide",
+    "before": 24,
+    "wideBefore": 28
+  },
+  {
+    "file": "core",
+    "selector": ".frame .session-count",
+    "category": "small",
+    "role": "session-count",
+    "wideRole": "session-count-wide",
+    "before": 22,
+    "wideBefore": 26
+  },
+  {
+    "file": "core",
+    "selector": ".frame .score-num",
+    "category": "small",
+    "role": "score-num",
+    "wideRole": "score-num-wide",
+    "before": 32,
+    "wideBefore": 44
+  },
+  {
+    "file": "core",
+    "selector": ".frame .acc-val",
+    "category": "small",
+    "role": "stat-value",
+    "wideRole": "stat-value",
+    "before": 18,
+    "wideBefore": 18
+  },
+  {
+    "file": "core",
+    "selector": ".frame .hist-res",
+    "category": "small",
+    "role": "stat-value",
+    "wideRole": "stat-value",
+    "before": 18,
+    "wideBefore": 18
+  },
+  {
+    "file": "core",
+    "selector": ".frame .week-line b",
+    "category": "small",
+    "role": null,
+    "wideRole": "week-count",
+    "before": null,
+    "wideBefore": 28
+  },
+  {
+    "file": "core",
+    "selector": ".frame .exam-name",
+    "category": "large",
+    "role": "num-s",
+    "wideRole": "num-s-wide",
+    "before": 44,
+    "wideBefore": 64
+  },
+  {
+    "file": "core",
+    "selector": ".frame .headword",
+    "category": "large",
+    "role": "num-m",
+    "wideRole": "num-l-wide",
+    "before": 56,
+    "wideBefore": 88
+  },
+  {
+    "file": "t",
+    "selector": ".t-exam-name",
+    "category": "small",
+    "role": "section-stat",
+    "wideRole": "section-stat",
+    "before": 25,
+    "wideBefore": 25
+  },
+  {
+    "file": "r1",
+    "selector": ".frame .r1-num",
+    "category": "small",
+    "role": "session-count",
+    "wideRole": "session-count",
+    "before": 22,
+    "wideBefore": 22
+  },
+  {
+    "file": "r1",
+    "selector": ".frame .r1-qty-v",
+    "category": "small",
+    "role": "score-num",
+    "wideRole": "score-num-wide",
+    "before": 30,
+    "wideBefore": 40
+  },
+  {
+    "file": "r2",
+    "selector": ".r2-unit",
+    "category": "small",
+    "role": "session-count",
+    "wideRole": "session-count",
+    "before": 22,
+    "wideBefore": 22
+  },
+  {
+    "file": "r2",
+    "selector": ".r2-field-box input",
+    "category": "small",
+    "role": "score-num",
+    "wideRole": "score-num",
+    "before": 30,
+    "wideBefore": 30
+  },
+  {
+    "file": "r2",
+    "selector": ".r2-display",
+    "category": "small",
+    "role": "num-compact",
+    "wideRole": "num-compact",
+    "before": 38,
+    "wideBefore": 38
+  },
+  {
+    "file": "r2",
+    "selector": ".r2-score-num",
+    "category": "large",
+    "role": "num-xxl",
+    "wideRole": "num-xxl-wide",
+    "before": 104,
+    "wideBefore": 152
+  },
+  {
+    "file": "r2",
+    "selector": ".r2-score-sm .r2-score-num",
+    "category": "large",
+    "role": "num-l",
+    "wideRole": "num-m-wide",
+    "before": 72,
+    "wideBefore": 72
+  },
+  {
+    "file": "r2",
+    "selector": ".r2-row-n",
+    "category": "small",
+    "role": "session-count",
+    "wideRole": "session-count",
+    "before": 22,
+    "wideBefore": 22
+  },
+  {
+    "file": "l",
+    "selector": ".frame .l-ctw-progress b",
+    "category": "small",
+    "role": "session-count",
+    "wideRole": "session-count",
+    "before": 20,
+    "wideBefore": 20
+  },
+  {
+    "file": "l",
+    "selector": ".frame .l-count b",
+    "category": "small",
+    "role": "session-count",
+    "wideRole": "session-count",
+    "before": 20,
+    "wideBefore": 20
+  },
+  {
+    "file": "l",
+    "selector": ".frame .l-countdown span",
+    "category": "large",
+    "role": "num-l",
+    "wideRole": "num-l-wide",
+    "before": 72,
+    "wideBefore": 96
+  },
+  {
+    "file": "l",
+    "selector": ".frame .l-score-num span",
+    "category": "large",
+    "role": "num-xl",
+    "wideRole": "num-xl-wide",
+    "before": 80,
+    "wideBefore": 112
+  },
+  {
+    "file": "w",
+    "selector": ".frame .w-today-count .w-num",
+    "category": "large",
+    "role": "num-m",
+    "wideRole": "num-s-wide",
+    "before": 56,
+    "wideBefore": 56
+  },
+  {
+    "file": "w",
+    "selector": ".frame .w-prompt-word",
+    "category": "large",
+    "role": "num-m",
+    "wideRole": "num-m-wide",
+    "before": 52,
+    "wideBefore": 72
+  },
+  {
+    "file": "w",
+    "selector": ".frame .w-card .headword",
+    "category": "large",
+    "role": "num-s",
+    "wideRole": "num-s-wide",
+    "before": 48,
+    "wideBefore": 64
+  },
+  {
+    "file": "w",
+    "selector": ".frame .w-done-num",
+    "category": "small",
+    "role": "session-count-wide",
+    "wideRole": "session-count-wide",
+    "before": 26,
+    "wideBefore": 26
+  },
+  {
+    "file": "w",
+    "selector": ".frame .w-done-num .w-num",
+    "category": "large",
+    "role": "num-xl",
+    "wideRole": "num-xl-wide",
+    "before": 96,
+    "wideBefore": 128
+  },
+  {
+    "file": "wl",
+    "selector": ".frame .wl-count-field input",
+    "category": "large",
+    "role": "num-m",
+    "wideRole": "num-s-wide",
+    "before": 56,
+    "wideBefore": 56
+  },
+  {
+    "file": "wl",
+    "selector": ".frame .wl-done-num .w-num",
+    "category": "large",
+    "role": "num-xl",
+    "wideRole": "num-xl-wide",
+    "before": 88,
+    "wideBefore": 120
+  },
+  {
+    "file": "wl",
+    "selector": ".frame .wl-meet .headword",
+    "category": "large",
+    "role": "num-m",
+    "wideRole": "num-m-wide",
+    "before": 56,
+    "wideBefore": 72
+  },
+  {
+    "file": "wl",
+    "selector": ".frame .wl-prompt-word",
+    "category": "word",
+    "role": "word-title",
+    "wideRole": "word-title-wide",
+    "before": 40,
+    "wideBefore": 56
+  },
+  {
+    "file": "x",
+    "selector": ".x-time",
+    "category": "small",
+    "role": "score-num",
+    "wideRole": "score-num",
+    "before": 30,
+    "wideBefore": 34
+  },
+  {
+    "file": "x",
+    "selector": ".x-row-stat b",
+    "category": "small",
+    "role": "session-count",
+    "wideRole": "session-count",
+    "before": 20,
+    "wideBefore": 20
+  },
+  {
+    "file": "x",
+    "selector": ".x-part-time",
+    "category": "small",
+    "role": "session-count",
+    "wideRole": "session-count",
+    "before": 20,
+    "wideBefore": 20
+  },
+  {
+    "file": "x",
+    "selector": ".x-big",
+    "category": "small",
+    "role": "week-count",
+    "wideRole": "week-count",
+    "before": 30,
+    "wideBefore": 30
+  },
+  {
+    "file": "x",
+    "selector": ".x-cell",
+    "category": "small",
+    "role": "section-stat",
+    "wideRole": "section-stat",
+    "before": 24,
+    "wideBefore": 24
+  },
+  {
+    "file": "x",
+    "selector": ".x-score-range",
+    "category": "small",
+    "role": "score-num",
+    "wideRole": "num-compact-wide",
+    "before": 34,
+    "wideBefore": 52
+  },
+  {
+    "file": "x",
+    "selector": ".x-tally-val b",
+    "category": "small",
+    "role": "session-count",
+    "wideRole": "session-count",
+    "before": 22,
+    "wideBefore": 22
+  },
+  {
+    "file": "x",
+    "selector": ".x-grade-num",
+    "category": "large",
+    "role": "num-xl",
+    "wideRole": "num-xl-wide",
+    "before": 88,
+    "wideBefore": 128
+  },
+  {
+    "file": "x",
+    "selector": ".x-grade-of",
+    "category": "small",
+    "role": "week-count",
+    "wideRole": "week-count",
+    "before": 30,
+    "wideBefore": 30
+  },
+  {
+    "file": "g",
+    "selector": ".g-sec-num",
+    "category": "small",
+    "role": "num-compact",
+    "wideRole": "score-num-wide",
+    "before": 36,
+    "wideBefore": 44
+  },
+  {
+    "file": "g",
+    "selector": ".g-quota-num",
+    "category": "small",
+    "role": "score-num-wide",
+    "wideRole": "score-num-wide",
+    "before": 40,
+    "wideBefore": 40
+  },
+  {
+    "file": "g",
+    "selector": ".g-item-num",
+    "category": "large",
+    "role": "num-l",
+    "wideRole": "num-l-wide",
+    "before": 64,
+    "wideBefore": 80
+  }
+]

@@ -278,16 +278,16 @@ typography:
     letterSpacing: "-0.03em"
   exam-name:
     fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "44px"
+    fontSize: "48px"
     fontWeight: 300
-    lineHeight: "44px"
+    lineHeight: "48px"
     letterSpacing: "-0.04em"
     fontWeightDark: 200
   exam-name-wide:
     fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "64px"
+    fontSize: "60px"
     fontWeight: 300
-    lineHeight: "64px"
+    lineHeight: "60px"
     letterSpacing: "-0.04em"
     fontWeightDark: 200
   headword:
@@ -346,6 +346,194 @@ typography:
     fontWeight: 300
     lineHeight: "40.6px"
     letterSpacing: "-0.03em"
+    fontWeightDark: 200
+  num-label:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "20px"
+    fontWeight: 500
+    lineHeight: "24px"
+    letterSpacing: "-0.015em"
+  num-label-wide:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "28px"
+    fontWeight: 500
+    lineHeight: "33.6px"
+    letterSpacing: "-0.015em"
+  num-unit:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "22px"
+    fontWeight: 600
+    lineHeight: "31.9px"
+    letterSpacing: "-0.015em"
+  prompt-title:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "24px"
+    fontWeight: 600
+    lineHeight: "30px"
+    letterSpacing: "-0.015em"
+  prompt-title-wide:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "30px"
+    fontWeight: 600
+    lineHeight: "34.5px"
+    letterSpacing: "-0.03em"
+  input-compact:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "17px"
+    fontWeight: 500
+    lineHeight: "17px"
+    letterSpacing: "0em"
+  input-compact-wide:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "19px"
+    fontWeight: 500
+    lineHeight: "19px"
+    letterSpacing: "0em"
+  input-letter:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "26px"
+    fontWeight: 500
+    lineHeight: "37.7px"
+    letterSpacing: "-0.0031em"
+  input-display:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "26px"
+    fontWeight: 500
+    lineHeight: "31.2px"
+    letterSpacing: "0.01em"
+  h1-compact:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "34px"
+    fontWeight: 600
+    lineHeight: "39.1px"
+    letterSpacing: "-0.03em"
+  h1-compact-wide:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "40px"
+    fontWeight: 600
+    lineHeight: "46px"
+    letterSpacing: "-0.03em"
+  complete-words-text:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "18px"
+    fontWeight: 400
+    lineHeight: "38.7px"
+    letterSpacing: "-0.005em"
+  complete-words-text-wide:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "22px"
+    fontWeight: 400
+    lineHeight: "48.4px"
+    letterSpacing: "-0.005em"
+  sentence-assembly:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "20px"
+    fontWeight: 400
+    lineHeight: "46px"
+    letterSpacing: "-0.004em"
+  sentence-assembly-wide:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "24px"
+    fontWeight: 400
+    lineHeight: "55.2px"
+    letterSpacing: "-0.0033em"
+  num-s:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "48px"
+    fontWeight: 300
+    lineHeight: "48px"
+    letterSpacing: "-0.04em"
+    fontWeightDark: 200
+  num-s-wide:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "60px"
+    fontWeight: 300
+    lineHeight: "60px"
+    letterSpacing: "-0.04em"
+    fontWeightDark: 200
+  num-m:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "56px"
+    fontWeight: 300
+    lineHeight: "56px"
+    letterSpacing: "-0.04em"
+    fontWeightDark: 200
+  num-m-wide:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "72px"
+    fontWeight: 300
+    lineHeight: "72px"
+    letterSpacing: "-0.04em"
+    fontWeightDark: 200
+  num-l:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "70px"
+    fontWeight: 300
+    lineHeight: "70px"
+    letterSpacing: "-0.04em"
+    fontWeightDark: 200
+  num-l-wide:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "88px"
+    fontWeight: 300
+    lineHeight: "88px"
+    letterSpacing: "-0.04em"
+    fontWeightDark: 200
+  num-xl:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "88px"
+    fontWeight: 300
+    lineHeight: "83.6px"
+    letterSpacing: "-0.04em"
+    fontWeightDark: 200
+  num-xl-wide:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "120px"
+    fontWeight: 300
+    lineHeight: "114px"
+    letterSpacing: "-0.04em"
+    fontWeightDark: 200
+  num-xxl:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "104px"
+    fontWeight: 300
+    lineHeight: "93.6px"
+    letterSpacing: "-0.04em"
+    fontWeightDark: 200
+  num-xxl-wide:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "144px"
+    fontWeight: 300
+    lineHeight: "129.6px"
+    letterSpacing: "-0.04em"
+    fontWeightDark: 200
+  num-compact:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "36px"
+    fontWeight: 300
+    lineHeight: "37.8px"
+    letterSpacing: "-0.03em"
+    fontWeightDark: 200
+  num-compact-wide:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "52px"
+    fontWeight: 300
+    lineHeight: "54.6px"
+    letterSpacing: "-0.03em"
+    fontWeightDark: 200
+  word-title:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "40px"
+    fontWeight: 300
+    lineHeight: "44px"
+    letterSpacing: "-0.02em"
+    fontWeightDark: 200
+  word-title-wide:
+    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontSize: "56px"
+    fontWeight: 300
+    lineHeight: "61.6px"
+    letterSpacing: "-0.02em"
     fontWeightDark: 200
 fontFamilies:
   text: "Geologica, Onest, system-ui, sans-serif"
@@ -545,8 +733,12 @@ Apple — `generated/apple/GPTokens.swift` и `GPColors.xcassets`, Android —
 ### Hierarchy
 Роли — `--font-<роль>` и `--tracking-<роль>`; с 900 px часть ролей крупнее (вариант
 `-wide` в шапке, те же имена переменных). Точные размеры — в шапке.
-- **Тонкие цифры:** `headword` (слово на карточке), `score-num` (балл), `exam-name`
-  («GRE», «TOEFL»), `session-count` («3 из 10»), `section-stat`, `stat-value`, `week-count`.
+- **Крупные тонкие цифры — шкала из пяти ступеней** (телефон / широкий): `num-s` 48/60,
+  `num-m` 56/72, `num-l` 70/88, `num-xl` 88/120, `num-xxl` 104/144 — итоги, баллы, обратный
+  отсчёт, крупная статистика, слово на карточке. Новое крупное число берёт ступень, а не свой
+  размер; `headword`, `exam-name` и другие прежние имена — ссылки на ступени.
+- **Малые тонкие цифры:** `score-num` (балл), `session-count` («3 из 10»), `section-stat`,
+  `stat-value`, `week-count`, общий `num-compact` 36/52; слово-заголовок — `word-title` 40/56.
 - **Заголовки:** `h1` (экран-раздел), `start-title` (карточка старта), `exam-title`,
   `h2` (карточка, шторка), `h3` (подзаголовок, тише цветом).
 - **Задание:** `q-text` (текст задания, строка до ~70 знаков), `opt` (вариант ответа),
