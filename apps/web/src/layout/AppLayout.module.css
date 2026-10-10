@@ -1,40 +1,16 @@
 /*
  * Раскладка экранов после входа. Ширины: телефон и мини-апп — капсула вкладок снизу; сайт 600–899 px — строка
- * разделов сверху; сайт шире 900 px — боковая панель (решение Даши 06.10.2026; токены layout.breakpoint-narrow и
- * layout.breakpoint-wide — числа в @media повторяют их, var() там не работает).
+ * разделов сверху; сайт шире 900 px — боковая панель (решение Даши 06.10.2026).
+ * Широкая граница — layout.breakpoint-wide; средняя ширина сохраняется до части 2. var() в @media не работает.
  */
 
 .frame {
-  --glow-strong: var(--color-glow-verbal-strong);
-  --glow-soft: var(--color-glow-verbal-soft);
+  --session-footer-inset: 0px;
   position: relative;
   height: var(--app-height);
   display: flex;
   flex-direction: column;
-  /* Свет сверху — как на холсте (T1-Today): мягкий радиальный градиент цвета раздела уходит в нейтральный фон. */
-  background:
-    radial-gradient(120% 52% at 50% -10%, var(--glow-strong) 0%, var(--glow-soft) 48%, transparent 74%),
-    var(--color-bg);
-}
-
-.frame[data-glow='quant'] {
-  --glow-strong: var(--color-glow-quant-strong);
-  --glow-soft: var(--color-glow-quant-soft);
-}
-
-.frame[data-glow='words'] {
-  --glow-strong: var(--color-glow-words-strong);
-  --glow-soft: var(--color-glow-words-soft);
-}
-
-.frame[data-glow='essay'] {
-  --glow-strong: var(--color-glow-essay-strong);
-  --glow-soft: var(--color-glow-essay-soft);
-}
-
-.frame[data-glow='exam'] {
-  --glow-strong: var(--color-glow-exam-strong);
-  --glow-soft: var(--color-glow-exam-soft);
+  background: var(--color-bg);
 }
 
 /* Единственный контейнер прокрутки (styles/base.css). */
@@ -54,7 +30,7 @@
 .main::after {
   content: '';
   display: block;
-  height: calc(var(--size-tab-bar-height) + var(--size-tab-bar-bottom) + var(--app-inset-bottom) + var(--space-24));
+  height: calc(var(--layout-main-bottom-nav) + var(--app-inset-bottom) + var(--space-24));
 }
 
 .frame[data-nested] .main::after {
@@ -70,13 +46,14 @@
 /* ── капсула вкладок ── */
 
 .tabBar {
+  background: var(--color-nav-bg);
   position: absolute;
   z-index: 5;
   left: 50%;
-  bottom: calc(var(--size-tab-bar-bottom) + var(--app-inset-bottom));
+  bottom: calc(var(--layout-nav-bottom) + var(--app-inset-bottom));
   transform: translateX(-50%);
-  width: min(var(--size-tab-bar-width), calc(100% - 2 * var(--layout-gutter-bar)));
-  height: var(--size-tab-bar-height);
+  width: min(var(--layout-content-max), calc(100% - 2 * var(--layout-gutter)));
+  height: var(--size-section-row);
   padding: var(--space-4);
   border-radius: var(--radius-full);
   display: grid;
@@ -86,15 +63,15 @@
 .tab {
   min-width: 0;
   border-radius: var(--radius-full);
-  color: var(--color-text-secondary);
+  color: var(--color-text-2);
   text-decoration: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  font: var(--font-tab-label);
-  letter-spacing: var(--tracking-tab-label);
+  font: var(--font-nav-label);
+  letter-spacing: var(--tracking-nav-label);
 }
 
 .tab svg {
@@ -103,8 +80,8 @@
 }
 
 .tab[aria-current='page'] {
-  background: var(--color-tab-selected);
-  color: var(--color-text);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
   font-weight: var(--font-weight-semibold);
 }
 
@@ -115,9 +92,9 @@
   left: 0;
   right: 0;
   bottom: 0;
-  height: calc(var(--size-tab-bar-height) + var(--size-tab-bar-bottom) + var(--app-inset-bottom) + var(--size-fade));
-  /* Плотный фон — уже к верхнему краю капсулы: текст под стеклом не читается рядом с подписями вкладок. */
-  background: linear-gradient(transparent, var(--color-bg) var(--size-fade));
+  height: calc(var(--layout-main-bottom-nav) + var(--app-inset-bottom) + var(--space-24));
+  /* Плотный фон у края капсулы отделяет прокрутку от подписей вкладок. */
+  background: linear-gradient(transparent, var(--color-bg) var(--space-24));
   pointer-events: none;
 }
 
@@ -152,7 +129,7 @@
   flex: none;
   width: var(--space-32);
   height: var(--space-32);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-s);
   background: var(--color-verbal);
   color: var(--color-surface);
   display: flex;
@@ -169,13 +146,13 @@
   min-height: var(--size-tap-target);
   padding: 0 var(--space-12);
   border-radius: var(--radius-full);
-  color: var(--color-text-secondary);
+  color: var(--color-text-2);
   text-decoration: none;
   display: flex;
   align-items: center;
   gap: var(--space-12);
-  font: var(--font-subhead);
-  font-weight: var(--font-weight-medium);
+  font: var(--font-action);
+  letter-spacing: var(--tracking-action);
   white-space: nowrap;
 }
 
@@ -187,13 +164,13 @@
 
 @media (hover: hover) and (pointer: fine) {
   .navItem:hover {
-    background: var(--color-fill);
+    background: var(--color-surface-2);
   }
 }
 
 .navItem[aria-current='page'] {
-  background: var(--color-tab-selected);
-  color: var(--color-text);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
   font-weight: var(--font-weight-semibold);
 }
 
@@ -222,7 +199,7 @@
     flex-wrap: wrap;
     align-items: center;
     padding: var(--space-8);
-    border-radius: var(--radius-xxl);
+    border-radius: var(--radius-l);
   }
 
   .frame[data-shell='site'] .brand {
@@ -269,8 +246,8 @@
   }
 
   .frame[data-shell='site'] .sideWrap {
-    flex: 1 1 var(--layout-sidebar-min);
-    max-width: var(--layout-sidebar-max);
+    flex: 0 0 var(--layout-sidebar-width);
+    max-width: var(--layout-sidebar-width);
     padding: var(--space-16) 0 var(--space-16) var(--space-16);
   }
 
@@ -320,7 +297,8 @@
   border-radius: var(--radius-full);
   color: var(--color-text);
   text-decoration: none;
-  font: var(--font-callout);
+  font: var(--font-action);
+  letter-spacing: var(--tracking-action);
 }
 
 .back svg {
@@ -349,14 +327,15 @@
 
 /* Конструктор: на сайте набор и поля рядом; в Telegram снизу место под MainButton. */
 @media (min-width: 900px) {
-  .frame[data-shell='site'][data-wide] .column { max-width: calc(var(--layout-content-max) + var(--layout-tagline-max)); }
+  .frame[data-shell='site'][data-wide] .column { max-width: calc(var(--layout-content-max) + var(--layout-content-max)); }
 }
-.frame[data-shell='telegram'][data-training] .main::after { height: calc(var(--size-main-button) + var(--app-inset-bottom) + var(--space-32)); }
+.frame[data-shell='telegram'][data-training] .main::after { height: calc(var(--size-button) + var(--app-inset-bottom) + var(--space-32)); }
 
 /* Сессия держит главное действие внизу, короткая шапка остаётся видна при чтении длинного задания. */
 .frame[data-session] .column { min-height: calc(var(--app-height) - var(--app-inset-top) - var(--app-inset-bottom) - var(--space-56)); display: flex; flex-direction: column; }
 .frame[data-session] .column > div { flex: 1; }
-.frame[data-session][data-shell='telegram'] .column { min-height: calc(var(--app-height) - var(--app-inset-top) - var(--app-inset-bottom) - var(--size-main-button) - var(--space-56)); }
+.frame[data-session][data-shell='site'] .main { margin-bottom: var(--session-footer-inset); }
+.frame[data-session][data-shell='telegram'] .column { min-height: calc(var(--app-height) - var(--app-inset-top) - var(--app-inset-bottom) - var(--size-button) - var(--space-56)); }
 @media (min-width: 900px) {
   .frame[data-session][data-shell='site'] .main { padding-top: var(--space-20); }
   .frame[data-session][data-shell='site'] .main::after { height: var(--space-32); }

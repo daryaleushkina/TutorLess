@@ -48,7 +48,7 @@ test('сбой очистки после выхода на сервере не �
   vi.spyOn(trainingRepository.store, 'signOut').mockRejectedValueOnce(new Error('private'));
   await router.navigate({ to: '/settings' });
   await screen.getByRole('button', { name: 'Выйти', exact: true }).click();
-  await expect.element(screen.getByRole('button', { name: 'Войти через Telegram' })).toBeVisible();
+  await expect.element(screen.getByRole('button', { name: 'Вход с Apple' })).toBeVisible();
   who = user({ id: '00000000-0000-4000-8000-000000000002' });
   await screen.getByPlaceholder('Имя тестового пользователя').fill('Другой');
   await screen.getByRole('button', { name: 'Войти', exact: true }).click();

@@ -10,7 +10,7 @@
 }
 
 .icon {
-  color: var(--color-text-secondary);
+  color: var(--color-text-3);
   margin-bottom: var(--space-4);
 }
 
@@ -20,25 +20,26 @@
 }
 
 .title {
-  font: var(--font-title-3);
-  letter-spacing: var(--tracking-title-3);
+  font: var(--font-h2);
+  letter-spacing: var(--tracking-h2);
 }
 
 .text {
-  max-width: var(--layout-tagline-max);
-  font: var(--font-subhead);
-  letter-spacing: var(--tracking-subhead);
-  color: var(--color-text-secondary);
+  max-width: var(--layout-content-max);
+  font: var(--font-lead);
+  letter-spacing: var(--tracking-lead);
+  color: var(--color-text-2);
 }
 
 /* Вторичная кнопка (DESIGN.md, button-secondary): главная на экране состояния не нужна. */
 .action {
   margin-top: var(--space-12);
-  min-height: var(--size-button-compact);
+  min-height: var(--size-button);
   padding: 0 var(--space-16);
   border: var(--size-hairline) solid var(--color-line);
   border-radius: var(--radius-full);
-  background: var(--color-surface);
+  background: var(--color-surface-2);
   color: var(--color-text);
-  font: var(--font-callout);
+  font: var(--font-button);
+  letter-spacing: var(--tracking-button);
 }

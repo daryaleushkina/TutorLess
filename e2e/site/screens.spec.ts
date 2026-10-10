@@ -4,7 +4,7 @@ import { checkScreen, expect, navLink, test } from '../fixtures';
 test('вход', async ({ page, watch }) => {
   watch(page);
   await page.goto('/signin');
-  await expect(page.getByRole('button', { name: 'Войти через Telegram' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Вход с Apple' })).toBeVisible();
   // Вход подменой — только на стенде; на снимке его нет, чтобы эталон был тем экраном, что видят люди.
   await checkScreen(page, 'signin', { mask: [page.locator('form')] });
   await page.goto('/signin?reason=expired');

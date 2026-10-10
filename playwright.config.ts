@@ -97,8 +97,6 @@ export default defineConfig<TgOptions>({
         GP_APP_VERSION: 'e2e',
         VITE_DEV_SIGN_IN: '1',
         VITE_TELEGRAM_MOCK: '1',
-        VITE_OIDC_TELEGRAM_AUTHORIZATION_ENDPOINT: `${OIDC}/auth`,
-        VITE_OIDC_TELEGRAM_CLIENT_ID: 'e2e-telegram',
         VITE_OIDC_APPLE_AUTHORIZATION_ENDPOINT: `${OIDC}/auth`,
         VITE_OIDC_APPLE_CLIENT_ID: 'e2e-apple',
         VITE_OIDC_GOOGLE_AUTHORIZATION_ENDPOINT: `${OIDC}/auth`,

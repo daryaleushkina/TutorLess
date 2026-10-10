@@ -238,11 +238,10 @@ export interface Dict {
   settings: { signOut: string; signOutFailed: string; signOutOffline: string; version: (v: string) => string };
   signIn: {
     tagline: string;
-    telegram: string;
     apple: string;
     google: string;
     legal: string;
-    notConnected: Record<'telegram' | 'apple' | 'google', string>;
+    notConnected: Record<'apple' | 'google', string>;
     offline: string;
     tooMany: string;
     failed: string;
@@ -306,12 +305,10 @@ const dictRu: Dict = {
   },
   signIn: {
     tagline: 'Подготовка к GRE® с разбором каждой ошибки — по-русски и по-английски.',
-    telegram: 'Войти через Telegram',
     apple: 'Вход с Apple',
     google: 'Войти с аккаунтом Google',
     legal: 'Продолжая, вы принимаете условия и политику конфиденциальности.',
     notConnected: {
-      telegram: 'Вход через Telegram ещё не подключён — он появится до беты.',
       apple: 'Вход с Apple ещё не подключён — он появится до беты.',
       google: 'Вход через Google ещё не подключён — он появится до беты.',
     },
@@ -384,12 +381,10 @@ const dictEn: Dict = {
   },
   signIn: {
     tagline: 'GRE® prep that explains every mistake — in Russian and in English.',
-    telegram: 'Log in with Telegram',
     apple: 'Sign in with Apple',
     google: 'Sign in with Google',
     legal: 'By continuing, you accept the terms and the privacy policy.',
     notConnected: {
-      telegram: 'Log-in with Telegram isn’t connected yet — it will be before the beta.',
       apple: 'Sign in with Apple isn’t connected yet — it will be before the beta.',
       google: 'Sign-in with Google isn’t connected yet — it will be before the beta.',
     },

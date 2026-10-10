@@ -5,6 +5,7 @@ import { expect, test as base, type BrowserContext, type Locator, type Page } fr
 import { E2E_BOT_TOKEN, type TgOptions } from '../playwright.config';
 import { schemas, type User } from '../packages/api-client/src';
 import { telegramLocale } from '../apps/web/src/i18n/locale';
+import { THEME_STORAGE_KEY } from '../apps/web/src/styles/theme';
 
 export interface TelegramUser {
   id: number;
@@ -55,6 +56,7 @@ export interface Me {
 }
 
 type Fixtures = TgOptions & {
+  savedTheme: void;
   /** Человек мини-аппа (Telegram). */
   tgUser: TelegramUser;
   /** Человек, вошедший через miniApp или site: me.api(...) — запросы от его имени. */
@@ -73,6 +75,15 @@ export const test = base.extend<Fixtures>({
   tgTheme: ['light', { option: true }],
   tgPlatform: ['ios', { option: true }],
   tgInsets: ['0,0,0,0', { option: true }],
+
+  // Светлые проекты выбирают тему на устройстве; тёмные проверяют умолчание без сохранённого выбора.
+  savedTheme: [async ({ context, tgTheme }, use, info) => {
+    const light = info.project.name.startsWith('tg-') ? tgTheme === 'light' : info.project.use.colorScheme === 'light';
+    if (light) await context.addInitScript((key) => {
+      if (localStorage.getItem(key) === null) localStorage.setItem(key, 'light');
+    }, THEME_STORAGE_KEY);
+    await use();
+  }, { auto: true }],
 
   // Свой «адрес» на каждый тест: сервер ограничивает частоту входа по адресу клиента (и верит X-Forwarded-For только
   // с 127.0.0.1 — как за Caddy), а параллельные тесты иначе делили бы одно окно и ловили 429.

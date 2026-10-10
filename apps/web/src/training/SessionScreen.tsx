@@ -22,6 +22,7 @@ import { TrainingRules } from './rules';
 import styles from './Training.module.css';
 import { useTrainingSession } from './useTrainingSession';
 import { BLANKS, QuestionPrompt, Options, Explanation, SessionIcon } from './QuestionContent';
+import { SessionFooter } from './SessionFooter';
 
 export function SessionScreen() {
   const { trainingId } = useParams({ from: '/app/training/$trainingId' });
@@ -115,13 +116,13 @@ function ActiveSession({ incoming }: { incoming: StoredTraining }) {
       </section>
       {s.revealed && <Explanation question={s.question} chosen={s.answer?.optionIds ?? []} language={language} onLanguage={setLanguage} />}
     </div>}
-    <footer className={styles.sessionFooter}>
+    <SessionFooter>
       {s.failed && <p role="alert" className={styles.note}>{text.training_storage_message}</p>}
       {note && <p role="status" className={styles.note}>{note}</p>}
       {shell === 'site' && !s.overview && <p className={styles.keys}><kbd>A–{String.fromCharCode(64 + Math.max(...s.question.groups.map((group) => group.options.length)))}</kbd> {t.training.question_select_hint} <kbd>Enter</kbd> {primary} {(s.checkMode || s.revealed) && <kbd>→</kbd>}</p>}
       <TrainingActions secondary={secondary && { ...secondary, disabled: s.busy }} primary={{ text: primary, disabled: s.busy || (!s.checkMode && !s.revealed && !s.complete), busy: s.busy, onClick: act }} />
       {s.checkMode && !s.overview && s.position > 0 && <button className={styles.textButton} disabled={s.busy} onClick={() => s.go(s.position - 1)}>{t.back}</button>}
-    </footer>
+    </SessionFooter>
   </div>;
 }
 
@@ -168,10 +169,10 @@ function Summary({ training }: { training: StoredTraining }) {
       })}
     </section> : !result.unanswered && <p>{text.summary_perfect}</p>}
     <Link to="/training/$trainingId/review" params={{ trainingId: training.session.id }} className={styles.allAnswers}>{text.summary_all_answers}</Link>
-    <footer className={styles.sessionFooter}>
+    <SessionFooter>
       {(problem || !online && result.review.length > 0) && <p role="status" className={styles.note}>{problem ?? text.builder_start_offline}</p>}
       <TrainingActions secondary={result.review.length > 0 ? { text: text.summary_done, disabled: busy, onClick: close } : undefined} primary={{ text: result.review.length ? text.summary_repeat(text.questionsCount(count)) : text.summary_done, disabled: busy || Boolean(result.review.length && !online), busy, onClick: result.review.length ? () => void repeat() : close }} />
-    </footer>
+    </SessionFooter>
   </div>;
 }
 

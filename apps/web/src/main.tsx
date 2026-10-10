@@ -11,6 +11,7 @@ import { makeQueryClient } from './queryClient';
 import { detectShell } from './shell';
 import { StartFailure } from './components/StartFailure';
 import type { TelegramLaunch } from './telegram/sdk';
+import { restoreTheme } from './styles/theme';
 
 async function bootstrap(): Promise<void> {
   const container = document.getElementById('root');
@@ -18,10 +19,11 @@ async function bootstrap(): Promise<void> {
   const shell = detectShell(location.pathname);
   configureReporter(shell);
   installGlobalReporter();
+  await restoreTheme();
 
   let launch: TelegramLaunch | null = null;
   if (shell === 'telegram') {
-    const { followTelegramTheme, startTelegram } = await import('./telegram/sdk');
+    const { syncTelegramTheme, startTelegram, telegramThemeStorage } = await import('./telegram/sdk');
     const started = await startTelegram();
     if (started.kind === 'not-telegram') {
       // /tg/ открыли в обычном браузере: мини-апп без Telegram бесполезен — на сайт, там свой вход.
@@ -34,7 +36,8 @@ async function bootstrap(): Promise<void> {
       return;
     }
     launch = started.launch;
-    followTelegramTheme();
+    syncTelegramTheme();
+    await restoreTheme(telegramThemeStorage());
   }
 
   const queryClient = makeQueryClient(shell);

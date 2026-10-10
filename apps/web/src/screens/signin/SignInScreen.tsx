@@ -1,5 +1,4 @@
-// Вход на сайте — один экран, три способа (PRODUCT.md, «Stack»: Telegram первым). В мини-аппе этого экрана нет:
-// там человек опознан самим Telegram.
+// Вход на сайте — Apple и Google. В мини-аппе этого экрана нет: вход идёт по initData.
 import { isApiError, signInForDevelopment } from '@greprep/api-client';
 import { Navigate, useNavigate, useSearch, type RegisteredRouter } from '@tanstack/react-router';
 import { useEffect, useState, type ReactNode } from 'react';

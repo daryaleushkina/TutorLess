@@ -8,7 +8,7 @@
 //   /signin           вход               (только сайт)
 //   /auth/callback    возврат от провайдера входа (только сайт)
 import type { QueryClient } from '@tanstack/react-query';
-import { createRootRouteWithContext, createRoute, createRouter, lazyRouteComponent, Outlet, type RouterHistory } from '@tanstack/react-router';
+import { createRootRouteWithContext, createRoute, createRouter, createLazyRoute, lazyRouteComponent, Outlet, type RouterHistory } from '@tanstack/react-router';
 import { schemas } from '@greprep/api-client';
 import { z } from 'zod';
 import { safeReturnTo } from './auth/returnTo';
@@ -47,16 +47,18 @@ const appRoute = createRoute({ getParentRoute: () => rootRoute, id: 'app', compo
 const tabsRoute = createRoute({ getParentRoute: () => appRoute, id: 'tabs', component: TabsLayout });
 
 const todayRoute = createRoute({ getParentRoute: () => tabsRoute, path: '/', component: TodayScreen });
+// Фабрика маршрутов загружается с первым экраном. Иначе WebKit может закэшировать отказ её
+// общего чанка в офлайне; новый URL пакета разделов не сбрасывает отказ статической зависимости.
 const wordsRoute = createRoute({ getParentRoute: () => tabsRoute, path: 'words', errorComponent: SectionUnavailable })
-  .lazy(() => loadSections().then((m) => m.wordsRoute));
+  .lazy(() => loadSections().then((m) => createLazyRoute('/app/tabs/words')({ component: m.WordsScreen })));
 const examRoute = createRoute({ getParentRoute: () => tabsRoute, path: 'exam', errorComponent: SectionUnavailable })
-  .lazy(() => loadSections().then((m) => m.examRoute));
+  .lazy(() => loadSections().then((m) => createLazyRoute('/app/tabs/exam')({ component: m.ExamScreen })));
 const progressRoute = createRoute({ getParentRoute: () => tabsRoute, path: 'progress', errorComponent: SectionUnavailable })
-  .lazy(() => loadSections().then((m) => m.progressRoute));
+  .lazy(() => loadSections().then((m) => createLazyRoute('/app/tabs/progress')({ component: m.ProgressScreen })));
 const settingsRoute = createRoute({ getParentRoute: () => tabsRoute, path: 'settings', errorComponent: SectionUnavailable })
-  .lazy(() => loadSections().then((m) => m.settingsRoute));
+  .lazy(() => loadSections().then((m) => createLazyRoute('/app/tabs/settings')({ component: m.SettingsScreen })));
 const stepRoute = createRoute({ getParentRoute: () => appRoute, path: 'step/$stepId', errorComponent: SectionUnavailable })
-  .lazy(() => loadSections().then((m) => m.stepRoute));
+  .lazy(() => loadSections().then((m) => createLazyRoute('/app/step/$stepId')({ component: m.StepScreen })));
 
 const builderRoute = createRoute({ getParentRoute: () => appRoute, path: 'training/new',
   validateSearch: z.object({ section: z.enum(['verbal', 'quant']).optional().catch(undefined), type: schemas.QuestionType.optional().catch(undefined) }),
