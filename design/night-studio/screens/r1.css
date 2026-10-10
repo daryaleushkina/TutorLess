@@ -27,7 +27,7 @@
 .frame .r1-field { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 8px 12px; padding: 10px 16px; min-height: 56px; }
 .frame .r1-field .r1-seg { justify-self: end; }
 .frame .r1-hint { grid-column: 1 / -1; font-size: 13px; color: var(--text-2); }
-.frame .r1-label { font-weight: 500; color: var(--text); }
+.frame .r1-label { color: var(--text); font: 500 17px/1.45 var(--font-body); letter-spacing: -0.005em; }
 .frame .r1-seg button { min-height: 36px; padding: 6px 14px; font-size: 14px; }
 .frame .r1-row { display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 0 16px; }
 .frame .r1-row .r1-label { flex: 1; }
@@ -36,9 +36,9 @@
 .frame .r1-row-num { cursor: text; }
 .frame .r1-num {
   width: 76px; min-height: 40px; padding: 0 12px; text-align: right;
-  font: var(--thin) 22px/1 var(--font-body); font-variant-numeric: tabular-nums; letter-spacing: -0.02em;
+   font-variant-numeric: tabular-nums;
   color: var(--text); background: var(--surface-2); border: 1px solid transparent; border-radius: var(--r-s);
-  -moz-appearance: textfield; appearance: textfield;
+  -moz-appearance: textfield; appearance: textfield; font: var(--thin) 22px/1.45 var(--font-body); letter-spacing: -0.02em;
 }
 .frame .r1-num::-webkit-inner-spin-button, .frame .r1-num::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .frame .r1-num:focus-visible { outline: none; border-color: var(--accent); }
@@ -52,7 +52,7 @@
 .frame .r1-topics li + li { border-top: 1px solid var(--line); }
 .frame .r1-switch-row { display: flex; align-items: center; gap: 12px; min-height: 58px; padding: 8px 16px; cursor: pointer; }
 .frame .r1-topic { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
-.frame .r1-topic b { font-weight: 500; }
+.frame .r1-topic b { font: 500 17px/1.45 var(--font-body); letter-spacing: -0.005em; }
 .frame .r1-topic small { font-size: 13px; color: var(--text-3); font-variant-numeric: tabular-nums; }
 .frame .r1-switch {
   position: relative; flex: none; width: 48px; height: 28px; padding: 0; border: 0; border-radius: 999px;
@@ -85,10 +85,10 @@
 .frame .r1-verdict-right span { color: var(--text); }
 .frame .r1-verdict-right b { color: var(--right); }
 .frame .r1-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.frame .r1-grid2 .opt { font-size: 16px; padding-inline: 12px; }
+.frame .r1-grid2 .opt { padding-inline: 12px; font: 500 17px/1.45 var(--font-body); letter-spacing: -0.005em; }
 
 /* ---------- R5: три пропуска ---------- */
-.frame .r1-tc3 .q-text { font-size: 18px; }
+.frame .r1-tc3 .q-text { font: 400 20px/1.6 var(--font-body); letter-spacing: -0.01em; }
 .frame .r1-cols { gap: 12px; }
 .frame .r1-cols .opt { min-height: 46px; }
 
@@ -96,11 +96,10 @@
 .frame .r1-rc { gap: 14px; }
 .frame .r1-passage {
   flex: none; max-height: 300px; padding: 16px 18px; border-radius: var(--r-l);
-  background: var(--surface-2); font-size: 16px; line-height: 1.6;
-}
+  background: var(--surface-2); font: 400 15px/1.55 var(--font-body); letter-spacing: -0.005em; }
 .frame .r1-passage p { margin: 0; }
-.frame .r1-q { font-size: 17px; font-weight: 500; line-height: 1.45; margin-bottom: 10px; }
-.frame .r1-rc .opt { font-size: 15px; min-height: 48px; line-height: 1.35; }
+.frame .r1-q { margin-bottom: 10px; font: 500 17px/1.45 var(--font-body); letter-spacing: -0.005em; }
+.frame .r1-rc .opt { min-height: 48px; font: 500 15px/1.45 var(--font-body); letter-spacing: -0.005em; }
 .frame .r1-rc .opt-group { gap: 6px; }
 .frame .r1-passage-select { max-height: none; flex: 1; }
 .frame .r1-sent {
@@ -113,11 +112,11 @@
 .frame .r1-rc-q .q-instr { margin-bottom: 6px; }
 
 /* ---------- R9: сравнение величин ---------- */
-.frame .r1-cond { font-size: 18px; margin-bottom: 14px; }
+.frame .r1-cond { margin-bottom: 14px; font: 400 17px/1.45 var(--font-body); letter-spacing: -0.005em; }
 .frame .r1-qc { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .frame .r1-qty { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 16px 10px; border-radius: var(--r-m); background: var(--surface-2); }
 .frame .r1-qty-l { font-size: 13px; color: var(--text-3); font-weight: 500; }
-.frame .r1-qty-v { font: var(--thin) 30px/1.1 var(--font-body); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.frame .r1-qty-v { font-variant-numeric: tabular-nums; font: var(--thin) 32px/1 var(--font-body); letter-spacing: -0.04em; }
 .frame .r1-qty-v i, .frame .r1-cond i { font-family: 'Source Serif 4', Georgia, serif; font-style: italic; }
 
 /* =================== Компьютер =================== */
@@ -132,12 +131,12 @@
   .frame .r1-diff { align-self: start; }
 
   .frame .r1-tc3 { grid-template-columns: 1fr; gap: 36px; }
-  .frame .r1-tc3 .q-text { font-size: 22px; max-width: 64ch; }
+  .frame .r1-tc3 .q-text { max-width: 64ch; font: 400 24px/1.6 var(--font-body); letter-spacing: -0.01em; }
   .frame .r1-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
 
   .frame .r1-rc { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); align-items: start; }
-  .frame .r1-passage { max-height: 520px; padding: 24px 28px; font-size: 18px; line-height: 1.7; }
-  .frame .r1-q { font-size: 19px; }
+  .frame .r1-passage { max-height: 520px; padding: 24px 28px; font: 400 20px/1.6 var(--font-body); letter-spacing: -0.01em; }
+  .frame .r1-q { font: 500 17px/1.45 var(--font-body); letter-spacing: -0.005em; }
   /* В «выберите предложение» вопрос слева, текст справа шире. */
   .frame .r1-rc-q + .r1-passage-select { grid-column: 2; grid-row: 1; }
   .frame .r1-rc-q { grid-column: 1; grid-row: 1; }
@@ -166,7 +165,7 @@
   .frame .r1-rc .r1-passage:not(.r1-passage-select) { max-height: 520px; }
 }
 @container (min-width: 900px) {
-  .frame .r1-cond { font-size: 22px; }
+  .frame .r1-cond { font: 400 20px/1.4 var(--font-body); letter-spacing: -0.01em; }
   .frame .r1-qty { padding: 24px 12px; }
-  .frame .r1-qty-v { font-size: 40px; }
+  .frame .r1-qty-v { font: var(--thin) 44px/1 var(--font-body); letter-spacing: -0.04em; }
 }

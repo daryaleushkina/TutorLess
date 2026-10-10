@@ -54,13 +54,13 @@
 | `font.family.system` | Сохранён: системный шрифт для кнопки Apple и измерителя MainButton Telegram |
 | `font.weight.{regular,medium,semibold}` | Сохранены: 400/500/600 |
 | `font.text-scale-large` | Сохранён: 1,125 |
-| `type.display`, `type.display-wide` | Удалены; размер итоговых чисел определяется экраном каталога |
+| `type.display`, `type.display-wide` | Удалены; итог тренировки — `type.num-xxl[-wide]`, компактный итог — `type.num-l` / `type.num-m-wide`, баллы и слова — `type.num-xl[-wide]` |
 | `type.score` | `type.score-num`; широкая версия — `type.score-num-wide` |
 | `type.title-1`, `type.title-1-wide` | `type.h1`, `type.h1-wide` |
 | `type.title-2`, `type.title-2-wide` | Удалены; заголовок тренировки — `type.start-title[-wide]`, выбора экзамена — `type.exam-title[-wide]` |
 | `type.title-3` | `type.h2`; малый подзаголовок — `type.h3` |
 | `type.title-3-wide` | Удалён; `type.h2` и `type.h3` сохраняют размер на компьютере |
-| `type.timer`, `type.timer-wide` | Удалены; счётчик сессии — `type.session-count[-wide]`; таймер определяется экраном |
+| `type.timer`, `type.timer-wide` | Удалены; таймер пробника — фиксированный `type.score-num` 32/1, счётчик сессии — `type.session-count[-wide]` |
 | `type.prompt`, `type.prompt-wide` | `type.q-text`, `type.q-text-wide` |
 | `type.headline` | Для имени раздела — `type.section-name`, для заголовка карточки — `type.h2` |
 | `type.body` | Имя сохранено; 16/1,45, трекинг −0,005em |
@@ -71,13 +71,122 @@
 | `type.caption` | Имя сохранено; 13/1,45, трекинг −0,005em |
 | `type.key` | Удалён: в ядре каталога такой роли нет |
 | `type.tab-label` | `type.nav-label`; широкая версия — `type.nav-label-wide` |
-| `type.headword`, `type.headword-wide` | Имена сохранены; 56/88, вес `thin`, интерлиньяж 1, трекинг −0,04em |
+| `type.headword`, `type.headword-wide` | Сохранены как ссылки на `type.num-m` / `type.num-l-wide`: 56/88, вес `thin`, интерлиньяж 1, трекинг −0,04em |
 
 Добавлены `font.family.mono` (IBM Plex Mono, ui-monospace, Menlo, monospace),
 `font.weight.thin`, `type.ipa`, `type.exam-switch`, `type.section-stat[-wide]`,
 `type.answer`, `type.seg`, `type.score-label`, `type.stat-value`,
 `type.exam-name[-wide]`, `type.word-meta`, `type.example`, `type.week-count`.
-`week-count` используется только на широком экране.
+`week-count` — фиксированный профиль 28 для малых чисел; доступен в обеих раскладках.
+
+### Шкала тонких чисел и слов
+
+Пять крупных ступеней заменяют роли отдельных экранов. Размеры —
+компактный / широкий профиль, граница — 900 px. Все ступени используют
+Geologica и тематический `thin`: 300 в светлой теме, 200 в тёмной.
+Трекинг всех крупных ступеней — −0,04em, интерлиньяж один на ступень.
+Размеры каталога округлены к ближайшему профилю с пределом сдвига 10%.
+При равном расстоянии выбрана ступень, подходящая парному широкому значению.
+
+| Ступень | Размеры, px/pt/sp | Интерлиньяж | Назначение |
+| --- | --- | --- | --- |
+| `type.num-s[-wide]` | 48 / 60 | 1 | Малое крупное число, короткое слово |
+| `type.num-m[-wide]` | 56 / 72 | 1 | Среднее число, слово |
+| `type.num-l[-wide]` | 70 / 88 | 1 | Крупная статистика, компактный итог, отсчёт |
+| `type.num-xl[-wide]` | 88 / 120 | 0,95 | Баллы и итоги слов |
+| `type.num-xxl[-wide]` | 104 / 144 | 0,9 | Основной итог |
+
+Малые числа сначала используют существующие роли:
+`session-count` 22/26, `section-stat` 24/28, `stat-value` 18,
+`score-num` 32/44, `week-count` 28. Дополнен один общий промежуточный
+профиль `num-compact[-wide]` 36/52, интерлиньяж 1,05, трекинг −0,03em:
+для 36/38 и широкого 52 существующие малые роли не укладывались в 10%.
+`week-count` теперь используется и для малых подписей/количества на телефоне.
+
+Словарные заголовки входят в крупную шкалу, кроме одного общего профиля
+`word-title[-wide]` 40/56, интерлиньяж 1,1, трекинг −0,02em.
+Значение 40 не попадает в крупную шкалу при допуске 10%.
+У калькулятора высота поля 64 задаётся раскладкой, не интерлиньяжем;
+цифра использует общий `num-compact` и центрируется в поле.
+
+| Прежняя роль | Текущая роль: компактный / широкий профиль |
+| --- | --- |
+| `score-hero[-wide]` | `num-xxl` / `num-xxl-wide` |
+| `score-hero-sm` | `num-l` / `num-m-wide` (70 / 72) |
+| `speaking-score[-wide]`, `word-score[-wide]`, `word-learning-score[-wide]`, `essay-score[-wide]` | `num-xl` / `num-xl-wide` |
+| `countdown[-wide]`, `stat-hero[-wide]` | `num-l` / `num-l-wide` |
+| `word-prompt[-wide]`, `word-learning-title[-wide]` | `num-m` / `num-m-wide` |
+| `word-card[-wide]` | `num-s` / `num-s-wide` |
+| `word-prompt-sm[-wide]` | `word-title` / `word-title-wide` |
+| `score-range[-wide]` | `score-num` / `num-compact-wide` |
+| `section-score[-wide]` | `num-compact` / `score-num-wide` |
+| `quantity[-wide]` | `score-num` / `score-num-wide` |
+| `timer[-wide]` | Фиксированный `score-num` (32) в обоих режимах |
+| `count-sm`, `count-inline` | Фиксированный `session-count` (22) |
+| `count-lg` | Фиксированный `week-count` (28) |
+| `review-num` | Фиксированный `section-stat` (24) |
+| `headword` / `headword-wide` | Ссылки на `num-m` / `num-l-wide` (56 / 88), для совместимости платформ |
+| `exam-name` / `exam-name-wide` | Ссылки на `num-s` / `num-s-wide` (48 / 60), для совместимости платформ |
+
+Роли экранов из левого столбца удалены, кроме псевдонимов ядра `headword`
+и `exam-name`. Псевдонимы — ссылки DTCG, не копии чисел. Сборка прослеживает
+цепочку ссылок: `thin` и mono наследуются, размеры/интервалы по-прежнему
+обязаны совпадать в обеих темах. Проверки — `test/numeric-scale.test.mjs`.
+
+В CSS `--font-<роль>` / `--tracking-<роль>` автоматически переключаются
+на широкий профиль от 900 px. Для точного выбора, как в нативных API,
+парные роли также дают фиксированные `--font-<роль>-base` и
+`--font-<роль>-wide` (и соответствующий tracking). Так таймер с профилем
+32 остаётся 32 на компьютере: `--font-score-num-base`. Крупный профиль
+можно выбрать на телефоне явно: `--font-score-num-wide` (44).
+У непарных ролей обычная переменная уже фиксированная.
+Swift и Compose сохраняют отдельные свойства `role` / `roleWide`.
+Два режима устройства могут использовать разные ступени согласно таблице.
+
+Итог: 48 базовых имён (45 самостоятельных и 3 псевдонима),
+71 профиль с широкими версиями (65 самостоятельных и 6 псевдонимов).
+Из них крупная числовая шкала — ровно 5 ступеней / 10 профилей;
+дополнительный малый профиль — один, слово-заголовок вне шкалы — одно.
+
+### Общие роли обычного текста
+
+Разовые роли экранов удалены. Размеры приведены к существующим ролям
+ядра при допуске 2 px и 0,1 по интерлиньяжу, с сохранением веса.
+`passage` → `explain-body` / `q-text`, `sentence` → `q-text[-wide]`,
+`condition` → `lead` / `sense-en`, `label` и `question-label` → `opt`,
+`intro` → `lead`, `q-text-sm` → `q-text[-wide]`, `meta-strong` → `eyebrow`
+или `action`, `opt-sm` → `answer`, `stat-caption` → `section-name`,
+`text-entry` → `explain-body` / `lead`, `word-phrase` и `math-value`
+на телефоне → `sense-en`. У последних двух одиночных широких профилей
+26/1,4 и 28/1,4 общих ролей нет: они остаются локальными правилами каталога.
+
+Общие исключения используются в нескольких упражнениях или экранах;
+строки с полями допускают отдельный большой интерлиньяж. Семейство —
+Geologica, веса — regular/medium/semibold; эти роли не зависят от темы.
+Ссылки `h1-compact` → `h1` и `prompt-title-wide` → `start-title`
+сохраняют один источник совпадающих профилей.
+
+| Роль | Размер / вес / интерлиньяж; разрядка | Назначение |
+| --- | --- | --- |
+| `type.num-label` | 20 / medium / 1.2; -0.015em | Подпись крупного результата: основной и компактный итоги тренировки. |
+| `type.num-label-wide` | 28 / medium / 1.2; -0.015em | Подпись основного результата на широком экране. |
+| `type.num-unit` | 22 / semibold / 1.45; -0.015em | Единица счёта: число слов на старте и в итоге изучения. |
+| `type.prompt-title` | 24 / semibold / 1.25; -0.015em | Заголовок задания слов: перевод в нескольких упражнениях. |
+| `type.prompt-title-wide` | 30 / semibold / 1.15; -0.03em | Широкий заголовок задания слов — существующая роль start-title. |
+| `type.input-compact` | 17 / medium / 1; 0em | Однострочный ввод: поиск слова и ячейки Complete the Words. |
+| `type.input-compact-wide` | 19 / medium / 1; 0em | Однострочный ввод на широком экране. |
+| `type.input-letter` | 26 / medium / 1.45; -0.08px | Буквы: сборка слова и сравнение введённого ответа; один размер для обоих экранов. |
+| `type.input-display` | 26 / medium / 1.2; 0.01em | Ввод ответа словом: несколько упражнений W12–W14. |
+| `type.h1-compact` | 34 / semibold / 1.15; -0.03em | Компактный заголовок прогресса: на телефоне совпадает с h1. |
+| `type.h1-compact-wide` | 40 / semibold / 1.15; -0.03em | Компактный заголовок на широких экранах G1 и G6. |
+| `type.complete-words-text` | 18 / regular / 2.15; -0.005em | .frame .l-ctw-text в screens/l.css. |
+| `type.complete-words-text-wide` | 22 / regular / 2.2; -0.005em | .frame .l-ctw-text в screens/l.css; широкая раскладка от 900 px. |
+| `type.sentence-assembly` | 20 / regular / 2.3; -0.08px | .frame .l-frame в screens/l.css. |
+| `type.sentence-assembly-wide` | 24 / regular / 2.3; -0.08px | .frame .l-frame в screens/l.css; широкая раскладка от 900 px. |
+
+На вебе — `--font-<роль>` и `--tracking-<роль>`, на Apple — свойства
+`GPType.light/dark`, в Compose — `GpTypography.light/dark` (camelCase).
+Профили каталога и пределы сдвига проверяются `test/text-scale.test.mjs`.
 
 Добавлено семейство формул Quant `font.family.math`: Source Serif 4,
 Georgia, serif, как в `.math` каталога. На вебе — `--font-family-math`,
