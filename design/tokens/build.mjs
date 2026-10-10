@@ -140,7 +140,7 @@ function emitCss({ common, themed }) {
 const camel = (parts) => parts.join('-').split('-').map((p, i) => (i ? p[0].toUpperCase() + p.slice(1) : p)).join('');
 const swiftName = (parts) => { const n = camel(parts); return /^\d/.test(n) ? 's' + n : n; };
 
-// Каталог цветов: у каждого цвета два внешних вида, систему переключает сама ОС.
+// Смысловые цвета имеют два внешних вида; bgDark для системной заставки — один, всегда тёмный.
 // Компонент — всегда с десятичной точкой: число без неё Xcode читает как целое 0–255, и «1» становится 1/255
 // (непрозрачный цвет почти исчезает). Тест — test/xcassets.test.mjs.
 function emitColorAssets({ themed }) {
@@ -161,6 +161,12 @@ function emitColorAssets({ themed }) {
       info: { author: 'xcode', version: 1 },
     };
   }
+  // Экран запуска рисует ОС до процесса: цвет не должен зависеть от её темы,
+  // потому что приложение по умолчанию тёмное (решение Даши 10.10.2026).
+  files['GPColors.xcassets/bgDark.colorset/Contents.json'] = {
+    colors: [{ color: comp(dark.get('color.bg').$value), idiom: 'universal' }],
+    info: { author: 'xcode', version: 1 },
+  };
   return Object.fromEntries(Object.entries(files).map(([k, v]) => [k, JSON.stringify(v, null, 2) + '\n']));
 }
 
@@ -450,12 +456,18 @@ function emitAndroidColorResources({ themed }) {
     const a = Math.round(alphaOf(c) * 255);
     return '#' + [a, r, g, b].map((x) => x.toString(16).padStart(2, '0')).join('').toUpperCase();
   };
-  const file = (m) => `<?xml version="1.0" encoding="utf-8"?>
+  const file = (m) => {
+    const colors = themed[m].filter((t) => t.$type === 'color').map((t) => `    <color name="${xName(t)}">${xColor(t.$value)}</color>`);
+    // Без ночного квалификатора: ОС рисует заставку до процесса, а приложение
+    // по умолчанию тёмное (решение Даши 10.10.2026). Значение берётся из той же палитры.
+    if (m === 'light') colors.push(`    <color name="gp_bg_dark">${xColor(themed.dark.find((t) => t.path.join('.') === 'color.bg').$value)}</color>`);
+    return `<?xml version="1.0" encoding="utf-8"?>
 <!-- ${HEADER} -->
 <resources>
-${themed[m].filter((t) => t.$type === 'color').map((t) => `    <color name="${xName(t)}">${xColor(t.$value)}</color>`).join('\n')}
+${colors.join('\n')}
 </resources>
 `;
+  };
   return { 'android/res/values/gp_colors.xml': file('light'), 'android/res/values-night/gp_colors.xml': file('dark') };
 }
 

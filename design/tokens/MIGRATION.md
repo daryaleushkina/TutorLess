@@ -180,6 +180,14 @@ Apple: цвета выбирает каталог `GPColors.xcassets`. С тем
 В каждой `GPTextStyle` есть `fontFamily`: Geologica или IBM Plex Mono.
 В светлой теме `thin` — `.light` (300), в тёмной — `.ultraLight` (200).
 
+Для системной заставки Android генератор выпускает `gp_bg_dark` только в
+`res/values/gp_colors.xml`, без ночного квалификатора; для `UILaunchScreen`
+Apple — набор `bgDark` в `GPColors.xcassets` с одним значением, без вариантов
+внешнего вида. Оба ресурса берут существующий `color.bg` тёмной темы. ОС рисует
+заставку до запуска процесса, а приложение по умолчанию тёмное
+(решение Даши 10.10.2026): эти ресурсы предотвращают светлую вспышку при
+светлой теме системы. Новых значений палитры нет.
+
 Compose: вместе с `GpLightColors` / `GpDarkColors` выбирать
 `GpLightTheme` / `GpDarkTheme` и `GpTypography.light(family, monoFamily)` /
 `.dark(family, monoFamily)`. Фабрики связывают тонкие роли с нужным весом.

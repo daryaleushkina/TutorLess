@@ -41,4 +41,5 @@
     <color name="gp_sign_in_google_bg">#FFFFFFFF</color>
     <color name="gp_sign_in_google_stroke">#FF747775</color>
     <color name="gp_sign_in_google_text">#FF1F1F1F</color>
+    <color name="gp_bg_dark">#FF0A0F1F</color>
 </resources>
