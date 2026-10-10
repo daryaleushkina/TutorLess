@@ -45,11 +45,11 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import dev.greprepapp.api.models.GivenAnswer
 import dev.greprepapp.api.models.LocalizedText
 import dev.greprepapp.api.models.Question
@@ -214,7 +214,7 @@ private fun LetterBadge(
         modifier = Modifier.size(GpSize.icon).background(bg, CircleShape),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text = letter, style = Gp.type.meta.copy(fontWeight = FontWeight.W600), color = fg)
+        Text(text = letter, style = Gp.type.seg, color = fg)
     }
 }
 
@@ -309,7 +309,7 @@ fun PromptText(
                         ?.options
                         ?.firstOrNull { it.id in selection }
                 if (many && chosen != null) {
-                    withStyle(SpanStyle(color = accent, fontWeight = FontWeight.W500)) { append(chosen.text) }
+                    withStyle(SpanStyle(color = accent, fontWeight = Gp.type.opt.fontWeight)) { append(chosen.text) }
                 } else {
                     withStyle(SpanStyle(textDecoration = TextDecoration.Underline, color = colors.text2)) { append(BLANK_GAP) }
                 }
@@ -442,7 +442,7 @@ private fun verdict(
         )
     return buildAnnotatedString {
         if (lead != null) {
-            withStyle(SpanStyle(fontWeight = FontWeight.W600)) { append(lead) }
+            withStyle(SpanStyle(fontWeight = Gp.type.sectionName.fontWeight)) { append(lead) }
         }
         if (!correct) {
             if (lead != null) append(' ')
@@ -500,7 +500,7 @@ private fun WhyNotChip(
         ) {
             Text(
                 text = text,
-                style = Gp.type.meta.copy(fontWeight = FontWeight.W500),
+                style = Gp.type.eyebrow,
                 color = colors.text,
                 maxLines = 2,
                 modifier = Modifier.weight(1f, fill = false),
@@ -536,8 +536,8 @@ private fun LanguageSwitch(
 }
 
 /**
- * Переключатель из нескольких вариантов (Material SegmentedButton в наших цветах): выбранный — на плотной
- * поверхности, без системной галочки (DESIGN.md, «Chips»).
+ * Сегменты на surface2: выбранный — surface, в тёмной теме accentSoft с текстом accent.
+ * Капсула без рамок и галочки (DESIGN.md, «Сегменты»).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -549,20 +549,21 @@ fun SegmentedChoice(
     tags: List<String>? = null,
 ) {
     val colors = Gp.colors
-    SingleChoiceSegmentedButtonRow(modifier = modifier) {
+    SingleChoiceSegmentedButtonRow(modifier = modifier.background(colors.surface2, CircleShape)) {
         options.forEachIndexed { i, text ->
             SegmentedButton(
                 selected = i == selected,
                 onClick = { onSelect(i) },
-                shape = SegmentedButtonDefaults.itemShape(index = i, count = options.size),
+                shape = CircleShape,
+                border = androidx.compose.foundation.BorderStroke(0.dp, Color.Transparent),
                 colors =
                     SegmentedButtonDefaults.colors(
-                        activeContainerColor = colors.surface,
-                        activeContentColor = colors.text,
-                        activeBorderColor = colors.line,
+                        activeContainerColor = if (Gp.isDark) colors.accentSoft else colors.surface,
+                        activeContentColor = if (Gp.isDark) colors.accent else colors.text,
+                        activeBorderColor = Color.Transparent,
                         inactiveContainerColor = colors.surface2,
                         inactiveContentColor = colors.text2,
-                        inactiveBorderColor = colors.line,
+                        inactiveBorderColor = Color.Transparent,
                     ),
                 icon = {},
                 modifier = tags?.getOrNull(i)?.let { Modifier.testTag(it) } ?: Modifier,

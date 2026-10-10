@@ -10,7 +10,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.captureToImage
-import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.Density
 import com.github.takahirom.roborazzi.captureRoboImage
@@ -25,6 +24,7 @@ import dev.greprepapp.app.feature.today.TodayContent
 import dev.greprepapp.app.feature.today.TodayPlan
 import dev.greprepapp.app.feature.today.TodayViewModel.Content
 import dev.greprepapp.app.feature.today.TodayViewModel.UiState
+import dev.greprepapp.app.testing.createAppComposeRule
 import dev.greprepapp.app.testing.starterPlan
 import dev.greprepapp.design.GpTheme
 import org.junit.Rule
@@ -33,7 +33,7 @@ import org.junit.Rule
 abstract class SnapshotBase(
     private val theme: String,
 ) {
-    @get:Rule val compose = createComposeRule()
+    @get:Rule val compose = createAppComposeRule()
 
     /**
      * Снять экран. Часы Compose стоят — крутилка загрузки и пульсация не делают кадр каждый раз другим.

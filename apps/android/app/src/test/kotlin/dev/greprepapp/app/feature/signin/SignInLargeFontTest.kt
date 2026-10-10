@@ -6,7 +6,6 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasClickAction
-import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
@@ -14,6 +13,7 @@ import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.Density
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
+import dev.greprepapp.app.testing.createAppComposeRule
 import dev.greprepapp.design.GpTheme
 import org.junit.Assert.assertFalse
 import org.junit.Rule
@@ -28,7 +28,7 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(qualifiers = "ru-" + RobolectricDeviceQualifiers.MediumPhone)
 class SignInLargeFontTest {
-    @get:Rule val compose = createComposeRule()
+    @get:Rule val compose = createAppComposeRule()
 
     @Test
     fun everythingIsReachableWithLargeSystemFont() {

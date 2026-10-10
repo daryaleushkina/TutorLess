@@ -11,12 +11,12 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsFocused
-import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import dev.greprepapp.app.feature.training.TrainingKeyboard
+import dev.greprepapp.app.testing.createAppComposeRule
 import dev.greprepapp.design.GpTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -28,7 +28,7 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(qualifiers = "ru-w1000dp-h800dp-land-mdpi-keysexposed-qwerty")
 class TrainingKeyboardFlowTest {
-    @get:Rule val compose = createComposeRule()
+    @get:Rule val compose = createAppComposeRule()
 
     @Test
     fun focusedMaterialButtonReceivesEnterBeforeTheScreenShortcut() {

@@ -6,7 +6,8 @@
         <item name="android:windowBackground">@color/gp_bg</item>
     </style>
 
-    <!-- Системная заставка до запуска процесса всегда тёмная, даже при светлой системе. -->
+    <!-- При первом запуске выбора ещё нет: заставка всегда тёмная, даже при сохранённой светлой теме
+         (правило «по умолчанию тёмная», решение техлида 10.10.2026). -->
     <style name="Theme.GrePrep.Starting" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/gp_bg_dark</item>
         <item name="android:windowBackground">@color/gp_bg_dark</item>

@@ -36,8 +36,8 @@ import greprep.design.GpSize
 import greprep.design.GpSpace
 
 /*
- * Официальная типографика входа хранится в токенах. Apple использует системный шрифт платформы
- * (решение техлида 10.10.2026); Google требует именно Roboto Medium, в том числе на Samsung.
+ * Кнопка Apple — системный шрифт платформы, как на вебе и Apple (решение 10.10.2026).
+ * Официальная типографика — в токенах; Google требует Roboto Medium, в том числе на Samsung.
  */
 private val Roboto = FontFamily(Font(R.font.roboto_medium, GpSignInGoogle.fontWeight))
 private val AppleText =

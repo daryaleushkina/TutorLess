@@ -5,7 +5,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.captureToImage
-import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.Density
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
@@ -24,6 +23,7 @@ import dev.greprepapp.app.feature.today.TodayPlan
 import dev.greprepapp.app.feature.today.TodayViewModel.Content
 import dev.greprepapp.app.feature.today.TodayViewModel.Problem
 import dev.greprepapp.app.feature.today.TodayViewModel.UiState
+import dev.greprepapp.app.testing.createAppComposeRule
 import dev.greprepapp.app.testing.plan
 import dev.greprepapp.app.testing.starterPlan
 import dev.greprepapp.app.testing.step
@@ -47,6 +47,9 @@ class TabletSnapshotTest(
 ) : SnapshotBase(theme) {
     @Test
     fun today() = snap("tablet-today") { Today(starter) }
+
+    @Test
+    fun todaySystemFont130() = snap("tablet-today-font-130", systemFontScale = 1.3f) { Today(starter) }
 
     @Test
     fun signIn() = snap("tablet-signin") { SignIn() }

@@ -1,8 +1,10 @@
 package dev.greprepapp.app.core.theme
 
+import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import dagger.hilt.android.AndroidEntryPoint
 import dev.greprepapp.app.core.AppScope
 import dev.greprepapp.app.core.report.ClientErrorReporter
@@ -36,21 +38,30 @@ class DevThemeReceiver : BroadcastReceiver() {
                 }
 
                 else -> {
+                    setResult(Activity.RESULT_CANCELED, "dev theme choice invalid", null)
                     reporter.report("dev theme choice invalid", route = DataStoreThemeStore.ROUTE)
                     return
                 }
             }
         val pending = goAsync()
-        scope.launch {
-            try {
-                themes.select(choice)
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (failure: Exception) {
-                reporter.report("dev theme selection failed: ${failure.javaClass.simpleName}", route = DataStoreThemeStore.ROUTE)
-            } finally {
-                pending.finish()
+        pending.resultCode = Activity.RESULT_CANCELED
+        pending.resultData = "dev theme selection canceled"
+        val job =
+            scope.launch {
+                try {
+                    themes.select(choice)
+                    pending.resultCode = Activity.RESULT_OK
+                    pending.resultData = "dev theme selected"
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (failure: Exception) {
+                    val message = "dev theme selection failed: ${failure.javaClass.simpleName}"
+                    pending.resultData = message
+                    // ThemeStore уже отправил отчёт записи; здесь нужен только результат команды adb.
+                    Log.w("GrePrep", message)
+                }
             }
-        }
+        // Срабатывает и когда scope отменён до launch и тело корутины вообще не началось.
+        job.invokeOnCompletion { pending.finish() }
     }
 }

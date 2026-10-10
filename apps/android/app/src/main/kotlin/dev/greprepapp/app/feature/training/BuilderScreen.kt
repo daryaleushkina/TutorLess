@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -56,7 +57,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -280,17 +280,17 @@ private fun Presets(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(GpSpace.s2)) {
-                    Text(text = presetTitle(preset), style = Gp.type.body.copy(fontWeight = FontWeight.W500), color = Gp.colors.text)
+                    Text(text = presetTitle(preset), style = Gp.type.h3, color = Gp.colors.text)
                     Text(
                         text = presetSubtitle(preset, c.options),
-                        style = Gp.type.meta.copy(fontWeight = FontWeight.W400),
+                        style = Gp.type.meta,
                         color = Gp.colors.text2,
                     )
                 }
                 RadioButton(
                     selected = selected,
                     onClick = null,
-                    colors = RadioButtonDefaults.colors(selectedColor = Gp.colors.accent, unselectedColor = Gp.colors.line),
+                    colors = RadioButtonDefaults.colors(selectedColor = Gp.colors.accent, unselectedColor = Gp.colors.text3),
                 )
             }
         }
@@ -356,7 +356,7 @@ private fun CustomCard(
             }
             Text(
                 text = stringResource(if (f.mode == TrainingMode.CHECK) R.string.mode_check_hint else R.string.mode_practice_hint),
-                style = Gp.type.meta.copy(fontWeight = FontWeight.W400),
+                style = Gp.type.meta,
                 color = Gp.colors.text2,
                 modifier = Modifier.padding(horizontal = GpSpace.s16),
             )
@@ -393,7 +393,7 @@ private fun TypeRow(
             value = c.form.type.label(),
             onClick = { open = true },
             tag = "builder.type",
-            valueStyle = Gp.type.action.copy(fontWeight = FontWeight.W400, localeList = English),
+            valueStyle = Gp.type.explainBody.copy(localeList = English),
         )
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             types.forEach { t ->
@@ -437,9 +437,8 @@ private fun CountField(
         onValueChange = onChange,
         singleLine = true,
         textStyle =
-            Gp.type.body.copy(
+            Gp.type.sessionCount.copy(
                 color = colors.text,
-                fontWeight = FontWeight.W600,
                 textAlign = TextAlign.Center,
                 fontFeatureSettings = "tnum",
             ),
@@ -485,13 +484,20 @@ private fun FieldRow(
     label: String,
     control: @Composable () -> Unit,
 ) {
-    Row(
+    FlowRow(
         modifier = Modifier.fillMaxWidth().heightIn(min = GpSize.opt).padding(horizontal = GpSpace.s16, vertical = GpSpace.s8),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(GpSpace.s12),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalArrangement = Arrangement.spacedBy(GpSpace.s8),
     ) {
-        Text(text = label, style = Gp.type.body, color = Gp.colors.text, modifier = Modifier.weight(1f))
-        control()
+        // Измеряем целую подпись: при крупном шрифте управление переходит на следующую строку.
+        Text(
+            text = label,
+            style = Gp.type.opt,
+            color = Gp.colors.text,
+            softWrap = false,
+            modifier = Modifier.padding(end = GpSpace.s12).align(Alignment.CenterVertically),
+        )
+        Box(Modifier.align(Alignment.CenterVertically)) { control() }
     }
 }
 
@@ -503,7 +509,7 @@ private fun LinkRow(
     onClick: () -> Unit,
     tag: String,
     enabled: Boolean = true,
-    valueStyle: TextStyle = Gp.type.action.copy(fontWeight = FontWeight.W400),
+    valueStyle: TextStyle = Gp.type.explainBody,
 ) {
     Row(
         modifier =
@@ -517,7 +523,7 @@ private fun LinkRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(GpSpace.s8),
     ) {
-        Text(text = label, style = Gp.type.body, color = Gp.colors.text, modifier = Modifier.weight(1f))
+        Text(text = label, style = Gp.type.opt, color = Gp.colors.text, modifier = Modifier.weight(1f))
         Text(text = value, style = valueStyle, color = Gp.colors.text2)
         Icon(
             painter = painterResource(R.drawable.ic_chevron_right),
@@ -572,7 +578,7 @@ private fun TopicsContent(
                 ) {
                     Text(
                         text = topic.title.pick(english),
-                        style = Gp.type.body,
+                        style = Gp.type.opt,
                         color = Gp.colors.text,
                         modifier = Modifier.weight(1f),
                     )

@@ -2,6 +2,7 @@ package dev.greprepapp.app.testing
 
 import androidx.appcompat.app.AppCompatDelegate
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.Description
 import org.junit.runner.RunWith
@@ -12,20 +13,20 @@ import org.robolectric.RobolectricTestRunner
 class NightModeResetRuleTest {
     @Test
     fun clearsTheStaticModeEvenWhenTheTestFails() {
-        try {
-            NightModeResetRule()
-                .apply(
-                    object : Statement() {
-                        override fun evaluate() {
-                            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                            throw AssertionError("expected failure")
-                        }
-                    },
-                    Description.EMPTY,
-                ).evaluate()
-        } catch (expected: AssertionError) {
-            assertEquals("expected failure", expected.message)
-        }
+        val expected =
+            assertThrows(AssertionError::class.java) {
+                NightModeResetRule()
+                    .apply(
+                        object : Statement() {
+                            override fun evaluate() {
+                                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                                throw AssertionError("expected failure")
+                            }
+                        },
+                        Description.EMPTY,
+                    ).evaluate()
+            }
+        assertEquals("expected failure", expected.message)
         assertEquals(AppCompatDelegate.MODE_NIGHT_UNSPECIFIED, AppCompatDelegate.getDefaultNightMode())
     }
 }

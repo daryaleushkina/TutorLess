@@ -47,9 +47,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.greprepapp.api.models.Question
@@ -398,7 +396,7 @@ fun Quantities(
         question.condition?.let {
             Text(
                 text = it,
-                style = (if (Gp.isWide) Gp.type.qTextWide else Gp.type.qText).copy(localeList = English),
+                style = (if (Gp.isWide) Gp.type.senseEn else Gp.type.lead).copy(localeList = English),
                 color = colors.text,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth().testTag("question.condition"),
@@ -423,10 +421,10 @@ private fun Quantity(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(GpSpace.s8),
         ) {
-            Text(text = label, style = Gp.type.meta, color = Gp.colors.text2)
+            Text(text = label, style = Gp.type.eyebrow, color = Gp.colors.text3)
             Text(
                 text = value,
-                style = (if (Gp.isWide) Gp.type.qTextWide else Gp.type.qText).copy(localeList = English, fontFamily = MathFamily),
+                style = (if (Gp.isWide) Gp.type.scoreNumWide else Gp.type.scoreNum).copy(localeList = English, fontFamily = MathFamily),
                 color = Gp.colors.text,
                 textAlign = TextAlign.Center,
             )
@@ -447,7 +445,7 @@ private fun ChoosableOptions(
             if (many) {
                 Text(
                     text = BLANK_NUMBERS.getOrElse(g) { "" },
-                    style = Gp.type.meta.copy(fontWeight = FontWeight.W600),
+                    style = Gp.type.seg,
                     color = Gp.colors.text2,
                 )
             }
@@ -636,7 +634,7 @@ private fun TimerPill(
             )
             Text(
                 text = TIMER_FORMAT.format(minutes, seconds),
-                style = (if (Gp.isWide) Gp.type.sessionCountWide else Gp.type.sessionCount).copy(fontFeatureSettings = "tnum"),
+                style = Gp.type.scoreNum.copy(fontFeatureSettings = "tnum"),
                 color = Gp.colors.text,
             )
             Text(
@@ -935,14 +933,14 @@ private fun SummaryPane(
             Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(GpSpace.s12)) {
                 Text(
                     text = result.correct.toString(),
-                    style = (if (Gp.isWide) Gp.type.scoreNumWide else Gp.type.scoreNum).copy(fontFeatureSettings = "tnum"),
+                    style = (if (Gp.isWide) Gp.type.numXxlWide else Gp.type.numXxl).copy(fontFeatureSettings = "tnum"),
                     color = colors.text,
                     modifier = Modifier.testTag("summary.correct"),
                 )
                 Text(
                     text = pluralStringResource(R.plurals.summary_correct_of, result.total, result.total),
-                    style = Gp.type.h2,
-                    color = colors.text,
+                    style = if (Gp.isWide) Gp.type.numLabelWide else Gp.type.numLabel,
+                    color = colors.text2,
                     modifier = Modifier.padding(bottom = GpSpace.s6),
                 )
             }
@@ -1037,7 +1035,7 @@ private fun summaryLine(
     }
 }
 
-/** Ссылка — подчёркнутый текст без стрелки (DESIGN.md, «Ссылки»), высотой с палец. */
+/** Ссылка-действие — accent без подчёркивания; высота касания сохраняется (DESIGN.md, «Primary»). */
 @Composable
 fun LinkText(
     text: String,
@@ -1051,7 +1049,7 @@ fun LinkText(
                 .clickable(role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.CenterStart,
     ) {
-        Text(text = text, style = Gp.type.body.copy(textDecoration = TextDecoration.Underline), color = Gp.colors.text)
+        Text(text = text, style = Gp.type.action, color = Gp.colors.accent)
     }
 }
 

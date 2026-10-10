@@ -51,8 +51,10 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.greprepapp.api.models.QuestionReport
@@ -217,9 +219,18 @@ private fun ReviewList(
         ) {
             item(key = "head") {
                 Column(verticalArrangement = Arrangement.spacedBy(GpSpace.s16), modifier = Modifier.padding(bottom = GpSpace.s12)) {
+                    val numberStyle = (if (wide) Gp.type.numMWide else Gp.type.numL).toSpanStyle().merge(SpanStyle(color = Gp.colors.text))
+                    val scoreLabel = pluralStringResource(R.plurals.summary_correct_of, result.total, result.total)
                     Text(
-                        text = "${result.correct} " + pluralStringResource(R.plurals.summary_correct_of, result.total, result.total),
-                        style = Gp.type.meta,
+                        text =
+                            buildAnnotatedString {
+                                withStyle(numberStyle) {
+                                    append(result.correct.toString())
+                                }
+                                append(" ")
+                                append(scoreLabel)
+                            },
+                        style = Gp.type.numLabel.copy(fontFeatureSettings = "tnum"),
                         color = Gp.colors.text2,
                     )
                     SegmentedChoice(
@@ -320,8 +331,8 @@ private fun ReviewRow(
     ) {
         val (bg, fg) =
             when (outcome) {
-                Outcome.Correct -> colors.right to colors.bg
-                Outcome.Wrong -> colors.wrong to colors.bg
+                Outcome.Correct -> colors.rightSoft to colors.right
+                Outcome.Wrong -> colors.wrongSoft to colors.wrong
                 Outcome.Unanswered -> colors.surface to colors.text2
             }
         Box(
@@ -332,10 +343,10 @@ private fun ReviewRow(
                     .then(if (outcome == Outcome.Unanswered) Modifier.border(GpSize.hairline, colors.line, CircleShape) else Modifier),
             contentAlignment = Alignment.Center,
         ) {
-            Text(text = number.toString(), style = Gp.type.meta.copy(fontWeight = FontWeight.W600), color = fg)
+            Text(text = number.toString(), style = Gp.type.seg, color = fg)
         }
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(GpSpace.s2)) {
-            Text(text = typeLabel, style = Gp.type.body.copy(fontWeight = FontWeight.W500, localeList = English), color = colors.text)
+            Text(text = typeLabel, style = Gp.type.answer.copy(localeList = English), color = colors.text)
             Text(text = topic, style = Gp.type.meta, color = colors.text2)
         }
         Icon(
@@ -586,7 +597,7 @@ fun ReportContent(
                     )
                     Text(
                         text = stringResource(R.string.report_kind),
-                        style = Gp.type.body.copy(fontWeight = FontWeight.W500),
+                        style = Gp.type.opt,
                         color = colors.text,
                     )
                     FlowRow(
@@ -597,13 +608,15 @@ fun ReportContent(
                             FilterChip(
                                 selected = state.kind == kind,
                                 onClick = { onKind(kind) },
-                                label = { Text(stringResource(label), style = Gp.type.meta) },
+                                label = { Text(stringResource(label), style = Gp.type.seg) },
+                                shape = CircleShape,
+                                border = null,
                                 colors =
                                     FilterChipDefaults.filterChipColors(
-                                        containerColor = colors.surface,
+                                        containerColor = if (Gp.isDark) colors.surface2 else colors.surface,
                                         labelColor = colors.text,
-                                        selectedContainerColor = colors.accent,
-                                        selectedLabelColor = colors.onAccent,
+                                        selectedContainerColor = colors.accentSoft,
+                                        selectedLabelColor = colors.accent,
                                     ),
                                 modifier = Modifier.heightIn(min = GpSize.tapTarget).testTag("report.kind.${kind.value}"),
                             )
@@ -631,7 +644,7 @@ fun ReportContent(
                     )
                     Text(
                         text = stringResource(R.string.report_note),
-                        style = Gp.type.meta.copy(fontWeight = FontWeight.W400),
+                        style = Gp.type.meta,
                         color = colors.text2,
                         textAlign = TextAlign.Start,
                     )

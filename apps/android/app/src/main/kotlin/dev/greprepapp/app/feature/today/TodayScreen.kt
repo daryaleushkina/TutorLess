@@ -29,7 +29,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import dev.greprepapp.app.R
 import dev.greprepapp.app.feature.today.TodayViewModel.Content
 import dev.greprepapp.app.feature.today.TodayViewModel.Problem
@@ -220,7 +219,7 @@ private fun ContinueRow(
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(GpSpace.s2)) {
                 Text(
                     text = stringResource(R.string.training_continue),
-                    style = Gp.type.body.copy(fontWeight = FontWeight.W500),
+                    style = Gp.type.opt,
                     color = colors.text,
                 )
                 Text(

@@ -34,6 +34,7 @@ import dev.greprepapp.app.testing.MutableClock
 import dev.greprepapp.app.testing.NightModeResetRule
 import dev.greprepapp.app.testing.plan
 import dev.greprepapp.app.testing.step
+import kotlinx.coroutines.cancel
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -63,6 +64,9 @@ class TrainingFlowTest {
     @get:Rule(order = 1)
     val compose = createEmptyComposeRule()
 
+    @Inject @dev.greprepapp.app.core.AppScope
+    lateinit var processScope: kotlinx.coroutines.CoroutineScope
+
     @Inject lateinit var server: FakeServer
 
     @Inject lateinit var network: FakeNetwork
@@ -80,6 +84,7 @@ class TrainingFlowTest {
 
     @After
     fun tearDown() {
+        processScope.cancel()
         scenario?.close()
     }
 

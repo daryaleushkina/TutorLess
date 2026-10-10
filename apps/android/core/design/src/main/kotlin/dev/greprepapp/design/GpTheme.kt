@@ -214,6 +214,6 @@ internal fun GpTypography.toMaterial(wide: Boolean): Typography =
         bodyMedium = meta,
         bodySmall = caption,
         labelLarge = button,
-        labelMedium = if (wide) navLabelWide else navLabel,
+        labelMedium = navLabel,
         labelSmall = caption,
     )

@@ -506,10 +506,15 @@ Kotlin 2.4 и Jetpack Compose (Material 3), Android 8+ (minSdk 26), targetSdk 37
 cd apps/android
 ./gradlew :core:api:generateApi            # после правки api/openapi.yaml: клиент в core/api/src/main/generated, закоммитить
 ./gradlew :app:testDebugUnitTest           # тесты, сценарии через интерфейс и снимки (без сверки)
+./gradlew :app:testReleaseUnitTest         # общие тесты с release-источниками; отладочный вход и receiver — в testDebug
 ./gradlew :app:recordRoborazziDebug        # переснять эталоны снимков — только при намеренной правке вида
 ./gradlew ktlintFormat                     # стиль кода
 sh ../../scripts/hooks/gate-android        # всё, что проверит pre-push
 ```
+
+В AGP 9 оба набора unit-тестов включены через `android.onlyEnableUnitTestForTheTestedBuildType=false`.
+Для `createComposeRule` общий `AppComposeRule` регистрирует пустую Activity только в PackageManager
+Robolectric, если её нет в manifest сборки: в релизный APK тестовая Activity не добавляется.
 
 **Посмотреть глазами — на своей копии эмулятора**, и погасить её сразу после: эмуляторы и симуляторы общие на
 весь Мак, их не больше пяти разом (`~/.codex/AGENTS.md`, «Виртуальные телефоны»). AVD проекта — `GrePrep_Pixel_9` и
@@ -549,14 +554,16 @@ adb emu kill                                                # всегда, и �
 - **Тема** — тёмная по умолчанию, независимо от системы. Выбор устройства — Preferences DataStore
   (`noBackupFilesDir/theme.preferences_pb`), не личные данные аккаунта: выход его не стирает. `ThemeManager`
   держит заставку до чтения выбора; Compose создаётся после него. `AppNightMode` синхронизирует ночные
-  ресурсы AppCompat, а на API 31+ — выбор системной заставки через `UiModeManager`. Ошибки чтения и порча
+  ресурсы AppCompat, а на API 31+ — режим процесса через `UiModeManager`. Ошибки чтения и порча
   дают тёмную тему с отчётом `ClientErrorReporter`; отказ записи возвращается вызывающему и сохраняет
   прежний выбор. API записи — `ThemeManager.select`, переключатель появится в части 2.
   Стартовая тема берёт постоянный `gp_bg_dark` для системной заставки до процесса. Обычное окно — `gp_bg`.
   Начальный режим AppCompat на API 31+ берётся из конфигурации приложения, которую восстановила система
-  (`UiModeManager` не имеет публичного getter для режима приложения); на API 26–30 — тёмный. Только
-  `MainActivity` применяет восстановленный выбор; `configChanges="uiMode"` предотвращает пересоздание,
-  окно и панели обновляются явно, Compose получает конфигурацию. До совпадения ресурсов Compose не создаётся.
+  (`UiModeManager` не имеет публичного getter для режима приложения); на API 26–30 — тёмный.
+  Восстановленный выбор применяет единственный сборщик `ThemeManager` в `AppScope` на главном потоке,
+  независимо от наличия Activity. `configChanges="uiMode"` предотвращает пересоздание: окно и панели
+  обновляются явно, Compose получает конфигурацию. Ресурсы ждём до двух секунд после чтения выбора;
+  несовпадение отправляется как `theme resources mismatch`, затем экран открывается в выбранной теме.
 - **Типографика** — `GpTheme` вместе выбирает цвета, `GpThemeTokens` и `GpTypography.light/dark`.
   Geologica использует ось `wght` (200, 300, 400, 500, 600); thin — 300 в светлой, 200 в тёмной теме.
   Plex Mono Regular — для транскрипции; Source Serif 4 Regular/Italic — для Quant. Лицензии — в
@@ -575,7 +582,7 @@ adb emu kill                                                # всегда, и �
   `api/auth/dev`, адреса Мака и строк «для разработки». Адрес боевого сервера — свойство сборки `gp.apiBaseUrl`.
   Сохранённая тема для проверки на эмуляторе задаётся только debug-receiver через `ThemeManager.select`:
   `adb shell am broadcast -n dev.greprepapp.app/.core.theme.DevThemeReceiver --es theme light`
-  (или `dark`). Ни receiver, ни этот путь не входят в релиз.
+  (или `dark`). Результат — в строке `Broadcast completed`: `result=-1` — успех, `result=0` и `data` — причина отказа. Ни receiver, ни этот путь не входят в релиз.
 - **Ключ подписи релиза невосстановим** — хранить вне репозитория и с резервной копией.
 - **Тренировки** открываются поверх вкладок (внутри тренировки вкладок нет, PRODUCT.md): стопка `MainRoute`
   над `MainScaffold`. Сессия лежит файлом в `noBackupFilesDir/trainings` (как пришла с сервера, плюс ответы,

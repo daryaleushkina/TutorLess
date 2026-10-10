@@ -36,7 +36,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.greprepapp.app.R
@@ -215,7 +214,7 @@ private fun CurrentStepCard(
             }
             Text(
                 text = step.section.label(),
-                style = Gp.type.meta.copy(fontWeight = FontWeight.W500),
+                style = Gp.type.eyebrow,
                 color = step.section.color(colors),
             )
             GpPrimaryButton(
@@ -264,7 +263,7 @@ private fun QuietStep(
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(GpSpace.s2)) {
                 Text(
                     text = step.title,
-                    style = Gp.type.body.copy(fontWeight = FontWeight.W500),
+                    style = Gp.type.opt,
                     color = colors.text,
                 )
                 Text(text = step.section.label(), style = Gp.type.meta, color = step.section.color(colors))
@@ -318,7 +317,7 @@ fun RibbonEnd(
             Column(verticalArrangement = Arrangement.spacedBy(GpSpace.s2)) {
                 Text(
                     text = stringResource(R.string.today_done_title),
-                    style = Gp.type.body.copy(fontWeight = FontWeight.W500),
+                    style = Gp.type.opt,
                     color = colors.text,
                 )
                 Text(

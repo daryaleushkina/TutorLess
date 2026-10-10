@@ -5,6 +5,20 @@ import android.content.Context
 import android.content.res.Configuration
 import android.os.Build
 import androidx.appcompat.app.AppCompatDelegate
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+
+fun interface ThemeModeApplier {
+    fun apply(theme: AppTheme)
+}
+
+class AndroidThemeModeApplier
+    @Inject
+    constructor(
+        @param:ApplicationContext private val context: Context,
+    ) : ThemeModeApplier {
+        override fun apply(theme: AppTheme) = AppNightMode.apply(context, theme)
+    }
 
 /** Ресурсы окна/заставки и Compose должны видеть один выбор, независимо от настройки системы. */
 object AppNightMode {
@@ -23,7 +37,8 @@ object AppNightMode {
     ) {
         val dark = theme == AppTheme.Dark
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            // Система хранит это для заставки следующего холодного запуска, до создания процесса.
+            // Ночной режим ресурсов принадлежит процессу. Заставка намеренно всегда на gp_bg_dark:
+            // при первом запуске выбора ещё нет (решение техлида 10.10.2026).
             context.getSystemService(UiModeManager::class.java).setApplicationNightMode(
                 if (dark) UiModeManager.MODE_NIGHT_YES else UiModeManager.MODE_NIGHT_NO,
             )

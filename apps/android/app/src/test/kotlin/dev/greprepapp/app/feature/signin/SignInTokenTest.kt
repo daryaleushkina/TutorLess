@@ -2,7 +2,6 @@ package dev.greprepapp.app.feature.signin
 
 import android.content.Context
 import androidx.compose.ui.semantics.SemanticsActions
-import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performSemanticsAction
@@ -10,11 +9,11 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.font.FontFamily
 import androidx.test.core.app.ApplicationProvider
 import dev.greprepapp.app.R
+import dev.greprepapp.app.testing.createAppComposeRule
 import dev.greprepapp.design.GpTheme
 import greprep.design.GpLayout
 import greprep.design.GpSignInApple
 import greprep.design.GpSignInGoogle
-import greprep.design.GpSpace
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
@@ -27,7 +26,7 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(qualifiers = "ru-w1200dp-h800dp-land-mdpi")
 class SignInTokenTest {
-    @get:Rule val compose = createComposeRule()
+    @get:Rule val compose = createAppComposeRule()
 
     private fun render() {
         compose.setContent {
@@ -68,6 +67,6 @@ class SignInTokenTest {
         val tagline = compose.onNodeWithText(context.getString(R.string.signin_tagline)).fetchSemanticsNode().boundsInRoot
         assertTrue(tagline.width <= GpLayout.textMax.value)
         val button = compose.onNodeWithTag("signin.apple").fetchSemanticsNode().boundsInRoot
-        assertEquals((GpLayout.authColumnMax - GpSpace.s24 * 2).value, button.width, 0.5f)
+        assertEquals((GpLayout.authColumnMax - GpLayout.gutter * 2).value, button.width, 0.5f)
     }
 }

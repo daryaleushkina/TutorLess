@@ -14,4 +14,5 @@ internal fun shouldKeepSplash(
     state: ThemeState,
     session: SessionState,
     uiMode: Int,
-): Boolean = !isThemeReady(state, uiMode) || session == SessionState.Restoring
+    resourcesTimedOut: Boolean = false,
+): Boolean = state.restoring || (!resourcesTimedOut && !isThemeReady(state, uiMode)) || session == SessionState.Restoring

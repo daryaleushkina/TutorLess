@@ -1,7 +1,5 @@
 package dev.greprepapp.app.flow
 
-import android.os.Build
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -38,21 +36,15 @@ class ApplicationThemeFlowTest {
     @After
     fun tearDown() {
         scenario?.close()
-        ApplicationProvider.getApplicationContext<GrePrepApplication>().scope.cancel()
+        org.robolectric.util.ReflectionHelpers
+            .getField<kotlinx.coroutines.CoroutineScope>(
+                ApplicationProvider.getApplicationContext<GrePrepApplication>().themes.get(),
+                "scope",
+            ).cancel()
     }
 
     @Test
     fun productionStartupReadsDataStoreAndShowsDarkSignIn() {
-        assertEquals(
-            if (Build.VERSION.SDK_INT >=
-                31
-            ) {
-                AppCompatDelegate.MODE_NIGHT_NO
-            } else {
-                AppCompatDelegate.MODE_NIGHT_YES
-            },
-            AppCompatDelegate.getDefaultNightMode(),
-        )
         scenario = ActivityScenario.launch(MainActivity::class.java)
         compose.waitUntilAtLeastOneExists(hasTestTag("signin.apple"), TIMEOUT)
         assertEquals(

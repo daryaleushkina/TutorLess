@@ -32,6 +32,7 @@ import dev.greprepapp.app.MainActivity
 import dev.greprepapp.app.testing.Fixtures
 import dev.greprepapp.app.testing.NightModeResetRule
 import dev.greprepapp.design.GpTheme
+import kotlinx.coroutines.cancel
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -56,6 +57,9 @@ class TabletTrainingFlowTest {
 
     @get:Rule(order = 1)
     val compose = createEmptyComposeRule()
+
+    @Inject @dev.greprepapp.app.core.AppScope
+    lateinit var processScope: kotlinx.coroutines.CoroutineScope
 
     @Inject lateinit var server: FakeServer
 

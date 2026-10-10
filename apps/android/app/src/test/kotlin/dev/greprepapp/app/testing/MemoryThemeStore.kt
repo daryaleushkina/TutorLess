@@ -10,6 +10,7 @@ class MemoryThemeStore(
     var gate: CompletableDeferred<Unit>? = null
     var loadFailure: Exception? = null
     var saveFailure: Exception? = null
+    var onSaveFailure: (Exception) -> Unit = {}
 
     override suspend fun load(): AppTheme {
         val saved = choice
@@ -19,7 +20,10 @@ class MemoryThemeStore(
     }
 
     override suspend fun save(theme: AppTheme) {
-        saveFailure?.let { throw it }
+        saveFailure?.let {
+            onSaveFailure(it)
+            throw it
+        }
         choice = theme
     }
 }

@@ -18,6 +18,9 @@ class StartupThemeTest {
             assertTrue(shouldKeepSplash(ThemeState(choice), SessionState.SignedOut(null), matching))
             assertTrue(shouldKeepSplash(ready, SessionState.Restoring, matching))
             assertTrue(shouldKeepSplash(ready, SessionState.SignedOut(null), wrong))
+            assertFalse(shouldKeepSplash(ready, SessionState.SignedOut(null), wrong, resourcesTimedOut = true))
+            assertTrue(shouldKeepSplash(ready, SessionState.Restoring, wrong, resourcesTimedOut = true))
+            assertTrue(shouldKeepSplash(ThemeState(choice), SessionState.SignedOut(null), wrong, resourcesTimedOut = true))
             assertFalse(shouldKeepSplash(ready, SessionState.SignedOut(null), matching))
         }
     }

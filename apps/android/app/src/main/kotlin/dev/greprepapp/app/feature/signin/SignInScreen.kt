@@ -1,6 +1,5 @@
 package dev.greprepapp.app.feature.signin
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -100,7 +99,7 @@ fun SignInContent(
                         .wrapContentWidth()
                         .widthIn(max = GpLayout.authColumnMax)
                         .verticalScroll(rememberScrollState())
-                        .padding(horizontal = GpSpace.s24)
+                        .padding(horizontal = GpLayout.gutter)
                         .padding(bottom = GpSpace.s28),
             ) {
                 Spacer(Modifier.heightIn(min = GpSpace.s48).weight(1f))
@@ -115,7 +114,7 @@ fun SignInContent(
                     )
                 }
                 val enabled = state.busy == null
-                Column(verticalArrangement = Arrangement.spacedBy(GpSpace.s10)) {
+                Column(verticalArrangement = Arrangement.spacedBy(GpSpace.s12)) {
                     AppleSignInButton(busy = state.busy == Method.Apple, enabled = enabled) {
                         onProvider(Method.Apple)
                     }
@@ -145,16 +144,15 @@ fun SignInContent(
 private fun Header() {
     Column(verticalArrangement = Arrangement.spacedBy(GpSpace.s20)) {
         Surface(
-            color = Gp.colors.surface,
+            color = Gp.colors.accentSoft,
             shape = RoundedCornerShape(GpRadius.l),
-            border = BorderStroke(GpSize.hairline, Gp.colors.line),
             modifier = Modifier.size(GpSize.sideCard),
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
                     painter = painterResource(DesignR.drawable.ic_brand_mark),
                     contentDescription = null,
-                    tint = Gp.colors.verbal,
+                    tint = Gp.colors.accent,
                     modifier = Modifier.size(GpSize.iconButton),
                 )
             }
@@ -168,7 +166,7 @@ private fun Header() {
             )
             Text(
                 text = stringResource(R.string.signin_tagline),
-                style = Gp.type.lead,
+                style = if (Gp.isWide) Gp.type.lead else Gp.type.body,
                 color = Gp.colors.text2,
                 modifier = Modifier.widthIn(max = GpLayout.textMax),
             )
@@ -218,14 +216,14 @@ private fun Legal(modifier: Modifier = Modifier) {
         Text(
             text = stringResource(R.string.signin_legal),
             style = Gp.type.caption,
-            color = Gp.colors.text2,
+            color = if (Gp.isWide) Gp.colors.text2 else Gp.colors.text3,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
         )
         Text(
             text = stringResource(R.string.signin_disclaimer),
             style = Gp.type.caption.copy(localeList = LocaleList("en")),
-            color = Gp.colors.text2,
+            color = if (Gp.isWide) Gp.colors.text2 else Gp.colors.text3,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
         )

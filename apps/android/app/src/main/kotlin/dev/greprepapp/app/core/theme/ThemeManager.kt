@@ -6,6 +6,7 @@ import dev.greprepapp.app.core.report.ClientErrorReporter
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -29,12 +30,19 @@ class ThemeManager
         @param:AppScope private val scope: CoroutineScope,
         @param:IoDispatcher private val io: CoroutineDispatcher,
         private val reporter: ClientErrorReporter,
+        private val nightMode: ThemeModeApplier,
     ) {
         private val mutableState = MutableStateFlow(ThemeState())
         val state = mutableState.asStateFlow()
         private val lock = Mutex()
 
         init {
+            // Один сборщик на процесс: выбор применяется и после закрытия последней Activity.
+            scope.launch(Dispatchers.Main.immediate) {
+                state.collect { state ->
+                    if (!state.restoring) nightMode.apply(state.theme)
+                }
+            }
             scope.launch {
                 lock.withLock {
                     val theme =

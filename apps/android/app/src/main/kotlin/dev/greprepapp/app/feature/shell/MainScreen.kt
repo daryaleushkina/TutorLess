@@ -275,22 +275,22 @@ private fun NavBackStack<NavKey>.popToRoot() {
     while (size > 1) removeLastOrNull()
 }
 
-/** Выбранная вкладка — цветом текста на подложке tab-selected, а не системным акцентом: один акцент на всё. */
+/** Активная вкладка — accent на accentSoft; невыбранная — text3 снизу, text2 на рейке. */
 @Composable
 private fun navigationColors() =
     NavigationSuiteDefaults.itemColors(
         navigationBarItemColors =
             NavigationBarItemDefaults.colors(
-                selectedIconColor = Gp.colors.text,
-                selectedTextColor = Gp.colors.text,
+                selectedIconColor = Gp.colors.accent,
+                selectedTextColor = Gp.colors.accent,
                 indicatorColor = Gp.colors.accentSoft,
-                unselectedIconColor = Gp.colors.text2,
-                unselectedTextColor = Gp.colors.text2,
+                unselectedIconColor = Gp.colors.text3,
+                unselectedTextColor = Gp.colors.text3,
             ),
         navigationRailItemColors =
             NavigationRailItemDefaults.colors(
-                selectedIconColor = Gp.colors.text,
-                selectedTextColor = Gp.colors.text,
+                selectedIconColor = Gp.colors.accent,
+                selectedTextColor = Gp.colors.accent,
                 indicatorColor = Gp.colors.accentSoft,
                 unselectedIconColor = Gp.colors.text2,
                 unselectedTextColor = Gp.colors.text2,

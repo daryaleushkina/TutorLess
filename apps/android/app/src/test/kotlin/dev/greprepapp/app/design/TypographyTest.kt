@@ -6,13 +6,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.semantics.SemanticsActions
-import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import dev.greprepapp.app.testing.createAppComposeRule
 import dev.greprepapp.design.GeologicaFamily
 import dev.greprepapp.design.Gp
 import dev.greprepapp.design.GpTheme
@@ -38,7 +38,7 @@ import org.robolectric.annotation.GraphicsMode
 class TypographyTest(
     private val dark: Boolean,
 ) {
-    @get:Rule val compose = createComposeRule()
+    @get:Rule val compose = createAppComposeRule()
 
     @Test
     fun everyRoleRendersWithItsBundledFamilyAndThematicWeight() {

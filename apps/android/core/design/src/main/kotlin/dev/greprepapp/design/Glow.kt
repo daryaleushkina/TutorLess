@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.BlurMaskFilter
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.RectF
 import android.os.Build
 import android.util.LruCache
 import androidx.compose.runtime.Composable
@@ -20,6 +21,7 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import greprep.design.GpShadow
 import kotlin.math.ceil
+import kotlin.math.sqrt
 
 /** Свечение только главного действия; у недоступной кнопки его нет (DESIGN.md, «Buttons»). */
 @Composable
@@ -34,6 +36,7 @@ internal class GlowRenderer(
     private val shadow: GpShadow,
 ) {
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val bitmapPaint = Paint(Paint.FILTER_BITMAP_FLAG)
     private var paintDensity = Float.NaN
 
     fun draw(
@@ -43,7 +46,8 @@ internal class GlowRenderer(
     ) {
         if (canvas.isHardwareAccelerated && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             if (paintDensity != density) {
-                // Прозрачная заливка: под кнопкой рисуется только цветная тень, без второй поверхности.
+                // У полупрозрачного shadowColor своя alpha, независимая от прозрачной заливки
+                // (Paint.setShadowLayer). HWUI применяет BlurDrawLooper до отрисовки исходной формы.
                 paint.color = android.graphics.Color.TRANSPARENT
                 paint.setShadowLayer(
                     shadow.blur.value * density,
@@ -58,7 +62,12 @@ internal class GlowRenderer(
             canvas.drawRoundRect(-spread, -spread, size.width + spread, size.height + spread, radius, radius, paint)
         } else {
             val layer = layer(size, density)
-            canvas.drawBitmap(layer.image.asAndroidBitmap(), layer.origin.x, layer.origin.y, null)
+            canvas.drawBitmap(
+                layer.image.asAndroidBitmap(),
+                null,
+                RectF(layer.origin.x, layer.origin.y, layer.origin.x + layer.size.width, layer.origin.y + layer.size.height),
+                bitmapPaint,
+            )
         }
     }
 
@@ -86,13 +95,19 @@ internal class GlowRenderer(
         size: Size,
         density: Float,
     ): GlowLayer {
-        val blur = shadow.blur.value * density
-        val spread = shadow.spread.value * density
+        // Размытый слой не содержит мелких деталей. Половинный растр дешевле в четыре раза;
+        // особо большие размеры уменьшаем ещё, чтобы один слой не вытеснил весь кэш.
+        val fullPadding = shadow.blur.value * density * 2
+        val fullBytes = (size.width + fullPadding * 2) * (size.height + fullPadding * 2) * 4
+        val scale = minOf(0.5f, sqrt((RASTER_CACHE_BYTES / 4f) / fullBytes))
+        val scaledSize = size * scale
+        val blur = shadow.blur.value * density * scale
+        val spread = shadow.spread.value * density * scale
         val padding = ceil(blur * 2).toInt()
         val bitmap =
             Bitmap.createBitmap(
-                ceil(size.width).toInt() + padding * 2,
-                ceil(size.height).toInt() + padding * 2,
+                ceil(scaledSize.width).toInt() + padding * 2,
+                ceil(scaledSize.height).toInt() + padding * 2,
                 Bitmap.Config.ARGB_8888,
             )
         val mask =
@@ -100,19 +115,23 @@ internal class GlowRenderer(
                 color = shadow.color.toArgb()
                 maskFilter = BlurMaskFilter(blur, BlurMaskFilter.Blur.NORMAL)
             }
-        val radius = (size.height / 2 + spread).coerceAtLeast(0f)
+        val radius = (scaledSize.height / 2 + spread).coerceAtLeast(0f)
         Canvas(
             bitmap,
         ).drawRoundRect(
             padding - spread,
             padding - spread,
-            padding + size.width + spread,
-            padding + size.height + spread,
+            padding + scaledSize.width + spread,
+            padding + scaledSize.height + spread,
             radius,
             radius,
             mask,
         )
-        return GlowLayer(bitmap.asImageBitmap(), Offset(shadow.offsetX.value * density - padding, shadow.offsetY.value * density - padding))
+        return GlowLayer(
+            bitmap.asImageBitmap(),
+            Offset(shadow.offsetX.value * density - padding / scale, shadow.offsetY.value * density - padding / scale),
+            Size(bitmap.width / scale, bitmap.height / scale),
+        )
     }
 }
 
@@ -127,7 +146,9 @@ private data class GlowKey(
 )
 
 // Ограничение памяти, не токен вида: кэш переживает уход кнопки из LazyColumn, но не держит все размеры.
-private object RasterCache : LruCache<GlowKey, GlowLayer>(4 * 1024 * 1024) {
+private const val RASTER_CACHE_BYTES = 4 * 1024 * 1024
+
+private object RasterCache : LruCache<GlowKey, GlowLayer>(RASTER_CACHE_BYTES) {
     override fun sizeOf(
         key: GlowKey,
         value: GlowLayer,
@@ -137,4 +158,5 @@ private object RasterCache : LruCache<GlowKey, GlowLayer>(4 * 1024 * 1024) {
 internal data class GlowLayer(
     val image: ImageBitmap,
     val origin: Offset,
+    val size: Size,
 )
