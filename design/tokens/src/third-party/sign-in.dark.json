@@ -23,6 +23,32 @@
           ],
           "hex": "#000000"
         }
+      },
+      "font-family": {
+        "$type": "fontFamily",
+        "$value": "{font.family.system}",
+        "$description": "Системный шрифт платформы для кнопки Apple; на Android — Roboto."
+      },
+      "font-size": {
+        "$type": "dimension",
+        "$value": {
+          "value": 17,
+          "unit": "px"
+        },
+        "$description": "Размер текста кнопки Apple."
+      },
+      "font-weight": {
+        "$type": "fontWeight",
+        "$value": 500,
+        "$description": "Средний вес текста кнопки Apple."
+      },
+      "line-height": {
+        "$type": "dimension",
+        "$value": {
+          "value": 20,
+          "unit": "px"
+        },
+        "$description": "Межстрочное расстояние кнопки Apple."
       }
     },
     "google": {
@@ -58,6 +84,43 @@
           ],
           "hex": "#E3E3E3"
         }
+      },
+      "font-family": {
+        "$type": "fontFamily",
+        "$value": [
+          "Roboto",
+          "sans-serif"
+        ],
+        "$description": "Шрифт кнопки Google по правилам Google."
+      },
+      "font-size": {
+        "$type": "dimension",
+        "$value": {
+          "value": 14,
+          "unit": "px"
+        },
+        "$description": "Размер текста кнопки Google."
+      },
+      "font-weight": {
+        "$type": "fontWeight",
+        "$value": 500,
+        "$description": "Roboto Medium для кнопки Google."
+      },
+      "tracking": {
+        "$type": "dimension",
+        "$value": {
+          "value": 0.25,
+          "unit": "px"
+        },
+        "$description": "Разрядка текста кнопки Google."
+      },
+      "line-height": {
+        "$type": "dimension",
+        "$value": {
+          "value": 20,
+          "unit": "px"
+        },
+        "$description": "Межстрочное расстояние кнопки Google."
       }
     }
   }

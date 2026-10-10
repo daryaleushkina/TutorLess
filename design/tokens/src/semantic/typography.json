@@ -27,6 +27,16 @@
           "serif"
         ],
         "$description": "Формулы Quant: семейство из .math в core.css; файлы шрифта добавляются в приложениях."
+      },
+      "system": {
+        "$value": [
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "SF Pro Text",
+          "system-ui",
+          "sans-serif"
+        ],
+        "$description": "Системный шрифт: кнопка «Вход с Apple» (правила Apple) и невидимый измеритель MainButton Telegram (клиент рисует её системным шрифтом)"
       }
     },
     "weight": {

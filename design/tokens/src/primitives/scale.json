@@ -294,6 +294,27 @@
         "unit": "px"
       },
       "$description": "Граница широкой раскладки каталога."
+    },
+    "auth-column-max": {
+      "$value": {
+        "value": 400,
+        "unit": "px"
+      },
+      "$description": "Колонка входа на широком экране: .t-signin-buttons в каталоге."
+    },
+    "text-max": {
+      "$value": {
+        "value": 320,
+        "unit": "px"
+      },
+      "$description": "Узкая колонка поясняющего текста на экранах состояний: ошибка, «нет сети»."
+    },
+    "session-max": {
+      "$value": {
+        "value": 1040,
+        "unit": "px"
+      },
+      "$description": "до перестройки сессии по R1–R20 (часть 3 редизайна)"
     }
   },
   "motion": {
