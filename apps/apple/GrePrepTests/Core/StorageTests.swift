@@ -63,11 +63,11 @@ struct AppConfigTests {
     @Test("провайдер включается, только если всё задано и издатель — https")
     func webProvider() {
         let full: [String: Any] = [
-            "PIssuer": "https://oauth.telegram.org", "PClientID": "id", "PRedirectURI": "dev.greprepapp.app:/oauth",
+            "PIssuer": "https://accounts.google.com", "PClientID": "id", "PRedirectURI": "dev.greprepapp.app:/oauth",
         ]
         #expect(WebProviderConfig(info: full, prefix: "P") != nil)
         var insecure = full
-        insecure["PIssuer"] = "http://oauth.telegram.org"
+        insecure["PIssuer"] = "http://accounts.google.com"
         #expect(WebProviderConfig(info: insecure, prefix: "P") == nil)
         var noClient = full
         noClient["PClientID"] = ""
@@ -86,6 +86,7 @@ struct AppConfigTests {
         #expect(!config.appleSignInEnabled)
         #expect(config.apiBaseURL.absoluteString == "http://127.0.0.1:8090")
         #expect(config.webProviders.isEmpty)
+        #expect(WebProvider.allCases == [.google])
         let overridden = AppConfig.load(environment: ["GP_API_BASE_URL": "http://127.0.0.1:8091"])
         #expect(overridden.apiBaseURL.absoluteString == "http://127.0.0.1:8091")
         #expect(AppConfig.devSignInAvailable)

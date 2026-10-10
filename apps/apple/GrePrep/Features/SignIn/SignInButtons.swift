@@ -6,41 +6,10 @@ import SwiftUI
 
 /// Размеры из правил самих компаний, а не из нашей системы: они меняются вместе с правилами, не с токенами.
 private enum OfficialSpec {
-    /// Новая кнопка входа Telegram: логотип 22, текст 16 полужирный (как в макете T4-SignIn).
-    static let telegramLogo: CGFloat = 22
-    static let telegramText: CGFloat = 16
     /// Google Identity: «G» 18, текст 14 Medium с трекингом 0,25.
     static let googleLogo: CGFloat = 18
     static let googleText: CGFloat = 14
     static let googleTracking: CGFloat = 0.25
-}
-
-/// Новая кнопка Telegram: синяя капсула, логотип и системный шрифт.
-struct TelegramSignInButton: View {
-    let isBusy: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: GPSpace.s4) {
-                if isBusy {
-                    ProgressView().tint(Color(.signInTelegramText))
-                } else {
-                    TelegramLogoShape()
-                        .frame(width: OfficialSpec.telegramLogo, height: OfficialSpec.telegramLogo)
-                        .accessibilityHidden(true)
-                }
-                Text("Войти через Telegram")
-                    .font(.system(size: OfficialSpec.telegramText, weight: .semibold))
-            }
-            .foregroundStyle(Color(.signInTelegramText))
-            .frame(maxWidth: .infinity, minHeight: GPSize.buttonCompact)
-            .background(Color(.signInTelegramBg), in: Capsule())
-            .contentShape(Capsule())
-        }
-        .buttonStyle(PressScaleStyle())
-        .accessibilityIdentifier("signin.telegram")
-    }
 }
 
 /// «Вход с Apple» — родная кнопка Apple: чёрная в светлой теме, белая в тёмной.
@@ -53,7 +22,7 @@ struct AppleSignInButton: View {
             // На Mac обёртка SwiftUI держит свой размер и не растягивается до соседних кнопок, поэтому — сама
             // кнопка Apple (ASAuthorizationAppleIDButton) с высотой и скруглением как у остальных.
             MacAppleIDButton(model: model, style: colorScheme == .dark ? .white : .black)
-                .frame(maxWidth: .infinity, minHeight: GPSize.buttonCompact, maxHeight: GPSize.buttonCompact)
+                .frame(maxWidth: .infinity, minHeight: GPSize.button, maxHeight: GPSize.button)
                 .accessibilityIdentifier("signin.apple")
         #else
             SignInWithAppleButton(.signIn) { request in
@@ -62,7 +31,7 @@ struct AppleSignInButton: View {
                 Task { await model.completeApple(result) }
             }
             .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
-            .frame(height: GPSize.buttonCompact)
+            .frame(height: GPSize.button)
             .clipShape(Capsule())
             .accessibilityIdentifier("signin.apple")
         #endif
@@ -80,7 +49,7 @@ struct AppleSignInButton: View {
 
         func makeNSView(context: Context) -> ASAuthorizationAppleIDButton {
             let button = ASAuthorizationAppleIDButton(authorizationButtonType: .signIn, authorizationButtonStyle: style)
-            button.cornerRadius = GPSize.buttonCompact / 2
+            button.cornerRadius = GPSize.button / 2
             button.target = context.coordinator
             button.action = #selector(AppleAuthorization.start)
             return button
@@ -96,7 +65,7 @@ struct AppleSignInButton: View {
         func sizeThatFits(_ proposal: ProposedViewSize, nsView: ASAuthorizationAppleIDButton, context: Context)
             -> CGSize?
         {
-            CGSize(width: proposal.width ?? GPLayout.authColumnMax, height: GPSize.buttonCompact)
+            CGSize(width: proposal.width ?? GPLayout.contentMax / 2, height: GPSize.button)
         }
     }
 
@@ -166,7 +135,7 @@ struct GoogleSignInButton: View {
                     .tracking(OfficialSpec.googleTracking)
             }
             .foregroundStyle(Color(.signInGoogleText))
-            .frame(maxWidth: .infinity, minHeight: GPSize.buttonCompact)
+            .frame(maxWidth: .infinity, minHeight: GPSize.button)
             .padding(.horizontal, GPSpace.s12)
             .background(Color(.signInGoogleBg), in: Capsule())
             .overlay(Capsule().strokeBorder(Color(.signInGoogleStroke), lineWidth: GPSize.hairline))

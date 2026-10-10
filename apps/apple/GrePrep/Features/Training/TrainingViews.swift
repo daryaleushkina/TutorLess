@@ -118,13 +118,13 @@ struct TrainingBuilderView: View {
                 case .loading:
                     VStack(spacing: GPSpace.s12) {
                         ProgressView()
-                        Text("Загружаем темы").gpText(GPType.subhead)
+                        Text("Загружаем темы").gpText(\.meta)
                     }.frame(maxWidth: .infinity, maxHeight: .infinity).accessibilityIdentifier("builder.loading")
                 case let .unavailable(problem): unavailable(problem)
                 case .ready: ready(wide: wide)
                 }
             }
-            .background { SectionGlow(section: StudySection(model.form.section)) }
+            .background(Color(.bg).ignoresSafeArea())
             .navigationTitle(wide ? Text("") : Text("Новая тренировка"))
         }
         #if os(iOS)
@@ -155,7 +155,7 @@ struct TrainingBuilderView: View {
             } icon: {
                 Image(systemName: problem == .offline ? "wifi.slash" : "exclamationmark.triangle")
             }
-            .gpText(GPType.title3)
+            .gpText(\.h2)
         } description: {
             Text(
                 LocalizedStringKey(
@@ -172,7 +172,7 @@ struct TrainingBuilderView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: GPSpace.s24) {
                 if wide {
-                    Text("Новая тренировка").gpText(GPType.title2Wide)
+                    Text("Новая тренировка").gpText(\.startTitleWide)
                     HStack(alignment: .top, spacing: GPSpace.s24) {
                         if !model.presets.isEmpty { presets.frame(maxWidth: .infinity) }
                         custom.frame(maxWidth: .infinity)
@@ -182,15 +182,15 @@ struct TrainingBuilderView: View {
                     custom
                 }
                 if let problem = model.problem {
-                    problemText(problem).gpText(GPType.subhead)
-                        .foregroundStyle(Color(.textSecondary)).accessibilityIdentifier("builder.problem")
+                    problemText(problem).gpText(\.meta)
+                        .foregroundStyle(Color(.text2)).accessibilityIdentifier("builder.problem")
                 }
                 if wide {
                     startButton.fixedSize(horizontal: true, vertical: false).frame(
                         maxWidth: .infinity, alignment: .trailing)
                 }
             }
-            .frame(maxWidth: wide ? GPLayout.contentMax + GPLayout.sidebarMax : GPLayout.contentMax)
+            .frame(maxWidth: wide ? GPLayout.contentMax + GPLayout.sidebarWidth : GPLayout.contentMax)
             .padding(GPLayout.gutter)
             .frame(maxWidth: .infinity)
         }
@@ -214,22 +214,22 @@ struct TrainingBuilderView: View {
                     HStack(spacing: GPSpace.s16) {
                         VStack(alignment: .leading, spacing: GPSpace.s4) {
                             if let kind = TrainingPresetKind(rawValue: preset.kind) {
-                                Text(kind.label).gpText(GPType.headline)
+                                Text(kind.label).gpText(\.sectionName)
                             }
-                            Text(verbatim: presetSubtitle(preset)).gpText(GPType.subhead).foregroundStyle(
-                                Color(.textSecondary)
+                            Text(verbatim: presetSubtitle(preset)).gpText(\.meta).foregroundStyle(
+                                Color(.text2)
                             )
                             .fixedSize(horizontal: false, vertical: true)
                         }
                         Spacer(minLength: 0)
                         Image(systemName: model.preset == index ? "checkmark.circle.fill" : "circle")
-                            .foregroundStyle(model.preset == index ? Color(.text) : Color(.textSecondary))
+                            .foregroundStyle(model.preset == index ? Color(.text) : Color(.text2))
                     }.frame(minHeight: GPSize.tapTarget).padding(GPSpace.s16).contentShape(Rectangle())
                 }
                 .buttonStyle(.plain).accessibilityAddTraits(model.preset == index ? .isSelected : [])
                 .accessibilityIdentifier("builder.preset.\(preset.kind)")
             }
-        }.background(Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.xxl))
+        }.background(Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.l))
     }
 
     private func presetSubtitle(_ preset: Components.Schemas.TrainingPreset) -> String {
@@ -278,7 +278,7 @@ struct TrainingBuilderView: View {
                     .focused($countFocused)
                     .textFieldStyle(.plain).multilineTextAlignment(.center).monospacedDigit()
                     .frame(width: GPSpace.s72 + GPSpace.s4, height: GPSize.tapTarget)
-                    .background(Color(.fill), in: Capsule()).accessibilityIdentifier("builder.count")
+                    .background(Color(.surface2), in: Capsule()).accessibilityIdentifier("builder.count")
                     #if os(iOS)
                         .keyboardType(.numberPad)
                     #endif
@@ -296,7 +296,7 @@ struct TrainingBuilderView: View {
                         modes
                     }
                 }
-                Text(model.form.mode.hint).gpText(GPType.subhead).foregroundStyle(Color(.textSecondary))
+                Text(model.form.mode.hint).gpText(\.meta).foregroundStyle(Color(.text2))
                     .fixedSize(horizontal: false, vertical: true)
             }.padding(GPSpace.s16)
             line
@@ -308,14 +308,14 @@ struct TrainingBuilderView: View {
                 HStack(spacing: GPSpace.s12) {
                     Text("Темы и сложность")
                     Spacer()
-                    Text(verbatim: topicSummary).foregroundStyle(Color(.textSecondary))
-                    Image(systemName: "chevron.forward").foregroundStyle(Color(.textSecondary))
-                }.frame(minHeight: GPSize.row).contentShape(Rectangle())
+                    Text(verbatim: topicSummary).foregroundStyle(Color(.text2))
+                    Image(systemName: "chevron.forward").foregroundStyle(Color(.text2))
+                }.frame(minHeight: GPSize.sectionRow).contentShape(Rectangle())
             }.buttonStyle(.plain).padding(.horizontal, GPSpace.s16).accessibilityIdentifier("builder.topics")
         }
-        .gpText(GPType.body)
+        .gpText(\.body)
         .foregroundStyle(Color(.text))
-        .background(Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.xxl))
+        .background(Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.l))
     }
 
     private var modes: some View {
@@ -335,7 +335,7 @@ struct TrainingBuilderView: View {
         ViewThatFits(in: .horizontal) {
             HStack(spacing: GPSpace.s12, content: content)
             VStack(alignment: .leading, spacing: GPSpace.s8, content: content)
-        }.frame(minHeight: GPSize.row).padding(.horizontal, GPSpace.s16).padding(.vertical, GPSpace.s4)
+        }.frame(minHeight: GPSize.sectionRow).padding(.horizontal, GPSpace.s16).padding(.vertical, GPSpace.s4)
     }
     private var startButton: some View {
         Button {
@@ -371,12 +371,12 @@ struct TrainingTopicsView: View {
             let wide = geometry.size.width >= GPLayout.breakpointWide
             ScrollView {
                 VStack(alignment: .leading, spacing: GPSpace.s24) {
-                    if wide { Text("Темы и сложность").gpText(GPType.title2Wide) }
+                    if wide { Text("Темы и сложность").gpText(\.h1Wide) }
                     Text(
                         verbatim:
                             "\(TrainingText.sectionLabel(model.form.section)) · \(model.form.type.label)"
                     )
-                    .gpText(GPType.subhead).foregroundStyle(StudySection(model.form.section).color)
+                    .gpText(\.meta).foregroundStyle(StudySection(model.form.section).color)
                     topics
                     difficulty
                     if wide {
@@ -393,7 +393,7 @@ struct TrainingTopicsView: View {
                             .background(Color(.bg))
                     }
                 }
-                .background { SectionGlow(section: StudySection(model.form.section)) }
+                .background(Color(.bg).ignoresSafeArea())
                 .navigationTitle(wide ? Text("") : Text("Темы и сложность"))
         }
         #if os(iOS)
@@ -410,21 +410,21 @@ struct TrainingTopicsView: View {
                         set: { _ in model.toggleTopic(topic.id) })
                 ) {
                     HStack(spacing: GPSpace.s12) {
-                        Text(verbatim: topic.title.localized).gpText(GPType.body).fixedSize(
+                        Text(verbatim: topic.title.localized).gpText(\.body).fixedSize(
                             horizontal: false, vertical: true)
                         Spacer(minLength: GPSpace.s8)
-                        Text(model.available(in: topic), format: .number).gpText(GPType.subhead).monospacedDigit()
-                            .foregroundStyle(Color(.textSecondary))
+                        Text(model.available(in: topic), format: .number).gpText(\.meta).monospacedDigit()
+                            .foregroundStyle(Color(.text2))
                     }
-                }.tint(StudySection(model.form.section).color).frame(minHeight: GPSize.rowTall)
+                }.tint(StudySection(model.form.section).color).frame(minHeight: GPSize.opt)
                     .padding(.vertical, GPSpace.s8).accessibilityIdentifier("builder.topic.\(topic.id)")
             }
         }.padding(.horizontal, GPSpace.s16).background(
-            Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.xxl))
+            Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.l))
     }
     private var difficulty: some View {
         VStack(alignment: .leading, spacing: GPSpace.s12) {
-            Text("Сложность").gpText(GPType.body)
+            Text("Сложность").gpText(\.body)
             Picker("Сложность", selection: Binding(get: { model.form.difficulty }, set: model.setDifficulty)) {
                 Text("Любая").tag(Optional<Components.Schemas.Difficulty>.none)
                 ForEach(Components.Schemas.Difficulty.allCases, id: \.self) { Text($0.label).tag(Optional($0)) }

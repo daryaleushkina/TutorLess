@@ -91,12 +91,12 @@ struct SectionPlaceholderView: View {
         NavigationStack {
             ContentUnavailableView {
                 Text("Скоро")
-                    .gpText(GPType.title3)
+                    .gpText(\.h2)
             } description: {
                 Text(message)
             }
             .navigationTitle(Text(title))
-            .background { SectionGlow(section: nil) }
+            .background(Color(.bg).ignoresSafeArea())
         }
     }
 }
@@ -108,11 +108,11 @@ struct StepPlaceholderView: View {
     var body: some View {
         ContentUnavailableView {
             Text(step.title)
-                .gpText(GPType.title3)
+                .gpText(\.h2)
         } description: {
             Text("Здесь начнётся шаг. Тренировки и слова появятся в следующих частях.")
         }
-        .background { SectionGlow(section: step.section) }
+        .background(Color(.bg).ignoresSafeArea())
         .navigationTitle(Text(step.section.label))
         #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)

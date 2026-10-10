@@ -527,16 +527,6 @@
         }
       }
     },
-    "Войти через Telegram": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Log in with Telegram"
-          }
-        }
-      }
-    },
     "Вопрос %lld": {
       "localizations": {
         "en": {
@@ -663,16 +653,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sign-in with Google isn’t connected yet — it will be before the beta."
-          }
-        }
-      }
-    },
-    "Вход через Telegram ещё не подключён — он появится до беты.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Log-in with Telegram isn’t connected yet — it will be before the beta."
           }
         }
       }

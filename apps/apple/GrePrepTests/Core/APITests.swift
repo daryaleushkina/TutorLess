@@ -153,7 +153,7 @@ struct APITests {
     func codeSignIn() async throws {
         server.on("POST /api/auth/oidc/code", .json(200, Fixture.session()))
         _ = try await api(token: nil).signInWithAuthorizationCode(
-            provider: .telegram, code: "c", codeVerifier: String(repeating: "v", count: 43),
+            provider: .google, code: "c", codeVerifier: String(repeating: "v", count: 43),
             redirectURI: "dev.greprepapp.app:/oauth", nonce: "n-123456789012345"
         )
         let body = try #require(server.requests("POST /api/auth/oidc/code").first).json()

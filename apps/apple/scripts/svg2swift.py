@@ -118,13 +118,11 @@ def svg(name):
     return vb, [(p.get("d"), p.get("fill")) for p in root.iter(f"{ns}path")]
 
 
-tg_vb, tg_paths = svg("telegram-logo.svg")
 g_vb, g_paths = svg("google-g.svg")
 parts = [
     "// Сгенерировано scripts/svg2swift.py из scripts/logos/*.svg — руками не править.",
     "import SwiftUI",
     "",
-    shape("TelegramLogoShape", tg_vb, tg_paths[0][0], "Бумажный самолётик Telegram (официальный логотип), красится цветом переднего плана."),
 ]
 colors = {"#EA4335": "red", "#4285F4": "blue", "#FBBC05": "yellow", "#34A853": "green"}
 for d, fill in g_paths:

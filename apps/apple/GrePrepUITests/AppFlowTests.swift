@@ -71,7 +71,8 @@ final class AppFlowTests: XCTestCase {
 
     func testSignInShowsTodayAndOpensStep() {
         let app = launch(reset: true)
-        XCTAssertTrue(app.buttons["signin.telegram"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["signin.apple"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["signin.google"].exists)
         signIn(app)
         XCTAssertEqual(app.staticTexts["today.summary"].label, "Три шага · около 25 минут")
         // Названия шагов — от сервера (server/internal/today): дело без раздела, раздел — строкой ниже.
@@ -93,7 +94,7 @@ final class AppFlowTests: XCTestCase {
 
         let again = launch(reset: false)
         XCTAssertTrue(again.staticTexts["today.summary"].waitForExistence(timeout: 15))
-        XCTAssertFalse(again.buttons["signin.telegram"].exists)
+        XCTAssertFalse(again.buttons["signin.apple"].exists)
     }
 
     func testSignOutReturnsToSignInForGood() {
@@ -108,12 +109,12 @@ final class AppFlowTests: XCTestCase {
             "GRE® is a registered trademark of Educational Testing Service (ETS). This product is not endorsed or approved by ETS."
         )
         app.buttons["settings.signOut"].tap()
-        XCTAssertTrue(app.buttons["signin.telegram"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["signin.apple"].waitForExistence(timeout: 5))
         app.terminate()
 
         let again = launch(reset: false)
         XCTAssertTrue(
-            again.buttons["signin.telegram"].waitForExistence(timeout: 10),
+            again.buttons["signin.apple"].waitForExistence(timeout: 10),
             "после выхода и перезапуска вход не должен вернуться")
     }
 
@@ -134,9 +135,9 @@ final class AppFlowTests: XCTestCase {
 
     func testProvidersWithoutAccountsSayItHonestly() {
         let app = launch(reset: true)
-        let telegram = app.buttons["signin.telegram"]
-        XCTAssertTrue(telegram.waitForExistence(timeout: 10))
-        telegram.tap()
+        let google = app.buttons["signin.google"]
+        XCTAssertTrue(google.waitForExistence(timeout: 10))
+        google.tap()
         let message = app.staticTexts["signin.message"]
         XCTAssertTrue(message.waitForExistence(timeout: 5))
         XCTAssertTrue(message.label.contains("ещё не подключён"), message.label)
@@ -218,7 +219,15 @@ final class AppFlowTests: XCTestCase {
         let count = app.textFields["builder.count"]
         count.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
         count.typeText(XCUIKeyboardKey.delete.rawValue + XCUIKeyboardKey.delete.rawValue + (threeBlanks ? "1" : "3"))
-        if check { app.segmentedControls["builder.mode"].buttons["Проверка"].tap() }
+        if check {
+            // С цифровой клавиатурой закреплённое действие может закрывать переключатель.
+            // Явно листаем форму перед выбором и проверяем выбранное состояние.
+            app.scrollViews.containing(.segmentedControl, identifier: "builder.mode").firstMatch.swipeUp()
+            let mode = app.segmentedControls["builder.mode"].buttons["Проверка"]
+            XCTAssertTrue(mode.isHittable)
+            mode.tap()
+            XCTAssertTrue(mode.isSelected)
+        }
         app.buttons["builder.topics"].tap()
         XCTAssertTrue(app.buttons["builder.topics.done"].waitForExistence(timeout: 5))
         // Контраст: в открытом наборе все ответы — A, у двух пропусков — A и D.
@@ -241,7 +250,7 @@ final class AppFlowTests: XCTestCase {
 
     private func capture(_ name: String) throws {
         if let path = ProcessInfo.processInfo.environment["GP_REVIEW_OUTPUT"] {
-            let theme = ProcessInfo.processInfo.environment["GP_REVIEW_THEME"] ?? "light"
+            let theme = ProcessInfo.processInfo.environment["GP_REVIEW_THEME"] ?? "dark"
             let device = UIDevice.current.userInterfaceIdiom == .pad ? "ipad-landscape" : "iphone"
             try XCUIScreen.main.screenshot().pngRepresentation.write(
                 to: URL(filePath: path).appending(path: "\(name)-\(device)-\(theme).png"))
@@ -513,7 +522,7 @@ final class AppFlowTests: XCTestCase {
         app.buttons["today.newTraining"].tap()
         XCTAssertTrue(app.buttons["builder.start"].waitForExistence(timeout: 10))
         let output = ProcessInfo.processInfo.environment["GP_REVIEW_OUTPUT"]
-        let theme = ProcessInfo.processInfo.environment["GP_REVIEW_THEME"] ?? "light"
+        let theme = ProcessInfo.processInfo.environment["GP_REVIEW_THEME"] ?? "dark"
         let device = UIDevice.current.userInterfaceIdiom == .pad ? "ipad" : "iphone"
         let orientations: [(UIDeviceOrientation, String)] =
             UIDevice.current.userInterfaceIdiom == .pad

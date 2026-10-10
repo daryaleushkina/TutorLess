@@ -19,9 +19,9 @@ import Vision
 #endif
 
 /// Эталонные снимки экранов: iPhone, iPad и Mac — в светлой и тёмной теме. Каждое устройство снимается на своём
-/// симуляторе (гейт гоняет набор на iPhone и на iPad): стекло iOS 26 рисуется только в настоящем окне, а окно
+/// симуляторе (гейт гоняет набор на iPhone и на iPad): системное стекло iOS 26 рисуется только в настоящем окне, а окно
 /// iPhone не вмещает раскладку iPad. Эталоны — в __Snapshots__ рядом; переснимать только при намеренной правке вида и писать об
-/// этом в коммите (AGENTS.md, «Тесты»). Шрифт Onest регистрирует само приложение-хост при запуске.
+/// этом в коммите (AGENTS.md, «Тесты»). Шрифт Geologica регистрирует само приложение-хост при запуске.
 @MainActor
 @Suite("Снимки экранов", .serialized)
 struct ScreenSnapshotTests {
@@ -127,15 +127,14 @@ struct ScreenSnapshotTests {
             let app = try signedInApp(cached: nil, today: .json(200, Fixture.todayJSON))
             let model = try #require(app.today)
             await model.refresh()
-            let view = TodayView(model: model, refreshesOnAppear: false).environment(app).environment(
-                \.glassEnabled, false)
+            let view = TodayView(model: model, refreshesOnAppear: false).environment(app)
             // Тема явная: снимок не зависит от того, какой оставил просмотрщик на симуляторе.
             let traits = UITraitCollection { traits in
                 traits.userInterfaceStyle = .light
                 traits.preferredContentSizeCategory = .accessibilityLarge
             }
             assertSnapshot(
-                of: view,
+                of: view.gpDesignTokens().environment(\.colorScheme, .light),
                 as: .image(
                     drawHierarchyInKeyWindow: true, precision: Self.precision, perceptualPrecision: Self.perceptual,
                     layout: .device(config: Self.phone), traits: traits
@@ -189,9 +188,9 @@ struct ScreenSnapshotTests {
             let model = try #require(app.today)
             await model.refresh()
             let view = TodayView(model: model, refreshesOnAppear: false).environment(app)
-                .environment(\.glassEnabled, false)
+
             assertSnapshot(
-                of: view,
+                of: view.gpDesignTokens().environment(\.colorScheme, .light),
                 as: .image(
                     drawHierarchyInKeyWindow: true, precision: Self.precision, perceptualPrecision: Self.perceptual,
                     layout: .device(config: Self.phone),
@@ -211,7 +210,7 @@ struct ScreenSnapshotTests {
             config: server.config(), tokens: MemoryTokenStore(), cache: temporaryCache(), network: NetworkMonitor(),
             session: server.session)
         let model = SignInModel(app: app)
-        await model.signInWithWeb(.telegram) { url, _ in url }
+        await model.signInWithWeb(.google) { url, _ in url }
         assertScreens(
             SignInView(model: model, reason: nil, showsDevelopmentSignIn: false).environment(app),
             named: "signin-message", devices: [.phone], themes: [.light])
@@ -243,6 +242,55 @@ struct ScreenSnapshotTests {
             NavigationStack { SettingsView() }.environment(app).environment(\.locale, Locale(identifier: "en")),
             named: "settings-en")
     }
+
+    #if os(macOS)
+        @Test("настройки используют фон и поверхность токенов", arguments: [Theme.light, .dark])
+        func settingsSurfaces(theme: Theme) async throws {
+            let app = AppModel(
+                config: server.config(), tokens: MemoryTokenStore("t"), cache: temporaryCache(),
+                network: NetworkMonitor(), session: server.session)
+            let view = NavigationStack { SettingsView() }.environment(app).gpDesignTokens()
+                .environment(\.colorScheme, theme == .dark ? .dark : .light)
+            let controller = NSHostingController(rootView: view)
+            let appearance = try #require(NSAppearance(named: theme == .dark ? .darkAqua : .aqua))
+            controller.view.appearance = appearance
+            let size = CGSize(width: GPLayout.contentMax, height: GPLayout.contentMax)
+            controller.view.frame = CGRect(origin: .zero, size: size)
+            let strategy = Snapshotting<NSViewController, NSImage>.image(size: size)
+            let rendered: NSImage = await withCheckedContinuation { continuation in
+                strategy.snapshot(controller).run { continuation.resume(returning: $0) }
+            }
+            let cgImage = try #require(rendered.cgImage(forProposedRect: nil, context: nil, hints: nil))
+            var background: NSColor?
+            var surface: NSColor?
+            appearance.performAsCurrentDrawingAppearance {
+                background = NSColor(resource: .bg).usingColorSpace(.sRGB)
+                surface = NSColor(resource: .surface).usingColorSpace(.sRGB)
+            }
+            try expectPixel(
+                cgImage, x: cgImage.width / 2, y: cgImage.height * 3 / 4,
+                color: try #require(background), role: "bg")
+            try expectPixel(
+                cgImage, x: cgImage.width * 3 / 4, y: Int(GPSpace.s40 * CGFloat(cgImage.width) / size.width),
+                color: try #require(surface), role: "surface")
+        }
+
+        private func expectPixel(_ image: CGImage, x: Int, y: Int, color: NSColor, role: String) throws {
+            let pixel = try #require(image.cropping(to: CGRect(x: x, y: y, width: 1, height: 1)))
+            let context = try #require(
+                CGContext(
+                    data: nil, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4,
+                    space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                    bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+            context.draw(pixel, in: CGRect(x: 0, y: 0, width: 1, height: 1))
+            let bytes = try #require(context.data).assumingMemoryBound(to: UInt8.self)
+            let expected = try #require(color.usingColorSpace(.sRGB))
+            let components = [expected.redComponent, expected.greenComponent, expected.blueComponent]
+            for (index, value) in components.enumerated() {
+                #expect(abs(CGFloat(bytes[index]) / 255 - value) < 0.02, "Фон настроек не соответствует \(role)")
+            }
+        }
+    #endif
 
     @Test("раздел, которого ещё нет", .enabled { await ScreenSnapshotTests.isPhone() })
     func sectionPlaceholder() {
@@ -434,11 +482,11 @@ struct ScreenSnapshotTests {
                     let view = NavigationStack {
                         TrainingSessionView(model: partial, keyboardAvailable: Self.snapshotHasKeyboard)
                     }
-                    .environment(\.glassEnabled, false)
+
                     .environment(\.textScale, larger ? GPType.textScaleLarge : 1)
                     for dark in [false, true] {
                         assertSnapshot(
-                            of: view,
+                            of: view.gpDesignTokens().environment(\.colorScheme, dark ? .dark : .light),
                             as: .image(
                                 drawHierarchyInKeyWindow: true,
                                 precision: Self.precision, perceptualPrecision: Self.perceptual,
@@ -494,7 +542,8 @@ struct ScreenSnapshotTests {
             model.whyNotOpen = true
             let view = AnyView(
                 NavigationStack { TrainingSessionView(model: model, keyboardAvailable: Self.snapshotHasKeyboard) }
-                    .environment(\.textScale, GPType.textScaleLarge).environment(\.glassEnabled, false))
+                    .environment(\.textScale, GPType.textScaleLarge).gpDesignTokens().environment(\.colorScheme, .light)
+            )
             let strategy = Snapshotting<AnyView, UIImage>.image(
                 drawHierarchyInKeyWindow: true, layout: .device(config: Self.pad),
                 traits: UITraitCollection(userInterfaceStyle: .light))
@@ -832,7 +881,7 @@ struct ScreenSnapshotTests {
         line: UInt = #line,
         column: UInt = #column
     ) {
-        let view = screen.environment(\.glassEnabled, false)
+        let view = screen.gpDesignTokens()
         #if os(iOS)
             let current: Device = UIDevice.current.userInterfaceIdiom == .pad ? .pad : .phone
             for device in devices where device == current {
@@ -860,10 +909,13 @@ struct ScreenSnapshotTests {
                             host.makeKeyAndVisible()
                         }
                         assertSnapshot(
-                            of: view,
+                            of: view.environment(\.colorScheme, style == .dark ? .dark : .light),
                             as: .image(
-                                // Через окно симулятора: стекло iOS 26 и материалы вне окна не рисуются.
-                                drawHierarchyInKeyWindow: true,
+                                // Слои в окне проверяют нашу раскладку, цвета и шрифты. drawHierarchy
+                                // включает меняющийся GPU-дизеринг системного стекла: одинаковый экран
+                                // расходится на 1–5 уровней цвета в тулбаре и вкладках. Живой материал
+                                // проверяется UI-сценариями и осмотром, допуски снимков остаются прежними.
+                                drawHierarchyInKeyWindow: false,
                                 precision: precision, perceptualPrecision: Self.perceptual,
                                 layout: .device(config: config),
                                 traits: UITraitCollection(userInterfaceStyle: style)
@@ -880,7 +932,7 @@ struct ScreenSnapshotTests {
             // важна широкая раскладка, те же, что на iPad.
             guard devices.contains(.pad) else { return }
             for dark in themes.map({ $0 == .dark }) {
-                let controller = NSHostingController(rootView: view)
+                let controller = NSHostingController(rootView: view.environment(\.colorScheme, dark ? .dark : .light))
                 controller.view.frame = CGRect(x: 0, y: 0, width: 1100, height: 760)
                 controller.view.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
                 // AppKit откладывает высоту многострочного поля до раскладки. Иначе после очистки длинного

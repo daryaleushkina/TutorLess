@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Лента шагов дня (DESIGN.md, «Лента»): узлы на нити, в фокусе один шаг — стеклянная карточка, остальное —
+/// Лента шагов дня (DESIGN.md, «Лента»): узлы на нити, в фокусе один шаг — карточка на поверхности, остальное —
 /// тихие строки; конец ленты виден.
 struct StepRibbon: View {
     let plan: TodayPlan
@@ -21,12 +21,13 @@ struct StepRibbon: View {
 }
 
 /// Колонка узлов: шире узла на кольцо текущего шага. Нить идёт по её центру.
-private let nodeColumn: CGFloat = GPSize.stepNodeCurrent
+private let nodeColumn: CGFloat = GPSize.iconButton
 private let rowGap: CGFloat = GPSpace.s24
 /// Внутренний отступ карточки шага (DESIGN.md, компонент card).
 private let cardPadding: CGFloat = GPSpace.s16
 
 private struct StepRow: View {
+    @Environment(\.gpType) private var type
     let step: TodayPlan.Step
     let isBlocked: Bool
     let onSelect: (TodayPlan.Step) -> Void
@@ -46,16 +47,16 @@ private struct StepRow: View {
     /// Узел стоит по центру первой строки своего шага: у текущего — строки заголовка карточки.
     private var nodeTop: CGFloat {
         step.state == .current
-            ? cardPadding + GPType.title3.lineHeight / 2 - GPSize.stepNodeCurrent / 2
-            : max(0, GPType.body.lineHeight / 2 - GPSize.stepNode / 2)
+            ? cardPadding + type.h2.lineHeight / 2 - GPSize.iconButton / 2
+            : max(0, type.body.lineHeight / 2 - GPSize.icon / 2)
     }
-    private var nodeSize: CGFloat { step.state == .current ? GPSize.stepNodeCurrent : GPSize.stepNode }
+    private var nodeSize: CGFloat { step.state == .current ? GPSize.iconButton : GPSize.icon }
 
     /// Нить от узла вниз, до следующего шага.
     private var thread: some View {
         Rectangle()
             .fill(Color(.line))
-            .frame(width: GPSize.stepLine)
+            .frame(width: GPSize.hairline)
             .padding(.top, nodeTop + nodeSize + GPSpace.s4)
             .accessibilityHidden(true)
     }
@@ -64,27 +65,27 @@ private struct StepRow: View {
         switch step.state {
         case .current:
             Image(systemName: step.section.symbol)
-                .font(.system(size: GPSize.stepNodeCurrent / 2, weight: .semibold))
+                .font(.system(size: GPSize.iconButton / 2, weight: .semibold))
                 .foregroundStyle(Color(.surface))
-                .frame(width: GPSize.stepNodeCurrent, height: GPSize.stepNodeCurrent)
+                .frame(width: GPSize.iconButton, height: GPSize.iconButton)
                 .background(step.section.color, in: Circle())
-                .background(step.section.tint, in: Circle().inset(by: -GPSize.stepRing))
+                .background(step.section.tint, in: Circle().inset(by: -GPSpace.s4))
                 .padding(.top, nodeTop)
                 .accessibilityHidden(true)
         case .next:
             Image(systemName: step.section.symbol)
-                .font(.system(size: GPSize.stepNode / 2, weight: .semibold))
+                .font(.system(size: GPSize.icon / 2, weight: .semibold))
                 .foregroundStyle(step.section.color)
-                .frame(width: GPSize.stepNode, height: GPSize.stepNode)
+                .frame(width: GPSize.icon, height: GPSize.icon)
                 .background(Color(.surface), in: Circle())
                 .overlay(Circle().strokeBorder(Color(.line), lineWidth: GPSize.hairline))
                 .padding(.top, nodeTop)
                 .accessibilityHidden(true)
         case .done:
             Image(systemName: "checkmark")
-                .font(.system(size: GPSize.stepNode / 2, weight: .bold))
+                .font(.system(size: GPSize.icon / 2, weight: .bold))
                 .foregroundStyle(Color(.surface))
-                .frame(width: GPSize.stepNode, height: GPSize.stepNode)
+                .frame(width: GPSize.icon, height: GPSize.icon)
                 .background(step.section.color, in: Circle())
                 .padding(.top, nodeTop)
                 .accessibilityHidden(true)
@@ -109,7 +110,7 @@ private struct StepRow: View {
     }
 }
 
-/// Шаг в фокусе: стеклянная карточка и одна главная кнопка.
+/// Шаг в фокусе: карточка на поверхности и одна главная кнопка.
 private struct CurrentStepCard: View {
     let step: TodayPlan.Step
     let isBlocked: Bool
@@ -126,16 +127,16 @@ private struct CurrentStepCard: View {
                 : AnyLayout(HStackLayout(alignment: .firstTextBaseline, spacing: GPSpace.s12))
             layout {
                 Text(step.title)
-                    .gpText(GPType.title3)
+                    .gpText(\.h2)
                     .foregroundStyle(Color(.text))
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Text("~\(step.minutes) мин")
-                    .gpText(GPType.subhead)
+                    .gpText(\.meta)
                     .monospacedDigit()
-                    .foregroundStyle(Color(.textSecondary))
+                    .foregroundStyle(Color(.text2))
             }
             Text(step.section.label)
-                .gpText(GPType.subhead)
+                .gpText(\.meta)
                 .fontWeight(.medium)
                 .foregroundStyle(step.section.color)
             Button(action: onStart) {
@@ -150,7 +151,7 @@ private struct CurrentStepCard: View {
             }
         }
         .padding(cardPadding)
-        .glassSurface(in: RoundedRectangle(cornerRadius: GPRadius.xxl, style: .continuous))
+        .background(Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.l, style: .continuous))
         .accessibilityElement(children: .contain)
         .accessibilityLabel(Text("Сейчас: \(step.title)"))
     }
@@ -171,11 +172,11 @@ private struct QuietStepLabel: View {
             layout {
                 VStack(alignment: .leading, spacing: GPSpace.s2) {
                     Text(step.title)
-                        .gpText(GPType.body)
+                        .gpText(\.body)
                         .fontWeight(.medium)
                         .foregroundStyle(Color(.text))
                     Text(step.section.label)
-                        .gpText(GPType.subhead)
+                        .gpText(\.meta)
                         .foregroundStyle(step.section.color)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -186,9 +187,9 @@ private struct QuietStepLabel: View {
                         Text("~\(step.minutes) мин")
                     }
                 }
-                .gpText(GPType.subhead)
+                .gpText(\.meta)
                 .monospacedDigit()
-                .foregroundStyle(Color(.textSecondary))
+                .foregroundStyle(Color(.text2))
             }
             if isBlocked {
                 NeedsNetworkNote()
@@ -208,8 +209,8 @@ struct NeedsNetworkNote: View {
         } icon: {
             Image(systemName: "wifi.slash")
         }
-        .gpText(GPType.subhead)
-        .foregroundStyle(Color(.textSecondary))
+        .gpText(\.meta)
+        .foregroundStyle(Color(.text2))
         .accessibilityIdentifier("today.needsNetwork")
     }
 }
@@ -222,23 +223,23 @@ private struct RibbonEnd: View {
         HStack(alignment: .firstTextBaseline, spacing: GPSpace.s14) {
             Circle()
                 .fill(Color(.line))
-                .frame(width: GPSize.stepEnd, height: GPSize.stepEnd)
+                .frame(width: GPSize.sectionMark, height: GPSize.sectionMark)
                 .frame(width: nodeColumn)
                 .accessibilityHidden(true)
             if isComplete {
                 VStack(alignment: .leading, spacing: GPSpace.s2) {
                     Text("На сегодня всё")
-                        .gpText(GPType.body)
+                        .gpText(\.body)
                         .fontWeight(.medium)
                         .foregroundStyle(Color(.text))
                     Text("Завтра здесь будет новый план.")
-                        .gpText(GPType.subhead)
-                        .foregroundStyle(Color(.textSecondary))
+                        .gpText(\.meta)
+                        .foregroundStyle(Color(.text2))
                 }
             } else {
                 Text("На сегодня всё.")
-                    .gpText(GPType.subhead)
-                    .foregroundStyle(Color(.textSecondary))
+                    .gpText(\.meta)
+                    .foregroundStyle(Color(.text2))
             }
         }
     }

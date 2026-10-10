@@ -3,7 +3,7 @@ import SwiftUI
 
 typealias TodayStateDTO = Components.Schemas.StepState
 
-/// Раздел подготовки и его цвета: узел ленты, подпись, свет сверху экрана (DESIGN.md, «Цвета разделов»).
+/// Раздел подготовки и его цвета: узел ленты, подпись и мягкая поверхность (DESIGN.md, «Цвета разделов»).
 enum StudySection: String, Hashable, Sendable, CaseIterable {
     case verbal, quant, words, essay
 
@@ -40,29 +40,10 @@ enum StudySection: String, Hashable, Sendable, CaseIterable {
 
     var tint: Color {
         switch self {
-        case .verbal: Color(.verbalTint)
-        case .quant: Color(.quantTint)
-        case .words: Color(.wordsTint)
-        case .essay: Color(.essayTint)
-        }
-    }
-
-    /// Свет сверху экрана: под стеклом всегда есть цвет, иначе стекла не видно (DESIGN.md, «Материал»).
-    var glowStrong: Color {
-        switch self {
-        case .verbal: Color(.glowVerbalStrong)
-        case .quant: Color(.glowQuantStrong)
-        case .words: Color(.glowWordsStrong)
-        case .essay: Color(.glowEssayStrong)
-        }
-    }
-
-    var glowSoft: Color {
-        switch self {
-        case .verbal: Color(.glowVerbalSoft)
-        case .quant: Color(.glowQuantSoft)
-        case .words: Color(.glowWordsSoft)
-        case .essay: Color(.glowEssaySoft)
+        case .verbal: Color(.verbalSoft)
+        case .quant: Color(.quantSoft)
+        case .words: Color(.wordsSoft)
+        case .essay: Color(.essaySoft)
         }
     }
 

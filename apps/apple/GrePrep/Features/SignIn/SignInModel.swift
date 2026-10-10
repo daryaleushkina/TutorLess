@@ -3,12 +3,12 @@ import Foundation
 import GPAPI
 import Observation
 
-/// Вход вне Telegram: Telegram, Apple, Google (PRODUCT.md, «Stack», вход) и подмена в отладочной сборке.
+/// Вход: Apple и Google (PRODUCT.md, «Stack», вход) и подмена в отладочной сборке.
 @MainActor
 @Observable
 final class SignInModel {
     enum Method: Hashable {
-        case telegram, apple, google, development
+        case apple, google, development
     }
 
     /// Что сказать под кнопками. Без всплывающих окон: ответ рядом с тем, что нажали (PRODUCT.md, доступность).
@@ -107,14 +107,14 @@ final class SignInModel {
         }
     }
 
-    // MARK: - Telegram и Google
+    // MARK: - Google
 
     /// authenticate — системное окно входа (WebAuthenticationSession из SwiftUI); в тестах — подмена.
     func signInWithWeb(
         _ provider: WebProvider,
         authenticate: (URL, URL) async throws -> URL
     ) async {
-        let method: Method = provider == .telegram ? .telegram : .google
+        let method: Method = .google
         guard let config = app.config.webProviders[provider] else {
             // Аккаунтов у провайдеров ещё нет (ROADMAP §2): кнопка есть, вход — когда Даша их заведёт.
             message = .notConnectedYet(method)
@@ -150,7 +150,7 @@ final class SignInModel {
             let code = try WebSignIn.code(from: callback, expectedState: attempt.state)
             try finish(
                 await app.api.signInWithAuthorizationCode(
-                    provider: provider == .telegram ? .telegram : .google,
+                    provider: .google,
                     code: code, codeVerifier: attempt.codeVerifier,
                     redirectURI: attempt.redirectURI.absoluteString, nonce: attempt.nonce, locale: locale
                 ))
