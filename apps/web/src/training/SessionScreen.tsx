@@ -32,12 +32,15 @@ export function SessionScreen() {
   const training = useStoredTraining(trainingId);
   const storage = useTrainingStorage();
   useBackButton(shell === 'telegram' ? () => void navigate({ to: '/' }) : null);
-  return <FocusLayout glow={training.data?.session.section ?? 'verbal'} training wide session>
-    {storage === 'blocked' || storage === 'unavailable' || training.isPending || !training.data ? <div className={styles.screen}>
+  if (storage !== 'blocked' && storage !== 'unavailable' && !training.isPending && training.data) {
+    return <ActiveSession key={trainingId} incoming={training.data} />;
+  }
+  return <FocusLayout training wide session>
+    <div className={styles.screen}>
       {shell === 'site' && <Link to="/" className={styles.back}>{t.training.question_close}</Link>}
       {storage === 'blocked' ? <TrainingStorageBlocked /> : storage === 'unavailable' ? <StatusScreen title={t.training.training_storage_title} text={t.training.training_storage_message} /> : training.isPending ? <p role="status">{t.today.loading}</p> :
         <StatusScreen title={t.training.training_missing_title} text={t.training.training_missing_message} />}
-    </div> : <ActiveSession key={trainingId} incoming={training.data} />}
+    </div>
   </FocusLayout>;
 }
 
@@ -85,37 +88,7 @@ function ActiveSession({ incoming }: { incoming: StoredTraining }) {
   }));
   const answered = overviewItems.filter((item) => item.answered).length;
   const flags = Object.values(s.training.answers).filter((answer) => answer.flagged).length;
-  return <div className={`${styles.session} ${styles.screen}`} data-shell={shell} data-section={s.training.session.section}>
-    <header className={styles.sessionHeader}>
-      {shell === 'site' && <Link to="/" className={styles.close} aria-label={text.question_close}><BackIcon /></Link>}
-      <div className={styles.progress} aria-label={text.question_progress_description(s.position + 1, total)}>
-        {s.remaining !== undefined ? <span role="timer" className={`${glass.glass} ${styles.timer}`} aria-label={text.timer_description(Math.floor(s.remaining / 60), s.remaining % 60, s.position + 1, total)}>{Math.floor(s.remaining / 60)}:{String(s.remaining % 60).padStart(2, '0')}</span> : total <= 12 && <span className={styles.dots} aria-hidden="true">{s.training.session.items.map((item) => <i key={item.position} data-current={item.position === s.position || undefined} data-result={!s.checkMode && s.training.answers[String(item.position)] ? TrainingRules.isCorrect(item.question, s.training.answers[String(item.position)]!.optionIds) ? 'correct' : 'wrong' : undefined} />)}</span>}
-        <span>{text.question_of(s.position + 1, total)}</span>
-      </div>
-      {s.overview ? <span className={styles.headerSpace} /> : <div className={styles.headerActions}>
-        <Link to="/training/$trainingId/report/$position" params={{ trainingId: s.training.session.id, position: s.position }} search={{ returnTo: 'session' }} className={styles.reportLink}>{text.question_report}</Link>
-        {s.checkMode && <div className={styles.headerActions}>
-          <button className={styles.iconButton} disabled={s.busy} aria-label={s.flagged ? text.question_unflag : text.question_flag} aria-pressed={s.flagged} onClick={s.flag}><Flag filled={s.flagged} /></button>
-          <button className={styles.iconButton} disabled={s.busy} aria-label={text.question_overview} onClick={() => s.setOverview(true)}><Grid /></button>
-        </div>}
-      </div>}
-    </header>
-    {s.overview ? <section className={styles.overview}>
-      <h1 ref={heading} tabIndex={-1} className={styles.title}>{text.question_overview}</h1>
-      <p className={styles.note}>{text.overview_summary(answered, total, flags)}</p>
-      <div className={styles.questionGrid}>{overviewItems.map(({ position, answered }) => {
-        const answer = s.training.answers[String(position)];
-        const state = [answered ? text.overview_answered : text.overview_empty, answer?.flagged ? text.overview_flagged : undefined].filter(Boolean).join(', ');
-        return <button key={position} className={styles.overviewCell} disabled={s.busy} data-answered={answered} aria-current={position === s.position ? 'step' : undefined} aria-label={text.overview_item(position + 1, state)} onClick={() => s.go(position)}>{position + 1}{answer?.flagged && <Flag filled />}</button>;
-      })}</div>
-    </section> : <div className={styles.questionLayout}>
-      <section className={styles.question}>
-        <h1 ref={heading} tabIndex={-1} className={styles.questionType}>{TYPE_LABELS[s.question.questionType]}{typeNote && ` · ${typeNote}`}</h1>
-        <QuestionPrompt question={s.question} selection={s.revealed ? s.question.answer : s.selection} />
-        <Options question={s.question} selection={s.selection} revealed={s.revealed} onSelect={s.select} />
-      </section>
-      {s.revealed && <Explanation question={s.question} chosen={s.answer?.optionIds ?? []} language={language} onLanguage={setLanguage} />}
-    </div>}
+  return <FocusLayout training wide session footer={
     <SessionFooter>
       {s.failed && <p role="alert" className={styles.note}>{text.training_storage_message}</p>}
       {note && <p role="status" className={styles.note}>{note}</p>}
@@ -123,7 +96,40 @@ function ActiveSession({ incoming }: { incoming: StoredTraining }) {
       <TrainingActions secondary={secondary && { ...secondary, disabled: s.busy }} primary={{ text: primary, disabled: s.busy || (!s.checkMode && !s.revealed && !s.complete), busy: s.busy, onClick: act }} />
       {s.checkMode && !s.overview && s.position > 0 && <button className={styles.textButton} disabled={s.busy} onClick={() => s.go(s.position - 1)}>{t.back}</button>}
     </SessionFooter>
-  </div>;
+  }>
+    <div className={`${styles.session} ${styles.screen}`} data-shell={shell} data-section={s.training.session.section}>
+      <header className={styles.sessionHeader}>
+        {shell === 'site' && <Link to="/" className={styles.close} aria-label={text.question_close}><BackIcon /></Link>}
+        <div className={styles.progress} aria-label={text.question_progress_description(s.position + 1, total)}>
+          {s.remaining !== undefined ? <span role="timer" className={`${glass.glass} ${styles.timer}`} aria-label={text.timer_description(Math.floor(s.remaining / 60), s.remaining % 60, s.position + 1, total)}>{Math.floor(s.remaining / 60)}:{String(s.remaining % 60).padStart(2, '0')}</span> : total <= 12 && <span className={styles.dots} aria-hidden="true">{s.training.session.items.map((item) => <i key={item.position} data-current={item.position === s.position || undefined} data-result={!s.checkMode && s.training.answers[String(item.position)] ? TrainingRules.isCorrect(item.question, s.training.answers[String(item.position)]!.optionIds) ? 'correct' : 'wrong' : undefined} />)}</span>}
+          <span>{text.question_of(s.position + 1, total)}</span>
+        </div>
+        {s.overview ? <span className={styles.headerSpace} /> : <div className={styles.headerActions}>
+          <Link to="/training/$trainingId/report/$position" params={{ trainingId: s.training.session.id, position: s.position }} search={{ returnTo: 'session' }} className={styles.reportLink}>{text.question_report}</Link>
+          {s.checkMode && <div className={styles.headerActions}>
+            <button className={styles.iconButton} disabled={s.busy} aria-label={s.flagged ? text.question_unflag : text.question_flag} aria-pressed={s.flagged} onClick={s.flag}><Flag filled={s.flagged} /></button>
+            <button className={styles.iconButton} disabled={s.busy} aria-label={text.question_overview} onClick={() => s.setOverview(true)}><Grid /></button>
+          </div>}
+        </div>}
+      </header>
+      {s.overview ? <section className={styles.overview}>
+        <h1 ref={heading} tabIndex={-1} className={styles.title}>{text.question_overview}</h1>
+        <p className={styles.note}>{text.overview_summary(answered, total, flags)}</p>
+        <div className={styles.questionGrid}>{overviewItems.map(({ position, answered }) => {
+          const answer = s.training.answers[String(position)];
+          const state = [answered ? text.overview_answered : text.overview_empty, answer?.flagged ? text.overview_flagged : undefined].filter(Boolean).join(', ');
+          return <button key={position} className={styles.overviewCell} disabled={s.busy} data-answered={answered} aria-current={position === s.position ? 'step' : undefined} aria-label={text.overview_item(position + 1, state)} onClick={() => s.go(position)}>{position + 1}{answer?.flagged && <Flag filled />}</button>;
+        })}</div>
+      </section> : <div className={styles.questionLayout}>
+        <section className={styles.question}>
+          <h1 ref={heading} tabIndex={-1} className={styles.questionType}>{TYPE_LABELS[s.question.questionType]}{typeNote && ` · ${typeNote}`}</h1>
+          <QuestionPrompt question={s.question} selection={s.revealed ? s.question.answer : s.selection} />
+          <Options question={s.question} selection={s.selection} revealed={s.revealed} onSelect={s.select} />
+        </section>
+        {s.revealed && <Explanation question={s.question} chosen={s.answer?.optionIds ?? []} language={language} onLanguage={setLanguage} />}
+      </div>}
+    </div>
+  </FocusLayout>;
 }
 
 function Summary({ training }: { training: StoredTraining }) {
@@ -154,26 +160,29 @@ function Summary({ training }: { training: StoredTraining }) {
     } catch (error) { setProblem(isApiError(error) && error.kind === 'network' ? text.builder_start_offline : isApiError(error) && error.code === 'no_questions' ? text.builder_no_questions : text.builder_start_failed); }
     finally { starting.current = false; setBusy(false); }
   };
-  return <div className={`${styles.screen} ${styles.session} ${styles.summary}`} data-shell={shell} data-section={training.session.section}>
-    {shell === 'site' && <Link to="/" className={styles.close} aria-label={text.summary_done}><BackIcon /></Link>}
-    <h1 className={styles.score} aria-label={text.summary_correct_of(result.correct, result.total)}><span>{result.correct}</span><small>{text.summary_correct_of(result.correct, result.total).replace(String(result.correct), '').trim()}</small></h1>
-    <p className={styles.note}>{line}</p>
-    {training.finish?.timedOut && <p className={styles.note}>{text.summary_timed_out}</p>}
-    {training.finish?.timedOut && result.unanswered > 0 && <p>{text.summary_ran_out(text.questionsCount(result.unanswered))}</p>}
-    {result.review.length ? <section className={styles.reviewTopics}>
-      <h2>{text.summary_review}</h2>
-      {result.review.map((topic) => {
-        const numbers = topic.positions.map((position) => String(position + 1));
-        const list = numbers.length === 1 ? numbers[0]! : `${numbers.slice(0, -1).join(', ')} ${text.summary_and} ${numbers.at(-1)}`;
-        return <div key={topic.topicId} className={styles.reviewTopic}><i aria-hidden="true" /><div><h3>{topic.title[locale]}</h3><p className={styles.note}>{text.summary_mistakes(topic.mistakes)} · {(numbers.length === 1 ? text.summary_question : text.summary_questions)(list)}</p></div></div>;
-      })}
-    </section> : !result.unanswered && <p>{text.summary_perfect}</p>}
-    <Link to="/training/$trainingId/review" params={{ trainingId: training.session.id }} className={styles.allAnswers}>{text.summary_all_answers}</Link>
+  return <FocusLayout training session footer={
     <SessionFooter>
       {(problem || !online && result.review.length > 0) && <p role="status" className={styles.note}>{problem ?? text.builder_start_offline}</p>}
       <TrainingActions secondary={result.review.length > 0 ? { text: text.summary_done, disabled: busy, onClick: close } : undefined} primary={{ text: result.review.length ? text.summary_repeat(text.questionsCount(count)) : text.summary_done, disabled: busy || Boolean(result.review.length && !online), busy, onClick: result.review.length ? () => void repeat() : close }} />
     </SessionFooter>
-  </div>;
+  }>
+    <div className={`${styles.screen} ${styles.session} ${styles.summary}`} data-shell={shell} data-section={training.session.section}>
+      {shell === 'site' && <Link to="/" className={styles.close} aria-label={text.summary_done}><BackIcon /></Link>}
+      <h1 className={styles.score} aria-label={text.summary_correct_of(result.correct, result.total)}><span>{result.correct}</span><small>{text.summary_correct_of(result.correct, result.total).replace(String(result.correct), '').trim()}</small></h1>
+      <p className={styles.note}>{line}</p>
+      {training.finish?.timedOut && <p className={styles.note}>{text.summary_timed_out}</p>}
+      {training.finish?.timedOut && result.unanswered > 0 && <p>{text.summary_ran_out(text.questionsCount(result.unanswered))}</p>}
+      {result.review.length ? <section className={styles.reviewTopics}>
+        <h2>{text.summary_review}</h2>
+        {result.review.map((topic) => {
+          const numbers = topic.positions.map((position) => String(position + 1));
+          const list = numbers.length === 1 ? numbers[0]! : `${numbers.slice(0, -1).join(', ')} ${text.summary_and} ${numbers.at(-1)}`;
+          return <div key={topic.topicId} className={styles.reviewTopic}><i aria-hidden="true" /><div><h3>{topic.title[locale]}</h3><p className={styles.note}>{text.summary_mistakes(topic.mistakes)} · {(numbers.length === 1 ? text.summary_question : text.summary_questions)(list)}</p></div></div>;
+        })}
+      </section> : !result.unanswered && <p>{text.summary_perfect}</p>}
+      <Link to="/training/$trainingId/review" params={{ trainingId: training.session.id }} className={styles.allAnswers}>{text.summary_all_answers}</Link>
+    </div>
+  </FocusLayout>;
 }
 
 function Flag({ filled = false }: { filled?: boolean }) { return <SessionIcon><path d="M5 21V3m0 1c5-3 9 3 14 0v10c-5 3-9-3-14 0" fill={filled ? 'currentColor' : 'none'} /></SessionIcon>; }

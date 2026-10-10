@@ -6,5 +6,5 @@
 
 .strong {
   composes: glass;
-  background: var(--color-surface-2);
+  background: var(--color-surface);
 }

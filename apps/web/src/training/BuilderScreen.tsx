@@ -36,7 +36,7 @@ function BuilderStatus({ offline, unavailable, retry }: { offline: boolean; unav
   const { shell } = useShell();
   const navigate = useNavigate();
   useBackButton(shell === 'telegram' ? () => void navigate({ to: '/' }) : null);
-  return <FocusLayout glow="verbal"><div className={styles.screen}>
+  return <FocusLayout><div className={styles.screen}>
     {shell === 'site' && <Link to="/" className={styles.back}><BackIcon />{t.back}</Link>}
     <h1 className={styles.title}>{t.training.training_new}</h1>
     {unavailable || offline ? <StatusScreen heading="h2" live title={offline ? t.training.training_offline_title : t.training.training_failed_title}
@@ -88,7 +88,7 @@ function ReadyBuilder({ options }: { options: TrainingOptions }) {
     } finally { starting.current = false; setBusy(false); }
   };
 
-  return <FocusLayout glow={form.section} training wide={!topics}><div className={styles.screen} data-shell={shell}>
+  return <FocusLayout training wide={!topics}><div className={styles.screen} data-shell={shell}>
     {shell === 'site' && <button type="button" className={styles.back} onClick={back}><BackIcon />{t.back}</button>}
     <h1 className={styles.title}>{topics ? text.builder_topics : text.training_new}</h1>
     {topics ? <>

@@ -74,6 +74,7 @@
 
 .version {
   font: var(--font-caption);
+  letter-spacing: var(--tracking-caption);
   color: var(--color-text-3);
   font-variant-numeric: tabular-nums;
 }
@@ -81,12 +82,14 @@
 .error {
   margin-top: var(--space-8);
   font: var(--font-meta);
+  letter-spacing: var(--tracking-meta);
   color: var(--color-text);
 }
 
 .disclaimer {
   margin-top: var(--space-16);
   font: var(--font-caption);
+  letter-spacing: var(--tracking-caption);
   color: var(--color-text-3);
 }
 

@@ -35,13 +35,13 @@ test('SecondaryButton следует за темой; неподдерживае
   const screen = await render(action());
   try {
     html.dataset.theme = 'dark';
-    const color = getComputedStyle(html).getPropertyValue('--color-surface').trim();
+    const color = getComputedStyle(html).getPropertyValue('--color-surface-2').trim();
     await expect.poll(() => sdk.setParams.ifAvailable.mock.calls.at(-1)?.[0]?.bgColor).toBe(color);
-    html.style.setProperty('--color-surface', 'Canvas'); html.style.setProperty('--color-text', 'CanvasText');
+    html.style.setProperty('--color-surface-2', 'Canvas'); html.style.setProperty('--color-text', 'CanvasText');
     html.dataset.theme = 'light';
     await expect.poll(() => sdk.setParams.ifAvailable.mock.calls.at(-1)?.[0]).not.toHaveProperty('bgColor');
     expect(sdk.setParams.ifAvailable.mock.calls.at(-1)?.[0]).not.toHaveProperty('textColor');
-  } finally { await screen.unmount(); html.style.removeProperty('--color-surface'); html.style.removeProperty('--color-text'); if (theme === undefined) delete html.dataset.theme; else html.dataset.theme = theme; }
+  } finally { await screen.unmount(); html.style.removeProperty('--color-surface-2'); html.style.removeProperty('--color-text'); if (theme === undefined) delete html.dataset.theme; else html.dataset.theme = theme; }
 });
 
 for (const shell of ['telegram', 'site'] as const) test(`fallback ${shell} выполняет то же действие`, async () => {
@@ -56,10 +56,10 @@ test('недоступная подписка безопасно убирает�
 });
 
 test('сокращённый сборщиком #fff остаётся белым RGB у SecondaryButton', async () => {
-  const html = document.documentElement; html.style.setProperty('--color-surface', '#fff');
+  const html = document.documentElement; html.style.setProperty('--color-surface-2', '#fff');
   try {
     const screen = await render(action());
     expect(sdk.setParams.ifAvailable).toHaveBeenCalledWith(expect.objectContaining({ bgColor: '#ffffff' }));
     await screen.unmount();
-  } finally { html.style.removeProperty('--color-surface'); }
+  } finally { html.style.removeProperty('--color-surface-2'); }
 });

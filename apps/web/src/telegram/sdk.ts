@@ -47,6 +47,7 @@ export async function startTelegram(): Promise<TelegramStart> {
   // зовёт эффекты дважды.
   themeParams.mount();
   miniApp.mount();
+  syncTelegramTheme();
   mainButton.mount.ifAvailable();
   secondaryButton.mount.ifAvailable();
   swipeBehavior.mount.ifAvailable();

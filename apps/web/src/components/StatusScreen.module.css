@@ -25,7 +25,7 @@
 }
 
 .text {
-  max-width: var(--layout-content-max);
+  max-width: var(--layout-text-max);
   font: var(--font-lead);
   letter-spacing: var(--tracking-lead);
   color: var(--color-text-2);

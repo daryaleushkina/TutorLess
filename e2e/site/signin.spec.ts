@@ -1,4 +1,4 @@
-// Сайт: вход тремя способами через подменный провайдер (server/cmd/e2estack) — весь путь OIDC с PKCE, обмен
+// Сайт: вход через Apple и Google с подменным провайдером (server/cmd/e2estack) — весь путь OIDC с PKCE, обмен
 // кода на сервере, кука сессии; выход; отказы.
 import type { Page } from '@playwright/test';
 import { expect, test } from '../fixtures';

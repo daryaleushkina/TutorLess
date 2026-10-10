@@ -53,6 +53,9 @@ function environment(opts: { hash?: string; storage?: Record<string, string>; st
 beforeEach(() => {
   vi.clearAllMocks();
   vi.unstubAllGlobals();
+  vi.stubGlobal('document', { documentElement: {} });
+  vi.stubGlobal('getComputedStyle', () => ({ getPropertyValue: () => '#0A0F1F' }));
+  vi.stubGlobal('MutationObserver', class { observe() {} disconnect() {} });
   sdk.init.mockImplementation(() => {});
   sdk.initData.raw.mockImplementation(() => 'query_id=1&hash=x');
   sdk.viewport.mount.mockImplementation(async () => {});
@@ -64,6 +67,18 @@ beforeEach(() => {
 });
 
 describe('startTelegram', () => {
+  it('цвета клиента применяются сразу после miniApp.mount, до ожидания viewport', async () => {
+    environment();
+    vi.stubGlobal('document', { documentElement: {} });
+    vi.stubGlobal('getComputedStyle', () => ({ getPropertyValue: () => '#0A0F1F' }));
+    vi.stubGlobal('MutationObserver', class { observe() {} disconnect() {} });
+    expect((await startTelegram()).kind).toBe('ok');
+    for (const method of [sdk.miniApp.setHeaderColor, sdk.miniApp.setBgColor, sdk.miniApp.setBottomBarColor]) {
+      expect(method.ifAvailable).toHaveBeenCalledWith('#0A0F1F');
+      expect(method.ifAvailable.mock.invocationCallOrder[0]).toBeGreaterThan(sdk.miniApp.mount.mock.invocationCallOrder[0]!);
+      expect(method.ifAvailable.mock.invocationCallOrder[0]).toBeLessThan(sdk.viewport.mount.mock.invocationCallOrder[0]!);
+    }
+  });
   it('запуск из Telegram: параметры, язык; на телефоне — полноэкранный режим', async () => {
     environment({ hash: '#tgWebAppData=x' });
     expect(await startTelegram()).toEqual({ kind: 'ok', launch: { initDataRaw: 'query_id=1&hash=x', languageCode: 'en' } });

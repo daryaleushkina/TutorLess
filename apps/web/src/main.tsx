@@ -19,7 +19,6 @@ async function bootstrap(): Promise<void> {
   const shell = detectShell(location.pathname);
   configureReporter(shell);
   installGlobalReporter();
-  await restoreTheme();
 
   let launch: TelegramLaunch | null = null;
   if (shell === 'telegram') {
@@ -31,13 +30,14 @@ async function bootstrap(): Promise<void> {
       return;
     }
     if (started.kind === 'failed') {
+      syncTelegramTheme();
       reportError(started.error);
       renderStartFailure(container, 'telegram');
       return;
     }
     launch = started.launch;
-    syncTelegramTheme();
-    await restoreTheme(telegramThemeStorage());
+    // Локальную тему уже применил head; ответ DeviceStorage не задерживает первый кадр.
+    void restoreTheme(telegramThemeStorage()).catch((error: unknown) => reportError(error));
   }
 
   const queryClient = makeQueryClient(shell);

@@ -37,7 +37,7 @@ function copyTheme(theme: Theme): void {
 }
 
 export async function restoreTheme(device?: DeviceThemeStorage): Promise<void> {
-  applyTheme(readTheme());
+  // Скрипт в head — единственный источник темы до кадра; здесь только уточнение от клиента.
   if (!device) return;
   try {
     const saved = await device.getItem(THEME_STORAGE_KEY);

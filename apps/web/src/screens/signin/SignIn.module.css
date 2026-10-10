@@ -64,7 +64,7 @@
 }
 
 .tagline {
-  max-width: var(--layout-content-max);
+  max-width: var(--layout-auth-column-max);
   font: var(--font-lead);
   letter-spacing: var(--tracking-lead);
   color: var(--color-text-2);
@@ -78,6 +78,7 @@
 
 .message {
   font: var(--font-meta);
+  letter-spacing: var(--tracking-meta);
   color: var(--color-text);
 }
 
@@ -106,9 +107,11 @@
   gap: var(--space-6);
   background: var(--sign-in-apple-bg);
   color: var(--sign-in-apple-text);
-  font: var(--font-body);
-  font-family: system-ui, sans-serif;
-  font-weight: var(--font-weight-medium);
+  /* Правила Apple требуют системный шрифт, поэтому не Geologica. */
+  font-family: var(--sign-in-apple-font-family);
+  font-size: var(--sign-in-apple-font-size);
+  font-weight: var(--sign-in-apple-font-weight);
+  line-height: var(--sign-in-apple-line-height);
 }
 
 .logoApple {
@@ -123,10 +126,12 @@
   border: var(--size-hairline) solid var(--sign-in-google-stroke);
   background: var(--sign-in-google-bg);
   color: var(--sign-in-google-text);
-  font: 500 14px/1.45 Roboto, Arial, sans-serif;
-  font-family: Roboto, Arial, sans-serif;
-  font-weight: var(--font-weight-medium);
-  letter-spacing: 0.25px;
+  /* Правила Google требуют Roboto, поэтому не Geologica. */
+  font-family: var(--sign-in-google-font-family);
+  font-size: var(--sign-in-google-font-size);
+  font-weight: var(--sign-in-google-font-weight);
+  line-height: var(--sign-in-google-line-height);
+  letter-spacing: var(--sign-in-google-tracking);
 }
 
 .logoGoogle {
@@ -137,6 +142,7 @@
 .legal {
   margin-top: var(--space-6);
   font: var(--font-caption);
+  letter-spacing: var(--tracking-caption);
   color: var(--color-text-3);
   text-align: center;
 }
@@ -159,6 +165,7 @@
 
 .devLabel {
   font: var(--font-meta);
+  letter-spacing: var(--tracking-meta);
   color: var(--color-text-3);
 }
 
@@ -177,6 +184,7 @@
   background: var(--color-surface-2);
   /* 16 px и больше — иначе Safari на iPhone приближает страницу при фокусе (навык mobile-native). */
   font: var(--font-body);
+  letter-spacing: var(--tracking-body);
 }
 
 .devSubmit {
@@ -206,7 +214,7 @@
   .panel {
     flex: none;
     width: 100%;
-    max-width: var(--layout-content-max);
+    max-width: var(--layout-auth-column-max);
     padding: var(--space-40) var(--space-32) var(--space-32);
     border-radius: var(--radius-l);
     background: var(--color-surface);

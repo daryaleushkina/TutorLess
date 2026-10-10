@@ -4,8 +4,8 @@ import { build } from 'vite';
 
 it('статические зависимости повторяемого пакета разделов загружены вместе с первым экраном', async () => {
   const result = await build({
-    root: resolve('apps/web'),
-    configFile: resolve('apps/web/vite.config.ts'),
+    root: resolve(import.meta.dirname, '..'),
+    configFile: resolve(import.meta.dirname, '../vite.config.ts'),
     logLevel: 'silent',
     build: { write: false, sourcemap: false },
   });

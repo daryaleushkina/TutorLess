@@ -11,6 +11,8 @@ const storage = { getItem: vi.fn((key: string) => values.get(key) ?? null), setI
 
 beforeEach(() => {
   values.clear();
+  dataset.theme = 'dark';
+  scheme.colorScheme = 'dark';
   vi.clearAllMocks();
   storage.getItem.mockImplementation((key) => values.get(key) ?? null);
   storage.setItem.mockImplementation((key, value) => { values.set(key, value); });
@@ -21,11 +23,21 @@ beforeEach(() => {
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
 describe('выбор темы на устройстве', () => {
+  it('чтение DeviceStorage не перерисовывает тему, уже применённую скриптом в head', async () => {
+    applyTheme('light');
+    values.set(THEME_STORAGE_KEY, 'dark');
+    let answer: ((value: string | null) => void) | undefined;
+    const restoring = restoreTheme({ getItem: () => new Promise((resolve) => { answer = resolve; }), setItem: vi.fn() });
+    expect(dataset.theme).toBe('light');
+    answer?.('dark');
+    await restoring;
+    expect(dataset.theme).toBe('dark');
+  });
   it.each(['light', 'dark'])('умолчание тёмное при системной и Telegram теме %s', async (external) => {
     const matchMedia = vi.fn(() => ({ matches: external === 'dark' }));
     vi.stubGlobal('matchMedia', matchMedia);
     vi.stubGlobal('Telegram', { WebApp: { colorScheme: external } });
-    await restoreTheme();
+    applyTheme(readTheme());
     expect(dataset.theme).toBe('dark');
     expect(scheme.colorScheme).toBe('dark');
     expect(matchMedia).not.toHaveBeenCalled();
@@ -34,7 +46,7 @@ describe('выбор темы на устройстве', () => {
   it.each(['light', 'dark'])('сохранённая тема %s применяется и записывается', async (theme) => {
     await saveTheme(theme === 'light' ? 'light' : 'dark');
     expect(readTheme()).toBe(theme);
-    await restoreTheme();
+    applyTheme(readTheme());
     expect(dataset.theme).toBe(theme);
     expect(values.get(THEME_STORAGE_KEY)).toBe(theme);
     expect(meta.setAttribute).toHaveBeenCalledWith('content', theme);
@@ -48,7 +60,7 @@ describe('выбор темы на устройстве', () => {
   it('бросающий доступ к localStorage → тёмная', async () => {
     Object.defineProperty(globalThis, 'localStorage', { configurable: true, get() { throw new Error('denied'); } });
     expect(readTheme()).toBe('dark');
-    await restoreTheme();
+    applyTheme(readTheme());
     expect(dataset.theme).toBe('dark');
   });
 
@@ -72,6 +84,7 @@ describe('выбор темы на устройстве', () => {
 
   it('пустой DeviceStorage сохраняет локальный выбор, битый → тёмная', async () => {
     values.set(THEME_STORAGE_KEY, 'light');
+    applyTheme(readTheme());
     await restoreTheme({ getItem: async () => null, setItem: vi.fn() });
     expect(dataset.theme).toBe('light');
     await restoreTheme({ getItem: async () => 'corrupt', setItem: vi.fn() });
@@ -81,6 +94,7 @@ describe('выбор темы на устройстве', () => {
 
   it('DeviceStorage недоступен при чтении → локальная тема', async () => {
     values.set(THEME_STORAGE_KEY, 'light');
+    applyTheme(readTheme());
     await restoreTheme({ getItem: async () => { throw new Error('timeout'); }, setItem: vi.fn() });
     expect(dataset.theme).toBe('light');
     expect(console.warn).toHaveBeenCalled();

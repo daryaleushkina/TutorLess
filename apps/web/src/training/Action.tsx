@@ -26,7 +26,7 @@ function TrainingButton({ kind, text, disabled, busy = false, onClick }: ActionP
     if (!native || !sdk) return;
     const apply = () => {
       const css = getComputedStyle(document.documentElement);
-      const bgColor = hex(css.getPropertyValue(kind === 'main' ? '--color-accent' : '--color-surface').trim());
+      const bgColor = hex(css.getPropertyValue(kind === 'main' ? '--color-accent' : '--color-surface-2').trim());
       const textColor = hex(css.getPropertyValue(kind === 'main' ? '--color-on-accent' : '--color-text').trim());
       const params = { text, isVisible: true, isEnabled: !disabled && !busy, isLoaderVisible: busy,
         ...(bgColor && { bgColor }), ...(textColor && { textColor }) };
@@ -34,7 +34,7 @@ function TrainingButton({ kind, text, disabled, busy = false, onClick }: ActionP
       else sdk.secondaryButton.setParams.ifAvailable({ ...params, position });
     };
     apply();
-    // Тема приходит мостом Telegram и меняет токены без рендера React.
+    // Выбор темы меняет токены без рендера React.
     const observer = new MutationObserver(apply);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     return () => observer.disconnect();

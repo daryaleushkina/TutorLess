@@ -26,6 +26,7 @@
 .stale {
   margin-top: var(--space-12);
   font: var(--font-meta);
+  letter-spacing: var(--tracking-meta);
   color: var(--color-text-2);
 }
 
@@ -154,12 +155,14 @@
 .minutes {
   flex: none;
   font: var(--font-meta);
+  letter-spacing: var(--tracking-meta);
   color: var(--color-text-3);
   font-variant-numeric: tabular-nums;
 }
 
 .cardSub {
   font: var(--font-meta);
+  letter-spacing: var(--tracking-meta);
   color: var(--color-text-2);
 }
 
@@ -171,6 +174,7 @@
 .section {
   --section-color: var(--color-verbal);
   font: var(--font-meta);
+  letter-spacing: var(--tracking-meta);
   font-weight: var(--font-weight-medium);
   color: var(--section-color);
 }
@@ -190,6 +194,7 @@
   border: var(--size-hairline) solid var(--color-line);
   border-radius: var(--radius-s);
   font: var(--font-caption);
+  letter-spacing: var(--tracking-caption);
   font-family: var(--font-family-mono);
   color: var(--color-text-3);
 }
@@ -215,6 +220,7 @@
 
 .blocked {
   font: var(--font-meta);
+  letter-spacing: var(--tracking-meta);
   color: var(--color-text-3);
 }
 
@@ -254,6 +260,7 @@
 
 .rowTitle {
   font: var(--font-body);
+  letter-spacing: var(--tracking-body);
   font-weight: var(--font-weight-medium);
 }
 
@@ -293,11 +300,13 @@
 
 .endTitle {
   font: var(--font-body);
+  letter-spacing: var(--tracking-body);
   font-weight: var(--font-weight-semibold);
 }
 
 .endNote {
   font: var(--font-meta);
+  letter-spacing: var(--tracking-meta);
   color: var(--color-text-3);
 }
 
@@ -313,6 +322,7 @@
   border: 0;
   background: var(--color-surface-2);
   box-shadow: none;
+  outline: none;
 }
 
 @keyframes pulse {
@@ -330,6 +340,7 @@
 .skLine {
   display: block;
   font: var(--font-meta);
+  letter-spacing: var(--tracking-meta);
   border-radius: var(--radius-s);
 }
 
@@ -345,6 +356,7 @@
 .skLine[data-w='title'] {
   width: 62%;
   font: var(--font-h2);
+  letter-spacing: var(--tracking-h2);
 }
 
 .skLine[data-w='sub'] {
@@ -354,11 +366,13 @@
 .skLine[data-w='row'] {
   width: 70%;
   font: var(--font-body);
+  letter-spacing: var(--tracking-body);
 }
 
 .skLine[data-w='short'] {
   width: 34%;
   font: var(--font-body);
+  letter-spacing: var(--tracking-body);
 }
 
 .skLine[data-w='end'] { width: 34%; }

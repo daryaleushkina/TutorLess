@@ -5,7 +5,7 @@
  */
 
 .frame {
-  --session-footer-inset: 0px;
+  --focus-column-max: var(--layout-content-max);
   position: relative;
   height: var(--app-height);
   display: flex;
@@ -122,6 +122,7 @@
   color: var(--color-text);
   text-decoration: none;
   font: var(--font-body);
+  letter-spacing: var(--tracking-body);
   font-weight: var(--font-weight-semibold);
 }
 
@@ -151,8 +152,8 @@
   display: flex;
   align-items: center;
   gap: var(--space-12);
-  font: var(--font-action);
-  letter-spacing: var(--tracking-action);
+  font: var(--font-nav-label);
+  letter-spacing: var(--tracking-nav-label);
   white-space: nowrap;
 }
 
@@ -327,14 +328,16 @@
 
 /* Конструктор: на сайте набор и поля рядом; в Telegram снизу место под MainButton. */
 @media (min-width: 900px) {
-  .frame[data-shell='site'][data-wide] .column { max-width: calc(var(--layout-content-max) + var(--layout-content-max)); }
+  .frame[data-shell='site'][data-wide] { --focus-column-max: var(--layout-session-max); }
+  .frame[data-shell='site'][data-wide] .column { max-width: var(--focus-column-max); }
 }
 .frame[data-shell='telegram'][data-training] .main::after { height: calc(var(--size-button) + var(--app-inset-bottom) + var(--space-32)); }
 
 /* Сессия держит главное действие внизу, короткая шапка остаётся видна при чтении длинного задания. */
-.frame[data-session] .column { min-height: calc(var(--app-height) - var(--app-inset-top) - var(--app-inset-bottom) - var(--space-56)); display: flex; flex-direction: column; }
+.frame[data-session] { flex-direction: column; }
+.frame[data-session] .column { display: flex; flex-direction: column; }
 .frame[data-session] .column > div { flex: 1; }
-.frame[data-session][data-shell='site'] .main { margin-bottom: var(--session-footer-inset); }
+.frame[data-footer][data-shell='site'] .main::after { height: var(--space-16); }
 .frame[data-session][data-shell='telegram'] .column { min-height: calc(var(--app-height) - var(--app-inset-top) - var(--app-inset-bottom) - var(--size-button) - var(--space-56)); }
 @media (min-width: 900px) {
   .frame[data-session][data-shell='site'] .main { padding-top: var(--space-20); }
