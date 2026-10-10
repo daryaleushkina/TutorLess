@@ -18,14 +18,13 @@
 .frame .l-cells { display: inline-flex; gap: 1px; margin-left: 1px; vertical-align: -3px; }
 .frame .l-cell {
   width: 12px; height: 26px; padding: 0; border: 0; border-bottom: 1.5px solid var(--text-3);
-  background: transparent; color: var(--accent); font: 500 17px/1 var(--font-body); text-align: center;
-  border-radius: 0; caret-color: var(--accent);
-}
+  background: transparent; color: var(--accent);  text-align: center;
+  border-radius: 0; caret-color: var(--accent); font: 500 17px/1 var(--font-body); letter-spacing: 0em; }
 .frame .l-cell[value]:not([value=""]) { border-bottom-color: var(--accent); }
 .frame .l-cell-current { border-bottom: 2px solid var(--accent); background: var(--accent-soft); border-radius: 4px 4px 0 0; }
 .frame .l-cell:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 .frame .l-ctw-progress { font-size: 14px; color: var(--text-3); }
-.frame .l-ctw-progress b { font-weight: var(--thin); font-size: 20px; color: var(--text); letter-spacing: -0.02em; }
+.frame .l-ctw-progress b { color: var(--text); font: var(--thin) 22px/1.45 var(--font-body); letter-spacing: -0.02em; }
 
 /* ---------- Плеер Listening ---------- */
 .frame .l-player { display: flex; align-items: center; gap: 16px; padding: 18px; border-radius: var(--r-l); background: var(--surface); }
@@ -45,8 +44,7 @@
 /* Тихая отметка «прослушано». */
 .frame .l-heard {
   display: inline-flex; align-self: flex-start; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px;
-  background: var(--sec-soft); color: var(--text-2); font-size: 14px; font-weight: 500;
-}
+  background: var(--sec-soft); color: var(--text-2); font: 500 13px/1.45 var(--font-body); letter-spacing: 0em; }
 .frame .l-heard .ic-sm { color: var(--sec); }
 .frame .l-talk-title { margin: 16px 0 8px; font-size: 14px; color: var(--text-3); }
 
@@ -87,12 +85,11 @@
 .frame .l-field-label { font-size: 13px; font-weight: 500; color: var(--text-3); }
 .frame .l-textarea {
   flex: 1; min-height: 120px; resize: none; padding: 14px 16px; border-radius: var(--r-m); border: 1px solid var(--line-strong);
-  background: var(--surface); color: var(--text); font: 400 16px/1.55 var(--font-body);
-}
+  background: var(--surface); color: var(--text); font: 400 15px/1.55 var(--font-body); letter-spacing: -0.005em; }
 .frame[data-theme="dark"] .l-textarea { border-color: transparent; background: var(--surface-2); }
 .frame .l-textarea:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 .frame .l-count { font-size: 13px; color: var(--text-3); }
-.frame .l-count b { font-weight: var(--thin); font-size: 20px; color: var(--text); letter-spacing: -0.02em; }
+.frame .l-count b { color: var(--text); font: var(--thin) 22px/1.45 var(--font-body); letter-spacing: -0.02em; }
 
 /* ---------- Speaking ---------- */
 .frame .l-speak { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 14px; }
@@ -108,10 +105,10 @@
 .frame .l-rec-sub { max-width: 280px; font-size: 14px; color: var(--text-3); }
 .frame .l-rec-sub b { font-weight: 600; color: var(--text-2); }
 
-.frame .l-live { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: var(--wrong); }
+.frame .l-live { display: inline-flex; align-items: center; gap: 8px; color: var(--wrong); font: 500 13px/1.45 var(--font-body); letter-spacing: 0em; }
 .frame .l-live-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--wrong); box-shadow: 0 0 0 4px var(--wrong-soft); }
 .frame .l-countdown { display: flex; align-items: baseline; gap: 8px; font-variant-numeric: tabular-nums; }
-.frame .l-countdown span { font-weight: var(--thin); font-size: 72px; line-height: 1; letter-spacing: -0.04em; }
+.frame .l-countdown span { font: var(--thin) 70px/1 var(--font-body); letter-spacing: -0.04em; }
 .frame .l-countdown small { font-size: 15px; color: var(--text-3); }
 .frame .l-meter { display: flex; align-items: center; justify-content: center; gap: 4px; width: 100%; max-width: 280px; height: 56px; }
 .frame .l-meter span { flex: 1; border-radius: 3px; background: var(--accent); opacity: 0.85; }
@@ -124,7 +121,7 @@
 .frame .l-result { gap: 18px; }
 .frame .l-score { display: flex; flex-direction: column; gap: 10px; }
 .frame .l-score-num { display: flex; align-items: baseline; gap: 10px; }
-.frame .l-score-num span { font-weight: var(--thin); font-size: 80px; line-height: 0.95; letter-spacing: -0.045em; color: var(--text); }
+.frame .l-score-num span { color: var(--text); font: var(--thin) 88px/0.95 var(--font-body); letter-spacing: -0.04em; }
 .frame .l-score-num small { font-size: 18px; color: var(--text-3); }
 .frame .l-score-note { font-size: 14px; color: var(--text-3); }
 .frame .l-said { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; padding: 14px 16px; border-radius: var(--r-m); background: var(--surface); font-size: 15px; line-height: 1.55; }
@@ -145,7 +142,7 @@
 @container (min-width: 900px) {
   .frame .l-ctw { max-width: 760px; padding-top: 24px; }
   .frame .l-ctw-text { font-size: 22px; line-height: 2.2; }
-  .frame .l-cell { width: 14px; height: 30px; font-size: 20px; }
+  .frame .l-cell { width: 14px; height: 30px; font: 500 19px/1 var(--font-body); letter-spacing: 0em; }
   .frame .l-word { white-space: nowrap; }
 
   .frame .l-frame { font-size: 24px; }
@@ -153,14 +150,14 @@
 
   .frame .l-email { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); }
   .frame .l-task { max-height: none; font-size: 17px; }
-  .frame .l-textarea { min-height: 360px; font-size: 18px; }
+  .frame .l-textarea { min-height: 360px; font: 400 17px/1.45 var(--font-body); letter-spacing: -0.005em; }
 
   .frame .l-speak { align-items: center; padding-top: 24px; }
   .frame .l-context, .frame .l-bubble-wide { max-width: 640px; text-align: center; }
   .frame .l-bubble-wide { text-align: left; }
-  .frame .l-heard { align-self: center; }
-  .frame .l-countdown span { font-size: 96px; }
+  .frame .l-heard { align-self: center; font: 500 13px/1.45 var(--font-body); letter-spacing: 0em; }
+  .frame .l-countdown span { font: var(--thin) 88px/1 var(--font-body); letter-spacing: -0.04em; }
 
   .frame .l-result { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-  .frame .l-score-num span { font-size: 112px; }
+  .frame .l-score-num span { font: var(--thin) 120px/0.95 var(--font-body); letter-spacing: -0.04em; }
 }
