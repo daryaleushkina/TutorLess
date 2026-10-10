@@ -13,8 +13,8 @@
 .frame[data-theme="dark"] .w-today {
   background: radial-gradient(120% 90% at 100% 0%, var(--c-words-soft), transparent 60%), var(--surface);
 }
-.frame .w-today-count { display: flex; align-items: baseline; gap: 10px; font-size: 19px; font-weight: 600; letter-spacing: -0.015em; }
-.frame .w-today-count .w-num { font-size: 56px; line-height: 1; color: var(--sec); }
+.frame .w-today-count { display: flex; align-items: baseline; gap: 10px; font: 600 17px/1.45 var(--font-body); letter-spacing: -0.01em; }
+.frame .w-today-count .w-num { color: var(--sec); font: var(--thin) 56px/1 var(--font-body); letter-spacing: -0.04em; }
 .frame .w-today-meta { color: var(--text-3); font-size: 15px; }
 .frame .w-today .btn { margin-top: 14px; }
 
@@ -24,8 +24,7 @@
 }
 .frame .w-search input {
   flex: 1; min-width: 0; height: 44px; border: 0; background: transparent; outline: none;
-  font: 500 17px/1 var(--font-body); color: var(--text); letter-spacing: -0.005em;
-}
+   color: var(--text); font: 500 17px/1 var(--font-body); letter-spacing: 0em; }
 .frame .w-search input::placeholder { color: var(--text-3); opacity: 1; }
 .frame .w-search input::-webkit-search-cancel-button { display: none; }
 .frame .w-search:focus-within { box-shadow: 0 0 0 2px var(--accent); }
@@ -58,10 +57,9 @@
 .frame .w-ask { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: 28px; }
 .frame .w-prompt { display: flex; flex-direction: column; gap: 6px; }
 .frame .w-task { font-size: 15px; color: var(--text-3); }
-.frame .w-prompt-word { font: 200 52px/1.05 var(--font-display); letter-spacing: -0.04em; color: var(--text); }
-.frame:not([data-theme="dark"]) .w-prompt-word { font-weight: 300; }
+.frame .w-prompt-word { color: var(--text); font: var(--thin) 56px/1 var(--font-body); letter-spacing: -0.04em; }
 .frame .w-prompt .word-meta { margin-top: 2px; }
-.frame .w-sentence { font-size: 21px; line-height: 1.55; letter-spacing: -0.01em; text-wrap: pretty; }
+.frame .w-sentence { text-wrap: pretty; font: 400 20px/1.6 var(--font-body); letter-spacing: -0.01em; }
 .frame .w-gap { display: inline-block; width: 104px; height: 1.1em; vertical-align: -0.2em; border-bottom: 2px solid var(--accent); }
 .frame .w-opts { gap: 8px; }
 .frame .btn-primary:disabled { background: var(--surface-2); color: var(--text-3); box-shadow: none; cursor: default; }
@@ -72,15 +70,15 @@
 .frame .w-verdict-right > span { color: var(--text); }
 .frame .w-verdict-right b { color: var(--right); }
 .frame .w-card .word { gap: 18px; }
-.frame .w-card .headword { font-size: 48px; }
+.frame .w-card .headword { font: var(--thin) 48px/1 var(--font-body); letter-spacing: -0.04em; }
 .frame .w-sense-2 { padding-top: 16px; border-top: 1px solid var(--line); }
 .frame .w-sense-2 .sense-en { font-size: 17px; }
 
 /* ---------- W8 · итог ---------- */
 .frame .w-done { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 36px; }
 .frame .w-done-head { display: flex; flex-direction: column; gap: 6px; }
-.frame .w-done-num { display: flex; align-items: baseline; gap: 12px; font-size: 26px; font-weight: 300; color: var(--text-2); letter-spacing: -0.02em; }
-.frame .w-done-num .w-num { font-size: 96px; line-height: 0.95; color: var(--text); }
+.frame .w-done-num { display: flex; align-items: baseline; gap: 12px; color: var(--text-2); font: var(--thin) 26px/1.45 var(--font-body); letter-spacing: -0.02em; }
+.frame .w-done-num .w-num { color: var(--text); font: var(--thin) 88px/0.95 var(--font-body); letter-spacing: -0.04em; }
 .frame .w-done-sub { font-size: 17px; color: var(--text-2); }
 .frame .w-again { display: flex; flex-direction: column; gap: 6px; }
 .frame .w-row-static { min-height: 64px; }
@@ -100,12 +98,22 @@
   .frame [data-screen="w-pick"] .w-ask {
     display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 64px; align-items: center; justify-content: stretch;
   }
-  .frame .w-prompt-word { font-size: 72px; }
-  .frame .w-sentence { font-size: 24px; }
+  .frame .w-prompt-word { font: var(--thin) 72px/1 var(--font-body); letter-spacing: -0.04em; }
+  .frame .w-sentence { font: 400 24px/1.6 var(--font-body); letter-spacing: -0.01em; }
 
   .frame .w-card { display: grid; grid-template-columns: minmax(0, 1fr); max-width: 760px; align-content: start; padding-top: 24px; }
-  .frame .w-card .headword { font-size: 64px; }
+  .frame .w-card .headword { font: var(--thin) 60px/1 var(--font-body); letter-spacing: -0.04em; }
 
   .frame .w-done { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 64px; align-items: center; }
-  .frame .w-done-num .w-num { font-size: 128px; }
+  .frame .w-done-num .w-num { font: var(--thin) 120px/0.95 var(--font-body); letter-spacing: -0.04em; }
+}
+
+/* Общие профили ввода на широком экране. */
+@container (min-width: 900px) {
+  .frame .w-search input { font: 500 19px/1 var(--font-body); letter-spacing: 0em; }
+}
+
+/* Широкие профили общей шкалы тонких чисел. */
+@container (min-width: 900px) {
+  .frame .w-today-count .w-num { font: var(--thin) 60px/1 var(--font-body); letter-spacing: -0.04em; }
 }

@@ -1,9 +1,11 @@
 /* Режим «Учить слова» (W9–W17): только правила своих экранов, на токенах core.css. */
 
+.frame .wl-meet .headword { font: var(--thin) 56px/1 var(--font-body); letter-spacing: -0.04em; }
+
 /* ---------- Общее ---------- */
 .frame .wl-ask { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: 26px; }
 .frame .wl-prompt { display: flex; flex-direction: column; gap: 6px; }
-.frame .wl-prompt-tr { font-size: 24px; line-height: 1.25; font-weight: 600; letter-spacing: -0.015em; text-wrap: balance; }
+.frame .wl-prompt-tr { text-wrap: balance; font: 600 24px/1.25 var(--font-body); letter-spacing: -0.015em; }
 .frame .wl-prompt-en { display: flex; align-items: center; gap: 8px; font-size: 16px; color: var(--text-2); line-height: 1.45; }
 .frame .wl-inline-play { width: 36px; height: 36px; flex: none; }
 .frame .wl-audio { display: inline-flex; align-items: center; gap: 6px; }
@@ -20,11 +22,11 @@
 .frame .wl-count-field input {
   width: 128px; min-height: 76px; padding: 0 16px; border: 0; border-radius: var(--r-m);
   background: var(--surface); color: var(--sec); box-shadow: inset 0 0 0 1px var(--line-strong);
-  font: var(--thin) 56px/1 var(--font-display); letter-spacing: -0.04em; font-variant-numeric: tabular-nums;
+    font-variant-numeric: tabular-nums; font: var(--thin) 56px/1 var(--font-body); letter-spacing: -0.04em;
 }
 .frame[data-theme="dark"] .wl-count-field input { background: var(--surface-2); box-shadow: none; }
 .frame .wl-count-field input::-webkit-inner-spin-button { display: none; }
-.frame .wl-count-field span { font-size: 22px; font-weight: 600; letter-spacing: -0.015em; }
+.frame .wl-count-field span { font: 600 22px/1.45 var(--font-body); letter-spacing: -0.015em; }
 .frame .wl-count-meta { font-size: 15px; color: var(--text-2); }
 .frame .wl-switches { display: flex; flex-direction: column; border-radius: var(--r-l); background: var(--surface); }
 .frame:not([data-theme="dark"]) .wl-switches { box-shadow: inset 0 0 0 1px var(--line); }
@@ -46,15 +48,13 @@
 .frame .wl-slots { display: flex; flex-wrap: wrap; gap: 6px; }
 .frame .wl-slot {
   display: grid; place-items: center; width: 36px; height: 48px; border-radius: 10px;
-  border-bottom: 2px solid var(--line-strong); font-size: 24px; font-weight: 500;
-}
+  border-bottom: 2px solid var(--line-strong); font: 500 26px/1.45 var(--font-body); letter-spacing: -0.08px; }
 .frame .wl-slot-on { background: var(--sec-soft); border-bottom-color: var(--sec); color: var(--text); }
 .frame .wl-slot-next { border-bottom-color: var(--accent); box-shadow: inset 0 -2px 0 var(--accent); }
 .frame .wl-tiles { display: flex; flex-wrap: wrap; gap: 10px; }
 .frame .wl-tile {
   width: 56px; height: 56px; border: 0; border-radius: var(--r-m); background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--line-strong); font-size: 24px; font-weight: 500;
-}
+  box-shadow: inset 0 0 0 1px var(--line-strong); font: 500 26px/1.45 var(--font-body); letter-spacing: -0.08px; }
 .frame[data-theme="dark"] .wl-tile { background: var(--surface-2); box-shadow: none; }
 
 /* ---------- W12–W14 ввод ---------- */
@@ -67,9 +67,7 @@
 .frame .wl-input-active, .frame[data-theme="dark"] .wl-input-active { box-shadow: 0 0 0 2px var(--accent); }
 .frame .wl-input-label { flex-basis: 100%; font-size: 13px; color: var(--text-3); margin-bottom: -6px; }
 .frame .wl-input input {
-  flex: 1; min-width: 0; border: 0; background: transparent; color: var(--text); outline: none;
-  font: 500 26px/1.2 var(--font-body); letter-spacing: 0.01em;
-}
+  flex: 1; min-width: 0; border: 0; background: transparent; color: var(--text); outline: none; font: 500 26px/1.2 var(--font-body); letter-spacing: 0.01em; }
 .frame .wl-input input::placeholder { color: var(--text-3); opacity: 1; font-size: 18px; font-weight: 400; letter-spacing: 0; }
 .frame .wl-kbd { padding: 3px 8px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); font-size: 13px; font-weight: 600; }
 .frame .wl-hint-btn {
@@ -86,7 +84,7 @@
 .frame .wl-diff-label { font-size: 14px; color: var(--text-3); }
 .frame .wl-yours { color: var(--text-2); font-weight: 600; }
 .frame .wl-diff { display: flex; flex-wrap: wrap; gap: 3px; }
-.frame .wl-ch { display: grid; place-items: center; min-width: 26px; height: 44px; font-size: 28px; font-weight: 500; }
+.frame .wl-ch { display: grid; place-items: center; min-width: 26px; height: 44px; font: 500 26px/1.45 var(--font-body); letter-spacing: -0.08px; }
 .frame .wl-ch-extra { color: var(--wrong); text-decoration: line-through; text-decoration-thickness: 2px; opacity: 0.85; }
 .frame .wl-ch-miss { color: var(--accent); border-radius: 8px; background: var(--accent-soft); box-shadow: inset 0 -2px 0 var(--accent); }
 .frame .wl-diff-legend { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-3); }
@@ -117,15 +115,14 @@
 .frame .wl-heard small { font-size: 13px; color: var(--text-3); }
 .frame .wl-quiet {
   align-self: center; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px;
-  border: 0; background: transparent; color: var(--text-2); font-size: 14px; font-weight: 500;
-}
+  border: 0; background: transparent; color: var(--text-2); font: 500 15px/1.45 var(--font-body); letter-spacing: -0.005em; }
 .frame .wl-sample { flex: 1; }
 
 /* ---------- W17 итог ---------- */
 .frame .wl-done { flex: 1; display: flex; flex-direction: column; gap: 22px; }
 .frame .wl-done-head { display: flex; flex-direction: column; gap: 6px; }
-.frame .wl-done-num { display: flex; align-items: baseline; gap: 12px; font-size: 22px; font-weight: 600; letter-spacing: -0.015em; }
-.frame .wl-done-num .w-num { font-size: 88px; line-height: 0.95; color: var(--sec); }
+.frame .wl-done-num { display: flex; align-items: baseline; gap: 12px; font: 600 22px/1.45 var(--font-body); letter-spacing: -0.015em; }
+.frame .wl-done-num .w-num { color: var(--sec); font: var(--thin) 88px/0.95 var(--font-body); letter-spacing: -0.04em; }
 .frame .wl-done-list { display: flex; flex-direction: column; gap: 4px; }
 .frame .wl-done-list .w-row-static { min-height: 48px; display: flex; align-items: baseline; gap: 12px; padding-block: 12px; }
 .frame .wl-done-list .w-row-word { flex: none; }
@@ -137,23 +134,23 @@
   .frame .wl-start,
   .frame .wl-meet { width: 100%; max-width: 640px; margin-inline: auto; }
   .frame .wl-start { justify-content: center; }
-  .frame .wl-prompt-tr { font-size: 30px; }
-  .frame .wl-slot { width: 44px; height: 56px; font-size: 28px; }
-  .frame .wl-tile { width: 64px; height: 64px; }
-  .frame .wl-meet .headword { font-size: 72px; }
+  .frame .wl-prompt-tr { font: 600 30px/1.15 var(--font-body); letter-spacing: -0.03em; }
+  .frame .wl-slot { width: 44px; height: 56px; font: 500 26px/1.45 var(--font-body); letter-spacing: -0.08px; }
+  .frame .wl-tile { width: 64px; height: 64px; font: 500 26px/1.45 var(--font-body); letter-spacing: -0.08px; }
+  .frame .wl-meet .headword { font: var(--thin) 72px/1 var(--font-body); letter-spacing: -0.04em; }
   .frame .wl-done { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px 56px; align-items: start; }
   .frame .wl-done-head { grid-column: 1 / -1; }
-  .frame .wl-done-num .w-num { font-size: 120px; }
+  .frame .wl-done-num .w-num { font: var(--thin) 120px/0.95 var(--font-body); letter-spacing: -0.04em; }
 }
 
 /* ---------- W18–W20 перевод ---------- */
-.frame .wl-prompt-word { display: flex; align-items: center; gap: 14px; font-size: 40px; font-weight: 300; letter-spacing: -0.02em; line-height: 1.1; }
+.frame .wl-prompt-word { display: flex; align-items: center; gap: 14px; font: var(--thin) 40px/1.1 var(--font-body); letter-spacing: -0.02em; }
 .frame .wl-input-right, .frame[data-theme="dark"] .wl-input-right { box-shadow: 0 0 0 2px var(--right); }
 .frame .wl-verdict-play { align-items: center; }
 .frame .wl-verdict-play > span { flex: 1; }
 .frame .wl-verdict-play .ipa { font-family: var(--font-mono); font-size: 13px; color: var(--text-2); margin-left: 6px; }
 .frame .wl-verdict-play .icon-btn { margin: 0; }
-.frame .wl-phrase { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; font-size: 22px; line-height: 1.4; }
+.frame .wl-phrase { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; font: 400 20px/1.4 var(--font-body); letter-spacing: -0.01em; }
 .frame .wl-phrase b { font-weight: 600; color: var(--sec); }
 .frame .wl-answer {
   display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-height: 64px; padding: 10px 0;
@@ -184,6 +181,11 @@
 
 @container (min-width: 900px) {
   .frame .wl-map { width: 100%; max-width: 640px; margin-inline: auto; }
-  .frame .wl-prompt-word { font-size: 56px; }
+  .frame .wl-prompt-word { font: var(--thin) 56px/1.1 var(--font-body); letter-spacing: -0.02em; }
   .frame .wl-phrase { font-size: 26px; }
+}
+
+/* Широкие профили общей шкалы тонких чисел. */
+@container (min-width: 900px) {
+  .frame .wl-count-field input { font: var(--thin) 60px/1 var(--font-body); letter-spacing: -0.04em; }
 }

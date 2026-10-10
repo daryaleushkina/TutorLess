@@ -1,5 +1,7 @@
 /* Группа G — «Прогресс и аккаунт». Только правила своих экранов, на токенах core.css. */
 
+.g-title-row .h1 { font: 600 34px/1.15 var(--font-body); letter-spacing: -0.03em; }
+
 .g-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .g-chev { color: var(--text-3); flex: none; }
 /* В прокручиваемой колонке дети не сжимаются: иначе блок с overflow (фильтр, списки) схлопывается до нуля. */
@@ -16,7 +18,7 @@
 .g-sec-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .g-sec { display: flex; flex-direction: column; gap: 2px; }
 .g-sec-name { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--text-2); }
-.g-sec-num { font: var(--thin) 36px/1.05 var(--font-display); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.g-sec-num { font-variant-numeric: tabular-nums; font: var(--thin) 36px/1.05 var(--font-body); letter-spacing: -0.03em; }
 .g-delta { font-size: 13px; font-weight: 500; color: var(--right); }
 
 .g-trend { margin: 2px 0 4px; }
@@ -44,7 +46,7 @@
 .g-list > li + li { border-top: 1px solid var(--line); }
 .g-row { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 10px 16px; }
 .g-row-ic { color: var(--text-2); }
-.g-row-label { flex: 1; min-width: 0; font-weight: 500; }
+.g-row-label { flex: 1; min-width: 0; font: 500 17px/1.45 var(--font-body); letter-spacing: -0.005em; }
 .g-row-value { color: var(--text-2); font-size: 15px; }
 .g-row-stack { justify-content: space-between; }
 .g-row-stack .g-row-label { flex: none; }
@@ -79,7 +81,7 @@
 .g-facts div { display: flex; justify-content: space-between; gap: 12px; font-size: 15px; }
 .g-facts dt { color: var(--text-2); }
 .g-quota { color: var(--text-2); }
-.g-quota-num { font: var(--thin) 40px/1 var(--font-display); color: var(--text); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; margin-right: 4px; }
+.g-quota-num { color: var(--text); font-variant-numeric: tabular-nums; margin-right: 4px; font: var(--thin) 44px/1 var(--font-body); letter-spacing: -0.04em; }
 .g-quota-bar { height: 6px; border-radius: 3px; background: var(--c-essay-soft); overflow: hidden; }
 .g-quota-bar span { display: block; height: 100%; border-radius: inherit; background: var(--c-essay); }
 .g-quiet { align-self: flex-start; display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; color: var(--text-3); text-decoration: underline; text-underline-offset: 3px; }
@@ -114,7 +116,7 @@
 .g-item-head { display: flex; flex-direction: column; gap: 10px; }
 .g-item-meta { display: flex; align-items: center; gap: 8px; color: var(--text-2); font-size: 14px; }
 .g-item-score { display: flex; align-items: baseline; gap: 10px; margin-top: 6px; }
-.g-item-num { font: var(--thin) 64px/1 var(--font-display); letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+.g-item-num { font-variant-numeric: tabular-nums; font: var(--thin) 70px/1 var(--font-body); letter-spacing: -0.04em; }
 .g-item-of { color: var(--text-2); font-size: 17px; }
 .g-dots { display: flex; gap: 6px; padding: 0; margin: 0; list-style: none; }
 .g-dots li { flex: 1; height: 6px; border-radius: 3px; }
@@ -136,9 +138,9 @@
 
 /* =================== Компьютер =================== */
 @container (min-width: 900px) {
-  .g-title-row .h1 { font-size: 40px; }
+  .g-title-row .h1 { font: 600 40px/1.15 var(--font-body); letter-spacing: -0.03em; }
   .g-stats { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 20px; align-items: start; }
-  .g-sec-num { font-size: 44px; }
+  .g-sec-num { font: var(--thin) 44px/1 var(--font-body); letter-spacing: -0.04em; }
 
   .g-settings, .g-sub { max-width: 640px; }
 
@@ -162,7 +164,7 @@
 
   .g-item-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr); gap: 40px; align-items: start; }
   .g-item-cta { width: auto; align-self: flex-start; min-width: 280px; }
-  .g-item-num { font-size: 80px; }
+  .g-item-num { font: var(--thin) 88px/1 var(--font-body); letter-spacing: -0.04em; }
 }
 
 .g-profile { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: var(--r-l); background: var(--surface); }
