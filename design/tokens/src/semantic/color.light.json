@@ -1,390 +1,269 @@
 {
   "color": {
     "$type": "color",
+    "$description": "Договор «Ночной студии»: значения core.css, светлая «Лаванда» (решение Даши 10.10.2026).",
     "bg": {
-      "$value": "{palette.mist-50}",
-      "$description": "Фон экрана под свечением"
+      "$value": "{palette.lavender-200}"
     },
     "surface": {
-      "$value": "{palette.white}",
-      "$description": "Плотная поверхность: текст задания, разбор, сгруппированные списки"
+      "$value": "{palette.lavender-100}"
+    },
+    "surface-2": {
+      "$value": "{palette.lavender-300}"
     },
     "text": {
       "$value": "{palette.ink-900}"
     },
-    "text-secondary": {
-      "$value": "{palette.ink-600}",
-      "$description": "Подписи, мета, неактивные вкладки"
+    "text-2": {
+      "$value": "{palette.ink-600}"
+    },
+    "text-3": {
+      "$value": "{palette.ink-500}"
     },
     "line": {
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.1059,
-          0.1176,
-          0.1569
+          0.06666666666666667,
+          0.07450980392156863,
+          0.1803921568627451
         ],
-        "hex": "#1B1E28",
-        "alpha": 0.12
-      },
-      "$description": "Разделители, обводки, нить ленты шагов"
+        "hex": "#11132E",
+        "alpha": 0.1
+      }
     },
-    "fill": {
+    "line-strong": {
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.1059,
-          0.1176,
-          0.1569
+          0.06666666666666667,
+          0.07450980392156863,
+          0.1803921568627451
         ],
-        "hex": "#1B1E28",
-        "alpha": 0.06
-      },
-      "$description": "Подложка сегментов и наведения"
+        "hex": "#11132E",
+        "alpha": 0.22
+      }
     },
     "accent": {
-      "$value": "{palette.ink-900}",
-      "$description": "Главная кнопка: монохром, цвет раздела не тратится на кнопки"
+      "$value": "{palette.indigo-600}"
     },
     "on-accent": {
       "$value": "{palette.white}"
     },
-    "focus": {
-      "$value": "{palette.violet-600}",
-      "$description": "Кольцо фокуса клавиатуры"
-    },
-    "tab-selected": {
+    "accent-soft": {
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.1059,
-          0.1176,
-          0.1569
+          0.23137254901960785,
+          0.24705882352941178,
+          0.6901960784313725
         ],
-        "hex": "#1B1E28",
-        "alpha": 0.07
-      },
-      "$description": "Подложка выбранной вкладки в капсуле"
+        "hex": "#3B3FB0",
+        "alpha": 0.1
+      }
+    },
+    "focus": {
+      "$value": "{palette.indigo-600}"
+    },
+    "right": {
+      "$value": "{palette.emerald-700}"
+    },
+    "right-soft": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.0,
+          0.4,
+          0.3058823529411765
+        ],
+        "hex": "#00664E",
+        "alpha": 0.11
+      }
     },
     "wrong": {
-      "$value": "{palette.orange-700}",
-      "$description": "Неверный ответ. Не красный: ошибка — повод разобраться, а не тревога"
+      "$value": "{palette.vermilion-700}"
     },
-    "wrong-tint": {
+    "wrong-soft": {
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.7451,
-          0.251,
-          0.0471
+          0.6588235294117647,
+          0.1843137254901961,
+          0.09019607843137255
         ],
-        "hex": "#BE400C",
+        "hex": "#A82F17",
         "alpha": 0.1
       }
     },
     "verbal": {
       "$value": "{palette.violet-600}"
     },
-    "verbal-tint": {
+    "verbal-soft": {
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.3569,
-          0.2941,
-          0.7686
+          0.35294117647058826,
+          0.24705882352941178,
+          0.8392156862745098
         ],
-        "hex": "#5B4BC4",
-        "alpha": 0.12
+        "hex": "#5A3FD6",
+        "alpha": 0.11
       }
     },
     "quant": {
-      "$value": "{palette.green-700}"
+      "$value": "{palette.emerald-700}"
     },
-    "quant-tint": {
+    "quant-soft": {
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.0667,
-          0.451,
-          0.3725
+          0.0,
+          0.4,
+          0.3058823529411765
         ],
-        "hex": "#11735F",
-        "alpha": 0.12
-      }
-    },
-    "words": {
-      "$value": "{palette.rose-600}"
-    },
-    "words-tint": {
-      "$value": {
-        "colorSpace": "srgb",
-        "components": [
-          0.6902,
-          0.2627,
-          0.4157
-        ],
-        "hex": "#B0436A",
-        "alpha": 0.12
+        "hex": "#00664E",
+        "alpha": 0.11
       }
     },
     "essay": {
       "$value": "{palette.amber-700}"
     },
-    "essay-tint": {
+    "essay-soft": {
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.6039,
-          0.3569,
+          0.5176470588235295,
+          0.2980392156862745,
           0.0
         ],
-        "hex": "#9A5B00",
-        "alpha": 0.12
+        "hex": "#844C00",
+        "alpha": 0.11
+      }
+    },
+    "words": {
+      "$value": "{palette.rose-700}"
+    },
+    "words-soft": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.6313725490196078,
+          0.16470588235294117,
+          0.3764705882352941
+        ],
+        "hex": "#A12A60",
+        "alpha": 0.11
       }
     },
     "exam": {
-      "$value": "{palette.ink-900}",
-      "$description": "Экзамен нейтрален, как настоящий GRE"
+      "$value": "{palette.navy-950}"
     },
-    "glow": {
-      "$description": "Свечение сверху экрана в цвет раздела: strong — центр, soft — край. Verbal — свечение по умолчанию (экраны вне раздела).",
-      "verbal": {
-        "strong": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.3569,
-              0.2941,
-              0.7686
-            ],
-            "hex": "#5B4BC4",
-            "alpha": 0.22
-          }
-        },
-        "soft": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.3569,
-              0.2941,
-              0.7686
-            ],
-            "hex": "#5B4BC4",
-            "alpha": 0.07
-          }
-        }
-      },
-      "quant": {
-        "strong": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.0667,
-              0.451,
-              0.3725
-            ],
-            "hex": "#11735F",
-            "alpha": 0.2
-          }
-        },
-        "soft": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.0667,
-              0.451,
-              0.3725
-            ],
-            "hex": "#11735F",
-            "alpha": 0.06
-          }
-        }
-      },
-      "words": {
-        "strong": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.7059,
-              0.2667,
-              0.4235
-            ],
-            "hex": "#B4446C",
-            "alpha": 0.2
-          }
-        },
-        "soft": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.7059,
-              0.2667,
-              0.4235
-            ],
-            "hex": "#B4446C",
-            "alpha": 0.06
-          }
-        }
-      },
-      "essay": {
-        "strong": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.6039,
-              0.3569,
-              0.0
-            ],
-            "hex": "#9A5B00",
-            "alpha": 0.18
-          }
-        },
-        "soft": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.6039,
-              0.3569,
-              0.0
-            ],
-            "hex": "#9A5B00",
-            "alpha": 0.05
-          }
-        }
-      },
-      "exam": {
-        "strong": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.1059,
-              0.1176,
-              0.1569
-            ],
-            "hex": "#1B1E28",
-            "alpha": 0.09
-          }
-        },
-        "soft": {
-          "$value": {
-            "colorSpace": "srgb",
-            "components": [
-              0.1059,
-              0.1176,
-              0.1569
-            ],
-            "hex": "#1B1E28",
-            "alpha": 0.03
-          }
-        }
+    "exam-soft": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.054901960784313725,
+          0.0784313725490196,
+          0.18823529411764706
+        ],
+        "hex": "#0E1430",
+        "alpha": 0.08
       }
     },
-    "glass": {
-      "edge": {
-        "$value": {
-          "colorSpace": "srgb",
-          "components": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "hex": "#000000",
-          "alpha": 0.06
-        },
-        "$description": "Внешний край стекла"
+    "nav-bg": {
+      "$value": "{palette.lavender-150}"
+    },
+    "reading": {
+      "$value": "{palette.blue-600}",
+      "$description": "Раздел TOEFL или его мягкая подложка (решение Даши 09.10.2026); значение core.css."
+    },
+    "reading-soft": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.13725490196078433,
+          0.32941176470588235,
+          0.7725490196078432
+        ],
+        "hex": "#2354C5",
+        "alpha": 0.1
       },
-      "rim": {
-        "$value": {
-          "colorSpace": "srgb",
-          "components": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "hex": "#FFFFFF",
-          "alpha": 0.6
-        },
-        "$description": "Блик по верхней кромке (inset)"
-      }
+      "$description": "Раздел TOEFL или его мягкая подложка (решение Даши 09.10.2026); значение core.css."
+    },
+    "listening": {
+      "$value": "{palette.teal-700}",
+      "$description": "Раздел TOEFL или его мягкая подложка (решение Даши 09.10.2026); значение core.css."
+    },
+    "listening-soft": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.0,
+          0.4,
+          0.4666666666666667
+        ],
+        "hex": "#006677",
+        "alpha": 0.1
+      },
+      "$description": "Раздел TOEFL или его мягкая подложка (решение Даши 09.10.2026); значение core.css."
+    },
+    "writing": {
+      "$value": "{palette.amber-600}",
+      "$description": "Раздел TOEFL или его мягкая подложка (решение Даши 09.10.2026); значение core.css."
+    },
+    "writing-soft": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.5372549019607843,
+          0.3058823529411765,
+          0.0
+        ],
+        "hex": "#894E00",
+        "alpha": 0.1
+      },
+      "$description": "Раздел TOEFL или его мягкая подложка (решение Даши 09.10.2026); значение core.css."
+    },
+    "speaking": {
+      "$value": "{palette.rose-600}",
+      "$description": "Раздел TOEFL или его мягкая подложка (решение Даши 09.10.2026); значение core.css."
+    },
+    "speaking-soft": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.6627450980392157,
+          0.1568627450980392,
+          0.39215686274509803
+        ],
+        "hex": "#A92864",
+        "alpha": 0.1
+      },
+      "$description": "Раздел TOEFL или его мягкая подложка (решение Даши 09.10.2026); значение core.css."
     }
   },
-  "glass-fill": {
-    "$type": "gradient",
-    "$description": "Заливка стекла сверху вниз (только веб; на Apple и Android стекло системное). regular — шапка, вкладки, чипы; strong — плотные карточки.",
-    "regular": {
-      "$value": [
-        {
-          "color": {
-            "colorSpace": "srgb",
-            "components": [
-              1.0,
-              1.0,
-              1.0
-            ],
-            "hex": "#FFFFFF",
-            "alpha": 0.8
-          },
-          "position": 0
-        },
-        {
-          "color": {
-            "colorSpace": "srgb",
-            "components": [
-              1.0,
-              1.0,
-              1.0
-            ],
-            "hex": "#FFFFFF",
-            "alpha": 0.54
-          },
-          "position": 1
-        }
-      ]
-    },
-    "strong": {
-      "$value": [
-        {
-          "color": {
-            "colorSpace": "srgb",
-            "components": [
-              1.0,
-              1.0,
-              1.0
-            ],
-            "hex": "#FFFFFF",
-            "alpha": 0.9
-          },
-          "position": 0
-        },
-        {
-          "color": {
-            "colorSpace": "srgb",
-            "components": [
-              1.0,
-              1.0,
-              1.0
-            ],
-            "hex": "#FFFFFF",
-            "alpha": 0.7
-          },
-          "position": 1
-        }
-      ]
+  "font": {
+    "weight": {
+      "thin": {
+        "$type": "fontWeight",
+        "$value": 300,
+        "$description": "Тонкие цифры: 300 в светлой теме, 200 в тёмной (решение Даши 10.10.2026)."
+      }
     }
   },
   "shadow": {
     "$type": "shadow",
-    "glass": {
+    "glow": {
       "$value": {
         "color": {
           "colorSpace": "srgb",
           "components": [
-            0.1176,
-            0.1176,
-            0.2353
+            0.23137254901960785,
+            0.24705882352941178,
+            0.6901960784313725
           ],
-          "hex": "#1E1E3C",
-          "alpha": 0.22
+          "hex": "#3B3FB0",
+          "alpha": 0.4
         },
         "offsetX": {
           "value": 0,
@@ -395,46 +274,15 @@
           "unit": "px"
         },
         "blur": {
-          "value": 30,
+          "value": 28,
           "unit": "px"
         },
         "spread": {
-          "value": -10,
+          "value": -8,
           "unit": "px"
         }
       },
-      "$description": "Мягкая тень под стеклом"
-    },
-    "segment-on": {
-      "$value": {
-        "color": {
-          "colorSpace": "srgb",
-          "components": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "hex": "#000000",
-          "alpha": 0.12
-        },
-        "offsetX": {
-          "value": 0,
-          "unit": "px"
-        },
-        "offsetY": {
-          "value": 1,
-          "unit": "px"
-        },
-        "blur": {
-          "value": 3,
-          "unit": "px"
-        },
-        "spread": {
-          "value": 0,
-          "unit": "px"
-        }
-      },
-      "$description": "Выбранный сегмент переключателя"
+      "$description": "Свечение главной кнопки; параметры меняются вместе с темой."
     }
   }
 }

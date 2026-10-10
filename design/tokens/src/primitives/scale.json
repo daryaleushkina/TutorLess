@@ -107,54 +107,33 @@
   },
   "radius": {
     "$type": "dimension",
-    "xs": {
+    "s": {
       "$value": {
-        "value": 6,
+        "value": 10,
         "unit": "px"
       },
-      "$description": "Клавиши-подсказки, мелкие метки"
+      "$description": "Малые элементы: --r-s."
     },
-    "sm": {
-      "$value": {
-        "value": 8,
-        "unit": "px"
-      },
-      "$description": "Бейджи, маркеры"
-    },
-    "md": {
-      "$value": {
-        "value": 12,
-        "unit": "px"
-      },
-      "$description": "MainButton Telegram, поля ввода"
-    },
-    "lg": {
+    "m": {
       "$value": {
         "value": 16,
         "unit": "px"
       },
-      "$description": "Варианты ответа, строки-кнопки"
+      "$description": "Варианты ответа и средние карточки: --r-m."
     },
-    "xl": {
+    "l": {
       "$value": {
-        "value": 20,
+        "value": 24,
         "unit": "px"
       },
-      "$description": "Крупные плитки, подложка сегментов"
-    },
-    "xxl": {
-      "$value": {
-        "value": 26,
-        "unit": "px"
-      },
-      "$description": "Карточки и сгруппированные списки"
+      "$description": "Карточки и сгруппированные списки: --r-l."
     },
     "full": {
       "$value": {
-        "value": 9999,
+        "value": 999,
         "unit": "px"
       },
-      "$description": "Капсулы: кнопки 44–48 px, чипы, вкладки, круги"
+      "$description": "Кнопки и переключатель экзамена: пилюля."
     }
   },
   "size": {
@@ -164,214 +143,157 @@
         "value": 44,
         "unit": "px"
       },
-      "$description": "Минимум для нажатия (Apple HIG, WCAG 2.5.8 с запасом)"
+      "$description": "Минимум для нажатия."
     },
     "button": {
-      "$value": {
-        "value": 48,
-        "unit": "px"
-      },
-      "$description": "Капсула главного действия внутри экрана"
-    },
-    "button-compact": {
-      "$value": {
-        "value": 44,
-        "unit": "px"
-      }
-    },
-    "main-button": {
-      "$value": {
-        "value": 50,
-        "unit": "px"
-      },
-      "$description": "MainButton Telegram и её двойник вне Telegram"
-    },
-    "row": {
       "$value": {
         "value": 52,
         "unit": "px"
       },
-      "$description": "Строка списка"
+      "$description": "Кнопка действия .frame .btn."
     },
-    "row-tall": {
+    "exam-switch": {
       "$value": {
-        "value": 56,
+        "value": 40,
         "unit": "px"
       },
-      "$description": "Строка настроек, вариант ответа"
+      "$description": "Переключатель экзамена."
     },
-    "step-node": {
-      "$value": {
-        "value": 28,
-        "unit": "px"
-      },
-      "$description": "Узел ленты шагов"
-    },
-    "step-node-current": {
-      "$value": {
-        "value": 36,
-        "unit": "px"
-      },
-      "$description": "Текущий узел ленты шагов"
-    },
-    "step-line": {
-      "$value": {
-        "value": 1.5,
-        "unit": "px"
-      },
-      "$description": "Нить ленты шагов"
-    },
-    "step-ring": {
-      "$value": {
-        "value": 5,
-        "unit": "px"
-      },
-      "$description": "Кольцо текущего узла ленты (цвет раздела *-tint)"
-    },
-    "step-end": {
-      "$value": {
-        "value": 9,
-        "unit": "px"
-      },
-      "$description": "Точка конца ленты: «На сегодня всё.»"
-    },
-    "tab-bar-height": {
+    "section-row": {
       "$value": {
         "value": 64,
         "unit": "px"
-      }
+      },
+      "$description": "Строка раздела."
     },
-    "tab-bar-width": {
+    "side-card": {
       "$value": {
-        "value": 340,
+        "value": 60,
         "unit": "px"
-      }
+      },
+      "$description": "Карточка второго плана."
     },
-    "tab-bar-bottom": {
+    "opt": {
+      "$value": {
+        "value": 52,
+        "unit": "px"
+      },
+      "$description": "Вариант ответа."
+    },
+    "icon": {
       "$value": {
         "value": 22,
         "unit": "px"
-      }
+      },
+      "$description": "Иконка .ic."
     },
-    "header-button": {
+    "icon-sm": {
+      "$value": {
+        "value": 16,
+        "unit": "px"
+      },
+      "$description": "Малая иконка .ic-sm."
+    },
+    "icon-button": {
       "$value": {
         "value": 44,
         "unit": "px"
       },
-      "$description": "Стеклянные круги шапки Telegram"
+      "$description": "Круглая кнопка с иконкой."
     },
-    "fade": {
+    "section-mark": {
       "$value": {
-        "value": 28,
+        "value": 10,
         "unit": "px"
       },
-      "$description": "Растушёвка над нижней панелью"
+      "$description": "Точка цвета раздела."
     },
-    "brand-mark": {
+    "session-bar": {
       "$value": {
-        "value": 64,
+        "value": 3,
         "unit": "px"
       },
-      "$description": "Стеклянная плитка знака на экране входа"
+      "$description": "Полоса продвижения сессии."
     },
-    "brand-glyph": {
+    "nav-item-wide": {
       "$value": {
-        "value": 30,
+        "value": 46,
         "unit": "px"
       },
-      "$description": "Знак-лента внутри плитки"
+      "$description": "Строка навигации на широком экране."
     },
     "hairline": {
       "$value": {
         "value": 1,
         "unit": "px"
       },
-      "$description": "Тонкая рамка: край стекла, контур узла ленты, рамка кнопки Google"
+      "$description": "Разделители и тонкие рамки."
     }
   },
   "layout": {
     "$type": "dimension",
     "gutter": {
       "$value": {
-        "value": 20,
+        "value": 22,
         "unit": "px"
       },
-      "$description": "Боковые поля экрана на телефоне"
+      "$description": "Боковые поля .frame .main на телефоне."
     },
-    "gutter-bar": {
+    "gutter-wide": {
       "$value": {
-        "value": 16,
+        "value": 64,
         "unit": "px"
       },
-      "$description": "Поля нижней панели с кнопками"
+      "$description": "Боковые поля .frame .main на компьютере."
     },
-    "top-inset": {
+    "main-top": {
       "$value": {
-        "value": 72,
+        "value": 12,
         "unit": "px"
       },
-      "$description": "Отступ сверху под шапку Telegram"
+      "$description": "Верхнее поле основного содержимого."
     },
-    "sidebar-min": {
+    "main-top-wide": {
       "$value": {
-        "value": 248,
+        "value": 44,
         "unit": "px"
-      }
+      },
+      "$description": "Верхнее поле основного содержимого на компьютере."
     },
-    "sidebar-max": {
+    "main-bottom-nav": {
       "$value": {
-        "value": 280,
+        "value": 96,
         "unit": "px"
-      }
+      },
+      "$description": "Место под нижнюю навигацию."
+    },
+    "nav-bottom": {
+      "$value": {
+        "value": 28,
+        "unit": "px"
+      },
+      "$description": "Нижнее поле навигации."
+    },
+    "sidebar-width": {
+      "$value": {
+        "value": 232,
+        "unit": "px"
+      },
+      "$description": "Ширина боковой навигации."
     },
     "content-max": {
       "$value": {
         "value": 720,
         "unit": "px"
       },
-      "$description": "Ширина колонки содержимого на компьютере"
+      "$description": "Максимальная ширина слова и его разбора."
     },
     "breakpoint-wide": {
       "$value": {
         "value": 900,
         "unit": "px"
       },
-      "$description": "С этой ширины — боковая панель и крупная типографика"
-    },
-    "breakpoint-narrow": {
-      "$value": {
-        "value": 600,
-        "unit": "px"
-      },
-      "$description": "Сайт уже этой ширины — как телефон: капсула вкладок снизу; от неё до breakpoint-wide — строка разделов сверху (решение Даши 06.10.2026)"
-    },
-    "auth-column-max": {
-      "$value": {
-        "value": 420,
-        "unit": "px"
-      },
-      "$description": "Колонка экрана входа на широком экране (iPad, Mac, сайт)"
-    },
-    "tagline-max": {
-      "$value": {
-        "value": 320,
-        "unit": "px"
-      },
-      "$description": "Строка о продукте под именем на экране входа"
-    }
-  },
-  "glass": {
-    "$description": "Параметры стеклянного размытия (веб).",
-    "blur": {
-      "$value": {
-        "value": 16,
-        "unit": "px"
-      },
-      "$type": "dimension"
-    },
-    "saturate": {
-      "$value": 1.8,
-      "$type": "number"
+      "$description": "Граница широкой раскладки каталога."
     }
   },
   "motion": {
@@ -403,12 +325,12 @@
       "$type": "cubicBezier",
       "out": {
         "$value": [
-          0.23,
-          1,
-          0.32,
+          0.2,
+          0.8,
+          0.2,
           1
         ],
-        "$description": "Сильный ease-out: быстро стартует, мягко садится"
+        "$description": "Кривая переходов вариантов ответа и карточек экзамена из core.css."
       }
     },
     "press-scale": {

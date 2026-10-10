@@ -2,7 +2,7 @@
   "name": "@greprep/tokens",
   "private": true,
   "type": "module",
-  "description": "Токены дизайна «Шагов»: один источник (DTCG) → CSS, Swift, Kotlin и шапка DESIGN.md",
+  "description": "Токены дизайна «Ночной студии»: один источник (DTCG) → CSS, Swift, Kotlin и шапка DESIGN.md",
   "scripts": {
     "build": "node build.mjs",
     "check": "node build.mjs --check",

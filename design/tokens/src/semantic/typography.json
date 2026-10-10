@@ -4,21 +4,29 @@
       "$type": "fontFamily",
       "text": {
         "$value": [
+          "Geologica",
           "Onest",
           "system-ui",
           "sans-serif"
         ],
-        "$description": "Onest: кириллица и латиница одного рисунка, открытая лицензия OFL; в приложения — вшитым файлом, без сети"
+        "$description": "Geologica для текста и заголовков; запасные — как в core.css (решение Даши 10.10.2026)."
       },
-      "system": {
+      "mono": {
         "$value": [
-          "-apple-system",
-          "BlinkMacSystemFont",
-          "SF Pro Text",
-          "system-ui",
-          "sans-serif"
+          "IBM Plex Mono",
+          "ui-monospace",
+          "Menlo",
+          "monospace"
         ],
-        "$description": "Только двойник MainButton Telegram"
+        "$description": "Моноширинный текст: транскрипция слова."
+      },
+      "math": {
+        "$value": [
+          "Source Serif 4",
+          "Georgia",
+          "serif"
+        ],
+        "$description": "Формулы Quant: семейство из .math в core.css; файлы шрифта добавляются в приложениях."
       }
     },
     "weight": {
@@ -34,342 +42,219 @@
       }
     },
     "text-scale-large": {
-      "$value": 1.125,
       "$type": "number",
-      "$description": "Настройка «Крупнее»: весь текст ×1,125 (17 → 19)"
+      "$value": 1.125,
+      "$description": "Настройка «Крупнее»: весь текст ×1,125."
     }
   },
   "type": {
     "$type": "typography",
-    "$description": "Роли текста. -wide — та же роль с ширины layout.breakpoint-wide.",
-    "display": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 56,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.0714,
-        "letterSpacing": {
-          "value": -0.03,
-          "unit": "em"
-        }
-      },
-      "$description": "Крупное число итога: балл, «12 из 12»"
-    },
-    "display-wide": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 72,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.0556,
-        "letterSpacing": {
-          "value": -0.03,
-          "unit": "em"
-        }
-      }
-    },
-    "score": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 48,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.0833,
-        "letterSpacing": {
-          "value": -0.025,
-          "unit": "em"
-        }
-      },
-      "$description": "Примерный балл пробника"
-    },
-    "headword": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 36,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.1667,
-        "letterSpacing": {
-          "value": -0.025,
-          "unit": "em"
-        }
-      },
-      "$description": "Слово на карточке словаря"
-    },
-    "headword-wide": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 48,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.125,
-        "letterSpacing": {
-          "value": -0.025,
-          "unit": "em"
-        }
-      }
-    },
-    "title-1": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 32,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.1875,
-        "letterSpacing": {
-          "value": -0.025,
-          "unit": "em"
-        }
-      },
-      "$description": "Заголовок экрана-вкладки"
-    },
-    "title-1-wide": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 40,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.15,
-        "letterSpacing": {
-          "value": -0.025,
-          "unit": "em"
-        }
-      }
-    },
-    "title-2": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 28,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.2143,
-        "letterSpacing": {
-          "value": -0.025,
-          "unit": "em"
-        }
-      },
-      "$description": "Заголовок экрана сессии и итогов"
-    },
-    "title-2-wide": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 36,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.1667,
-        "letterSpacing": {
-          "value": -0.025,
-          "unit": "em"
-        }
-      }
-    },
-    "title-3": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 19,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.2632,
-        "letterSpacing": {
-          "value": 0,
-          "unit": "px"
-        }
-      },
-      "$description": "Заголовок карточки-шага"
-    },
-    "title-3-wide": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 21,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.3333,
-        "letterSpacing": {
-          "value": 0,
-          "unit": "px"
-        }
-      }
-    },
-    "timer": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 22,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.1818,
-        "letterSpacing": {
-          "value": 0,
-          "unit": "px"
-        }
-      },
-      "$description": "Таймер секции, tabular-nums"
-    },
-    "timer-wide": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 24,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.1667,
-        "letterSpacing": {
-          "value": 0,
-          "unit": "px"
-        }
-      }
-    },
-    "prompt": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 18,
-          "unit": "px"
-        },
-        "fontWeight": 400,
-        "lineHeight": 1.5,
-        "letterSpacing": {
-          "value": 0,
-          "unit": "px"
-        }
-      },
-      "$description": "Текст задания на английском: длинное чтение, межстрочный 1.5"
-    },
-    "prompt-wide": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 20,
-          "unit": "px"
-        },
-        "fontWeight": 400,
-        "lineHeight": 1.55,
-        "letterSpacing": {
-          "value": 0,
-          "unit": "px"
-        }
-      }
-    },
-    "headline": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 18,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.3333,
-        "letterSpacing": {
-          "value": 0,
-          "unit": "px"
-        }
-      },
-      "$description": "Название темы, карточка"
-    },
+    "$description": "Итоговые правила core.css: .frame переопределяет базовые классы; -wide — с 900 px. Тонкие роли ссылаются на тематический font.weight.thin.",
     "body": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 17,
-          "unit": "px"
-        },
-        "fontWeight": 400,
-        "lineHeight": 1.2941,
-        "letterSpacing": {
-          "value": 0,
-          "unit": "px"
-        }
-      },
-      "$description": "Основной текст интерфейса, строки списков"
-    },
-    "body-long": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 17,
-          "unit": "px"
-        },
-        "fontWeight": 400,
-        "lineHeight": 1.4118,
-        "letterSpacing": {
-          "value": 0,
-          "unit": "px"
-        }
-      },
-      "$description": "Абзацы: разбор, теория"
-    },
-    "callout": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
           "value": 16,
           "unit": "px"
         },
-        "fontWeight": 500,
-        "lineHeight": 1.3125,
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 1.45,
         "letterSpacing": {
-          "value": 0,
-          "unit": "px"
+          "value": -0.005,
+          "unit": "em"
         }
       },
-      "$description": "Значение в строке, кнопки-капсулы"
+      "$description": "Основной текст .frame."
     },
-    "subhead": {
+    "h1": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 15,
+          "value": 34,
           "unit": "px"
         },
-        "fontWeight": 400,
-        "lineHeight": 1.3333,
+        "fontWeight": "{font.weight.semibold}",
+        "lineHeight": 1.15,
         "letterSpacing": {
-          "value": 0,
-          "unit": "px"
+          "value": -0.03,
+          "unit": "em"
         }
       },
-      "$description": "Подзаголовок под заголовком, подписи разделов"
+      "$description": "Заголовок экрана .frame .h1."
     },
-    "footnote": {
+    "h1-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 44,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.semibold}",
+        "lineHeight": 1.15,
+        "letterSpacing": {
+          "value": -0.03,
+          "unit": "em"
+        }
+      }
+    },
+    "h2": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 19,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.semibold}",
+        "lineHeight": 1.25,
+        "letterSpacing": {
+          "value": -0.015,
+          "unit": "em"
+        }
+      },
+      "$description": "Заголовок карточки .frame .h2."
+    },
+    "h3": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 16,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.semibold}",
+        "lineHeight": 1.3,
+        "letterSpacing": {
+          "value": -0.01,
+          "unit": "em"
+        }
+      },
+      "$description": "Подзаголовок .frame .h3."
+    },
+    "eyebrow": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 13,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.medium}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "em"
+        }
+      },
+      "$description": "Подпись над заголовком; также legend и rel-label."
+    },
+    "lead": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 17,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.005,
+          "unit": "em"
+        }
+      },
+      "$description": "Вводный текст .lead."
+    },
+    "button": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 16,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.semibold}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": 0.005,
+          "unit": "em"
+        }
+      },
+      "$description": "Текст кнопки .frame .btn."
+    },
+    "exam-switch": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
           "value": 14,
           "unit": "px"
         },
-        "fontWeight": 500,
-        "lineHeight": 1.2857,
+        "fontWeight": "{font.weight.semibold}",
+        "lineHeight": 1.45,
         "letterSpacing": {
-          "value": 0,
-          "unit": "px"
+          "value": 0.02,
+          "unit": "em"
         }
       },
-      "$description": "Ссылки-действия второго плана, мета вопроса"
+      "$description": "Переключатель экзамена."
+    },
+    "start-title": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 30,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.semibold}",
+        "lineHeight": 1.15,
+        "letterSpacing": {
+          "value": -0.03,
+          "unit": "em"
+        }
+      },
+      "$description": "Заголовок карточки тренировки."
+    },
+    "start-title-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 44,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.semibold}",
+        "lineHeight": 1.15,
+        "letterSpacing": {
+          "value": -0.035,
+          "unit": "em"
+        }
+      }
+    },
+    "meta": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 14,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.005,
+          "unit": "em"
+        }
+      },
+      "$description": "Подписи start-meta, session-meta, q-instr."
+    },
+    "section-name": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 17,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.semibold}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.01,
+          "unit": "em"
+        }
+      },
+      "$description": "Название раздела."
     },
     "caption": {
       "$value": {
@@ -378,46 +263,454 @@
           "value": 13,
           "unit": "px"
         },
-        "fontWeight": 400,
-        "lineHeight": 1.3846,
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 1.45,
         "letterSpacing": {
-          "value": 0,
-          "unit": "px"
+          "value": -0.005,
+          "unit": "em"
         }
       },
-      "$description": "Даты, примечания, юридический текст"
+      "$description": "section-types, section-stat small, score-note."
     },
-    "key": {
+    "section-stat": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 12,
+          "value": 24,
           "unit": "px"
         },
-        "fontWeight": 500,
-        "lineHeight": 1.25,
+        "fontWeight": "{font.weight.thin}",
+        "lineHeight": 1.05,
         "letterSpacing": {
-          "value": 0,
-          "unit": "px"
+          "value": -0.02,
+          "unit": "em"
         }
       },
-      "$description": "Подсказки клавиш на компьютере"
+      "$description": "Тонкие цифры статистики раздела."
     },
-    "tab-label": {
+    "section-stat-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 28,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.thin}",
+        "lineHeight": 1.05,
+        "letterSpacing": {
+          "value": -0.02,
+          "unit": "em"
+        }
+      }
+    },
+    "session-count": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 22,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.thin}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.02,
+          "unit": "em"
+        }
+      },
+      "$description": "Тонкий счётчик сессии."
+    },
+    "session-count-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 26,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.thin}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.02,
+          "unit": "em"
+        }
+      }
+    },
+    "q-text": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 20,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 1.6,
+        "letterSpacing": {
+          "value": -0.01,
+          "unit": "em"
+        }
+      },
+      "$description": "Итоговое правило .frame .q-text; базовые 19/1.55 переопределены."
+    },
+    "q-text-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 24,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 1.6,
+        "letterSpacing": {
+          "value": -0.01,
+          "unit": "em"
+        }
+      }
+    },
+    "opt": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 17,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.medium}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.005,
+          "unit": "em"
+        }
+      },
+      "$description": "Вариант ответа .frame .opt."
+    },
+    "answer": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 15,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.medium}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.005,
+          "unit": "em"
+        }
+      },
+      "$description": "Ответ .frame .ans."
+    },
+    "explain-body": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 15,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 1.55,
+        "letterSpacing": {
+          "value": -0.005,
+          "unit": "em"
+        }
+      },
+      "$description": "Текст разбора .explain-body."
+    },
+    "action": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 15,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.medium}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.005,
+          "unit": "em"
+        }
+      },
+      "$description": "Ссылка на тему .topic-link; чип .chip."
+    },
+    "seg": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 13,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.semibold}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.005,
+          "unit": "em"
+        }
+      },
+      "$description": "Переключатель языка разбора."
+    },
+    "score-label": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 13,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.medium}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.005,
+          "unit": "em"
+        }
+      },
+      "$description": "Подпись балла."
+    },
+    "score-num": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 32,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.thin}",
+        "lineHeight": 1,
+        "letterSpacing": {
+          "value": -0.04,
+          "unit": "em"
+        }
+      },
+      "$description": "Тонкий балл прогресса."
+    },
+    "score-num-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 44,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.thin}",
+        "lineHeight": 1,
+        "letterSpacing": {
+          "value": -0.04,
+          "unit": "em"
+        }
+      }
+    },
+    "stat-value": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 18,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.thin}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.02,
+          "unit": "em"
+        }
+      },
+      "$description": "Тонкие цифры точности и истории .acc-val, .hist-res."
+    },
+    "exam-title": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 36,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.semibold}",
+        "lineHeight": 1.15,
+        "letterSpacing": {
+          "value": -0.03,
+          "unit": "em"
+        }
+      },
+      "$description": "Заголовок выбора экзамена."
+    },
+    "exam-title-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 48,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.semibold}",
+        "lineHeight": 1.15,
+        "letterSpacing": {
+          "value": -0.03,
+          "unit": "em"
+        }
+      }
+    },
+    "exam-name": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 44,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.thin}",
+        "lineHeight": 1,
+        "letterSpacing": {
+          "value": -0.04,
+          "unit": "em"
+        }
+      },
+      "$description": "Название экзамена крупными тонкими буквами."
+    },
+    "exam-name-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 64,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.thin}",
+        "lineHeight": 1,
+        "letterSpacing": {
+          "value": -0.04,
+          "unit": "em"
+        }
+      }
+    },
+    "headword": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 56,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.thin}",
+        "lineHeight": 1,
+        "letterSpacing": {
+          "value": -0.04,
+          "unit": "em"
+        }
+      },
+      "$description": "Слово в словаре."
+    },
+    "headword-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 88,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.thin}",
+        "lineHeight": 1,
+        "letterSpacing": {
+          "value": -0.04,
+          "unit": "em"
+        }
+      }
+    },
+    "sense-en": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 20,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 1.4,
+        "letterSpacing": {
+          "value": -0.01,
+          "unit": "em"
+        }
+      },
+      "$description": "Значение слова на английском."
+    },
+    "word-meta": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 15,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.005,
+          "unit": "em"
+        }
+      },
+      "$description": "Метаданные слова."
+    },
+    "example": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 17,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.005,
+          "unit": "em"
+        }
+      },
+      "$description": "Пример употребления."
+    },
+    "nav-label": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
           "value": 11,
           "unit": "px"
         },
-        "fontWeight": 500,
-        "lineHeight": 1.1818,
+        "fontWeight": "{font.weight.medium}",
+        "lineHeight": 1.45,
         "letterSpacing": {
-          "value": 0,
-          "unit": "px"
+          "value": -0.005,
+          "unit": "em"
         }
       },
-      "$description": "Подписи вкладок — меньше не бывает: это нижняя граница шкалы"
+      "$description": "Подпись нижней навигации."
+    },
+    "nav-label-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 15,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.medium}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.005,
+          "unit": "em"
+        }
+      }
+    },
+    "ipa": {
+      "$value": {
+        "fontFamily": "{font.family.mono}",
+        "fontSize": {
+          "value": 14,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.005,
+          "unit": "em"
+        }
+      },
+      "$description": "Транскрипция: IBM Plex Mono."
+    },
+    "week-count": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 28,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.thin}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.03,
+          "unit": "em"
+        }
+      },
+      "$description": "Тонкий счётчик недели на компьютере."
     }
   }
 }

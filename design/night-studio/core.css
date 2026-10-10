@@ -512,10 +512,11 @@
 
 /* ---------- Разделы TOEFL (решение Даши 09.10.2026) ---------- */
 .frame {
-  --c-reading: #2C5FD0; --c-reading-soft: rgb(44 95 208 / 0.1);
-  --c-listening: #00778A; --c-listening-soft: rgb(0 119 138 / 0.1);
-  --c-writing: #985800; --c-writing-soft: rgb(152 88 0 / 0.1);
-  --c-speaking: #B02F69; --c-speaking-soft: rgb(176 47 105 / 0.1);
+  /* светлота понижена под AA на «Лаванде» (10.10.2026) */
+  --c-reading: #2354C5; --c-reading-soft: rgb(35 84 197 / 0.1);
+  --c-listening: #006677; --c-listening-soft: rgb(0 102 119 / 0.1);
+  --c-writing: #894E00; --c-writing-soft: rgb(137 78 0 / 0.1);
+  --c-speaking: #A92864; --c-speaking-soft: rgb(169 40 100 / 0.1);
 }
 .frame[data-theme="dark"] {
   --c-reading: #8DB1FF; --c-reading-soft: rgb(141 177 255 / 0.16);

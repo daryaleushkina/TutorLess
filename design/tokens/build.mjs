@@ -1,4 +1,4 @@
-// Сборка токенов «Шагов»: src/*.json (формат W3C DTCG) → веб, Apple, Android и шапка DESIGN.md.
+// Сборка токенов «Ночной студии»: src/*.json (формат W3C DTCG) → веб, Apple, Android и шапка DESIGN.md.
 //
 //   pnpm build   — пересобрать generated/ и шапку DESIGN.md
 //   pnpm check   — то же в памяти; если файлы в git разошлись с источником — выход 1 (для CI)
@@ -43,17 +43,24 @@ export async function resolveModes() {
 }
 
 const THEMED = new Set(['color', 'gradient', 'shadow']);
-const isThemed = (t) => THEMED.has(t.$type);
+const usesThin = (t) => t.$type === 'typography' && t.original.$value.fontWeight === '{font.weight.thin}';
+const usesMono = (t) => t.$type === 'typography' && t.original.$value.fontFamily === '{font.family.mono}';
+const isThemed = (t) => THEMED.has(t.$type) || (t.$type === 'fontWeight' && t.path.join('.') === 'font.weight.thin');
 
 // Нетематические токены обязаны совпадать в обеих темах, иначе тема протекла не туда.
-function split(modes) {
+export function split(modes) {
   const [light, dark] = MODES.map((m) => modes[m]);
   const key = (t) => t.path.join('.');
   const darkByKey = new Map(dark.map((t) => [key(t), t]));
   for (const t of light) {
     const d = darkByKey.get(key(t));
     if (!d) throw new Error(`токен ${key(t)} есть в светлой теме, но нет в тёмной`);
-    if (!isThemed(t) && JSON.stringify(t.$value) !== JSON.stringify(d.$value)) {
+    if (t.$type !== d.$type) throw new Error(`тип токена ${key(t)} разный в темах`);
+    if (usesThin(t) !== usesThin(d)) throw new Error(`ссылка на thin у ${key(t)} разная в темах`);
+    // У роли, явно ссылающейся на thin, тематичен только вес. Размер, семейство и интервалы
+    // по-прежнему обязаны совпадать: ссылка не даёт разрешения менять всю типографику с темой.
+    const commonValue = (token) => usesThin(token) ? { ...token.$value, fontWeight: '{font.weight.thin}' } : token.$value;
+    if (!isThemed(t) && JSON.stringify(commonValue(t)) !== JSON.stringify(commonValue(d))) {
       throw new Error(`нетематический токен ${key(t)} разный в темах`);
     }
   }
@@ -99,7 +106,7 @@ const typeTokens = (common) => common.filter((t) => t.$type === 'typography');
 const roleName = (t) => t.path.at(-1);
 const baseRoles = (common) => typeTokens(common).filter((t) => !roleName(t).endsWith(WIDE));
 const wideOf = (common, role) => typeTokens(common).find((t) => roleName(t) === role + WIDE);
-const lineHeightPx = (v) => Math.round(v.fontSize.value * v.lineHeight);
+const lineHeightPx = (v) => Number((v.fontSize.value * v.lineHeight).toFixed(4));
 const trackingEm = (v) => (v.letterSpacing.unit === 'em' ? v.letterSpacing.value : v.letterSpacing.value / v.fontSize.value);
 
 // ---------- Веб ----------
@@ -109,9 +116,9 @@ function emitCss({ common, themed }) {
   const block = (sel, tokens, extra = []) =>
     `${sel} {\n${[...extra, ...tokens.map((t) => `  ${name(t)}: ${cssValue(t)};`)].join('\n')}\n}\n`;
   // Размер текста — в rem: «Крупнее» и настройка шрифта браузера масштабируют весь текст разом.
-  const font = (v) => `${v.fontWeight} ${rem(v.fontSize)}/${fmt(v.lineHeight)} var(--font-family-text)`;
+  const font = (t) => `${usesThin(t) ? 'var(--font-weight-thin)' : t.$value.fontWeight} ${rem(t.$value.fontSize)}/${fmt(t.$value.lineHeight)} var(--font-family-${usesMono(t) ? 'mono' : 'text'})`;
   const typeVars = (t, role = roleName(t)) => [
-    `  --font-${role}: ${font(t.$value)};`,
+    `  --font-${role}: ${font(t)};`,
     `  --tracking-${role}: ${fmt(trackingEm(t.$value))}em;`,
   ];
   const plain = common.filter((t) => t.$type !== 'typography');
@@ -159,13 +166,17 @@ function emitColorAssets({ themed }) {
 
 // Роль текста → стиль Dynamic Type, с которым она растёт (Font.custom(_:size:relativeTo:)).
 const RELATIVE = {
-  display: 'largeTitle', score: 'largeTitle', headword: 'largeTitle', 'title-1': 'largeTitle', 'title-2': 'title',
-  'title-3': 'title3', timer: 'title3', prompt: 'body', headline: 'headline', body: 'body', 'body-long': 'body',
-  callout: 'callout', subhead: 'subheadline', footnote: 'footnote', caption: 'caption', key: 'caption2', 'tab-label': 'caption2',
+  body: 'body', h1: 'largeTitle', h2: 'title3', h3: 'headline', eyebrow: 'caption', lead: 'body',
+  button: 'headline', 'exam-switch': 'subheadline', 'start-title': 'largeTitle', meta: 'footnote',
+  'section-name': 'headline', caption: 'caption', 'section-stat': 'title2', 'session-count': 'title3',
+  'q-text': 'body', opt: 'body', answer: 'callout', 'explain-body': 'body', action: 'callout', seg: 'caption',
+  'score-label': 'caption', 'score-num': 'largeTitle', 'stat-value': 'body', 'exam-title': 'largeTitle',
+  'exam-name': 'largeTitle', headword: 'largeTitle', 'sense-en': 'body', 'word-meta': 'callout',
+  example: 'body', 'nav-label': 'caption2', 'week-count': 'title2', ipa: 'footnote',
 };
-const SWIFT_WEIGHT = { 400: '.regular', 500: '.medium', 600: '.semibold' };
+const SWIFT_WEIGHT = { 200: '.ultraLight', 300: '.light', 400: '.regular', 500: '.medium', 600: '.semibold' };
 
-function emitSwift({ common }) {
+function emitSwift({ common, themed }) {
   const group = (head) => common.filter((t) => t.path[0] === head && t.$type === 'dimension');
   const cg = (title, head, doc) => [
     `/// ${doc}`,
@@ -179,17 +190,24 @@ function emitSwift({ common }) {
     const rel = RELATIVE[role];
     if (!rel) throw new Error(`для роли ${role} не задан стиль Dynamic Type`);
     if (!SWIFT_WEIGHT[v.fontWeight]) throw new Error(`нет веса ${v.fontWeight} для Swift`);
-    return `GPTextStyle(size: ${fmt(v.fontSize.value)}, lineHeight: ${lineHeightPx(v)}, weight: ${SWIFT_WEIGHT[v.fontWeight]}, tracking: ${fmt(trackingEm(v))}, relativeTo: .${rel})`;
+    return `GPTextStyle(size: ${fmt(v.fontSize.value)}, lineHeight: ${lineHeightPx(v)}, weight: ${usesThin(t) ? 'theme.thin' : SWIFT_WEIGHT[v.fontWeight]}, tracking: ${fmt(trackingEm(v))}, relativeTo: .${rel}, fontFamily: "${v.fontFamily[0]}")`;
   };
   const roles = typeTokens(common).map((t) => {
     const n = roleName(t);
     const base = n.endsWith(WIDE) ? n.slice(0, -WIDE.length) : n;
-    return `${t.$description ? `    /// ${t.$description}\n` : ''}    public static let ${swiftName([n])} = ${style(t, base)}`;
+    return `        ${swiftName([n])} = ${style(t, base)}`;
+  });
+  const declarations = typeTokens(common).map((t) => `${t.$description ? `    /// ${t.$description}\n` : ''}    public let ${swiftName([roleName(t)])}: GPTextStyle`);
+  const swiftColor = (c) => `Color(.sRGB, red: ${fmt(c.components[0])}, green: ${fmt(c.components[1])}, blue: ${fmt(c.components[2])}, opacity: ${fmt(alphaOf(c))})`;
+  const themeSets = MODES.map((mode) => {
+    const getTheme = (path) => themed[mode].find((t) => t.path.join('.') === path).$value;
+    const s = getTheme('shadow.glow');
+    return `    public static let ${mode} = GPThemeTokens(\n        thin: ${SWIFT_WEIGHT[getTheme('font.weight.thin')]},\n        glow: GPShadow(color: ${swiftColor(s.color)}, offsetX: ${fmt(s.offsetX.value)}, offsetY: ${fmt(s.offsetY.value)}, blur: ${fmt(s.blur.value)}, spread: ${fmt(s.spread.value)})\n    )`;
   });
   const ease = get('motion.easing.out');
   return `// ${HEADER}
-// Цвета — в каталоге GPColors.xcassets (Color(.text), Color(.textSecondary)…): светлую и тёмную тему
-// переключает система. Стекло и тени не генерируются: на Apple они системные (PRODUCT.md, «Platform»).
+// Цвета — в GPColors.xcassets (Color(.text), Color(.text2)…), внешний вид выбирает система.
+// Для тонких ролей и свечения вместе с ним выбирайте GPType.light/dark и GPThemeTokens.light/dark.
 import SwiftUI
 
 ${cg('GPSpace', 'space', 'Отступы и промежутки, pt.')}
@@ -212,14 +230,42 @@ public struct GPTextStyle: Sendable {
     public let weight: Font.Weight
     public let tracking: CGFloat
     public let relativeTo: Font.TextStyle
+    public let fontFamily: String
 }
 
-/// Роли текста. Шрифт — Onest, вшитый в приложение. Wide — та же роль в широкой раскладке (iPad, Mac).
-public enum GPType {
+/// Свечение: параметры каталога, pt. spread сохраняется отдельно для отрисовки расширенного слоя.
+public struct GPShadow: Sendable {
+    public let color: Color
+    public let offsetX: CGFloat
+    public let offsetY: CGFloat
+    public let blur: CGFloat
+    public let spread: CGFloat
+}
+
+/// Тематический вес и свечение: выбираются одновременно с внешним видом цветов.
+public struct GPThemeTokens: Sendable {
+    public let thin: Font.Weight
+    public let glow: GPShadow
+
+${themeSets.join('\n\n')}
+}
+
+/// Роли Geologica; IPA — IBM Plex Mono. Wide — та же роль в широкой раскладке (iPad, Mac).
+public struct GPType: Sendable {
     public static let fontFamily = "${get('font.family.text')[0]}"
+    public static let monoFontFamily = "${get('font.family.mono')[0]}"
+    public static let mathFontFamily = "${get('font.family.math')[0]}"
+    public static let mathFontFallbacks = ${JSON.stringify(get('font.family.math').slice(1)).replaceAll(',', ', ')}
     /// Настройка «Крупнее»: множитель размера поверх Dynamic Type.
     public static let textScaleLarge: CGFloat = ${fmt(get('font.text-scale-large'))}
+${declarations.join('\n')}
+
+    public static let light = GPType(theme: .light)
+    public static let dark = GPType(theme: .dark)
+
+    private init(theme: GPThemeTokens) {
 ${roles.join('\n')}
+    }
 }
 
 /// Движение. Длительности — секунды; при «Уменьшить движение» анимации нажатия и появления выключаются.
@@ -255,10 +301,19 @@ function emitKotlin({ common, themed }) {
     '}',
   ].join('\n');
   const get = (p) => common.find((t) => t.path.join('.') === p).$value;
-  const ts = (v) => `TextStyle(fontFamily = family, fontSize = ${fmt(v.fontSize.value)}.sp, lineHeight = ${lineHeightPx(v)}.sp, fontWeight = FontWeight.W${v.fontWeight}, letterSpacing = (${fmt(trackingEm(v))}).em)`;
+  const ts = (t) => {
+    const v = t.$value;
+    return `TextStyle(fontFamily = ${usesMono(t) ? 'monoFamily' : 'family'}, fontSize = ${fmt(v.fontSize.value)}.sp, lineHeight = ${lineHeightPx(v)}.sp, fontWeight = ${usesThin(t) ? 'theme.thin' : `FontWeight.W${v.fontWeight}`}, letterSpacing = (${fmt(trackingEm(v))}).em)`;
+  };
+  const themeSets = MODES.map((mode) => {
+    const getTheme = (path) => themed[mode].find((t) => t.path.join('.') === path).$value;
+    const s = getTheme('shadow.glow');
+    const color = `Color(red = ${fmt(s.color.components[0])}f, green = ${fmt(s.color.components[1])}f, blue = ${fmt(s.color.components[2])}f, alpha = ${fmt(alphaOf(s.color))}f)`;
+    return `val Gp${mode[0].toUpperCase() + mode.slice(1)}Theme = GpThemeTokens(\n    thin = FontWeight.W${getTheme('font.weight.thin')},\n    glow = GpShadow(color = ${color}, offsetX = ${fmt(s.offsetX.value)}.dp, offsetY = ${fmt(s.offsetY.value)}.dp, blur = ${fmt(s.blur.value)}.dp, spread = ${fmt(s.spread.value)}.dp),\n)`;
+  });
   const ease = get('motion.easing.out');
   return `// ${HEADER}
-// Стекло и тени не генерируются: на Android поверхности Material (PRODUCT.md, «Platform»).
+// Вместе с цветами выбирайте GpLightTheme/GpDarkTheme и GpTypography.light/dark.
 package ${KOTLIN_PACKAGE}
 
 import androidx.compose.animation.core.CubicBezierEasing
@@ -267,6 +322,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -278,6 +334,22 @@ ${colors('light').map((t) => `    val ${cName(t)}: Color,`).join('\n')}
 )
 
 ${MODES.map((m) => `val Gp${m[0].toUpperCase() + m.slice(1)}Colors = GpColors(\n${colors(m).map((t) => `    ${cName(t)} = ${kColor(t.$value)},`).join('\n')}\n)`).join('\n\n')}
+
+/** Свечение: параметры каталога. spread — расширение слоя перед размытием. */
+@Immutable
+class GpShadow(
+    val color: Color,
+    val offsetX: Dp,
+    val offsetY: Dp,
+    val blur: Dp,
+    val spread: Dp,
+)
+
+/** Тематический вес и свечение выбираются вместе с набором цветов. */
+@Immutable
+class GpThemeTokens(val thin: FontWeight, val glow: GpShadow)
+
+${themeSets.join('\n\n')}
 
 ${obj('GpSpace', 'space', 'Отступы и промежутки.')}
 
@@ -292,14 +364,20 @@ object GpOpacity {
 ${common.filter((t) => t.path[0] === 'opacity').map((t) => `    const val ${t.path.slice(1).join('_').replace(/-/g, '_').toUpperCase()} = ${fmt(t.$value)}f`).join('\n')}
 }
 
-/** Роли текста; family — Onest из ресурсов приложения. sp растут с системным масштабом шрифта. */
+/** family — Geologica, monoFamily — IBM Plex Mono из ресурсов. sp растут с системным масштабом. */
 @Immutable
-class GpTypography(family: FontFamily) {
-${typeTokens(common).map((t) => `${t.$description ? `    /** ${t.$description} */\n` : ''}    val ${kName([roleName(t)])} = ${ts(t.$value)}`).join('\n')}
+class GpTypography private constructor(family: FontFamily, monoFamily: FontFamily, theme: GpThemeTokens) {
+${typeTokens(common).map((t) => `${t.$description ? `    /** ${t.$description} */\n` : ''}    val ${kName([roleName(t)])} = ${ts(t)}`).join('\n')}
 
     companion object {
         /** Настройка «Крупнее»: множитель поверх системного масштаба шрифта. */
         const val TEXT_SCALE_LARGE = ${fmt(get('font.text-scale-large'))}f
+        const val FONT_FAMILY = "${get('font.family.text')[0]}"
+        const val MONO_FONT_FAMILY = "${get('font.family.mono')[0]}"
+        const val MATH_FONT_FAMILY = "${get('font.family.math')[0]}"
+        val MATH_FONT_FALLBACKS = listOf(${get('font.family.math').slice(1).map((name) => JSON.stringify(name)).join(', ')})
+        fun light(family: FontFamily, monoFamily: FontFamily) = GpTypography(family, monoFamily, GpLightTheme)
+        fun dark(family: FontFamily, monoFamily: FontFamily) = GpTypography(family, monoFamily, GpDarkTheme)
     }
 }
 
@@ -337,7 +415,7 @@ ${themed[m].filter((t) => t.$type === 'color').map((t) => `    <color name="${xN
 // Формат DESIGN.md (google-labs-code/design.md): темы в схеме нет, поэтому у тёмных цветов суффикс -dark.
 function emitFrontmatter({ common, themed }) {
   const q = (s) => JSON.stringify(s);
-  const lines = ['---', 'name: GrePrepApp', 'description: Подготовка к GRE® шаг за шагом — спокойно, с разбором каждой ошибки', 'colors:'];
+  const lines = ['---', 'name: GrePrepApp', 'description: Подготовка к GRE® — дизайн «Ночная студия»', 'colors:'];
   for (const m of MODES) {
     for (const t of themed[m].filter((t) => t.$type === 'color')) {
       const n = t.path.slice(t.path[0] === 'color' ? 1 : 0).join('-') + (m === 'dark' ? '-dark' : '');
@@ -350,6 +428,16 @@ function emitFrontmatter({ common, themed }) {
     lines.push(`  ${roleName(t)}:`, `    fontFamily: ${q(family(v.fontFamily))}`, `    fontSize: ${q(px(v.fontSize))}`,
       `    fontWeight: ${v.fontWeight}`, `    lineHeight: ${q(px({ value: lineHeightPx(v), unit: 'px' }))}`,
       `    letterSpacing: ${q(fmt(trackingEm(v)) + 'em')}`);
+    if (usesThin(t)) lines.push(`    fontWeightDark: ${themed.dark.find((token) => token.path.join('.') === 'font.weight.thin').$value}`);
+  }
+  lines.push('fontFamilies:');
+  for (const t of common.filter((t) => t.$type === 'fontFamily')) lines.push(`  ${t.path.at(-1)}: ${q(family(t.$value))}`);
+  lines.push('fontWeights:');
+  for (const t of common.filter((t) => t.$type === 'fontWeight')) lines.push(`  ${t.path.at(-1)}: ${t.$value}`);
+  for (const mode of MODES) lines.push(`  thin${mode === 'dark' ? '-dark' : ''}: ${themed[mode].find((t) => t.path.join('.') === 'font.weight.thin').$value}`);
+  lines.push('shadows:');
+  for (const mode of MODES) {
+    for (const t of themed[mode].filter((t) => t.$type === 'shadow')) lines.push(`  ${t.path.at(-1)}${mode === 'dark' ? '-dark' : ''}: ${q(shadow(t.$value))}`);
   }
   for (const [key, head] of [['rounded', 'radius'], ['spacing', 'space']]) {
     lines.push(`${key}:`);
@@ -357,17 +445,15 @@ function emitFrontmatter({ common, themed }) {
   }
   lines.push('opacity:');
   for (const t of common.filter((t) => t.path[0] === 'opacity')) lines.push(`  ${t.path.slice(1).join('-')}: ${fmt(t.$value)}`);
-  // Компоненты — ссылками на токены выше: шапка не должна разойтись с источником.
+  const dimension = (path) => px(common.find((t) => t.path.join('.') === path).$value);
+  // Цвет и форма — ссылками на токены выше, размеры — из того же источника.
   lines.push('components:',
-    '  button-main:', '    backgroundColor: "{colors.accent}"', '    textColor: "{colors.on-accent}"', '    rounded: "{rounded.full}"', '    height: "48px"', '    padding: "0 24px"',
-    '  button-telegram-main:', '    backgroundColor: "{colors.accent}"', '    textColor: "{colors.on-accent}"', '    rounded: "{rounded.md}"', '    height: "50px"',
-    '  button-secondary:', '    backgroundColor: "{colors.surface}"', '    textColor: "{colors.text}"', '    rounded: "{rounded.full}"', '    height: "44px"', '    padding: "0 16px"',
-    '  card:', '    backgroundColor: "{colors.surface}"', '    textColor: "{colors.text}"', '    rounded: "{rounded.xxl}"', '    padding: "16px"',
-    '  answer-option:', '    backgroundColor: "{colors.surface}"', '    textColor: "{colors.text}"', '    rounded: "{rounded.lg}"', '    height: "56px"', '    padding: "0 16px"',
-    '  chip-section:', '    backgroundColor: "{colors.verbal-tint}"', '    textColor: "{colors.verbal}"', '    rounded: "{rounded.full}"', '    height: "32px"', '    padding: "0 14px"',
-    '  tab-bar:', '    rounded: "{rounded.full}"', '    height: "64px"', '    width: "340px"', '    padding: "4px"',
-    '  step-node-current:', '    backgroundColor: "{colors.verbal}"', '    textColor: "{colors.surface}"', '    rounded: "{rounded.full}"', '    size: "36px"',
-    '  step-node:', '    backgroundColor: "{colors.surface}"', '    textColor: "{colors.verbal}"', '    rounded: "{rounded.full}"', '    size: "28px"',
+    '  button-main:', '    backgroundColor: "{colors.accent}"', '    textColor: "{colors.on-accent}"', '    rounded: "{rounded.full}"', '    shadow: "{shadows.glow}"', `    minHeight: ${q(dimension('size.button'))}`, `    padding: ${q('0 ' + dimension('layout.gutter'))}`,
+    '  button-secondary:', '    backgroundColor: "{colors.surface-2}"', '    textColor: "{colors.text}"', '    rounded: "{rounded.full}"', `    minHeight: ${q(dimension('size.button'))}`,
+    '  card:', '    backgroundColor: "{colors.surface}"', '    textColor: "{colors.text}"', '    rounded: "{rounded.l}"', `    padding: ${q(dimension('layout.gutter'))}`,
+    '  answer-option:', '    backgroundColor: "{colors.surface}"', '    textColor: "{colors.text}"', '    rounded: "{rounded.m}"', `    minHeight: ${q(dimension('size.opt'))}`, `    padding: ${q(dimension('space.10') + ' ' + dimension('space.14'))}`,
+    '  exam-switch:', '    backgroundColor: "{colors.surface-2}"', '    textColor: "{colors.text}"', '    rounded: "{rounded.full}"', `    minHeight: ${q(dimension('size.exam-switch'))}`,
+    '  nav:', '    backgroundColor: "{colors.nav-bg}"', '    textColor: "{colors.text-3}"', '    borderColor: "{colors.line}"',
     '---');
   return lines.join('\n') + '\n';
 }
