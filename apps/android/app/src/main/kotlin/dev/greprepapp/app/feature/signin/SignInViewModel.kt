@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/** Вход вне Telegram: Telegram, Apple, Google (PRODUCT.md, «Stack», вход) и подмена в отладочной сборке. */
+/** Вход: Apple, Google (PRODUCT.md, «Stack», вход) и подмена в отладочной сборке. */
 @HiltViewModel
 class SignInViewModel
     @Inject
@@ -30,7 +30,7 @@ class SignInViewModel
         private val config: AppConfig,
         private val reporter: ClientErrorReporter,
     ) : ViewModel() {
-        enum class Method { Telegram, Apple, Google, Development }
+        enum class Method { Apple, Google, Development }
 
         /** Что сказать под кнопками. Без всплывающих окон: ответ рядом с тем, что нажали (PRODUCT.md, доступность). */
         sealed interface Message {
@@ -54,7 +54,7 @@ class SignInViewModel
         val state: StateFlow<UiState> = mutableState.asStateFlow()
 
         /**
-         * Telegram, Apple и Google: у провайдеров ещё нет аккаунтов (задача «ждёт Дарью»), поэтому кнопки честно
+         * Apple и Google: у провайдеров ещё нет аккаунтов (задача «ждёт Дарью»), поэтому кнопки честно
          * отвечают «ещё не подключён» — как в приложении Apple. Сам вход (окно браузера с PKCE, Credential
          * Manager) появится вместе с ключами провайдеров.
          */

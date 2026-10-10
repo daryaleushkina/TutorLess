@@ -6,7 +6,7 @@
         <item name="android:windowBackground">@color/gp_bg</item>
     </style>
 
-    <!-- Заставка Android 12+: знак на фоне bg, держится, пока читается сохранённый вход. -->
+    <!-- Заставка Android 12+: знак на фоне bg, держится, пока читаются сохранённый вход и тема. -->
     <style name="Theme.GrePrep.Starting" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/gp_bg</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash</item>

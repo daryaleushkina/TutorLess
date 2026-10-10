@@ -46,11 +46,7 @@ import greprep.design.GpSize
 import greprep.design.GpSpace
 import dev.greprepapp.design.R as DesignR
 
-/**
- * Экран входа вне Telegram (макет T4-SignIn): знак, имя, одна фраза о продукте и три равноценных способа
- * входа — Telegram первым (решение Даши 06.10.2026). Дисклеймер ETS — на стартовом экране каждого
- * приложения (PRODUCT.md, «Brand Commitments»).
- */
+/** Экран входа: Apple и Google; дисклеймер ETS — на старте каждого приложения (PRODUCT.md). */
 @Composable
 fun SignInScreen(
     reason: SignOutReason?,
@@ -86,7 +82,7 @@ fun SignInContent(
     onDevelopment: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    SectionBackground(section = StudySection.Verbal, modifier = modifier) {
+    SectionBackground(modifier = modifier) {
         // Колонка не ниже экрана: Box передаёт ей свою высоту минимумом, прокрутка этот минимум сохраняет, и
         // на высоком экране распорки делят свободное место (знак — выше, кнопки — у низа, как в макете), а на
         // низком или с крупным текстом всё просто прокручивается. Без BoxWithConstraints — тот рисовал первый
@@ -99,7 +95,7 @@ fun SignInContent(
             Column(
                 modifier =
                     Modifier
-                        .widthIn(max = GpLayout.authColumnMax)
+                        .widthIn(max = GpLayout.contentMax)
                         .verticalScroll(rememberScrollState())
                         .padding(horizontal = GpSpace.s24)
                         .padding(bottom = GpSpace.s28),
@@ -110,16 +106,13 @@ fun SignInContent(
                 if (reason == SignOutReason.SessionExpired) {
                     Text(
                         text = stringResource(R.string.signin_expired),
-                        style = Gp.type.subhead,
-                        color = Gp.colors.textSecondary,
+                        style = Gp.type.meta,
+                        color = Gp.colors.text2,
                         modifier = Modifier.padding(bottom = GpSpace.s16).testTag("signin.expired"),
                     )
                 }
                 val enabled = state.busy == null
                 Column(verticalArrangement = Arrangement.spacedBy(GpSpace.s10)) {
-                    TelegramSignInButton(busy = state.busy == Method.Telegram, enabled = enabled) {
-                        onProvider(Method.Telegram)
-                    }
                     AppleSignInButton(busy = state.busy == Method.Apple, enabled = enabled) {
                         onProvider(Method.Apple)
                     }
@@ -150,31 +143,31 @@ private fun Header() {
     Column(verticalArrangement = Arrangement.spacedBy(GpSpace.s20)) {
         Surface(
             color = Gp.colors.surface,
-            shape = RoundedCornerShape(GpRadius.xl),
+            shape = RoundedCornerShape(GpRadius.l),
             border = BorderStroke(GpSize.hairline, Gp.colors.line),
-            modifier = Modifier.size(GpSize.brandMark),
+            modifier = Modifier.size(GpSize.sideCard),
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
                     painter = painterResource(DesignR.drawable.ic_brand_mark),
                     contentDescription = null,
                     tint = Gp.colors.verbal,
-                    modifier = Modifier.size(GpSize.brandGlyph),
+                    modifier = Modifier.size(GpSize.iconButton),
                 )
             }
         }
         Column(verticalArrangement = Arrangement.spacedBy(GpSpace.s10)) {
             Text(
                 text = stringResource(R.string.app_name),
-                style = Gp.type.title1,
+                style = if (Gp.isWide) Gp.type.h1Wide else Gp.type.h1,
                 color = Gp.colors.text,
                 modifier = Modifier.semantics { heading() },
             )
             Text(
                 text = stringResource(R.string.signin_tagline),
-                style = Gp.type.bodyLong,
-                color = Gp.colors.textSecondary,
-                modifier = Modifier.widthIn(max = GpLayout.taglineMax),
+                style = Gp.type.lead,
+                color = Gp.colors.text2,
+                modifier = Modifier.widthIn(max = GpLayout.contentMax),
             )
         }
     }
@@ -189,7 +182,6 @@ private fun MessageText(
         when (message) {
             is Message.NotConnectedYet -> {
                 when (message.method) {
-                    Method.Telegram -> R.string.signin_not_connected_telegram
                     Method.Apple -> R.string.signin_not_connected_apple
                     Method.Google, Method.Development -> R.string.signin_not_connected_google
                 }
@@ -208,10 +200,10 @@ private fun MessageText(
             }
         }
     // «Ещё не подключён» — сведение, а не сбой: без цвета ошибки.
-    val color = if (message is Message.NotConnectedYet) Gp.colors.textSecondary else Gp.colors.wrong
+    val color = if (message is Message.NotConnectedYet) Gp.colors.text2 else Gp.colors.wrong
     Text(
         text = stringResource(text),
-        style = Gp.type.subhead,
+        style = Gp.type.meta,
         color = color,
         modifier = modifier.fillMaxWidth().testTag("signin.message"),
     )
@@ -223,14 +215,14 @@ private fun Legal(modifier: Modifier = Modifier) {
         Text(
             text = stringResource(R.string.signin_legal),
             style = Gp.type.caption,
-            color = Gp.colors.textSecondary,
+            color = Gp.colors.text2,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
         )
         Text(
             text = stringResource(R.string.signin_disclaimer),
             style = Gp.type.caption.copy(localeList = LocaleList("en")),
-            color = Gp.colors.textSecondary,
+            color = Gp.colors.text2,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
         )

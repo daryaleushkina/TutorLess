@@ -53,9 +53,9 @@ class ScreenSnapshotTest(
     fun signIn() = snap("signin") { SignIn() }
 
     @Test
-    fun signInExpiredWithMessage() =
-        snap("signin-expired-message") {
-            SignIn(SignInViewModel.UiState(message = Message.NotConnectedYet(Method.Telegram)), SignOutReason.SessionExpired)
+    fun signInExpiredWithGoogleMessage() =
+        snap("signin-expired-google-message") {
+            SignIn(SignInViewModel.UiState(message = Message.NotConnectedYet(Method.Google)), SignOutReason.SessionExpired)
         }
 
     @Test

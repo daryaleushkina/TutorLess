@@ -127,25 +127,25 @@ fun richText(text: String): AnnotatedString =
 enum class OptionMark { None, Selected, Correct, Wrong }
 
 /**
- * Вариант ответа (компонент answer-option): строка на плотной поверхности; выбранный — подложка цвета раздела и
- * обводка; после проверки — «верный» цветом раздела с галочкой и «ваш ответ» оранжевым с крестиком (DESIGN.md,
- * «Правило двух цветов ошибки»).
+ * Вариант ответа (компонент answer-option): строка на плотной поверхности; выбранный — акцентная подложка и
+ * обводка; после проверки — «верный» цветом right с галочкой и «ваш ответ» оранжевым с крестиком (DESIGN.md,
+ * «Правило двух цветов ответа»).
  */
 @Composable
 fun OptionRow(
     option: QuestionOption,
     mark: OptionMark,
-    section: StudySection,
     modifier: Modifier = Modifier,
     letter: String? = option.id,
     multiple: Boolean = false,
     onClick: (() -> Unit)? = null,
 ) {
     val colors = Gp.colors
-    val accent = section.color(colors)
+    val accent = colors.accent
     val container =
         when (mark) {
-            OptionMark.Selected, OptionMark.Correct -> section.tint(colors)
+            OptionMark.Selected -> colors.accentSoft
+            OptionMark.Correct -> colors.rightSoft
             else -> colors.surface
         }
     val interaction = remember { MutableInteractionSource() }
@@ -171,12 +171,12 @@ fun OptionRow(
         }
     Surface(
         color = container,
-        shape = RoundedCornerShape(GpRadius.lg),
+        shape = RoundedCornerShape(GpRadius.m),
         border = if (mark == OptionMark.Selected) BorderStroke(GpSize.hairline, accent) else null,
         modifier = modifier.fillMaxWidth().then(clickable).testTag("option.${option.id}"),
     ) {
         Row(
-            modifier = Modifier.heightIn(min = GpSize.row).padding(horizontal = GpSpace.s12, vertical = GpSpace.s8),
+            modifier = Modifier.heightIn(min = GpSize.opt).padding(horizontal = GpSpace.s12, vertical = GpSpace.s8),
             horizontalArrangement = Arrangement.spacedBy(GpSpace.s12),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -184,16 +184,13 @@ fun OptionRow(
             Text(
                 text = option.text,
                 style =
-                    Gp.type.body.copy(
-                        localeList = English,
-                        fontWeight = if (mark == OptionMark.None) FontWeight.W400 else FontWeight.W500,
-                    ),
+                    Gp.type.opt.copy(localeList = English),
                 color = colors.text,
                 modifier = Modifier.weight(1f),
             )
             if (markText != null) {
-                val markColor = if (mark == OptionMark.Correct) accent else colors.wrong
-                Text(text = markText, style = Gp.type.footnote, color = markColor)
+                val markColor = if (mark == OptionMark.Correct) colors.right else colors.wrong
+                Text(text = markText, style = Gp.type.meta, color = markColor)
                 MarkDot(correct = mark == OptionMark.Correct, color = markColor)
             }
         }
@@ -209,33 +206,32 @@ private fun LetterBadge(
     val colors = Gp.colors
     val (bg, fg) =
         when (mark) {
-            OptionMark.Selected -> accent to colors.surface
-            OptionMark.Correct -> colors.surface to accent
-            else -> colors.fill to colors.textSecondary
+            OptionMark.Selected -> accent to colors.onAccent
+            OptionMark.Correct -> colors.surface to colors.right
+            else -> colors.surface2 to colors.text2
         }
     Box(
-        modifier = Modifier.size(GpSize.stepNode).background(bg, CircleShape),
+        modifier = Modifier.size(GpSize.icon).background(bg, CircleShape),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text = letter, style = Gp.type.footnote.copy(fontWeight = FontWeight.W600), color = fg)
+        Text(text = letter, style = Gp.type.meta.copy(fontWeight = FontWeight.W600), color = fg)
     }
 }
 
-/** Вариант пропуска Text Completion (макет R5): компактная капсула, выбранная — подложка цвета раздела. */
+/** Вариант пропуска Text Completion (макет R5): компактная капсула, выбранная — акцентная подложка. */
 @Composable
 fun OptionChip(
     option: QuestionOption,
     selected: Boolean,
-    section: StudySection,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val colors = Gp.colors
     val interaction = remember { MutableInteractionSource() }
     Surface(
-        color = if (selected) section.tint(colors) else colors.surface,
-        shape = RoundedCornerShape(GpRadius.lg),
-        border = if (selected) BorderStroke(GpSize.hairline, section.color(colors)) else null,
+        color = if (selected) colors.accentSoft else colors.surface,
+        shape = RoundedCornerShape(GpRadius.m),
+        border = if (selected) BorderStroke(GpSize.hairline, colors.accent) else null,
         modifier =
             modifier
                 .pressScale(interaction)
@@ -254,10 +250,7 @@ fun OptionChip(
             Text(
                 text = option.text,
                 style =
-                    Gp.type.callout.copy(
-                        localeList = English,
-                        fontWeight = if (selected) FontWeight.W500 else FontWeight.W400,
-                    ),
+                    Gp.type.opt.copy(localeList = English),
                 color = colors.text,
             )
         }
@@ -293,11 +286,10 @@ fun MarkDot(
 fun PromptText(
     question: Question,
     selection: List<String>,
-    section: StudySection,
     modifier: Modifier = Modifier,
 ) {
     val colors = Gp.colors
-    val accent = section.color(colors)
+    val accent = colors.accent
     val blank = stringResource(R.string.question_blank)
     val parts = question.prompt.split(BLANK)
     val many = question.groups.size > 1
@@ -307,7 +299,7 @@ fun PromptText(
                 append(part)
                 if (i == parts.lastIndex) return@forEachIndexed
                 if (many) {
-                    withStyle(SpanStyle(fontSize = Gp.type.key.fontSize, color = colors.textSecondary)) {
+                    withStyle(SpanStyle(fontSize = Gp.type.caption.fontSize, color = colors.text2)) {
                         append(BLANK_NUMBERS.getOrElse(i) { "" })
                     }
                 }
@@ -319,7 +311,7 @@ fun PromptText(
                 if (many && chosen != null) {
                     withStyle(SpanStyle(color = accent, fontWeight = FontWeight.W500)) { append(chosen.text) }
                 } else {
-                    withStyle(SpanStyle(textDecoration = TextDecoration.Underline, color = colors.textSecondary)) { append(BLANK_GAP) }
+                    withStyle(SpanStyle(textDecoration = TextDecoration.Underline, color = colors.text2)) { append(BLANK_GAP) }
                 }
             }
         }
@@ -330,7 +322,7 @@ fun PromptText(
         }
     Text(
         text = text,
-        style = Gp.type.prompt.copy(localeList = English),
+        style = (if (Gp.isWide) Gp.type.qTextWide else Gp.type.qText).copy(localeList = English),
         color = colors.text,
         modifier = modifier.fillMaxWidth().semantics { contentDescription = spoken }.testTag("question.prompt"),
     )
@@ -347,7 +339,6 @@ fun ExplanationPanel(
     answer: GivenAnswer?,
     english: Boolean,
     whyNotOpen: Boolean,
-    section: StudySection,
     onLanguage: (Boolean) -> Unit,
     onToggleWhyNot: () -> Unit,
     modifier: Modifier = Modifier,
@@ -359,14 +350,14 @@ fun ExplanationPanel(
     val whyNot = question.explanation.options.filter { it.optionId in wrongChosen }
     Row(modifier = modifier.fillMaxWidth().height(IntrinsicSize.Min).testTag("explanation")) {
         Column(
-            modifier = Modifier.width(GpSize.stepNode).fillMaxHeight(),
+            modifier = Modifier.width(GpSize.icon).fillMaxHeight(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            MarkDot(correct = correct, color = if (correct) section.color(colors) else colors.wrong, size = GpSize.stepNode)
+            MarkDot(correct = correct, color = if (correct) colors.right else colors.wrong, size = GpSize.icon)
             Box(
                 Modifier
                     .padding(top = GpSpace.s4)
-                    .width(GpSize.stepLine)
+                    .width(GpSize.hairline)
                     .weight(1f)
                     .background(colors.line),
             )
@@ -383,7 +374,7 @@ fun ExplanationPanel(
             )
             Text(
                 text = richText(question.explanation.solution.pick(english)),
-                style = Gp.type.bodyLong.withLanguage(english),
+                style = Gp.type.explainBody.withLanguage(english),
                 color = colors.text,
                 modifier = Modifier.testTag("explanation.solution"),
             )
@@ -405,12 +396,12 @@ fun ExplanationPanel(
                 whyNot.forEach { item ->
                     Surface(
                         color = colors.surface,
-                        shape = RoundedCornerShape(GpRadius.xl),
+                        shape = RoundedCornerShape(GpRadius.l),
                         modifier = Modifier.fillMaxWidth().testTag("explanation.whyNot"),
                     ) {
                         Text(
                             text = richText(item.text.pick(english)),
-                            style = Gp.type.subhead.withLanguage(english),
+                            style = Gp.type.meta.withLanguage(english),
                             color = colors.text,
                             modifier = Modifier.padding(GpSpace.s16),
                         )
@@ -493,7 +484,7 @@ private fun WhyNotChip(
     val interaction = remember { MutableInteractionSource() }
     Surface(
         onClick = onClick,
-        color = colors.fill,
+        color = colors.surface2,
         shape = CircleShape,
         interactionSource = interaction,
         modifier =
@@ -509,7 +500,7 @@ private fun WhyNotChip(
         ) {
             Text(
                 text = text,
-                style = Gp.type.subhead.copy(fontWeight = FontWeight.W500),
+                style = Gp.type.meta.copy(fontWeight = FontWeight.W500),
                 color = colors.text,
                 maxLines = 2,
                 modifier = Modifier.weight(1f, fill = false),
@@ -517,7 +508,7 @@ private fun WhyNotChip(
             Icon(
                 painter = painterResource(R.drawable.ic_expand_more),
                 contentDescription = null,
-                tint = colors.textSecondary,
+                tint = colors.text2,
                 modifier = Modifier.size(GpSpace.s20).rotate(if (open) HALF_TURN else 0f),
             )
         }
@@ -569,8 +560,8 @@ fun SegmentedChoice(
                         activeContainerColor = colors.surface,
                         activeContentColor = colors.text,
                         activeBorderColor = colors.line,
-                        inactiveContainerColor = colors.fill,
-                        inactiveContentColor = colors.textSecondary,
+                        inactiveContainerColor = colors.surface2,
+                        inactiveContentColor = colors.text2,
                         inactiveBorderColor = colors.line,
                     ),
                 icon = {},
@@ -578,7 +569,7 @@ fun SegmentedChoice(
             ) {
                 Text(
                     text = text,
-                    style = Gp.type.subhead.copy(fontWeight = if (i == selected) FontWeight.W600 else FontWeight.W500),
+                    style = Gp.type.seg,
                     maxLines = 1,
                 )
             }

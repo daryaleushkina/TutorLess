@@ -124,17 +124,17 @@ internal fun KeyHint(
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(GpSpace.s8)) {
         Surface(
             color = Gp.colors.surface,
-            shape = RoundedCornerShape(GpRadius.xs),
+            shape = RoundedCornerShape(GpRadius.s),
             border = BorderStroke(GpSize.hairline, Gp.colors.line),
         ) {
             Text(
                 key,
-                style = Gp.type.key,
-                color = Gp.colors.textSecondary,
+                style = Gp.type.caption,
+                color = Gp.colors.text2,
                 modifier = Modifier.padding(horizontal = GpSpace.s6, vertical = GpSpace.s4),
             )
         }
-        Text(label, style = Gp.type.caption, color = Gp.colors.textSecondary)
+        Text(label, style = Gp.type.caption, color = Gp.colors.text2)
     }
 }
 

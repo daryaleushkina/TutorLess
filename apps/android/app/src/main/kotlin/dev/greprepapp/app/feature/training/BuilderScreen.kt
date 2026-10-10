@@ -274,7 +274,7 @@ private fun Presets(
                     Modifier
                         .fillMaxWidth()
                         .selectable(selected = selected, role = Role.RadioButton, onClick = { onSelect(i) })
-                        .heightIn(min = GpSize.rowTall)
+                        .heightIn(min = GpSize.opt)
                         .padding(start = GpSpace.s16, end = GpSpace.s8, top = GpSpace.s8, bottom = GpSpace.s8)
                         .testTag("builder.preset.${preset.kind}"),
                 verticalAlignment = Alignment.CenterVertically,
@@ -283,8 +283,8 @@ private fun Presets(
                     Text(text = presetTitle(preset), style = Gp.type.body.copy(fontWeight = FontWeight.W500), color = Gp.colors.text)
                     Text(
                         text = presetSubtitle(preset, c.options),
-                        style = Gp.type.footnote.copy(fontWeight = FontWeight.W400),
-                        color = Gp.colors.textSecondary,
+                        style = Gp.type.meta.copy(fontWeight = FontWeight.W400),
+                        color = Gp.colors.text2,
                     )
                 }
                 RadioButton(
@@ -356,8 +356,8 @@ private fun CustomCard(
             }
             Text(
                 text = stringResource(if (f.mode == TrainingMode.CHECK) R.string.mode_check_hint else R.string.mode_practice_hint),
-                style = Gp.type.footnote.copy(fontWeight = FontWeight.W400),
-                color = Gp.colors.textSecondary,
+                style = Gp.type.meta.copy(fontWeight = FontWeight.W400),
+                color = Gp.colors.text2,
                 modifier = Modifier.padding(horizontal = GpSpace.s16),
             )
         }
@@ -393,7 +393,7 @@ private fun TypeRow(
             value = c.form.type.label(),
             onClick = { open = true },
             tag = "builder.type",
-            valueStyle = Gp.type.callout.copy(fontWeight = FontWeight.W400, localeList = English),
+            valueStyle = Gp.type.action.copy(fontWeight = FontWeight.W400, localeList = English),
         )
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             types.forEach { t ->
@@ -456,7 +456,7 @@ private fun CountField(
                 modifier =
                     Modifier
                         .fillMaxSize()
-                        .background(colors.fill, CircleShape)
+                        .background(colors.surface2, CircleShape)
                         .border(GpSize.hairline, colors.line, CircleShape),
                 contentAlignment = Alignment.Center,
             ) { field() }
@@ -470,7 +470,7 @@ private fun Group(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    Surface(color = Gp.colors.surface, shape = RoundedCornerShape(GpRadius.xxl), modifier = modifier.fillMaxWidth()) {
+    Surface(color = Gp.colors.surface, shape = RoundedCornerShape(GpRadius.l), modifier = modifier.fillMaxWidth()) {
         Column { content() }
     }
 }
@@ -486,7 +486,7 @@ private fun FieldRow(
     control: @Composable () -> Unit,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth().heightIn(min = GpSize.rowTall).padding(horizontal = GpSpace.s16, vertical = GpSpace.s8),
+        modifier = Modifier.fillMaxWidth().heightIn(min = GpSize.opt).padding(horizontal = GpSpace.s16, vertical = GpSpace.s8),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(GpSpace.s12),
     ) {
@@ -503,14 +503,14 @@ private fun LinkRow(
     onClick: () -> Unit,
     tag: String,
     enabled: Boolean = true,
-    valueStyle: TextStyle = Gp.type.callout.copy(fontWeight = FontWeight.W400),
+    valueStyle: TextStyle = Gp.type.action.copy(fontWeight = FontWeight.W400),
 ) {
     Row(
         modifier =
             Modifier
                 .fillMaxWidth()
                 .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
-                .heightIn(min = GpSize.rowTall)
+                .heightIn(min = GpSize.opt)
                 .padding(start = GpSpace.s16, end = GpSpace.s12)
                 .semantics(mergeDescendants = true) { contentDescription = "$label: $value" }
                 .testTag(tag),
@@ -518,11 +518,11 @@ private fun LinkRow(
         horizontalArrangement = Arrangement.spacedBy(GpSpace.s8),
     ) {
         Text(text = label, style = Gp.type.body, color = Gp.colors.text, modifier = Modifier.weight(1f))
-        Text(text = value, style = valueStyle, color = Gp.colors.textSecondary)
+        Text(text = value, style = valueStyle, color = Gp.colors.text2)
         Icon(
             painter = painterResource(R.drawable.ic_chevron_right),
             contentDescription = null,
-            tint = Gp.colors.textSecondary,
+            tint = Gp.colors.text2,
             modifier = Modifier.size(GpSpace.s20),
         )
     }
@@ -542,8 +542,8 @@ private fun TopicsContent(
     val topicList: @Composable () -> Unit = {
         Text(
             text = (listOf(f.section.label(), f.type.label())).joinToString(" · "),
-            style = Gp.type.subhead,
-            color = Gp.colors.textSecondary,
+            style = Gp.type.meta,
+            color = Gp.colors.text2,
         )
         Group {
             topics.forEachIndexed { i, topic ->
@@ -564,7 +564,7 @@ private fun TopicsContent(
                                 value = checked,
                                 role = Role.Checkbox,
                                 onValueChange = { actions.onToggleTopic(topic.id) },
-                            ).heightIn(min = GpSize.rowTall)
+                            ).heightIn(min = GpSize.opt)
                             .padding(start = GpSpace.s16, end = GpSpace.s8)
                             .testTag("topic.${topic.id}"),
                     verticalAlignment = Alignment.CenterVertically,
@@ -578,8 +578,8 @@ private fun TopicsContent(
                     )
                     Text(
                         text = count.toString(),
-                        style = Gp.type.subhead.copy(fontFeatureSettings = "tnum"),
-                        color = Gp.colors.textSecondary,
+                        style = Gp.type.meta.copy(fontFeatureSettings = "tnum"),
+                        color = Gp.colors.text2,
                     )
                     Checkbox(
                         checked = checked,
@@ -591,7 +591,7 @@ private fun TopicsContent(
         }
     }
     val difficulty: @Composable () -> Unit = {
-        Text(text = stringResource(R.string.topics_difficulty), style = Gp.type.subhead, color = Gp.colors.textSecondary)
+        Text(text = stringResource(R.string.topics_difficulty), style = Gp.type.meta, color = Gp.colors.text2)
         SegmentedChoice(
             options =
                 listOf(

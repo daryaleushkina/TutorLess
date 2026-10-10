@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="signin_tagline">GRE® prep that explains every mistake — in Russian and in English.</string>
-    <string name="signin_telegram">Log in with Telegram</string>
     <string name="signin_apple">Sign in with Apple</string>
     <string name="signin_google">Sign in with Google</string>
     <string name="signin_legal">By continuing, you accept the terms and the privacy policy.</string>
     <string name="signin_expired">You were signed out — please sign in again.</string>
-    <string name="signin_not_connected_telegram">Log-in with Telegram isn’t connected yet — it will be before the beta.</string>
     <string name="signin_not_connected_apple">Sign in with Apple isn’t connected yet — it will be before the beta.</string>
     <string name="signin_not_connected_google">Sign-in with Google isn’t connected yet — it will be before the beta.</string>
     <string name="signin_offline">No connection — you can sign in once it’s back.</string>

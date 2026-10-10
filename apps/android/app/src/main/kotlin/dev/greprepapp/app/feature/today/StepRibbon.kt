@@ -50,7 +50,7 @@ import greprep.design.GpSize
 import greprep.design.GpSpace
 
 /** Колонка узлов — шириной с текущий узел; нить идёт по её центру. */
-private val NodeColumn = GpSize.stepNodeCurrent
+private val NodeColumn = GpSize.iconButton
 private val RowGap = GpSpace.s24
 
 /** Внутренний отступ карточки шага (компонент card). */
@@ -70,17 +70,17 @@ fun StepRow(
 ) {
     val density = LocalDensity.current
     val type = Gp.type
-    val title3 = Gp.title3
+    val headingStyle = Gp.type.h2
     // Узел — по центру первой строки шага: у текущего — строки заголовка карточки.
     val nodeTop =
         with(density) {
             if (step.state == TodayPlan.State.Current) {
-                CardPadding + title3.lineHeight.toDp() / 2 - GpSize.stepNodeCurrent / 2
+                CardPadding + headingStyle.lineHeight.toDp() / 2 - GpSize.iconButton / 2
             } else {
-                (type.body.lineHeight.toDp() / 2 - GpSize.stepNode / 2).coerceAtLeast(0.dp)
+                (type.body.lineHeight.toDp() / 2 - GpSize.icon / 2).coerceAtLeast(0.dp)
             }
         }
-    val nodeSize = if (step.state == TodayPlan.State.Current) GpSize.stepNodeCurrent else GpSize.stepNode
+    val nodeSize = if (step.state == TodayPlan.State.Current) GpSize.iconButton else GpSize.icon
     Row(
         modifier = modifier.fillMaxWidth().height(IntrinsicSize.Min),
         horizontalArrangement = Arrangement.spacedBy(GpSpace.s14),
@@ -109,7 +109,7 @@ private fun Thread(top: Dp) {
         modifier =
             Modifier
                 .padding(top = top)
-                .width(GpSize.stepLine)
+                .width(GpSize.hairline)
                 .fillMaxHeight()
                 .background(Gp.colors.line),
     )
@@ -124,14 +124,14 @@ private fun Node(
     val sectionColor = step.section.color(colors)
     when (step.state) {
         TodayPlan.State.Current -> {
-            val tint = step.section.tint(colors)
+            val tint = step.section.soft(colors)
             Box(
                 modifier =
                     modifier
-                        .size(GpSize.stepNodeCurrent)
+                        .size(GpSize.iconButton)
                         .drawBehind {
-                            // Кольцо цвета раздела вокруг узла (step-node-current).
-                            drawCircle(tint, radius = size.minDimension / 2 + GpSize.stepRing.toPx())
+                            // Кольцо цвета раздела вокруг узла (текущий шаг).
+                            drawCircle(tint, radius = size.minDimension / 2 + GpSize.hairline.toPx())
                         }.background(sectionColor, CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
@@ -139,7 +139,7 @@ private fun Node(
                     painter = painterResource(step.section.icon),
                     contentDescription = null,
                     tint = colors.surface,
-                    modifier = Modifier.size(GpSize.stepNodeCurrent / 2),
+                    modifier = Modifier.size(GpSize.iconButton / 2),
                 )
             }
         }
@@ -148,7 +148,7 @@ private fun Node(
             Box(
                 modifier =
                     modifier
-                        .size(GpSize.stepNode)
+                        .size(GpSize.icon)
                         .background(colors.surface, CircleShape)
                         .border(GpSize.hairline, colors.line, CircleShape),
                 contentAlignment = Alignment.Center,
@@ -157,21 +157,21 @@ private fun Node(
                     painter = painterResource(step.section.icon),
                     contentDescription = null,
                     tint = sectionColor,
-                    modifier = Modifier.size(GpSize.stepNode / 2),
+                    modifier = Modifier.size(GpSize.icon / 2),
                 )
             }
         }
 
         TodayPlan.State.Done -> {
             Box(
-                modifier = modifier.size(GpSize.stepNode).background(sectionColor, CircleShape),
+                modifier = modifier.size(GpSize.icon).background(sectionColor, CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_check),
                     contentDescription = null,
                     tint = colors.surface,
-                    modifier = Modifier.size(GpSize.stepNode / 2),
+                    modifier = Modifier.size(GpSize.icon / 2),
                 )
             }
         }
@@ -189,7 +189,7 @@ private fun CurrentStepCard(
     val now = stringResource(R.string.today_now, step.title)
     Surface(
         color = colors.surface,
-        shape = RoundedCornerShape(GpRadius.xxl),
+        shape = RoundedCornerShape(GpRadius.l),
         border = BorderStroke(GpSize.hairline, colors.line),
         modifier = Modifier.fillMaxWidth().testTag("today.current"),
     ) {
@@ -203,7 +203,7 @@ private fun CurrentStepCard(
             ) {
                 Text(
                     text = step.title,
-                    style = Gp.title3,
+                    style = Gp.type.h2,
                     color = colors.text,
                     modifier =
                         Modifier.weight(1f).semantics {
@@ -215,7 +215,7 @@ private fun CurrentStepCard(
             }
             Text(
                 text = step.section.label(),
-                style = Gp.type.subhead.copy(fontWeight = FontWeight.W500),
+                style = Gp.type.meta.copy(fontWeight = FontWeight.W500),
                 color = step.section.color(colors),
             )
             GpPrimaryButton(
@@ -267,7 +267,7 @@ private fun QuietStep(
                     style = Gp.type.body.copy(fontWeight = FontWeight.W500),
                     color = colors.text,
                 )
-                Text(text = step.section.label(), style = Gp.type.subhead, color = step.section.color(colors))
+                Text(text = step.section.label(), style = Gp.type.meta, color = step.section.color(colors))
             }
             Minutes(step)
         }
@@ -283,7 +283,7 @@ private fun Minutes(step: TodayPlan.Step) {
         } else {
             stringResource(R.string.today_step_minutes_approx, step.minutes)
         }
-    Text(text = text, style = Gp.type.subhead.copy(fontFeatureSettings = "tnum"), color = Gp.colors.textSecondary)
+    Text(text = text, style = Gp.type.meta.copy(fontFeatureSettings = "tnum"), color = Gp.colors.text2)
 }
 
 /** Объяснение у шага, который не начать без сети: начатое доживёт без сети, новое — нет (PRODUCT.md). */
@@ -312,7 +312,7 @@ fun RibbonEnd(
             modifier = Modifier.width(NodeColumn).padding(top = if (isComplete) GpSpace.s8 else 0.dp),
             contentAlignment = Alignment.Center,
         ) {
-            Box(Modifier.size(GpSize.stepEnd).background(colors.line, CircleShape))
+            Box(Modifier.size(GpSize.sectionMark).background(colors.line, CircleShape))
         }
         if (isComplete) {
             Column(verticalArrangement = Arrangement.spacedBy(GpSpace.s2)) {
@@ -323,12 +323,12 @@ fun RibbonEnd(
                 )
                 Text(
                     text = stringResource(R.string.today_done_subtitle),
-                    style = Gp.type.subhead,
-                    color = colors.textSecondary,
+                    style = Gp.type.meta,
+                    color = colors.text2,
                 )
             }
         } else {
-            Text(text = stringResource(R.string.today_end), style = Gp.type.subhead, color = colors.textSecondary)
+            Text(text = stringResource(R.string.today_end), style = Gp.type.meta, color = colors.text2)
         }
     }
 }

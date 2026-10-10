@@ -12,13 +12,11 @@
 
     <!-- Вход -->
     <string name="signin_tagline">Подготовка к GRE® с разбором каждой ошибки — по-русски и по-английски.</string>
-    <string name="signin_telegram">Войти через Telegram</string>
     <string name="signin_apple">Вход с Apple</string>
     <string name="signin_google">Войти с аккаунтом Google</string>
     <string name="signin_legal">Продолжая, вы принимаете условия и политику конфиденциальности.</string>
     <string name="signin_disclaimer" translatable="false">GRE® is a registered trademark of Educational Testing Service (ETS). This product is not endorsed or approved by ETS.</string>
     <string name="signin_expired">Вход закончился — войдите снова.</string>
-    <string name="signin_not_connected_telegram">Вход через Telegram ещё не подключён — он появится до беты.</string>
     <string name="signin_not_connected_apple">Вход с Apple ещё не подключён — он появится до беты.</string>
     <string name="signin_not_connected_google">Вход через Google ещё не подключён — он появится до беты.</string>
     <string name="signin_offline">Нет сети — войти получится, когда она появится.</string>

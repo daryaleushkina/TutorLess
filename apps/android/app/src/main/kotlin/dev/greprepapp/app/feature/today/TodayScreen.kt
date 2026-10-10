@@ -63,7 +63,6 @@ fun TodayContent(
     val content = state.content
     TabScreen(
         title = stringResource(R.string.tab_today),
-        glow = (content as? Content.Plan)?.plan?.current?.section,
         modifier = modifier,
     ) { padding ->
         when (content) {
@@ -151,8 +150,8 @@ private fun PlanList(
             item(key = "summary") {
                 Text(
                     text = summary,
-                    style = Gp.type.subhead.withNumbers(),
-                    color = Gp.colors.textSecondary,
+                    style = Gp.type.meta.withNumbers(),
+                    color = Gp.colors.text2,
                     modifier = Modifier.testTag("today.summary"),
                 )
             }
@@ -209,7 +208,7 @@ private fun ContinueRow(
     Surface(
         onClick = onClick,
         color = colors.surface,
-        shape = RoundedCornerShape(GpRadius.xxl),
+        shape = RoundedCornerShape(GpRadius.l),
         border = BorderStroke(GpSize.hairline, colors.line),
         modifier = modifier.fillMaxWidth().testTag("today.continue"),
     ) {
@@ -226,14 +225,14 @@ private fun ContinueRow(
                 )
                 Text(
                     text = stringResource(R.string.training_continue_subtitle, what, active.position + 1, active.total),
-                    style = Gp.type.subhead,
+                    style = Gp.type.meta,
                     color = section.color(colors),
                 )
             }
             Icon(
                 painter = painterResource(R.drawable.ic_chevron_right),
                 contentDescription = null,
-                tint = colors.textSecondary,
+                tint = colors.text2,
                 modifier = Modifier.size(GpSpace.s20),
             )
         }

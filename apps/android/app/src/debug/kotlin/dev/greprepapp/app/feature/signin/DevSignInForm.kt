@@ -46,8 +46,8 @@ private fun DevSignInForm(
     var name by rememberSaveable { mutableStateOf("") }
     val submit = { if (name.isNotBlank()) onSubmit(name) }
     Surface(
-        color = Gp.colors.fill,
-        shape = RoundedCornerShape(GpRadius.md),
+        color = Gp.colors.surface2,
+        shape = RoundedCornerShape(GpRadius.m),
         modifier = modifier.fillMaxWidth(),
     ) {
         Column(
@@ -56,8 +56,8 @@ private fun DevSignInForm(
         ) {
             Text(
                 text = stringResource(R.string.dev_signin_title),
-                style = Gp.type.footnote,
-                color = Gp.colors.textSecondary,
+                style = Gp.type.meta,
+                color = Gp.colors.text2,
             )
             Row(
                 horizontalArrangement = Arrangement.spacedBy(GpSpace.s8),

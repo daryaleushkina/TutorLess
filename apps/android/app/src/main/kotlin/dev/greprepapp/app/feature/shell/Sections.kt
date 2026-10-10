@@ -57,7 +57,7 @@ fun StepPlaceholderScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    NestedScreen(title = step.section.label(), onBack = onBack, glow = step.section, modifier = modifier) { padding ->
+    NestedScreen(title = step.section.label(), onBack = onBack, modifier = modifier) { padding ->
         EmptyState(
             title = step.title,
             message = stringResource(R.string.step_placeholder),
@@ -120,7 +120,7 @@ fun SettingsScreen(
             ) {
                 Surface(
                     color = Gp.colors.surface,
-                    shape = RoundedCornerShape(GpRadius.xxl),
+                    shape = RoundedCornerShape(GpRadius.l),
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     ListItem(
@@ -134,14 +134,14 @@ fun SettingsScreen(
                 }
                 Text(
                     text = stringResource(R.string.settings_version, appVersion),
-                    style = Gp.type.footnote,
-                    color = Gp.colors.textSecondary,
+                    style = Gp.type.meta,
+                    color = Gp.colors.text2,
                     modifier = Modifier.padding(horizontal = GpSpace.s16),
                 )
                 Text(
                     text = stringResource(R.string.ets_disclaimer),
                     style = Gp.type.caption,
-                    color = Gp.colors.textSecondary,
+                    color = Gp.colors.text2,
                     modifier = Modifier.padding(horizontal = GpSpace.s16, vertical = GpSpace.s8).testTag("settings.disclaimer"),
                 )
             }

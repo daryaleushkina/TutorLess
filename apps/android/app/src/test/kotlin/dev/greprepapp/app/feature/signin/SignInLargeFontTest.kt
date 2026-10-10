@@ -3,7 +3,9 @@ package dev.greprepapp.app.feature.signin
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -38,8 +40,9 @@ class SignInLargeFontTest {
                 }
             }
         }
-        compose.onNodeWithTag("signin.telegram").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag("signin.apple").performScrollTo().assertIsDisplayed()
         compose.onNodeWithTag("signin.google").performScrollTo().assertIsDisplayed()
+        compose.onAllNodes(hasClickAction()).assertCountEquals(2)
     }
 
     @Test
@@ -52,7 +55,7 @@ class SignInLargeFontTest {
                 }
             }
         }
-        for (label in listOf("Войти через Telegram", "Вход с Apple", "Войти с аккаунтом Google")) {
+        for (label in listOf("Вход с Apple", "Войти с аккаунтом Google")) {
             val results = mutableListOf<TextLayoutResult>()
             compose
                 .onNodeWithText(label, useUnmergedTree = true)

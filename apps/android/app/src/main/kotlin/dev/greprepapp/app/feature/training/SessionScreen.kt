@@ -64,6 +64,7 @@ import dev.greprepapp.app.ui.label
 import dev.greprepapp.design.Gp
 import dev.greprepapp.design.GpPrimaryButton
 import dev.greprepapp.design.GpSecondaryButton
+import dev.greprepapp.design.MathFamily
 import dev.greprepapp.design.SectionBackground
 import dev.greprepapp.design.StudySection
 import greprep.design.GpLayout
@@ -215,11 +216,11 @@ private fun SessionBody(
     when (state) {
         UiState.Loading -> {
             // Чтение файла с устройства — миллисекунды: крутилка только мигнула бы.
-            SectionBackground(section = null, modifier = modifier.testTag("session.loading")) {}
+            SectionBackground(modifier = modifier.testTag("session.loading")) {}
         }
 
         UiState.Missing -> {
-            SectionBackground(section = null, modifier = modifier) {
+            SectionBackground(modifier = modifier) {
                 EmptyState(
                     title = stringResource(R.string.training_missing_title),
                     message = stringResource(R.string.training_missing_message),
@@ -236,7 +237,7 @@ private fun SessionBody(
                 s.training.session.section
                     .study()
             val result = s.result
-            SectionBackground(section = section, modifier = modifier) {
+            SectionBackground(modifier = modifier) {
                 when {
                     result != null -> SummaryPane(s, result, section, repeat, actions)
                     s.overview && !Gp.isWide -> OverviewPane(s, section, actions)
@@ -278,7 +279,7 @@ private fun QuestionPane(
     ) { padding ->
         val question: @Composable () -> Unit = {
             QuestionHeading(s.question, section, onReport = { actions.onReport(s.position) })
-            QuestionBody(s, section, actions)
+            QuestionBody(s, actions)
             if (!s.revealed && !s.overview) {
                 val last = s.keyboardGroup?.options?.lastIndex ?: 0
                 KeyHint("A–${('A'.code + last).toChar()}", stringResource(R.string.keyboard_choose))
@@ -291,7 +292,6 @@ private fun QuestionPane(
                     answer = s.training.answer(s.position),
                     english = s.explanationInEnglish(),
                     whyNotOpen = s.whyNotOpen,
-                    section = section,
                     onLanguage = actions.onLanguage,
                     onToggleWhyNot = actions.onToggleWhyNot,
                     modifier = Modifier.padding(top = GpSpace.s8),
@@ -344,12 +344,12 @@ private fun QuestionHeading(
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = question.typeLabel(),
-            style = Gp.type.footnote,
+            style = Gp.type.meta,
             color = section.color(Gp.colors),
             modifier = Modifier.weight(1f),
         )
         TextButton(onClick = onReport, modifier = Modifier.testTag("question.report")) {
-            Text(text = stringResource(R.string.question_report), style = Gp.type.caption, color = Gp.colors.textSecondary)
+            Text(text = stringResource(R.string.question_report), style = Gp.type.caption, color = Gp.colors.text2)
         }
     }
 }
@@ -357,14 +357,13 @@ private fun QuestionHeading(
 @Composable
 private fun QuestionBody(
     s: Screen,
-    section: StudySection,
     actions: SessionActions,
 ) {
     val q = s.question
     when (q.questionType) {
         QuestionType.QUANTITATIVE_COMPARISON -> Quantities(q)
         QuestionType.MULTIPLE_CHOICE -> PlainPrompt(q)
-        else -> PromptText(question = q, selection = if (s.revealed) q.answer else s.selection, section = section)
+        else -> PromptText(question = q, selection = if (s.revealed) q.answer else s.selection)
     }
     if (s.revealed) {
         RevealedOptions(
@@ -373,10 +372,9 @@ private fun QuestionBody(
                 .answer(s.position)
                 ?.optionIds
                 .orEmpty(),
-            section,
         )
     } else {
-        ChoosableOptions(q, s.selection, section, actions.onSelect)
+        ChoosableOptions(q, s.selection, actions.onSelect)
     }
 }
 
@@ -384,7 +382,7 @@ private fun QuestionBody(
 private fun PlainPrompt(question: Question) {
     Text(
         text = question.prompt,
-        style = Gp.type.prompt.copy(localeList = English),
+        style = (if (Gp.isWide) Gp.type.qTextWide else Gp.type.qText).copy(localeList = English),
         color = Gp.colors.text,
         modifier = Modifier.testTag("question.prompt"),
     )
@@ -401,7 +399,7 @@ fun Quantities(
         question.condition?.let {
             Text(
                 text = it,
-                style = Gp.type.prompt.copy(localeList = English),
+                style = (if (Gp.isWide) Gp.type.qTextWide else Gp.type.qText).copy(localeList = English),
                 color = colors.text,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth().testTag("question.condition"),
@@ -420,16 +418,16 @@ private fun Quantity(
     value: String,
     modifier: Modifier = Modifier,
 ) {
-    Surface(color = Gp.colors.surface, shape = RoundedCornerShape(GpRadius.xl), modifier = modifier) {
+    Surface(color = Gp.colors.surface, shape = RoundedCornerShape(GpRadius.l), modifier = modifier) {
         Column(
             modifier = Modifier.padding(GpSpace.s16),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(GpSpace.s8),
         ) {
-            Text(text = label, style = Gp.type.footnote, color = Gp.colors.textSecondary)
+            Text(text = label, style = Gp.type.meta, color = Gp.colors.text2)
             Text(
                 text = value,
-                style = Gp.type.headline.copy(localeList = English),
+                style = (if (Gp.isWide) Gp.type.qTextWide else Gp.type.qText).copy(localeList = English, fontFamily = MathFamily),
                 color = Gp.colors.text,
                 textAlign = TextAlign.Center,
             )
@@ -442,7 +440,6 @@ private fun Quantity(
 private fun ChoosableOptions(
     question: Question,
     selection: List<String>,
-    section: StudySection,
     onSelect: (String) -> Unit,
 ) {
     val many = question.groups.size > 1
@@ -451,8 +448,8 @@ private fun ChoosableOptions(
             if (many) {
                 Text(
                     text = BLANK_NUMBERS.getOrElse(g) { "" },
-                    style = Gp.type.footnote.copy(fontWeight = FontWeight.W600),
-                    color = Gp.colors.textSecondary,
+                    style = Gp.type.meta.copy(fontWeight = FontWeight.W600),
+                    color = Gp.colors.text2,
                 )
             }
             if (many) {
@@ -462,7 +459,7 @@ private fun ChoosableOptions(
                     verticalArrangement = Arrangement.spacedBy(GpSpace.s8),
                 ) {
                     group.options.forEach { option ->
-                        OptionChip(option, selected = option.id in selection, section = section, onClick = { onSelect(option.id) })
+                        OptionChip(option, selected = option.id in selection, onClick = { onSelect(option.id) })
                     }
                 }
             } else {
@@ -471,7 +468,6 @@ private fun ChoosableOptions(
                         OptionRow(
                             option = option,
                             mark = if (option.id in selection) OptionMark.Selected else OptionMark.None,
-                            section = section,
                             multiple = question.selectCount > 1,
                             onClick = { onSelect(option.id) },
                         )
@@ -490,7 +486,6 @@ private fun ChoosableOptions(
 fun RevealedOptions(
     question: Question,
     chosen: List<String>,
-    section: StudySection,
     modifier: Modifier = Modifier,
 ) {
     val many = question.groups.size > 1
@@ -502,7 +497,6 @@ fun RevealedOptions(
                 OptionRow(
                     option = option,
                     mark = if (option.id in question.answer) OptionMark.Correct else OptionMark.Wrong,
-                    section = section,
                     letter = if (many) BLANK_NUMBERS.getOrElse(g) { "" } else option.id,
                 )
             }
@@ -510,8 +504,8 @@ fun RevealedOptions(
                 val others = stringResource(R.string.question_others)
                 Text(
                     text = rest.joinToString("   ") { if (many) it.text else "${it.id} ${it.text}" },
-                    style = Gp.type.subhead.copy(localeList = English),
-                    color = Gp.colors.textSecondary,
+                    style = Gp.type.meta.copy(localeList = English),
+                    color = Gp.colors.text2,
                     modifier =
                         Modifier
                             .padding(horizontal = GpSpace.s12)
@@ -534,7 +528,7 @@ private fun SessionHeader(
             Modifier
                 .fillMaxWidth()
                 .statusBarsPadding()
-                .height(GpSize.rowTall)
+                .height(GpSize.opt)
                 .padding(horizontal = GpSpace.s4),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -594,7 +588,7 @@ private fun ProgressDots(
                     val answer = s.training.answer(i)
                     val color =
                         when {
-                            answer != null && TrainingRules.isCorrect(s.training.question(i), answer.optionIds) -> section.color(colors)
+                            answer != null && TrainingRules.isCorrect(s.training.question(i), answer.optionIds) -> colors.right
                             answer != null -> colors.wrong
                             i == s.position -> colors.text
                             else -> colors.line
@@ -605,8 +599,8 @@ private fun ProgressDots(
         }
         Text(
             text = stringResource(R.string.question_of, s.position + 1, total),
-            style = Gp.type.footnote.copy(fontFeatureSettings = "tnum"),
-            color = colors.textSecondary,
+            style = (if (Gp.isWide) Gp.type.sessionCountWide else Gp.type.sessionCount).copy(fontFeatureSettings = "tnum"),
+            color = colors.text2,
         )
     }
 }
@@ -622,7 +616,7 @@ private fun TimerPill(
     val seconds = remaining % SECONDS_PER_MINUTE
     val description = stringResource(R.string.timer_description, minutes, seconds, position + 1, total)
     Surface(
-        color = Gp.colors.fill,
+        color = Gp.colors.surface2,
         shape = CircleShape,
         modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = description }.testTag("session.timer"),
     ) {
@@ -634,18 +628,18 @@ private fun TimerPill(
             Icon(
                 painter = painterResource(R.drawable.ic_timer),
                 contentDescription = null,
-                tint = Gp.colors.textSecondary,
+                tint = Gp.colors.text2,
                 modifier = Modifier.size(GpSpace.s20),
             )
             Text(
                 text = TIMER_FORMAT.format(minutes, seconds),
-                style = Gp.type.timer.copy(fontFeatureSettings = "tnum"),
+                style = (if (Gp.isWide) Gp.type.sessionCountWide else Gp.type.sessionCount).copy(fontFeatureSettings = "tnum"),
                 color = Gp.colors.text,
             )
             Text(
                 text = stringResource(R.string.question_of, position + 1, total),
-                style = Gp.type.footnote.copy(fontFeatureSettings = "tnum"),
-                color = Gp.colors.textSecondary,
+                style = Gp.type.meta.copy(fontFeatureSettings = "tnum"),
+                color = Gp.colors.text2,
             )
         }
     }
@@ -660,7 +654,7 @@ fun BottomActions(
 ) {
     val bg = Gp.colors.bg
     Column(modifier = modifier.fillMaxWidth()) {
-        Box(Modifier.fillMaxWidth().height(GpSize.fade).background(Brush.verticalGradient(listOf(Color.Transparent, bg))))
+        Box(Modifier.fillMaxWidth().height(GpSize.sessionBar).background(Brush.verticalGradient(listOf(Color.Transparent, bg))))
         Column(
             modifier =
                 Modifier
@@ -745,8 +739,8 @@ private fun missingNote(s: Screen): String? {
 private fun Note(text: String) {
     Text(
         text = text,
-        style = Gp.type.footnote,
-        color = Gp.colors.textSecondary,
+        style = Gp.type.meta,
+        color = Gp.colors.text2,
         textAlign = TextAlign.Center,
         modifier = Modifier.testTag("session.note"),
     )
@@ -829,20 +823,20 @@ private fun OverviewDetails(
     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(GpSpace.s20)) {
         Text(
             text = stringResource(R.string.question_overview),
-            style = Gp.type.title2,
+            style = Gp.type.h2,
             color = colors.text,
             modifier = Modifier.semantics { heading() },
         )
         Text(
             text = stringResource(R.string.overview_summary, answered, s.training.total, flagged),
-            style = Gp.type.subhead,
-            color = colors.textSecondary,
+            style = Gp.type.meta,
+            color = colors.text2,
         )
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(GpSpace.s12),
             verticalArrangement = Arrangement.spacedBy(GpSpace.s12),
         ) {
-            repeat(s.training.total) { i -> OverviewCell(s, i, section, onClick = { actions.onGoTo(i) }) }
+            repeat(s.training.total) { i -> OverviewCell(s, i, onClick = { actions.onGoTo(i) }) }
         }
     }
 }
@@ -851,7 +845,6 @@ private fun OverviewDetails(
 private fun OverviewCell(
     s: Screen,
     position: Int,
-    section: StudySection,
     onClick: () -> Unit,
 ) {
     val colors = Gp.colors
@@ -866,22 +859,22 @@ private fun OverviewCell(
     val description = stringResource(R.string.overview_item, position + 1, state)
     Surface(
         onClick = onClick,
-        color = if (isAnswered) section.tint(colors) else colors.surface,
+        color = if (isAnswered) colors.accentSoft else colors.surface,
         shape = CircleShape,
-        border = BorderStroke(GpSize.hairline, if (position == s.position) section.color(colors) else colors.line),
+        border = BorderStroke(GpSize.hairline, if (position == s.position) colors.accent else colors.line),
         modifier = Modifier.size(GpSize.button).semantics { contentDescription = description }.testTag("overview.$position"),
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(
                 text = (position + 1).toString(),
-                style = Gp.type.callout.copy(fontFeatureSettings = "tnum"),
+                style = Gp.type.action.copy(fontFeatureSettings = "tnum"),
                 color = colors.text,
             )
             if (isFlagged) {
                 Icon(
                     painter = painterResource(R.drawable.ic_flag_filled),
                     contentDescription = null,
-                    tint = section.color(colors),
+                    tint = colors.accent,
                     modifier = Modifier.align(Alignment.TopEnd).size(GpSpace.s14),
                 )
             }
@@ -903,7 +896,7 @@ private fun SummaryPane(
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
-            Row(modifier = Modifier.statusBarsPadding().height(GpSize.rowTall).padding(horizontal = GpSpace.s4)) {
+            Row(modifier = Modifier.statusBarsPadding().height(GpSize.opt).padding(horizontal = GpSpace.s4)) {
                 IconButton(onClick = actions.onClose, modifier = Modifier.testTag("session.close")) {
                     Icon(
                         painter = painterResource(R.drawable.ic_close),
@@ -940,18 +933,18 @@ private fun SummaryPane(
             Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(GpSpace.s12)) {
                 Text(
                     text = result.correct.toString(),
-                    style = Gp.type.score.copy(fontFeatureSettings = "tnum"),
+                    style = (if (Gp.isWide) Gp.type.scoreNumWide else Gp.type.scoreNum).copy(fontFeatureSettings = "tnum"),
                     color = colors.text,
                     modifier = Modifier.testTag("summary.correct"),
                 )
                 Text(
                     text = pluralStringResource(R.plurals.summary_correct_of, result.total, result.total),
-                    style = Gp.title3,
+                    style = Gp.type.h2,
                     color = colors.text,
                     modifier = Modifier.padding(bottom = GpSpace.s6),
                 )
             }
-            Text(text = summaryLine(s, result), style = Gp.type.subhead, color = colors.textSecondary)
+            Text(text = summaryLine(s, result), style = Gp.type.meta, color = colors.text2)
             if (s.training.finish?.timedOut == true) {
                 StatusLine(icon = R.drawable.ic_timer, text = stringResource(R.string.summary_timed_out))
             }
@@ -972,7 +965,7 @@ private fun SummaryPane(
             } else {
                 Text(
                     text = stringResource(R.string.summary_review),
-                    style = Gp.title3,
+                    style = Gp.type.h2,
                     color = colors.text,
                     modifier = Modifier.padding(top = GpSpace.s8).semantics { heading() },
                 )
@@ -1009,11 +1002,11 @@ private fun ReviewTopic(
     Row(horizontalArrangement = Arrangement.spacedBy(GpSpace.s12), verticalAlignment = Alignment.Top) {
         Box(Modifier.padding(top = GpSpace.s8).size(GpSpace.s8).background(section.color(Gp.colors), CircleShape))
         Column(verticalArrangement = Arrangement.spacedBy(GpSpace.s2)) {
-            Text(text = topic.title.pick(english), style = Gp.type.headline, color = Gp.colors.text)
+            Text(text = topic.title.pick(english), style = Gp.type.h3, color = Gp.colors.text)
             Text(
                 text = pluralStringResource(R.plurals.summary_mistakes, topic.mistakes, topic.mistakes) + " · " + where,
-                style = Gp.type.subhead,
-                color = Gp.colors.textSecondary,
+                style = Gp.type.meta,
+                color = Gp.colors.text2,
             )
         }
     }

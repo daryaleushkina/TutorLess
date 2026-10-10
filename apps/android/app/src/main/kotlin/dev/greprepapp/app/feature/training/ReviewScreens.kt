@@ -99,12 +99,6 @@ fun ReviewContent(
         title = title,
         onBack = onBack,
         modifier = modifier,
-        glow =
-            ready
-                ?.training
-                ?.session
-                ?.section
-                ?.study(),
     ) { padding ->
         when (state) {
             ReviewViewModel.UiState.Loading -> Box(Modifier.fillMaxSize())
@@ -203,7 +197,6 @@ private fun ReviewList(
 ) {
     val training = state.training
     val result = state.result
-    val section = training.session.section.study()
     val mistakes = training.session.items.filter { outcome(training, it.position) != Outcome.Correct }
     val shown = if (onlyMistakes) mistakes else training.session.items
     val english = LocalConfiguration.current.locales[0].language == "en"
@@ -226,8 +219,8 @@ private fun ReviewList(
                 Column(verticalArrangement = Arrangement.spacedBy(GpSpace.s16), modifier = Modifier.padding(bottom = GpSpace.s12)) {
                     Text(
                         text = "${result.correct} " + pluralStringResource(R.plurals.summary_correct_of, result.total, result.total),
-                        style = Gp.type.subhead,
-                        color = Gp.colors.textSecondary,
+                        style = Gp.type.meta,
+                        color = Gp.colors.text2,
                     )
                     SegmentedChoice(
                         options =
@@ -252,7 +245,6 @@ private fun ReviewList(
                     type = item.question.questionType,
                     topic = item.question.topicTitle.pick(english),
                     outcome = outcome(training, item.position),
-                    section = section,
                     onClick = { onOpen(item.position) },
                 )
             }
@@ -300,7 +292,6 @@ private fun ReviewRow(
     type: QuestionType,
     topic: String,
     outcome: Outcome,
-    section: StudySection,
     onClick: () -> Unit,
 ) {
     val colors = Gp.colors
@@ -318,9 +309,9 @@ private fun ReviewRow(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .background(if (selected) section.tint(colors) else androidx.compose.ui.graphics.Color.Transparent)
+                .background(if (selected) colors.accentSoft else androidx.compose.ui.graphics.Color.Transparent)
                 .clickable(role = Role.Button, onClick = onClick)
-                .heightIn(min = GpSize.rowTall)
+                .heightIn(min = GpSize.opt)
                 .padding(vertical = GpSpace.s8)
                 .semantics(mergeDescendants = true) { contentDescription = description }
                 .testTag("review.item.${number - 1}"),
@@ -329,28 +320,28 @@ private fun ReviewRow(
     ) {
         val (bg, fg) =
             when (outcome) {
-                Outcome.Correct -> section.color(colors) to colors.surface
-                Outcome.Wrong -> colors.wrong to colors.surface
-                Outcome.Unanswered -> colors.surface to colors.textSecondary
+                Outcome.Correct -> colors.right to colors.bg
+                Outcome.Wrong -> colors.wrong to colors.bg
+                Outcome.Unanswered -> colors.surface to colors.text2
             }
         Box(
             modifier =
                 Modifier
-                    .size(GpSize.stepNode)
+                    .size(GpSize.icon)
                     .background(bg, CircleShape)
                     .then(if (outcome == Outcome.Unanswered) Modifier.border(GpSize.hairline, colors.line, CircleShape) else Modifier),
             contentAlignment = Alignment.Center,
         ) {
-            Text(text = number.toString(), style = Gp.type.footnote.copy(fontWeight = FontWeight.W600), color = fg)
+            Text(text = number.toString(), style = Gp.type.meta.copy(fontWeight = FontWeight.W600), color = fg)
         }
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(GpSpace.s2)) {
             Text(text = typeLabel, style = Gp.type.body.copy(fontWeight = FontWeight.W500, localeList = English), color = colors.text)
-            Text(text = topic, style = Gp.type.subhead, color = colors.textSecondary)
+            Text(text = topic, style = Gp.type.meta, color = colors.text2)
         }
         Icon(
             painter = painterResource(R.drawable.ic_chevron_right),
             contentDescription = null,
-            tint = colors.textSecondary,
+            tint = colors.text2,
             modifier = Modifier.size(GpSpace.s20),
         )
     }
@@ -393,12 +384,6 @@ fun ReviewItemContent(
         title = stringResource(R.string.review_question, position + 1),
         onBack = onBack,
         modifier = modifier,
-        glow =
-            ready
-                ?.training
-                ?.session
-                ?.section
-                ?.study(),
     ) { padding ->
         when (state) {
             ReviewViewModel.UiState.Loading -> {
@@ -428,12 +413,12 @@ fun ReviewItemContent(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 text = question.typeLabel(),
-                                style = Gp.type.footnote,
+                                style = Gp.type.meta,
                                 color = section.color(Gp.colors),
                                 modifier = Modifier.weight(1f),
                             )
                             TextButton(onClick = onReport, modifier = Modifier.testTag("question.report")) {
-                                Text(stringResource(R.string.question_report), style = Gp.type.caption, color = Gp.colors.textSecondary)
+                                Text(stringResource(R.string.question_report), style = Gp.type.caption, color = Gp.colors.text2)
                             }
                         }
                         when (question.questionType) {
@@ -442,20 +427,23 @@ fun ReviewItemContent(
                             }
 
                             QuestionType.MULTIPLE_CHOICE -> {
-                                Text(question.prompt, style = Gp.type.prompt.copy(localeList = English), color = Gp.colors.text)
+                                Text(
+                                    question.prompt,
+                                    style = (if (Gp.isWide) Gp.type.qTextWide else Gp.type.qText).copy(localeList = English),
+                                    color = Gp.colors.text,
+                                )
                             }
 
                             else -> {
-                                PromptText(question = question, selection = question.answer, section = section)
+                                PromptText(question = question, selection = question.answer)
                             }
                         }
-                        RevealedOptions(question, answer?.optionIds.orEmpty(), section)
+                        RevealedOptions(question, answer?.optionIds.orEmpty())
                         ExplanationPanel(
                             question = question,
                             answer = answer,
                             english = english,
                             whyNotOpen = whyNotOpen,
-                            section = section,
                             onLanguage = { english = it },
                             onToggleWhyNot = { whyNotOpen = !whyNotOpen },
                             modifier = Modifier.padding(bottom = GpSpace.s32),
@@ -484,27 +472,38 @@ private fun ReviewQuestion(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 stringResource(R.string.review_question, position + 1),
-                style = Gp.title3,
+                style = Gp.type.h2,
                 color = Gp.colors.text,
                 modifier = Modifier.weight(1f),
             )
             TextButton(onClick = onReport, modifier = Modifier.testTag("question.report")) {
-                Text(stringResource(R.string.question_report), style = Gp.type.caption, color = Gp.colors.textSecondary)
+                Text(stringResource(R.string.question_report), style = Gp.type.caption, color = Gp.colors.text2)
             }
         }
-        Text(question.typeLabel(), style = Gp.type.footnote, color = section.color(Gp.colors))
+        Text(question.typeLabel(), style = Gp.type.meta, color = section.color(Gp.colors))
         when (question.questionType) {
-            QuestionType.QUANTITATIVE_COMPARISON -> Quantities(question)
-            QuestionType.MULTIPLE_CHOICE -> Text(question.prompt, style = Gp.type.prompt.copy(localeList = English), color = Gp.colors.text)
-            else -> PromptText(question, question.answer, section)
+            QuestionType.QUANTITATIVE_COMPARISON -> {
+                Quantities(question)
+            }
+
+            QuestionType.MULTIPLE_CHOICE -> {
+                Text(
+                    question.prompt,
+                    style = (if (Gp.isWide) Gp.type.qTextWide else Gp.type.qText).copy(localeList = English),
+                    color = Gp.colors.text,
+                )
+            }
+
+            else -> {
+                PromptText(question, question.answer)
+            }
         }
-        RevealedOptions(question, answer?.optionIds.orEmpty(), section)
+        RevealedOptions(question, answer?.optionIds.orEmpty())
         ExplanationPanel(
             question = question,
             answer = answer,
             english = english,
             whyNotOpen = whyNotOpen,
-            section = section,
             onLanguage = { english = it },
             onToggleWhyNot = { whyNotOpen = !whyNotOpen },
             modifier = Modifier.padding(bottom = GpSpace.s32),
@@ -583,8 +582,8 @@ fun ReportContent(
                 ) {
                     Text(
                         text = stringResource(R.string.report_context, position + 1, typeLabel),
-                        style = Gp.type.subhead,
-                        color = colors.textSecondary,
+                        style = Gp.type.meta,
+                        color = colors.text2,
                     )
                     Text(
                         text = stringResource(R.string.report_kind),
@@ -599,7 +598,7 @@ fun ReportContent(
                             FilterChip(
                                 selected = state.kind == kind,
                                 onClick = { onKind(kind) },
-                                label = { Text(stringResource(label), style = Gp.type.subhead) },
+                                label = { Text(stringResource(label), style = Gp.type.meta) },
                                 colors =
                                     FilterChipDefaults.filterChipColors(
                                         containerColor = colors.surface,
@@ -626,15 +625,15 @@ fun ReportContent(
                                 focusedTextColor = colors.text,
                                 unfocusedTextColor = colors.text,
                                 cursorColor = colors.text,
-                                focusedLabelColor = colors.textSecondary,
-                                unfocusedLabelColor = colors.textSecondary,
+                                focusedLabelColor = colors.text2,
+                                unfocusedLabelColor = colors.text2,
                             ),
                         modifier = Modifier.fillMaxWidth().testTag("report.text"),
                     )
                     Text(
                         text = stringResource(R.string.report_note),
-                        style = Gp.type.footnote.copy(fontWeight = FontWeight.W400),
-                        color = colors.textSecondary,
+                        style = Gp.type.meta.copy(fontWeight = FontWeight.W400),
+                        color = colors.text2,
                         textAlign = TextAlign.Start,
                     )
                 }

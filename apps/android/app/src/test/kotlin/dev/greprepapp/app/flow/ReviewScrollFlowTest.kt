@@ -44,7 +44,7 @@ class ReviewScrollFlowTest {
             GpTheme {
                 LazyColumn(state = state, modifier = Modifier.fillMaxSize().testTag("list")) {
                     items((0 until 40).toList(), key = { it }) { index ->
-                        Text("Вопрос ${index + 1}", modifier = Modifier.fillMaxWidth().height(GpSize.rowTall).testTag("row.$index"))
+                        Text("Вопрос ${index + 1}", modifier = Modifier.fillMaxWidth().height(GpSize.opt).testTag("row.$index"))
                     }
                 }
             }

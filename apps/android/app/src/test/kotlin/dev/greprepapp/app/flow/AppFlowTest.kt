@@ -124,7 +124,7 @@ class AppFlowTest {
         waitFor("settings.signOut")
         compose.onNodeWithText("Версия 0.1.0 (1)").assertIsDisplayed()
         compose.onNodeWithTag("settings.signOut").performClick()
-        waitFor("signin.telegram")
+        waitFor("signin.apple")
         compose.waitUntil(TIMEOUT) { server.signedOutTokens.contains("tok-anna-1") }
         assertNull(tokens.token)
         assertNull("план вышедшего не остаётся на устройстве", cache.load())
@@ -182,9 +182,9 @@ class AppFlowTest {
     @Test
     fun providersWithoutAccountsSayNotConnectedYet() {
         launch()
-        waitFor("signin.telegram")
-        compose.onNodeWithTag("signin.telegram").performClick()
-        compose.onNodeWithText("Вход через Telegram ещё не подключён — он появится до беты.").assertIsDisplayed()
+        waitFor("signin.apple")
+        compose.onNodeWithTag("signin.apple").performClick()
+        compose.onNodeWithText("Вход с Apple ещё не подключён — он появится до беты.").assertIsDisplayed()
         compose.onNodeWithTag("signin.google").performClick()
         compose.onNodeWithText("Вход через Google ещё не подключён — он появится до беты.").assertIsDisplayed()
     }

@@ -207,8 +207,8 @@ fun MainScaffold(
         },
         navigationSuiteColors =
             NavigationSuiteDefaults.colors(
-                navigationBarContainerColor = Gp.colors.surface,
-                navigationRailContainerColor = Gp.colors.bg,
+                navigationBarContainerColor = Gp.colors.navBg,
+                navigationRailContainerColor = Gp.colors.navBg,
             ),
         containerColor = Gp.colors.bg,
         modifier = modifier,
@@ -283,16 +283,16 @@ private fun navigationColors() =
             NavigationBarItemDefaults.colors(
                 selectedIconColor = Gp.colors.text,
                 selectedTextColor = Gp.colors.text,
-                indicatorColor = Gp.colors.tabSelected,
-                unselectedIconColor = Gp.colors.textSecondary,
-                unselectedTextColor = Gp.colors.textSecondary,
+                indicatorColor = Gp.colors.accentSoft,
+                unselectedIconColor = Gp.colors.text2,
+                unselectedTextColor = Gp.colors.text2,
             ),
         navigationRailItemColors =
             NavigationRailItemDefaults.colors(
                 selectedIconColor = Gp.colors.text,
                 selectedTextColor = Gp.colors.text,
-                indicatorColor = Gp.colors.tabSelected,
-                unselectedIconColor = Gp.colors.textSecondary,
-                unselectedTextColor = Gp.colors.textSecondary,
+                indicatorColor = Gp.colors.accentSoft,
+                unselectedIconColor = Gp.colors.text2,
+                unselectedTextColor = Gp.colors.text2,
             ),
     )
