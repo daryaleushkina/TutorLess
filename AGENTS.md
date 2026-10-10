@@ -213,6 +213,12 @@ initData, подмена Telegram — `apps/web/src/telegram/mockEnv.ts`) и
 ## Git
 
 - **Codex не коммитит, не пушит и не вливает** — это делает только Claude.
+- **Всё по проекту — в `~/work/solveexam/`** (решение Даши 11.10.2026):
+  основной репозиторий `solveexam/greprepapp`, деревья задач
+  `solveexam/greprepapp-<задача>`, приватный контент `solveexam/greprepapp-content`,
+  задания Codex `solveexam/agent-tasks/<ГГГГ-ММ-ДД>-<кратко>/` (вместо общего
+  `~/work/agent-tasks`), спецификации техлида — `solveexam/agent-tasks/specs/`,
+  обзоры `codex-run review` — третьим аргументом в `solveexam/agent-tasks/reviews`.
 - Ветка на задачу. **Законченная и проверенная работа доводится до `main`
   сразу, без отдельного разрешения:** Claude проверяет результат, коммитит и
   вливает одним ходом. Вливание в `main` — это выкладка (как только появится
