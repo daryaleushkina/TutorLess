@@ -206,8 +206,7 @@ class ThemeStoreTest {
                     override fun getNoBackupFilesDir(): File = folder.root
                 }
             File(folder.root, "theme.preferences_pb").writeText("broken preferences")
-            val dataStore = AppModule.themeDataStore(context, graph.reporter, backgroundScope, main.dispatcher)
-            val store = DataStoreThemeStore(dataStore, graph.reporter)
+            val store = AppModule.themeStore(context, graph.reporter, backgroundScope, main.dispatcher)
             assertEquals(AppTheme.Dark, store.load())
             graph.settle()
             assertEquals(

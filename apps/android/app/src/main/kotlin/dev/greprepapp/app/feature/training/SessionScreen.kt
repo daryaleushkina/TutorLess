@@ -36,7 +36,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalConfiguration
@@ -523,52 +522,56 @@ private fun SessionHeader(
     section: StudySection,
     actions: SessionActions,
 ) {
-    Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .height(GpSize.opt)
-                .padding(horizontal = GpSpace.s4),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        IconButton(onClick = actions.onClose, modifier = Modifier.testTag("session.close")) {
-            Icon(
-                painter = painterResource(R.drawable.ic_close),
-                contentDescription = stringResource(R.string.question_close),
-                tint = Gp.colors.text,
-            )
-        }
-        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-            val remaining = s.remainingSeconds
-            if (remaining != null) {
-                TimerPill(remaining, s.position, s.training.total)
-            } else {
-                ProgressDots(s, section)
-            }
-        }
-        if (s.training.isCheck && !s.overview) {
-            IconButton(onClick = actions.onFlag, modifier = Modifier.testTag("question.flag")) {
+    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+        Row(
+            modifier =
+                Modifier
+                    .widthIn(max = GpLayout.sessionMax)
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .height(GpSize.opt)
+                    .padding(horizontal = GpSpace.s4),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IconButton(onClick = actions.onClose, modifier = Modifier.testTag("session.close")) {
                 Icon(
-                    painter = painterResource(if (s.flagged) R.drawable.ic_flag_filled else R.drawable.ic_flag),
-                    contentDescription = stringResource(if (s.flagged) R.string.question_unflag else R.string.question_flag),
-                    tint = if (s.flagged) section.color(Gp.colors) else Gp.colors.text,
-                )
-            }
-            IconButton(onClick = actions.onOverview, modifier = Modifier.testTag("question.overview")) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_grid_view),
-                    contentDescription = stringResource(R.string.question_overview),
+                    painter = painterResource(R.drawable.ic_close),
+                    contentDescription = stringResource(R.string.question_close),
                     tint = Gp.colors.text,
                 )
             }
-        } else {
-            Spacer(Modifier.size(GpSize.tapTarget + GpSpace.s4))
+            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                val remaining = s.remainingSeconds
+                if (remaining != null) {
+                    TimerPill(remaining, s.position, s.training.total)
+                } else {
+                    ProgressDots(s, section)
+                }
+            }
+            if (s.training.isCheck && !s.overview) {
+                IconButton(onClick = actions.onFlag, modifier = Modifier.testTag("question.flag")) {
+                    Icon(
+                        painter = painterResource(if (s.flagged) R.drawable.ic_flag_filled else R.drawable.ic_flag),
+                        contentDescription = stringResource(if (s.flagged) R.string.question_unflag else R.string.question_flag),
+                        tint = if (s.flagged) section.color(Gp.colors) else Gp.colors.text,
+                    )
+                }
+                IconButton(onClick = actions.onOverview, modifier = Modifier.testTag("question.overview")) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_grid_view),
+                        contentDescription = stringResource(R.string.question_overview),
+                        tint = Gp.colors.text,
+                    )
+                }
+            } else {
+                Spacer(Modifier.size(GpSize.tapTarget + GpSpace.s4))
+            }
         }
     }
 }
 
 /** Конец сессии виден заранее (DESIGN.md, «Правило одной задачи»): точка на вопрос и «4 из 10». */
+
 @Composable
 private fun ProgressDots(
     s: Screen,
@@ -645,7 +648,7 @@ private fun TimerPill(
     }
 }
 
-/** Нижняя панель: содержимое уходит под растушёвку; одна главная кнопка в одном месте. */
+/** Нижняя панель на bg: одна главная кнопка в одном месте, без затухания (каталог сессии). */
 @Composable
 fun BottomActions(
     modifier: Modifier = Modifier,
@@ -654,7 +657,6 @@ fun BottomActions(
 ) {
     val bg = Gp.colors.bg
     Column(modifier = modifier.fillMaxWidth()) {
-        Box(Modifier.fillMaxWidth().height(GpSize.sessionBar).background(Brush.verticalGradient(listOf(Color.Transparent, bg))))
         Column(
             modifier =
                 Modifier
@@ -666,7 +668,7 @@ fun BottomActions(
             verticalArrangement = Arrangement.spacedBy(GpSpace.s12),
         ) {
             note?.invoke()
-            Box(modifier = Modifier.widthIn(max = GpLayout.contentMax).fillMaxWidth()) { content() }
+            Box(modifier = Modifier.widthIn(max = GpLayout.sessionMax).fillMaxWidth()) { content() }
         }
     }
 }

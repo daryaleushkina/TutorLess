@@ -31,6 +31,7 @@ import dev.greprepapp.app.testing.FakeNetwork
 import dev.greprepapp.app.testing.Fixtures
 import dev.greprepapp.app.testing.ManualTicker
 import dev.greprepapp.app.testing.MutableClock
+import dev.greprepapp.app.testing.NightModeResetRule
 import dev.greprepapp.app.testing.plan
 import dev.greprepapp.app.testing.step
 import org.junit.After
@@ -53,6 +54,9 @@ import javax.inject.Inject
 @RunWith(RobolectricTestRunner::class)
 @Config(application = HiltTestApplication::class, qualifiers = "ru-" + RobolectricDeviceQualifiers.MediumPhone)
 class TrainingFlowTest {
+    @get:Rule(order = -1)
+    val nightMode = NightModeResetRule()
+
     @get:Rule(order = 0)
     val hilt = HiltAndroidRule(this)
 

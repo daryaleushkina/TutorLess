@@ -2,11 +2,21 @@ package dev.greprepapp.app.core.theme
 
 import android.app.UiModeManager
 import android.content.Context
+import android.content.res.Configuration
 import android.os.Build
 import androidx.appcompat.app.AppCompatDelegate
 
 /** Ресурсы окна/заставки и Compose должны видеть один выбор, независимо от настройки системы. */
 object AppNightMode {
+    internal fun initialMode(context: Context): Int =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+            context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_NO
+        ) {
+            AppCompatDelegate.MODE_NIGHT_NO
+        } else {
+            AppCompatDelegate.MODE_NIGHT_YES
+        }
+
     fun apply(
         context: Context,
         theme: AppTheme,

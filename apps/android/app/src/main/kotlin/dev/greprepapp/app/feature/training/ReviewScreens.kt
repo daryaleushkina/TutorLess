@@ -376,7 +376,6 @@ fun ReviewItemContent(
     onReport: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val ready = state as? ReviewViewModel.UiState.Ready
     val systemEnglish = LocalConfiguration.current.locales[0].language == "en"
     var english by rememberSaveable { mutableStateOf(systemEnglish) }
     var whyNotOpen by rememberSaveable { mutableStateOf(false) }

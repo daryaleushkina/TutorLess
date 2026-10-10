@@ -101,7 +101,7 @@ fun EmptyState(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(GpSpace.s8),
-            modifier = Modifier.widthIn(max = GpLayout.contentMax).padding(GpSpace.s24),
+            modifier = Modifier.widthIn(max = GpLayout.textMax).padding(GpSpace.s24),
         ) {
             if (icon != null) {
                 Icon(

@@ -4,5 +4,11 @@
 
     <application
         android:networkSecurityConfig="@xml/network_security_config"
-        tools:ignore="UnusedAttribute" />
+        tools:ignore="UnusedAttribute">
+        <!-- DUMP есть у adb shell; другие приложения не выбирают тему через отладочный путь. -->
+        <receiver
+            android:name=".core.theme.DevThemeReceiver"
+            android:exported="true"
+            android:permission="android.permission.DUMP" />
+    </application>
 </manifest>

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -95,7 +96,9 @@ fun SignInContent(
             Column(
                 modifier =
                     Modifier
-                        .widthIn(max = GpLayout.contentMax)
+                        // Сохраняем минимальную высоту экрана, но убираем минимальную ширину Box: иначе max=400 не действует.
+                        .wrapContentWidth()
+                        .widthIn(max = GpLayout.authColumnMax)
                         .verticalScroll(rememberScrollState())
                         .padding(horizontal = GpSpace.s24)
                         .padding(bottom = GpSpace.s28),
@@ -167,7 +170,7 @@ private fun Header() {
                 text = stringResource(R.string.signin_tagline),
                 style = Gp.type.lead,
                 color = Gp.colors.text2,
-                modifier = Modifier.widthIn(max = GpLayout.contentMax),
+                modifier = Modifier.widthIn(max = GpLayout.textMax),
             )
         }
     }

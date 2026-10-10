@@ -23,6 +23,7 @@ import dev.greprepapp.app.MainActivity
 import dev.greprepapp.app.feature.today.TodayCache
 import dev.greprepapp.app.testing.FakeNetwork
 import dev.greprepapp.app.testing.MemoryTokenStore
+import dev.greprepapp.app.testing.NightModeResetRule
 import dev.greprepapp.app.testing.plan
 import dev.greprepapp.app.testing.step
 import org.junit.After
@@ -45,6 +46,9 @@ import javax.inject.Inject
 @RunWith(RobolectricTestRunner::class)
 @Config(application = HiltTestApplication::class, qualifiers = "ru-" + RobolectricDeviceQualifiers.MediumPhone)
 class AppFlowTest {
+    @get:Rule(order = -1)
+    val nightMode = NightModeResetRule()
+
     @get:Rule(order = 0)
     val hilt = HiltAndroidRule(this)
 

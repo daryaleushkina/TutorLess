@@ -2,6 +2,8 @@ package dev.greprepapp.app.core.theme
 
 import dev.greprepapp.app.core.AppScope
 import dev.greprepapp.app.core.IoDispatcher
+import dev.greprepapp.app.core.report.ClientErrorReporter
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,6 +28,7 @@ class ThemeManager
         private val store: ThemeStore,
         @param:AppScope private val scope: CoroutineScope,
         @param:IoDispatcher private val io: CoroutineDispatcher,
+        private val reporter: ClientErrorReporter,
     ) {
         private val mutableState = MutableStateFlow(ThemeState())
         val state = mutableState.asStateFlow()
@@ -34,7 +37,15 @@ class ThemeManager
         init {
             scope.launch {
                 lock.withLock {
-                    val theme = withContext(io) { store.load() }
+                    val theme =
+                        try {
+                            withContext(io) { store.load() }
+                        } catch (cancelled: CancellationException) {
+                            throw cancelled
+                        } catch (failure: Exception) {
+                            reporter.report("theme restore failed: ${failure.javaClass.simpleName}", route = DataStoreThemeStore.ROUTE)
+                            AppTheme.Dark
+                        }
                     mutableState.value = ThemeState(theme, restoring = false)
                 }
             }

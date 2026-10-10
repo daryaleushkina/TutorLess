@@ -1,5 +1,6 @@
 package dev.greprepapp.app.flow
 
+import android.os.Build
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.toArgb
@@ -12,6 +13,7 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import dev.greprepapp.app.GrePrepApplication
 import dev.greprepapp.app.MainActivity
+import dev.greprepapp.app.testing.NightModeResetRule
 import greprep.design.GpDarkColors
 import kotlinx.coroutines.cancel
 import org.junit.After
@@ -27,6 +29,9 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(application = GrePrepApplication::class, qualifiers = "ru-w411dp-h914dp-notnight-420dpi")
 class ApplicationThemeFlowTest {
+    @get:Rule(order = -1)
+    val nightMode = NightModeResetRule()
+
     @get:Rule val compose = createEmptyComposeRule()
     private var scenario: ActivityScenario<MainActivity>? = null
 
@@ -34,12 +39,20 @@ class ApplicationThemeFlowTest {
     fun tearDown() {
         scenario?.close()
         ApplicationProvider.getApplicationContext<GrePrepApplication>().scope.cancel()
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_UNSPECIFIED)
     }
 
     @Test
     fun productionStartupReadsDataStoreAndShowsDarkSignIn() {
-        assertEquals(AppCompatDelegate.MODE_NIGHT_YES, AppCompatDelegate.getDefaultNightMode())
+        assertEquals(
+            if (Build.VERSION.SDK_INT >=
+                31
+            ) {
+                AppCompatDelegate.MODE_NIGHT_NO
+            } else {
+                AppCompatDelegate.MODE_NIGHT_YES
+            },
+            AppCompatDelegate.getDefaultNightMode(),
+        )
         scenario = ActivityScenario.launch(MainActivity::class.java)
         compose.waitUntilAtLeastOneExists(hasTestTag("signin.apple"), TIMEOUT)
         assertEquals(

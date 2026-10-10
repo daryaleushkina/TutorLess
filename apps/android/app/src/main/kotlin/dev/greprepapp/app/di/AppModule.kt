@@ -1,10 +1,8 @@
 package dev.greprepapp.app.di
 
 import android.content.Context
-import androidx.datastore.core.DataStore
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.emptyPreferences
 import dagger.Module
 import dagger.Provides
@@ -73,28 +71,25 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun themeDataStore(
+    fun themeStore(
         @ApplicationContext context: Context,
         reporter: ClientErrorReporter,
         @AppScope scope: CoroutineScope,
         @IoDispatcher io: CoroutineDispatcher,
-    ): DataStore<Preferences> =
-        PreferenceDataStoreFactory.create(
-            corruptionHandler =
-                ReplaceFileCorruptionHandler {
-                    reporter.report("theme data corrupted", route = DataStoreThemeStore.ROUTE)
-                    emptyPreferences()
-                },
-            scope = CoroutineScope(scope.coroutineContext + io),
-            produceFile = { File(context.noBackupFilesDir, "theme.preferences_pb") },
-        )
-
-    @Provides
-    @Singleton
-    fun themeStore(
-        dataStore: DataStore<Preferences>,
-        reporter: ClientErrorReporter,
-    ): ThemeStore = DataStoreThemeStore(dataStore, reporter)
+    ): ThemeStore {
+        // DataStore файла темы не становится общей Hilt-привязкой Preferences для других настроек.
+        val dataStore =
+            PreferenceDataStoreFactory.create(
+                corruptionHandler =
+                    ReplaceFileCorruptionHandler {
+                        reporter.report("theme data corrupted", route = DataStoreThemeStore.ROUTE)
+                        emptyPreferences()
+                    },
+                scope = CoroutineScope(scope.coroutineContext + io),
+                produceFile = { File(context.noBackupFilesDir, "theme.preferences_pb") },
+            )
+        return DataStoreThemeStore(dataStore, reporter)
+    }
 
     @Provides
     @Singleton

@@ -30,6 +30,7 @@ import dev.greprepapp.api.models.TrainingMode
 import dev.greprepapp.app.AppRoot
 import dev.greprepapp.app.MainActivity
 import dev.greprepapp.app.testing.Fixtures
+import dev.greprepapp.app.testing.NightModeResetRule
 import dev.greprepapp.design.GpTheme
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -47,6 +48,9 @@ import javax.inject.Inject
 @RunWith(RobolectricTestRunner::class)
 @Config(application = HiltTestApplication::class, qualifiers = "ru-w1000dp-h800dp-land-mdpi-keysexposed-qwerty")
 class TabletTrainingFlowTest {
+    @get:Rule(order = -1)
+    val nightMode = NightModeResetRule()
+
     @get:Rule(order = 0)
     val hilt = HiltAndroidRule(this)
 

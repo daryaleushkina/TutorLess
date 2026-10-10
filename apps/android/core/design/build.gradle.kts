@@ -32,6 +32,10 @@ android {
     }
     testOptions {
         unitTests.isIncludeAndroidResources = true
+        unitTests.all {
+            // Как в app: Robolectric API 37 обращается к разделяемой памяти JDK.
+            it.jvmArgs("--add-opens=java.base/jdk.internal.access=ALL-UNNAMED")
+        }
     }
 }
 
@@ -48,5 +52,7 @@ dependencies {
     api(libs.compose.material3)
     api(libs.compose.ui.tooling.preview)
     debugImplementation(libs.compose.ui.tooling)
+    testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
     lintChecks(libs.compose.lint.checks)
 }
