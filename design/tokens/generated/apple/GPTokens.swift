@@ -86,11 +86,37 @@ public enum GPLayout {
     public static let contentMax: CGFloat = 720
     /// Граница широкой раскладки каталога.
     public static let breakpointWide: CGFloat = 900
+    /// Колонка входа на широком экране: .t-signin-buttons в каталоге.
+    public static let authColumnMax: CGFloat = 400
+    /// Узкая колонка поясняющего текста на экранах состояний: ошибка, «нет сети».
+    public static let textMax: CGFloat = 320
+    /// до перестройки сессии по R1–R20 (часть 3 редизайна)
+    public static let sessionMax: CGFloat = 1040
 }
 
 /// Прозрачность состояний элементов.
 public enum GPOpacity {
     public static let disabled: Double = 0.5
+}
+
+/// Типографика кнопки Google по правилам Google. Размер и разрядка — pt.
+public enum GPSignInGoogle {
+    public static let fontFamily = "Roboto"
+    public static let fontFallbacks = ["sans-serif"]
+    public static let fontSize: CGFloat = 14
+    public static let fontWeight: Font.Weight = .medium
+    public static let tracking: CGFloat = 0.25
+    public static let lineHeight: CGFloat = 20
+}
+
+/// Типографика кнопки Apple. Семейство — системное; размер и межстрочный — pt.
+public enum GPSignInApple {
+    public static let fontSize: CGFloat = 17
+    public static let fontWeight: Font.Weight = .medium
+    public static let lineHeight: CGFloat = 20
+    public static var font: Font {
+        GPType.systemFont(size: fontSize, weight: fontWeight)
+    }
 }
 
 /// Роль текста: размер и межстрочный — pt, трекинг — доля размера (em), relativeTo — с каким стилем Dynamic Type растёт.
@@ -134,6 +160,10 @@ public struct GPType: Sendable {
     public static let monoFontFamily = "IBM Plex Mono"
     public static let mathFontFamily = "Source Serif 4"
     public static let mathFontFallbacks = ["Georgia", "serif"]
+    /// Системный шрифт: кнопка «Вход с Apple» (правила Apple) и невидимый измеритель MainButton Telegram (клиент рисует её системным шрифтом)
+    public static func systemFont(size: CGFloat, weight: Font.Weight = .regular) -> Font {
+        .system(size: size, weight: weight)
+    }
     /// Настройка «Крупнее»: множитель размера поверх Dynamic Type.
     public static let textScaleLarge: CGFloat = 1.125
     /// Основной текст .frame.

@@ -27,7 +27,7 @@
 | `color.bg`, `color.surface`, `color.text`, `color.line` | Имена сохранены, значения заменены палитрой каталога |
 | `color.accent`, `color.on-accent`, `color.focus`, `color.wrong` | Имена сохранены, значения заменены палитрой каталога |
 | `color.verbal`, `color.quant`, `color.essay`, `color.words`, `color.exam` | Имена сохранены, значения заменены палитрой каталога |
-| `sign-in.apple.*`, `sign-in.google.*` | Сохранены без изменения |
+| `sign-in.apple.{bg,text}`, `sign-in.google.{bg,stroke,text}` | Цвета сохранены без изменения |
 
 Добавлены `color.surface-2`, `color.text-3`, `color.line-strong`,
 `color.accent-soft`, `color.right`, `color.right-soft`, `color.exam-soft`,
@@ -51,7 +51,7 @@
 | Старый токен | Новый токен или удаление |
 | --- | --- |
 | `font.family.text` | Имя сохранено; Geologica, Onest, system-ui, sans-serif |
-| `font.family.system` | Удалён; семейство для текста — `font.family.text` |
+| `font.family.system` | Сохранён: системный шрифт для кнопки Apple и измерителя MainButton Telegram |
 | `font.weight.{regular,medium,semibold}` | Сохранены: 400/500/600 |
 | `font.text-scale-large` | Сохранён: 1,125 |
 | `type.display`, `type.display-wide` | Удалены; размер итоговых чисел определяется экраном каталога |
@@ -86,6 +86,41 @@ Georgia, serif, как в `.math` каталога. На вебе — `--font-fa
 В YAML-шапке семейства перечислены в `fontFamilies`. Это семейство без
 новой роли текста; файлы шрифта добавляются при переводе приложений.
 
+Для `font.family.system` сохранён стек `-apple-system`, `BlinkMacSystemFont`,
+`SF Pro Text`, `system-ui`, `sans-serif`. На вебе — `--font-family-system`,
+на Apple — `GPType.systemFont(size:weight:)`, в Compose —
+`GpTypography.SYSTEM_FONT_FAMILY` (`FontFamily.Default`). Нативные платформы
+выбирают системный шрифт своим API: имена браузерного стека не передаются
+в загрузчик вшитых шрифтов.
+
+Типографика кнопок входа — общая для обеих тем:
+
+| Новый токен | Значение |
+| --- | --- |
+| `sign-in.apple.font-family` | Ссылка на `{font.family.system}`: системный шрифт платформы, на Android — Roboto |
+| `sign-in.apple.font-size` | 17 px |
+| `sign-in.apple.font-weight` | 500 (Medium) |
+| `sign-in.apple.line-height` | 20 px |
+| `sign-in.google.font-family` | Roboto, sans-serif |
+| `sign-in.google.font-size` | 14 px |
+| `sign-in.google.font-weight` | 500 (Medium) |
+| `sign-in.google.tracking` | 0,25 px |
+| `sign-in.google.line-height` | 20 px |
+
+CSS — `--sign-in-google-font-family`, `--sign-in-google-font-size`,
+`--sign-in-google-font-weight`, `--sign-in-google-tracking`,
+`--sign-in-google-line-height`; для Apple — `--sign-in-apple-font-family`,
+`--sign-in-apple-font-size`, `--sign-in-apple-font-weight`, `--sign-in-apple-line-height`.
+Apple — `GPSignInGoogle.fontFamily`, `.fontFallbacks`, `.fontSize`,
+`.fontWeight`, `.tracking`, `.lineHeight`: размеры текста в pt.
+У `GPSignInApple` — `.fontSize`, `.fontWeight`, `.lineHeight` и `.font`,
+который использует системное семейство через `GPType.systemFont`.
+Compose — `GpSignInGoogle.FONT_FAMILY`, `.FONT_FALLBACKS`, `.fontSize`,
+`.fontWeight`, `.tracking`, `.lineHeight`; `GpSignInApple.fontFamily`,
+`.fontSize`, `.fontWeight`, `.lineHeight`: размеры текста в sp.
+В YAML-шапке — `signIn.apple` и `signIn.google`. Эти токены не являются цветами и не меняются
+при переключении темы.
+
 У `q-text` итоговое правило `.frame .q-text` — **20/1,6**; базовые 19/1,55
 переопределены ниже в `core.css`. На широком экране — 24/1,6.
 Межстрочные расстояния в Swift и Compose сохраняются без округления до целых.
@@ -100,7 +135,8 @@ Georgia, serif, как в `.math` каталога. На вебе — `--font-fa
 | `radius.xl`, `radius.xxl` | `radius.l`: 24 |
 | `radius.full` | Имя сохранено; 999 |
 | `size.button` | Имя сохранено; 52 |
-| `size.button-compact`, `size.main-button` | Удалены; каталог задаёт `size.button`, для иконки — `size.icon-button` |
+| `size.button-compact` | `size.tap-target`: 44, для сегментов |
+| `size.main-button` | Удалён; каталог задаёт `size.button`, для иконки — `size.icon-button` |
 | `size.row` | `size.section-row`: 64 |
 | `size.row-tall` | `size.opt`: 52 для варианта ответа; другие строки определяются экраном |
 | `size.step-node`, `size.step-node-current`, `size.step-line`, `size.step-ring`, `size.step-end` | Удалены |
@@ -112,7 +148,8 @@ Georgia, serif, как в `.math` каталога. На вебе — `--font-fa
 | `layout.gutter-bar`, `layout.top-inset` | Удалены; верхнее поле содержимого — `layout.main-top`: 12 и `layout.main-top-wide`: 44 |
 | `layout.sidebar-min`, `layout.sidebar-max` | `layout.sidebar-width`: 232 |
 | `layout.breakpoint-narrow` | Удалён; ядро каталога задаёт только широкую границу 900 |
-| `layout.auth-column-max`, `layout.tagline-max` | Удалены; таких ролей в ядре каталога нет |
+| `layout.auth-column-max` | Сохранён: 400, колонка входа на широком экране |
+| `layout.tagline-max` | `layout.text-max`: 320, узкая колонка поясняющего текста на экранах состояний |
 | `layout.content-max`, `layout.breakpoint-wide` | Сохранены: 720 и 900 |
 | `motion.easing.out` | Имя сохранено; кривая каталога `[0.2, 0.8, 0.2, 1]` |
 | `space.*`, `opacity.disabled`, остальные `motion.*` | Сохранены без изменения |
@@ -120,6 +157,16 @@ Georgia, serif, как в `.math` каталога. На вебе — `--font-fa
 Добавлены `size.exam-switch` (40), `size.side-card` (60), `size.icon` (22),
 `size.icon-sm` (16), `size.section-mark` (10), `size.session-bar` (3),
 `size.nav-item-wide` (46), `layout.main-bottom-nav` (96).
+
+`layout.session-max` (1040) ограничивает шапку и действия сессии на широком
+экране до перестройки сессии по R1–R20 (часть 3 редизайна).
+Ширины применяются по своей роли: `auth-column-max` — вход, `text-max` —
+пояснения ошибок и «нет сети», `session-max` — сессия. `content-max` (720)
+остаётся шириной слова и его разбора.
+CSS — `--layout-auth-column-max`, `--layout-text-max`, `--layout-session-max`;
+Apple — `GPLayout.authColumnMax`, `.textMax`, `.sessionMax`;
+Compose — `GpLayout.authColumnMax`, `.textMax`, `.sessionMax`.
+В YAML-шапке — раздел `layout`.
 
 ## Выбор темы на платформах
 
