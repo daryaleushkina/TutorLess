@@ -69,6 +69,9 @@ fi
 
 step "стиль кода (ktlint)" ktlintCheck
 step "Android lint" lintDebug lintRelease
+# Только компиляция: общий src/test не должен ссылаться на src/debug (решение Даши 11.10.2026).
+# AGP по умолчанию создаёт тесты только для debug; включаем остальные варианты лишь в этом шаге.
+step "компиляция тестов релизной сборки" compileReleaseUnitTestKotlin -Pandroid.onlyEnableUnitTestForTheTestedBuildType=false
 step "тесты клиента API" :core:api:test
 step "тесты, сценарии и снимки экранов" :app:verifyRoborazziDebug :app:koverXmlReportDebug
 

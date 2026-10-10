@@ -132,6 +132,14 @@ describe('гейты — код упавшего шага и cleanup под set 
     },
   );
 
+  it('Android: ошибка компиляции тестов релиза — имя шага и его код 7', () => {
+    const r = fixture().run('gate-android', 'compileReleaseUnitTestKotlin', 7);
+    expect(r.stderr).toContain('подменённый шаг compileReleaseUnitTestKotlin упал с кодом 7');
+    expect.soft(r.stderr).toContain('«компиляция тестов релизной сборки» не прошёл');
+    expect.soft(r.stderr).not.toContain('unbound variable');
+    expect.soft(r.status, r.stderr).toBe(7);
+  });
+
   it.each(['swift', 'release-ios', 'release-mac', 'build-for-testing', 'iphone-tests'])(
     'Apple: %s — настоящая причина без unbound variable, код шага 7',
     (step) => {
