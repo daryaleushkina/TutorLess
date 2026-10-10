@@ -73,8 +73,10 @@ private struct SignInContent: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: GPSpace.s20) {
             BrandMark()
+                // временно: роли нет, вопрос техлиду (11.10.2026)
                 .frame(width: GPSpace.s32, height: GPSpace.s32)
                 .foregroundStyle(Color(.verbal))
+                // временно: роли нет, вопрос техлиду (11.10.2026)
                 .frame(width: GPSize.sectionRow, height: GPSize.sectionRow)
                 .background(Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.l, style: .continuous))
                 .accessibilityHidden(true)

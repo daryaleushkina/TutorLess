@@ -193,7 +193,9 @@ private struct TrainingSessionContent: View {
                                 } else {
                                     SessionOverview(model: model, screen: s)
                                 }
-                            }.frame(maxWidth: GPLayout.contentMax / 2)
+                            }
+                            // временно: роли нет, вопрос техлиду (11.10.2026)
+                            .frame(maxWidth: GPLayout.contentMax / 2)
                         }.frame(maxWidth: GPLayout.sessionMax, alignment: .top)
                     } else if model.overview {
                         SessionOverview(model: model, screen: s).frame(maxWidth: GPLayout.contentMax)
@@ -403,9 +405,10 @@ struct SessionSummary: View {
     var body: some View {
         VStack(alignment: .leading, spacing: GPSpace.s24) {
             HStack(alignment: .firstTextBaseline, spacing: GPSpace.s12) {
-                Text(result.correct, format: .number).gpText(wide ? \.headwordWide : \.headword)
+                Text(result.correct, format: .number).gpText(wide ? \.numXxlWide : \.numXxl)
                     .accessibilityIdentifier("summary.correct")
-                Text(verbatim: TrainingCopy.correctOf(result.total)).gpText(\.h2).foregroundStyle(Color(.text2))
+                Text(verbatim: TrainingCopy.correctOf(result.total)).gpText(wide ? \.numLabelWide : \.numLabel)
+                    .foregroundStyle(Color(.text2))
             }.accessibilityElement(children: .combine)
             Text(verbatim: summaryLine).gpText(\.meta).foregroundStyle(Color(.text2))
             if screen.training.finish?.timedOut == true {

@@ -48,7 +48,9 @@ private struct TrainingReviewContent: View {
                         Group {
                             if wide {
                                 HStack(alignment: .top, spacing: GPSpace.s32) {
-                                    list(t, wide: true).frame(maxWidth: GPLayout.contentMax / 2)
+                                    list(t, wide: true)
+                                        // временно: роли нет, вопрос техлиду (11.10.2026)
+                                        .frame(maxWidth: GPLayout.contentMax / 2)
                                     if let p = model.selectedPosition, let screen = model.screen(p) {
                                         ReviewQuestionView(
                                             screen: screen, trainings: model.trainings, onReport: { reportPosition = p }
@@ -395,6 +397,7 @@ struct QuestionReportView: View {
                     guard !model.saving, !model.sent else { return }
                     model.cancel { dismiss() }
                 }
+                // временно: роли нет, вопрос техлиду (11.10.2026)
                 .frame(minWidth: GPLayout.contentMax, minHeight: GPSize.opt * 9)
             #endif
     }

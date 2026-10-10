@@ -4,8 +4,8 @@
 #   sh scripts/simulator.sh iphone | ipad | iphone-ios18
 set -eu
 case "${1:-iphone}" in
-  iphone) name="GrePrep iPhone"; type="iPhone-17-Pro"; runtime="iOS-26-5" ;;
-  ipad) name="GrePrep iPad"; type="iPad-Pro-11-inch-M5-12GB"; runtime="iOS-26-5" ;;
+  iphone) name="GrePrep iPhone"; type="iPhone-18-Pro"; runtime="iOS-27-0" ;;
+  ipad) name="GrePrep iPad"; type="iPad-Pro-11-inch-M5-12GB"; runtime="iOS-27-0" ;;
   # Самая старая поддерживаемая iOS (PRODUCT.md, «Platform»): матовая подложка вместо стекла.
   iphone-ios18) name="GrePrep iPhone iOS 18"; type="iPhone-16-Pro"; runtime="iOS-18-0" ;;
   *) echo "simulator.sh: unknown device $1" >&2; exit 2 ;;
