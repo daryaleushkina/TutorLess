@@ -251,11 +251,35 @@ object GpLayout {
     val contentMax = 720.dp
     /** Граница широкой раскладки каталога. */
     val breakpointWide = 900.dp
+    /** Колонка входа на широком экране: .t-signin-buttons в каталоге. */
+    val authColumnMax = 400.dp
+    /** Узкая колонка поясняющего текста на экранах состояний: ошибка, «нет сети». */
+    val textMax = 320.dp
+    /** до перестройки сессии по R1–R20 (часть 3 редизайна) */
+    val sessionMax = 1040.dp
 }
 
 /** Прозрачность состояний элементов. */
 object GpOpacity {
     const val DISABLED = 0.5f
+}
+
+/** Типографика кнопки Google. Размер и разрядка — sp, чтобы следовать системному масштабу текста. */
+object GpSignInGoogle {
+    const val FONT_FAMILY = "Roboto"
+    val FONT_FALLBACKS = listOf("sans-serif")
+    val fontSize = 14.sp
+    val fontWeight = FontWeight.W500
+    val tracking = 0.25.sp
+    val lineHeight = 20.sp
+}
+
+/** Типографика кнопки Apple: системный шрифт Android, размеры текста — sp. */
+object GpSignInApple {
+    val fontFamily = GpTypography.SYSTEM_FONT_FAMILY
+    val fontSize = 17.sp
+    val fontWeight = FontWeight.W500
+    val lineHeight = 20.sp
 }
 
 /** family — Geologica, monoFamily — IBM Plex Mono из ресурсов. sp растут с системным масштабом. */
@@ -343,6 +367,8 @@ class GpTypography private constructor(family: FontFamily, monoFamily: FontFamil
         const val MONO_FONT_FAMILY = "IBM Plex Mono"
         const val MATH_FONT_FAMILY = "Source Serif 4"
         val MATH_FONT_FALLBACKS = listOf("Georgia", "serif")
+        /** Системный шрифт: кнопка «Вход с Apple» (правила Apple) и невидимый измеритель MainButton Telegram (клиент рисует её системным шрифтом) */
+        val SYSTEM_FONT_FAMILY = FontFamily.Default
         fun light(family: FontFamily, monoFamily: FontFamily) = GpTypography(family, monoFamily, GpLightTheme)
         fun dark(family: FontFamily, monoFamily: FontFamily) = GpTypography(family, monoFamily, GpDarkTheme)
     }
