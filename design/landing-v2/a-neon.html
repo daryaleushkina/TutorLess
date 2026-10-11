@@ -1,0 +1,878 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>[Имя] — неон</title>
+<meta name="description" content="Подготовка к GRE и TOEFL без репетитора: вопросы как на экзамене, разбор каждой ошибки на вашем языке, слова и пробный экзамен.">
+<script>
+  // Тема до первой отрисовки, чтобы не мигало: сохранённая → системная.
+  (function () {
+    var t = null;
+    try { t = localStorage.getItem('landing-theme'); } catch (e) { /* без памяти браузера — по системе */ }
+    if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    document.documentElement.dataset.theme = t;
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --neon: #FF3D8F;          /* один громкий цвет: заливки и текст на чёрном (6,3:1) */
+  --on-neon: #000;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --sans: "Inter Tight", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+  --gutter: clamp(16px, 4.4vw, 64px);
+  --header: 72px;
+}
+:root, :root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #000;
+  --bg-veil: rgb(0 0 0 / 0.72);
+  --surface: #0D0D0E;
+  --surface-2: #19191B;
+  --line: rgb(255 255 255 / 0.12);
+  --line-strong: rgb(255 255 255 / 0.24);
+  --text: #F4F4F1;
+  --text-2: rgb(244 244 241 / 0.64);
+  --text-3: rgb(244 244 241 / 0.5);
+  --ink: var(--neon);       /* неон как текст */
+  --app-bg: #0A0A0B;
+  --app-card: #151517;
+  --phone-edge: rgb(255 255 255 / 0.16);
+  --phone-shadow: 0 40px 90px -30px rgb(0 0 0 / 0.9);
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #F5F5F2;
+  --bg-veil: rgb(245 245 242 / 0.78);
+  --surface: #FFFFFF;
+  --surface-2: #EBEBE7;
+  --line: rgb(10 10 10 / 0.1);
+  --line-strong: rgb(10 10 10 / 0.22);
+  --text: #0A0A0A;
+  --text-2: rgb(10 10 10 / 0.66);
+  --text-3: rgb(10 10 10 / 0.58);
+  --ink: #C8005E;           /* неон темнее для текста на светлом: 5,3:1 */
+  --app-bg: #FFFFFF;
+  --app-card: #F2F2EF;
+  --phone-edge: rgb(0 0 0 / 0.5);
+  --phone-shadow: 0 40px 80px -30px rgb(20 0 10 / 0.35);
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; background: var(--bg); }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 400 17px/1.45 var(--sans); letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+::selection { background: var(--neon); color: #000; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--neon); outline-offset: 3px; border-radius: 8px; }
+html { scrollbar-color: var(--line-strong) var(--bg); scrollbar-width: thin; }
+svg.i { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+.mono { font-family: var(--mono); font-size: 11px; line-height: 1.3; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 400; }
+.display {
+  font-family: var(--sans); font-weight: 400; letter-spacing: -0.04em; line-height: 0.96;
+  margin: 0; text-wrap: balance;
+}
+.ink { color: var(--ink); }
+
+/* ── кнопки ───────────────────────────────────────── */
+.cta {
+  display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+  height: 58px; padding: 0 26px 0 28px; border-radius: 999px;
+  background: var(--neon); color: var(--on-neon);
+  font: 500 17px/1 var(--sans); letter-spacing: -0.01em; white-space: nowrap;
+  transition: transform 160ms var(--ease-out), background-color 200ms ease;
+}
+.cta svg.i { width: 18px; height: 18px; stroke-width: 1.8; transition: transform 200ms var(--ease-out); }
+.cta:active { transform: scale(0.97); }
+@media (hover: hover) and (pointer: fine) {
+  .cta:hover { background: #FF5A9F; }
+  .cta:hover svg.i { transform: translateX(3px); }
+}
+.pill {
+  display: inline-flex; align-items: center; height: 40px; padding: 0 18px; border-radius: 999px;
+  border: 1px solid var(--line-strong); font-size: 15px; font-weight: 500;
+  transition: transform 160ms var(--ease-out), border-color 200ms ease, background-color 200ms ease;
+}
+.pill:active, .icon-btn:active { transform: scale(0.96); }
+@media (hover: hover) and (pointer: fine) { .pill:hover { border-color: var(--text); } .link:hover { color: var(--text); } .icon-btn:hover { border-color: var(--text); } }
+
+/* ── шапка ────────────────────────────────────────── */
+.top {
+  position: fixed; inset: 0 0 auto; z-index: 30; height: var(--header);
+  display: flex; align-items: center; justify-content: space-between; padding: 0 var(--gutter);
+  background: linear-gradient(var(--bg) 0%, var(--bg-veil) 60%, transparent);
+}
+.logo { display: inline-flex; align-items: center; gap: 10px; font-weight: 500; font-size: 19px; letter-spacing: -0.03em; }
+.logo i { width: 12px; height: 12px; border-radius: 50%; background: var(--neon); }
+.top nav { display: flex; align-items: center; gap: 8px; }
+.link { padding: 0 12px; height: 40px; display: inline-flex; align-items: center; font-size: 15px; font-weight: 500; color: var(--text-2); transition: color 200ms ease; }
+.icon-btn {
+  width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+  border: 1px solid var(--line); transition: transform 160ms var(--ease-out), border-color 200ms ease;
+}
+.icon-btn svg.i { width: 18px; height: 18px; }
+:root[data-theme="dark"] .i-sun-use, :root[data-theme="light"] .i-moon-use { display: none; }
+
+/* ── глобус ───────────────────────────────────────── */
+.globe { position: relative; aspect-ratio: 1; pointer-events: none; }
+.globe canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.globe .city {
+  position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 6px;
+  white-space: nowrap; color: var(--text); opacity: 0; will-change: transform, opacity;
+}
+.globe .city.l { flex-direction: row-reverse; }
+.globe .city b { width: 6px; height: 6px; background: var(--neon); flex: none; }
+.globe .city span { padding: 4px 6px; background: var(--bg-veil); border: 1px solid var(--line); border-radius: 4px; }
+.globe-fallback .city { display: none; }
+
+/* ── устройство и экраны приложения ───────────────── */
+.device {
+  position: relative; width: 320px; height: 680px; border-radius: 54px;
+  background: #0B0B0C; box-shadow: inset 0 0 0 1px var(--phone-edge), var(--phone-shadow);
+}
+.device::after { /* островок */
+  content: ""; position: absolute; top: 20px; left: 50%; width: 92px; height: 27px; margin-left: -46px;
+  border-radius: 20px; background: #000; z-index: 3;
+}
+.scr {
+  position: absolute; inset: 9px; border-radius: 45px; overflow: hidden;
+  background: var(--app-bg); color: var(--text);
+  display: flex; flex-direction: column; padding: 56px 18px 18px;
+  font-size: 15px; line-height: 1.4;
+}
+.sb { position: absolute; top: 18px; left: 30px; right: 26px; display: flex; justify-content: space-between; align-items: center; font: 600 14px/1 var(--sans); letter-spacing: 0; }
+.sb svg { height: 11px; width: auto; fill: currentColor; }
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--text-2); }
+.bar .mono { white-space: nowrap; }
+.bar .x { width: 30px; height: 30px; margin-left: -6px; display: grid; place-items: center; color: var(--text); }
+.prog { height: 2px; background: var(--line); margin: 12px 0 0; border-radius: 2px; overflow: hidden; }
+.prog i { display: block; height: 100%; background: var(--neon); }
+.q { font-size: 18px; line-height: 1.42; letter-spacing: -0.015em; margin: 26px 0 0; }
+.gap { display: inline-block; min-width: 92px; border-bottom: 1.5px solid var(--neon); transform: translateY(-3px); }
+.opts { list-style: none; margin: 22px 0 0; padding: 0; display: grid; gap: 8px; }
+.opt { display: flex; align-items: center; gap: 12px; height: 52px; padding: 0 16px; border-radius: 14px; background: var(--app-card); font-size: 16px; }
+.opt .r { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--line-strong); flex: none; position: relative; }
+.opt.sel { box-shadow: inset 0 0 0 1.5px var(--text); }
+.opt.sel .r { border-color: var(--text); }
+.opt.sel .r::after { content: ""; position: absolute; inset: 3px; border-radius: 50%; background: var(--text); }
+.app-btn {
+  margin-top: auto; height: 52px; border-radius: 999px; display: grid; place-items: center;
+  background: var(--neon); color: #000; font-weight: 500; font-size: 16px;
+}
+.app-btn.ghost { background: transparent; color: var(--text); box-shadow: inset 0 0 0 1px var(--line-strong); }
+
+.verdict { display: flex; align-items: center; gap: 10px; margin-top: 22px; font-size: 22px; letter-spacing: -0.025em; }
+.verdict .dot { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; border: 1.5px solid var(--text); }
+.verdict .dot svg.i { width: 14px; height: 14px; stroke-width: 2.2; }
+.sub { color: var(--text-2); margin: 4px 0 0 36px; font-size: 14px; }
+.pair { margin-top: 18px; display: grid; gap: 6px; }
+.pair div { display: flex; align-items: center; justify-content: space-between; height: 44px; padding: 0 14px; border-radius: 12px; background: var(--app-card); font-size: 15px; }
+.pair .wrong { color: var(--text-3); text-decoration: line-through; text-decoration-thickness: 1px; }
+.pair .right { box-shadow: inset 0 0 0 1.5px var(--neon); }
+.pair .right em { font-style: normal; color: var(--ink); }
+.seg { display: flex; gap: 4px; margin-top: 16px; padding: 3px; border-radius: 10px; background: var(--app-card); width: max-content; }
+.seg span { padding: 5px 10px; border-radius: 7px; color: var(--text-2); }
+.seg .on { background: var(--text); color: var(--app-bg); }
+.why { margin-top: 14px; display: grid; gap: 12px; font-size: 14.5px; line-height: 1.45; }
+.why .mono { color: var(--text-3); display: block; margin-bottom: 3px; font-size: 10px; }
+
+.word { font-size: 50px; letter-spacing: -0.045em; line-height: 1; margin-top: 30px; }
+.tr { display: flex; align-items: center; gap: 10px; color: var(--text-2); margin-top: 10px; font-size: 14px; }
+.tr .play { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--app-card); color: var(--text); }
+.tr .play svg.i { width: 16px; height: 16px; }
+.mean { margin-top: 18px; font-size: 19px; letter-spacing: -0.02em; }
+.ex { margin-top: 10px; color: var(--text-2); font-size: 14px; }
+.cycle { margin-top: 22px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+.cycle i { height: 3px; border-radius: 2px; background: var(--text); }
+.cycle i.now { background: var(--neon); }
+.cycle i.next { background: var(--line-strong); }
+.cycle-l { display: flex; justify-content: space-between; margin-top: 8px; color: var(--text-3); font-size: 9.5px; }
+.cycle-l .now { color: var(--ink); }
+.mic-row { margin-top: auto; display: grid; justify-items: center; gap: 12px; padding-bottom: 6px; }
+.heard { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-2); }
+.heard svg.i { width: 16px; height: 16px; color: var(--ink); stroke-width: 2.2; }
+.mic { position: relative; width: 68px; height: 68px; border-radius: 50%; display: grid; place-items: center; background: var(--neon); color: #000; }
+.mic svg.i { width: 26px; height: 26px; stroke-width: 1.8; }
+.mic::before { content: ""; position: absolute; inset: -8px; border-radius: 50%; border: 1px solid var(--neon); opacity: 0.5; }
+.wave { display: flex; align-items: center; gap: 3px; height: 26px; }
+.wave i { width: 3px; border-radius: 2px; background: var(--text); height: 30%; }
+
+.score-note { color: var(--text-3); margin-top: 6px; font-size: 10px; }
+.scores { display: grid; gap: 0; margin-top: 18px; }
+.scores > div { padding: 14px 0; border-top: 1px solid var(--line); }
+.scores > div:last-child { border-bottom: 1px solid var(--line); }
+.scores .mono { color: var(--text-2); font-size: 10px; }
+.big { font-size: 46px; line-height: 1; letter-spacing: -0.045em; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.likely { color: var(--text-2); font-size: 13px; margin-top: 4px; }
+.likely b { color: var(--ink); font-weight: 500; }
+.rows { margin-top: 14px; display: grid; gap: 9px; font-size: 14px; }
+.rows div { display: flex; justify-content: space-between; }
+.rows span:last-child { color: var(--text-2); font-variant-numeric: tabular-nums; }
+
+.topics { margin-top: 18px; display: grid; gap: 14px; }
+.topic .t { display: flex; justify-content: space-between; font-size: 14.5px; }
+.topic .t span:last-child { color: var(--text-2); font-variant-numeric: tabular-nums; }
+.topic .track { height: 4px; border-radius: 3px; background: var(--app-card); margin-top: 7px; overflow: hidden; }
+.topic .track i { display: block; height: 100%; border-radius: 3px; background: var(--text); }
+.topic.weak .track i { background: var(--neon); }
+.topic.weak .t span:first-child::after { content: "слабое место"; margin-left: 8px; font: 400 9.5px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
+.cal { margin-top: 22px; }
+.cal .head { display: flex; justify-content: space-between; color: var(--text-2); font-size: 10px; }
+.dots { margin-top: 10px; display: grid; grid-template-columns: repeat(10, 1fr); gap: 7px; }
+.dots i { aspect-ratio: 1; border-radius: 50%; background: var(--app-card); }
+.dots i.on { background: var(--text); }
+.dots i.today { background: var(--neon); }
+
+/* ── сцена (общая разметка) ───────────────────────── */
+.stage { position: relative; }
+.exams { list-style: none; margin: 0; padding: 0; }
+.exams li { display: flex; align-items: baseline; justify-content: space-between; }
+.exams .soon { color: var(--text-3); }
+.step h2 { font-size: clamp(44px, 5.6vw, 84px); }
+.step p.line { margin: 0; color: var(--text-2); font-size: 19px; line-height: 1.4; letter-spacing: -0.015em; max-width: 34ch; text-wrap: pretty; }
+
+/* ── телефон: короткая лента ─────────────────────── */
+@media (max-width: 1079px) {
+  :root { --header: 60px; }
+  .top .link-download { padding: 0 8px; }
+  .stage { padding-top: calc(var(--header) + 28px); }
+  .pin { display: flex; flex-direction: column; }
+  .step-0 { padding: 0 var(--gutter); order: 1; }
+  .step-0 h1 { font-size: clamp(46px, 12.6vw, 76px); }
+  .step-0 .exams { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 22px; font-size: 20px; letter-spacing: -0.02em; }
+  .step-0 .exams li { gap: 6px; }
+  .globe { order: 2; width: min(100%, 520px); margin: 4px auto -6px; }
+  .phone-layer, .step-nav, .hero-note { display: none; }
+  .rail {
+    order: 3; display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory;
+    padding: 8px var(--gutter) 4px; scroll-padding: 0 var(--gutter); scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .rail::-webkit-scrollbar { display: none; }
+  .rail .step { flex: 0 0 min(300px, 78vw); scroll-snap-align: start; }
+  .rail .device { width: 100%; height: 540px; border-radius: 46px; overflow: hidden; }
+  .rail .scr { border-radius: 38px; padding-left: 16px; padding-right: 16px; }
+  .rail .bar .mono { font-size: 9.5px; letter-spacing: 0.04em; }
+  .stage-cta { transition: transform 360ms var(--ease-out), opacity 240ms ease; }
+  .stage-cta.away { transform: translateY(calc(100% + 24px)); opacity: 0; pointer-events: none; }
+  .rail .step h2 { font-size: 30px; line-height: 1; margin-top: 22px; }
+  .rail .step p.line { font-size: 16px; margin-top: 8px; }
+  .rail-dots { order: 4; display: flex; gap: 6px; padding: 18px var(--gutter) 0; }
+  .rail-dots i { width: 18px; height: 2px; background: var(--line-strong); transition: background-color 200ms ease, width 300ms var(--ease-out); }
+  .rail-dots i.on { width: 32px; background: var(--neon); }
+  .stage-cta { position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 40; }
+  .stage-cta .cta { width: 100%; height: 56px; box-shadow: 0 10px 30px -8px rgb(0 0 0 / 0.5); }
+  .step-0 .aside-cta { display: none; }
+  .step-0 .line { display: none; }
+  .end { padding-bottom: 96px; }
+  .top .pill { height: 36px; padding: 0 14px; font-size: 14px; }
+  .top .link { font-size: 14px; }
+  .icon-btn { width: 36px; height: 36px; }
+}
+@media (max-width: 380px) { .top .link-download { display: none; } }
+
+/* ── компьютер: сцена на месте ───────────────────── */
+@media (min-width: 1080px) {
+  :root {
+    --ph: min(700px, calc(100svh - 150px));
+    --pw: calc(var(--ph) * 0.4615);
+    --col: calc(50% - var(--pw) / 2 - 64px - var(--gutter));
+  }
+  .stage { height: 470svh; }
+  .pin { position: sticky; top: 0; height: 100svh; overflow: hidden; }
+  .rail-dots { display: none; }
+  .step { position: absolute; inset: 0; pointer-events: none; }
+  .step.is-active { pointer-events: auto; }
+  .step .head, .step .aside {
+    position: absolute; top: 50%; transform: translateY(-50%);
+  }
+  .step .head { left: var(--gutter); width: var(--col); }
+  .step .aside { right: var(--gutter); width: min(var(--col), 400px); }
+  .step .device { display: none; }
+
+  /* смена текста: уходит быстро, приходит мягко и с размытием, чтобы не было двух слоёв */
+  .step .head > *, .step .aside > * {
+    opacity: 0; transform: translateY(18px); filter: blur(6px);
+    transition: opacity 220ms ease-out, transform 220ms ease-out, filter 220ms ease-out;
+  }
+  .step.is-active .head > *, .step.is-active .aside > * {
+    opacity: 1; transform: none; filter: blur(0);
+    transition: opacity 560ms var(--ease-out) 140ms, transform 700ms var(--ease-out) 140ms, filter 560ms var(--ease-out) 140ms;
+  }
+  .step.is-active .aside > * { transition-delay: 240ms; }
+
+  .step-0 h1 { font-size: clamp(56px, 5.9vw, 88px); }
+  .step-0 .exams { font-size: 30px; letter-spacing: -0.03em; }
+  .step-0 .exams li { padding: 12px 0; border-top: 1px solid var(--line); }
+  .step-0 .exams li:last-child { border-bottom: 1px solid var(--line); }
+  .step-0 .aside-cta { display: none; }
+
+  .globe {
+    position: absolute; left: 50%; top: calc(50% + 10px); width: min(580px, 68svh);
+    translate: -50% -50%; will-change: transform, opacity;
+  }
+  .phone-layer {
+    position: absolute; left: 50%; top: calc(var(--header) + (100svh - var(--header) - var(--ph)) / 2 + 4px);
+    width: var(--pw); height: var(--ph); margin-left: calc(var(--pw) / -2);
+    will-change: transform;
+  }
+  .phone-layer .device { width: 100%; height: 100%; border-radius: calc(var(--pw) * 0.17); }
+  .phone-layer .scr { border-radius: calc(var(--pw) * 0.14); }
+  .phone-layer .scr {
+    opacity: 0; transform: translateY(10px) scale(0.985); filter: blur(4px);
+    transition: opacity 240ms ease-out, transform 240ms ease-out, filter 240ms ease-out;
+  }
+  .phone-layer .scr.show {
+    opacity: 1; transform: none; filter: blur(0);
+    transition: opacity 420ms var(--ease-out) 80ms, transform 520ms var(--ease-out) 80ms, filter 420ms var(--ease-out) 80ms;
+  }
+
+  .step-nav {
+    position: absolute; left: var(--gutter); bottom: 40px; display: flex; gap: 22px;
+  }
+  .step-nav button { display: inline-flex; align-items: center; gap: 8px; color: var(--text-3); height: 32px; transition: color 200ms ease; }
+  .step-nav button::before { content: ""; width: 6px; height: 6px; background: currentColor; opacity: 0.5; transition: background-color 200ms ease, opacity 200ms ease; }
+  .step-nav button.on { color: var(--text); }
+  .step-nav button.on::before { background: var(--neon); opacity: 1; }
+  @media (hover: hover) and (pointer: fine) { .step-nav button:hover { color: var(--text); } }
+
+  .stage-cta { position: absolute; right: var(--gutter); top: calc(50% + 150px); width: min(var(--col), 400px); transition: transform 700ms var(--ease-in-out); }
+  .pin.in-steps .stage-cta { transform: translateY(-80px); }
+  .hero-note { position: absolute; right: var(--gutter); bottom: 40px; color: var(--text-3); }
+}
+
+/* стартовая анимация: глобус проявляется и докручивается, текст поднимается построчно */
+@media (prefers-reduced-motion: no-preference) {
+  .boot .globe { animation: globe-in 1600ms var(--ease-out) both; }
+  .boot .rise { animation: rise 900ms var(--ease-out) both; animation-delay: calc(240ms + var(--i, 0) * 70ms); }
+  .boot .phone-rise { animation: phone-in 1300ms var(--ease-out) 700ms both; }
+}
+@keyframes globe-in { from { opacity: 0; scale: 0.9; filter: blur(8px); } to { opacity: 1; scale: 1; filter: blur(0); } }
+@keyframes rise { from { opacity: 0; transform: translateY(26px); } }
+@keyframes phone-in { from { transform: translateY(140px); } }
+@media (prefers-reduced-motion: reduce) {
+  .step .head > *, .step .aside > *, .phone-layer .scr { transform: none !important; filter: none !important; }
+}
+
+/* ── цена ─────────────────────────────────────────── */
+.price { padding: clamp(96px, 14vw, 180px) var(--gutter) clamp(72px, 9vw, 120px); border-top: 1px solid var(--line); }
+.price h2 { font-size: clamp(64px, 13.4vw, 200px); line-height: 0.93; letter-spacing: -0.05em; }
+.price .row { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-top: clamp(28px, 4vw, 52px); }
+.price .row p { margin: 0; font-size: clamp(20px, 2.2vw, 30px); letter-spacing: -0.025em; color: var(--text-2); }
+.price .row p b { color: var(--text); font-weight: 400; }
+
+/* ── скачать ──────────────────────────────────────── */
+.get { padding: clamp(72px, 9vw, 120px) var(--gutter); border-top: 1px solid var(--line); scroll-margin-top: 40px; }
+.get h2 { font-size: clamp(40px, 5.6vw, 84px); }
+.get .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 22px; overflow: hidden; margin-top: clamp(32px, 4vw, 56px); }
+.get .tile {
+  background: var(--bg); padding: 22px 22px 24px; min-height: 196px; display: flex; flex-direction: column; justify-content: space-between;
+  transition: background-color 200ms ease;
+}
+.get .tile .mono { color: var(--text-3); display: flex; justify-content: space-between; align-items: center; }
+.get .tile .mono svg.i { width: 18px; height: 18px; color: var(--text); transition: transform 200ms var(--ease-out); }
+.get .tile strong { display: block; font-weight: 400; font-size: clamp(26px, 2.4vw, 36px); letter-spacing: -0.035em; line-height: 1.05; }
+.get .tile small { display: block; margin-top: 6px; color: var(--text-2); font-size: 15px; }
+@media (hover: hover) and (pointer: fine) {
+  .get .tile:hover { background: var(--surface); }
+  .get .tile:hover .mono svg.i { transform: translate(2px, -2px); }
+}
+.get .web { margin-top: 20px; color: var(--text-2); font-size: 16px; }
+.get .web a { color: var(--text); border-bottom: 1px solid var(--line-strong); padding-bottom: 1px; }
+@media (max-width: 1079px) {
+  .get .grid { grid-template-columns: 1fr 1fr; }
+  .get .tile { min-height: 150px; padding: 18px; }
+}
+
+/* ── подвал ───────────────────────────────────────── */
+.end { padding: 40px var(--gutter) 40px; border-top: 1px solid var(--line); display: grid; gap: 18px; color: var(--text-3); }
+.end .r { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.end p { margin: 0; font-size: 12px; line-height: 1.5; max-width: 110ch; }
+</style>
+</head>
+<body class="boot">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.6A8 8 0 0 1 9.4 4a8 8 0 1 0 10.6 10.6Z"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-speaker" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></symbol>
+</svg>
+
+<header class="top">
+  <a class="logo" href="#top" aria-label="[Имя], наверх"><i></i>[Имя]</a>
+  <nav aria-label="Главное">
+    <button class="icon-btn" id="theme" type="button" aria-label="Сменить тему">
+      <svg class="i i-sun-use"><use href="#i-sun"/></svg><svg class="i i-moon-use"><use href="#i-moon"/></svg>
+    </button>
+    <a class="link link-download" href="#get">Скачать</a>
+    <a class="pill" href="#login">Войти</a>
+  </nav>
+</header>
+
+<main>
+<section class="stage" id="top">
+  <div class="pin">
+
+    <div class="globe" id="globe" aria-hidden="true">
+      <canvas class="g"></canvas>
+      <canvas class="arcs"></canvas>
+    </div>
+
+    <div class="phone-layer" aria-hidden="true">
+      <div class="phone-rise" style="height:100%"><div class="phone-scroll" style="height:100%">
+        <div class="device" id="phone"></div>
+      </div></div>
+    </div>
+
+    <article class="step step-0 is-active" data-step="0">
+      <div class="head">
+        <h1 class="display"><span class="rise" style="--i:0;display:block">Подготовка</span><span class="rise" style="--i:1;display:block">к экзамену</span><span class="rise ink" style="--i:2;display:block">без репетитора</span></h1>
+      </div>
+      <div class="aside">
+        <ul class="exams rise" style="--i:4" aria-label="Экзамены">
+          <li>GRE</li>
+          <li>TOEFL</li>
+          <li>SAT <span class="mono soon">скоро</span></li>
+          <li>GMAT <span class="mono soon">скоро</span></li>
+        </ul>
+      </div>
+    </article>
+
+    <div class="rail" id="rail">
+      <article class="step" data-step="1">
+        <div class="device"><div class="scr" data-screen="1">
+          <div class="sb"><span>9:41</span><svg viewBox="0 0 64 12"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2.5" width="3" height="9.5" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/><rect x="38" y="0.5" width="22" height="11" rx="3" fill="none" stroke="currentColor"/><rect x="40" y="2.5" width="16" height="7" rx="1.5"/></svg></div>
+          <div class="bar"><span class="x"><svg class="i"><use href="#i-x"/></svg></span><span class="mono">Verbal · Text Completion</span><span class="mono">3 из 10</span></div>
+          <div class="prog"><i style="width:30%"></i></div>
+          <p class="q">Although the committee’s report was praised for its concision, several objections were dismissed in a single <span class="gap"></span> sentence.</p>
+          <ul class="opts">
+            <li class="opt"><span class="r"></span>perfunctory</li>
+            <li class="opt sel"><span class="r"></span>meticulous</li>
+            <li class="opt"><span class="r"></span>impassioned</li>
+          </ul>
+          <span class="app-btn">Проверить</span>
+        </div></div>
+        <div class="head"><h2 class="display">Вопросы как на&nbsp;экзамене</h2></div>
+        <div class="aside"><p class="line">Все разделы GRE и TOEFL. Эссе получает примерную оценку.</p></div>
+      </article>
+
+      <article class="step" data-step="2">
+        <div class="device"><div class="scr" data-screen="2">
+          <div class="sb"><span>9:41</span><svg viewBox="0 0 64 12"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2.5" width="3" height="9.5" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/><rect x="38" y="0.5" width="22" height="11" rx="3" fill="none" stroke="currentColor"/><rect x="40" y="2.5" width="16" height="7" rx="1.5"/></svg></div>
+          <div class="bar"><span class="x"><svg class="i"><use href="#i-x"/></svg></span><span class="mono">Verbal · Text Completion</span><span class="mono">3 из 10</span></div>
+          <div class="prog"><i style="width:30%"></i></div>
+          <div class="verdict"><span class="dot"><svg class="i"><use href="#i-x"/></svg></span>Неверно</div>
+          <p class="sub">Нужно слово с оттенком «для галочки».</p>
+          <div class="pair">
+            <div class="wrong">meticulous</div>
+            <div class="right"><span>perfunctory</span><em class="mono">верно</em></div>
+          </div>
+          <div class="seg mono"><span class="on">RU</span><span>EN</span><span>UZ</span><span>KK</span></div>
+          <div class="why">
+            <div><span class="mono">Почему верно</span>«Dismissed in a single sentence» значит, что возражения разобрали наспех. Perfunctory — сделанный формально.</div>
+            <div><span class="mono">Где ловушка</span>Meticulous звучит как похвала отчёту, но тщательно возражения не отбрасывают.</div>
+          </div>
+          <span class="app-btn">Дальше</span>
+        </div></div>
+        <div class="head"><h2 class="display">Разбор каждой ошибки</h2></div>
+        <div class="aside"><p class="line">Почему верно и где ловушка. На&nbsp;вашем языке.</p></div>
+      </article>
+
+      <article class="step" data-step="3">
+        <div class="device"><div class="scr" data-screen="3">
+          <div class="sb"><span>9:41</span><svg viewBox="0 0 64 12"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2.5" width="3" height="9.5" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/><rect x="38" y="0.5" width="22" height="11" rx="3" fill="none" stroke="currentColor"/><rect x="40" y="2.5" width="16" height="7" rx="1.5"/></svg></div>
+          <div class="bar"><span class="x"><svg class="i"><use href="#i-x"/></svg></span><span class="mono">Слова</span><span class="mono">8 из 12</span></div>
+          <div class="prog"><i style="width:66%"></i></div>
+          <div class="word">laconic</div>
+          <div class="tr"><span class="play"><svg class="i"><use href="#i-speaker"/></svg></span>adjective · /ləˈkɒnɪk/</div>
+          <div class="mean">лаконичный, немногословный</div>
+          <div class="ex">His laconic reply ended the discussion.<br>Его лаконичный ответ закончил разговор.</div>
+          <div class="cycle"><i></i><i></i><i></i><i></i><i></i><i class="now"></i></div>
+          <div class="cycle-l mono"><span>Шесть шагов на слово</span><span class="now">Сказать</span></div>
+          <div class="mic-row">
+            <div class="wave" aria-hidden="true"><i style="height:30%"></i><i style="height:60%"></i><i style="height:90%"></i><i style="height:55%"></i><i style="height:75%"></i><i style="height:40%"></i><i style="height:85%"></i><i style="height:50%"></i><i style="height:25%"></i></div>
+            <div class="heard"><svg class="i"><use href="#i-check"/></svg>Услышано: “laconic”</div>
+            <span class="mic"><svg class="i"><use href="#i-mic"/></svg></span>
+          </div>
+        </div></div>
+        <div class="head"><h2 class="display">Слова для экзамена</h2></div>
+        <div class="aside"><p class="line">Услышать, узнать, собрать, написать, перевести и сказать вслух.</p></div>
+      </article>
+
+      <article class="step" data-step="4">
+        <div class="device"><div class="scr" data-screen="4">
+          <div class="sb"><span>9:41</span><svg viewBox="0 0 64 12"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2.5" width="3" height="9.5" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/><rect x="38" y="0.5" width="22" height="11" rx="3" fill="none" stroke="currentColor"/><rect x="40" y="2.5" width="16" height="7" rx="1.5"/></svg></div>
+          <div class="bar"><span class="x"><svg class="i"><use href="#i-x"/></svg></span><span class="mono">Пробный экзамен · GRE</span><span class="mono">1:56:40</span></div>
+          <div class="verdict" style="margin-top:26px;font-size:26px">Результат</div>
+          <div class="score-note mono">Наша оценка, не официальный балл</div>
+          <div class="scores">
+            <div><span class="mono">Verbal</span><div class="big">155–160</div><div class="likely">Вероятнее всего <b>158</b></div></div>
+            <div><span class="mono">Quant</span><div class="big">161–166</div><div class="likely">Вероятнее всего <b>164</b></div></div>
+          </div>
+          <div class="rows">
+            <div><span>Verbal</span><span>19 из 27</span></div>
+            <div><span>Quant</span><span>21 из 27</span></div>
+            <div><span>Эссе</span><span>4,0 · примерно</span></div>
+          </div>
+          <span class="app-btn ghost">Разобрать ошибки</span>
+        </div></div>
+        <div class="head"><h2 class="display">Пробный экзамен</h2></div>
+        <div class="aside"><p class="line">Секции и таймер как на настоящем. Результат в баллах экзамена.</p></div>
+      </article>
+
+      <article class="step" data-step="5">
+        <div class="device"><div class="scr" data-screen="5">
+          <div class="sb"><span>9:41</span><svg viewBox="0 0 64 12"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2.5" width="3" height="9.5" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/><rect x="38" y="0.5" width="22" height="11" rx="3" fill="none" stroke="currentColor"/><rect x="40" y="2.5" width="16" height="7" rx="1.5"/></svg></div>
+          <div class="bar"><span class="mono" style="color:var(--text)">Прогресс · GRE</span><span class="mono">Октябрь</span></div>
+          <div class="verdict" style="margin-top:22px;font-size:26px">Точность по темам</div>
+          <div class="topics">
+            <div class="topic"><div class="t"><span>Text Completion</span><span>22 из 36</span></div><div class="track"><i style="width:61%"></i></div></div>
+            <div class="topic weak"><div class="t"><span>Reading</span><span>13 из 25</span></div><div class="track"><i style="width:52%"></i></div></div>
+            <div class="topic"><div class="t"><span>Comparison</span><span>30 из 37</span></div><div class="track"><i style="width:81%"></i></div></div>
+            <div class="topic"><div class="t"><span>Задачи</span><span>28 из 40</span></div><div class="track"><i style="width:70%"></i></div></div>
+          </div>
+          <div class="cal">
+            <div class="head mono"><span>Октябрь</span><span>9 дней · 6 ч 40 мин</span></div>
+            <div class="dots" id="cal"></div>
+          </div>
+          <span class="app-btn">Повторить мои ошибки · 12</span>
+        </div></div>
+        <div class="head"><h2 class="display">Видно, что подтянуть</h2></div>
+        <div class="aside"><p class="line">Точность по каждой теме и повтор своих ошибок в одно нажатие.</p></div>
+      </article>
+    </div>
+
+    <div class="rail-dots" id="railDots" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+
+    <nav class="step-nav mono" id="stepNav" aria-label="Что внутри">
+      <button type="button" data-go="1">Вопросы</button>
+      <button type="button" data-go="2">Разбор</button>
+      <button type="button" data-go="3">Слова</button>
+      <button type="button" data-go="4">Пробник</button>
+      <button type="button" data-go="5">Прогресс</button>
+    </nav>
+
+    <div class="stage-cta rise" style="--i:5">
+      <a class="cta" href="#start">Начать — 7 дней бесплатно<svg class="i"><use href="#i-arrow"/></svg></a>
+    </div>
+  </div>
+</section>
+
+<section class="price" id="start">
+  <h2 class="display"><span class="ink">7 дней</span><br>бесплатно</h2>
+  <div class="row">
+    <p>Затем <b>[ЦЕНА]</b> в месяц.</p>
+    <a class="cta" href="#start">Начать — 7 дней бесплатно<svg class="i"><use href="#i-arrow"/></svg></a>
+  </div>
+</section>
+
+<section class="get" id="get">
+  <h2 class="display">Скачать [Имя]</h2>
+  <div class="grid">
+    <a class="tile" href="#get"><span class="mono">iPhone и iPad<svg class="i"><use href="#i-out"/></svg></span><span><strong>App Store</strong></span></a>
+    <a class="tile" href="#get"><span class="mono">Android<svg class="i"><use href="#i-out"/></svg></span><span><strong>Google Play</strong></span></a>
+    <a class="tile" href="#get"><span class="mono">Mac<svg class="i"><use href="#i-out"/></svg></span><span><strong>Файл .dmg</strong><small>Apple Silicon и Intel</small></span></a>
+    <a class="tile" href="#get"><span class="mono">Без установки<svg class="i"><use href="#i-out"/></svg></span><span><strong>Telegram</strong><small>Мини-приложение</small></span></a>
+  </div>
+  <p class="web">Или откройте <a href="#get">в браузере</a>.</p>
+</section>
+</main>
+
+<footer class="end">
+  <div class="r mono"><span>© [Имя], 2026</span><span><a href="#top">Наверх</a></span></div>
+  <p>GRE® and TOEFL® are registered trademarks of Educational Testing Service (ETS). SAT® is a registered trademark of the College Board. GMAT™ is a trademark of the Graduate Management Admission Council (GMAC). This product is not endorsed or approved by ETS, the College Board or GMAC.</p>
+</footer>
+
+<script>
+  // Календарь занятий точками: 31 день, отмечены дни с занятиями, сегодня — неон.
+  (function () {
+    var on = [1, 2, 4, 5, 6, 8, 9, 11, 12], el = document.getElementById('cal'), h = '';
+    for (var d = 1; d <= 30; d++) h += '<i class="' + (d === 12 ? 'today' : on.indexOf(d) > -1 ? 'on' : '') + '"></i>';
+    el.innerHTML = h;
+  })();
+</script>
+
+<script type="module">
+const root = document.documentElement;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const desktopMQ = matchMedia('(min-width: 1080px)');
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+let globeInView = true;
+let globe = { setVisible() {}, refresh() {} };
+
+/* ── тема ── */
+const themeBtn = document.getElementById('theme');
+themeBtn.addEventListener('click', () => {
+  const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+  root.dataset.theme = next;
+  try { localStorage.setItem('landing-theme', next); } catch { /* без памяти браузера тема живёт до перезагрузки */ }
+  globe.refresh();
+});
+
+/* ── стартовый класс снимаем, чтобы анимации появления не повторялись при смене раскладки ── */
+setTimeout(() => document.body.classList.remove('boot'), 2400);
+
+/* ── экраны: на компьютере все в одном телефоне, на телефоне — каждый в своей карточке ── */
+const phone = document.getElementById('phone');
+const screens = [...document.querySelectorAll('.scr[data-screen]')];
+const homes = new Map(screens.map((s) => [s, s.parentElement]));
+function placeScreens() {
+  for (const s of screens) {
+    const target = desktopMQ.matches ? phone : homes.get(s);
+    if (s.parentElement !== target) target.appendChild(s);
+  }
+}
+placeScreens();
+desktopMQ.addEventListener('change', () => { placeScreens(); onScroll(); });
+
+/* ── сцена на ПК: шаги по прокрутке ── */
+const steps = [...document.querySelectorAll('.step')];
+const pin = document.querySelector('.pin');
+const navBtns = [...document.querySelectorAll('#stepNav button')];
+const globeEl = document.getElementById('globe');
+const phoneScroll = document.querySelector('.phone-scroll');
+const HERO = 0.9, FIRST = 0.42, LEN = 0.66; // в высотах экрана
+let active = -1;
+function setStep(i) {
+  if (i === active) return;
+  active = i;
+  steps.forEach((s) => s.classList.toggle('is-active', +s.dataset.step === i));
+  pin.classList.toggle('in-steps', i > 0);
+  const scr = Math.max(1, i);
+  screens.forEach((s) => s.classList.toggle('show', +s.dataset.screen === scr));
+  navBtns.forEach((b) => b.classList.toggle('on', +b.dataset.go === i));
+}
+function stepStart(i) { return i === 0 ? 0 : FIRST + (i - 1) * LEN; }
+let ticking = false, heroP = 0;
+function onScroll() {
+  ticking = false;
+  if (!desktopMQ.matches) {
+    globeEl.style.opacity = ''; globeEl.style.transform = ''; phoneScroll.style.transform = '';
+    globe.setVisible(globeInView);
+    return;
+  }
+  const vh = innerHeight, s = scrollY / vh;
+  heroP = clamp(s / HERO);
+  const k = easeInOut(heroP);
+  // глобус уходит вглубь, телефон поднимается в центр
+  globeEl.style.opacity = String(clamp(1 - heroP * 1.25));
+  globeEl.style.transform = `translateY(${-k * 70}px) scale(${1 - k * 0.14})`;
+  phoneScroll.style.transform = `translateY(${(1 - k) * 0.78 * phone.offsetHeight}px)`;
+  let i = 0;
+  if (s >= FIRST) i = Math.min(5, 1 + Math.floor((s - FIRST) / LEN));
+  setStep(i);
+  globe.setVisible(heroP < 0.8 && globeInView);
+}
+addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+addEventListener('resize', () => requestAnimationFrame(onScroll));
+navBtns.forEach((b) => b.addEventListener('click', () => {
+  const top = document.querySelector('.stage').offsetTop + (stepStart(+b.dataset.go) + 0.08) * innerHeight;
+  scrollTo({ top, behavior: reduce ? 'auto' : 'smooth' });
+}));
+
+/* ── телефон: закреплённая кнопка прячется, когда на экране кнопка раздела цены ── */
+const stageCta = document.querySelector('.stage-cta');
+new IntersectionObserver(([e]) => stageCta.classList.toggle('away', e.isIntersecting && !desktopMQ.matches))
+  .observe(document.querySelector('.price .cta'));
+
+/* ── лента на телефоне: точки ── */
+const rail = document.getElementById('rail');
+const dots = [...document.querySelectorAll('#railDots i')];
+rail.addEventListener('scroll', () => {
+  const card = rail.children[0].getBoundingClientRect().width + 12;
+  const i = Math.round(rail.scrollLeft / card);
+  dots.forEach((d, j) => d.classList.toggle('on', j === i));
+}, { passive: true });
+
+/* ── глобус ── */
+globe = await (async () => {
+  const api = { setVisible() {}, refresh() {} };
+  const canvas = globeEl.querySelector('canvas.g');
+  const ov = globeEl.querySelector('canvas.arcs');
+  const ctx = ov.getContext('2d');
+  const DPR = Math.min(devicePixelRatio || 1, 2);
+  const { PI, sin, cos, acos, sqrt } = Math;
+  const CITY = {
+    msk: { at: [55.7558, 37.6173], name: 'Москва' },
+    stan: { at: [37.4275, -122.1697], name: 'Стэнфорд' },
+    ala: { at: [43.2389, 76.8897], name: 'Алматы' },
+    tor: { at: [43.6629, -79.3957], name: 'Торонто' },
+    tas: { at: [41.2995, 69.2401], name: 'Ташкент', left: true }, // подпись слева: справа рядом Алматы
+    lon: { at: [51.5074, -0.1278], name: 'Лондон' },
+  };
+  const ARCS = [['tas', 'lon'], ['msk', 'stan'], ['ala', 'tor']];
+  const EXTRA = [[40.4093, 49.8671], [41.7151, 44.8271], [53.9006, 27.559], [42.3601, -71.0589], [40.7128, -74.006], [52.52, 13.405], [47.3769, 8.5417], [48.8566, 2.3522], [43.07, -89.4], [49.2827, -123.1207], [55.9533, -3.1883], [52.2053, 0.1218]];
+  const vec = ([lat, lon]) => { const la = lat * PI / 180, lo = lon * PI / 180 - PI, a = cos(la); return [-a * cos(lo), sin(la), a * sin(lo)]; };
+  for (const c of Object.values(CITY)) {
+    c.v = vec(c.at);
+    const el = document.createElement('div');
+    el.className = 'city mono' + (c.left ? ' l' : '');
+    el.innerHTML = `<b></b><span>${c.name}</span>`;
+    globeEl.appendChild(el);
+    c.el = el; c.alpha = 0;
+  }
+  // точки дуги по большому кругу с подъёмом над поверхностью
+  for (const a of ARCS) {
+    const A = CITY[a[0]].v, B = CITY[a[1]].v;
+    const om = acos(clamp(A[0] * B[0] + A[1] * B[1] + A[2] * B[2], -1, 1));
+    const lift = 0.06 + 0.26 * om / PI, N = 64, pts = [];
+    for (let i = 0; i <= N; i++) {
+      const t = i / N, s1 = sin((1 - t) * om) / sin(om), s2 = sin(t * om) / sin(om);
+      const r = 1 + lift * sin(PI * t);
+      pts.push([(A[0] * s1 + B[0] * s2) * r, (A[1] * s1 + B[1] * s2) * r, (A[2] * s1 + B[2] * s2) * r]);
+    }
+    a.pts = pts;
+  }
+  // та же матрица, что в шейдере cobe: экран = M · точка
+  function project(p, phi, theta) {
+    const c = cos(theta), e = sin(theta), d = cos(phi), f = sin(phi);
+    return [d * p[0] + f * p[2], f * e * p[0] + c * p[1] - d * e * p[2], -f * c * p[0] + e * p[1] + d * c * p[2]];
+  }
+  const THETA = 0.32;
+  const PHI0 = -PI / 2 - 0.95;           // лицом к Средней Азии и Москве
+  const SPIN = 0.085;                    // рад/с, на запад: Европа → Атлантика → Америка
+  const theme = () => root.dataset.theme === 'light'
+    ? { dark: 0, base: [1, 1, 1], marker: [0.78, 0, 0.37], glow: [0.96, 0.96, 0.95], bright: 5.2, diffuse: 1.6, stroke: '200,0,94' }
+    : { dark: 1, base: [1, 0.24, 0.56], marker: [1, 1, 1], glow: [0.16, 0.03, 0.08], bright: 7, diffuse: 1.25, stroke: '255,61,143' };
+
+  let createGlobe;
+  try {
+    ({ default: createGlobe } = await import('https://cdn.jsdelivr.net/npm/cobe@0.6.3/+esm'));
+  } catch (e) {
+    globeEl.classList.add('globe-fallback');
+    console.warn('Глобус не загрузился', e);
+    return api;
+  }
+  let size = 0, start = performance.now(), g = null;
+  function arcAlpha(i, ms) {
+    // цикл дуги: рисуется 1,4 с, держится, стирается хвостом; первые дуги — на старте
+    const period = 9000, off = 900 + i * 1400;
+    if (ms < off) return null;
+    const t = (ms - off) % period;
+    if (t < 1400) return [0, easeOut(t / 1400)];
+    if (t < 6400) return [0, 1];
+    if (t < 7600) return [easeInOut((t - 6400) / 1200), 1];
+    return null;
+  }
+  function frame(state) {
+    const ms = reduce ? 4000 : performance.now() - start;
+    const intro = reduce ? 1 : easeOut(clamp(ms / 2600));
+    const phi = PHI0 - 1.1 * (1 - intro) + (reduce ? 0 : (ms / 1000) * SPIN);
+    const th = theme();
+    const w = canvas.clientWidth;
+    if (w !== size) {
+      size = w;
+      ov.width = ov.height = Math.round(w * DPR);
+    }
+    state.phi = phi; state.theta = THETA;
+    state.width = state.height = Math.round(w * DPR);
+    state.dark = th.dark; state.baseColor = th.base; state.markerColor = th.marker; state.glowColor = th.glow;
+    state.diffuse = th.diffuse;
+    state.mapBrightness = th.bright * (reduce ? 1 : clamp(ms / 1400)); // точки суши разгораются
+    // дуги
+    const R = 0.4 * w * DPR, C = w * DPR / 2;
+    ctx.clearRect(0, 0, ov.width, ov.height);
+    ctx.lineCap = 'round';
+    const showCity = {};
+    ARCS.forEach((a, i) => {
+      const life = reduce ? [0, 1] : arcAlpha(i, ms);
+      if (!life) return;
+      const [t0, t1] = life, n = a.pts.length - 1;
+      const i0 = Math.floor(t0 * n), i1 = Math.ceil(t1 * n);
+      let prev = null;
+      for (let j = i0; j <= i1; j++) {
+        const q = project(a.pts[j], phi, THETA);
+        const hidden = q[2] < 0 && q[0] * q[0] + q[1] * q[1] < 1;
+        const x = C + q[0] * R, y = C - q[1] * R;
+        if (prev && !hidden && !prev.h) {
+          const fade = Math.min(1, q[2] + 0.6);
+          ctx.strokeStyle = `rgba(${th.stroke},${0.95 * fade})`;
+          ctx.lineWidth = 1.6 * DPR;
+          ctx.beginPath(); ctx.moveTo(prev.x, prev.y); ctx.lineTo(x, y); ctx.stroke();
+        }
+        prev = { x, y, h: hidden };
+      }
+      // голова дуги — яркая точка, пока дуга рисуется
+      if (t1 < 1 && prev && !prev.h) {
+        ctx.fillStyle = `rgba(${th.stroke},0.25)`; ctx.beginPath(); ctx.arc(prev.x, prev.y, 7 * DPR, 0, 7); ctx.fill();
+        ctx.fillStyle = th.dark ? '#fff' : `rgb(${th.stroke})`; ctx.beginPath(); ctx.arc(prev.x, prev.y, 2.4 * DPR, 0, 7); ctx.fill();
+      }
+      showCity[a[0]] = true;
+      if (t1 >= 1 && t0 < 0.9) showCity[a[1]] = true;
+    });
+    // подписи городов
+    for (const [key, c] of Object.entries(CITY)) {
+      const q = project(c.v, phi, THETA);
+      const facing = clamp((q[2] - 0.12) * 4);
+      const want = showCity[key] ? facing : 0;
+      c.alpha += (want - c.alpha) * (reduce ? 1 : 0.12);
+      const x = w / 2 + q[0] * 0.4 * w, y = w / 2 - q[1] * 0.4 * w;
+      c.el.style.opacity = c.alpha.toFixed(3);
+      if (c.left && !c.w) c.w = c.el.offsetWidth;
+      const lx = c.left ? x - c.w + 3 : x - 3;
+      c.el.style.transform = `translate(${lx.toFixed(1)}px, ${(y - 11).toFixed(1)}px)`;
+    }
+    return state;
+  }
+  const markers = [
+    ...Object.values(CITY).map((c) => ({ location: c.at, size: 0.045 })),
+    ...EXTRA.map((at) => ({ location: at, size: 0.022 })),
+  ];
+  function make() {
+    const w = canvas.clientWidth || 600;
+    const th = theme();
+    g = createGlobe(canvas, {
+      devicePixelRatio: DPR, width: w * DPR, height: w * DPR,
+      phi: PHI0, theta: THETA, dark: th.dark, diffuse: th.diffuse,
+      mapSamples: w < 420 ? 14000 : 20000, mapBrightness: 0, mapBaseBrightness: 0,
+      baseColor: th.base, markerColor: th.marker, glowColor: th.glow,
+      markers, opacity: 0.92,
+      onRender: frame,
+    });
+  }
+  try { make(); } catch (e) {
+    globeEl.classList.add('globe-fallback');
+    console.warn('WebGL недоступен', e);
+    return api;
+  }
+  let on = true, stopT = 0;
+  api.setVisible = (v) => {
+    v = v && !document.hidden;
+    if (reduce && v) return api.refresh();
+    if (v === on || !g) return;
+    on = v; g.toggle(v);
+  };
+  // без движения: несколько кадров и стоп — статичный кадр; при смене темы перерисовать
+  api.refresh = () => {
+    if (!reduce || !g) return;
+    on = true; g.toggle(true);
+    clearTimeout(stopT); stopT = setTimeout(() => { on = false; g.toggle(false); }, 250);
+  };
+  if (reduce) api.refresh();
+  return api;
+})();
+
+new IntersectionObserver(([e]) => { globeInView = e.isIntersecting; onScroll(); }).observe(globeEl);
+document.addEventListener('visibilitychange', onScroll);
+onScroll();
+</script>
+</body>
+</html>
