@@ -117,6 +117,34 @@ class DevThemeFlowTest {
         )
     }
 
+    @Test fun unexpectedSelectionFailureReportsOnlyItsType() {
+        hilt.inject()
+        manager.get()
+        themes.saveFailure = IllegalStateException("private file path and choice")
+        val result = broadcastTheme("light")
+        assertEquals(Activity.RESULT_CANCELED, result.first)
+        assertEquals("dev theme selection failed: IllegalStateException", result.second)
+        compose.waitUntil(TIMEOUT) { server.clientErrors.isNotEmpty() }
+        assertEquals(1, server.clientErrors.size)
+        assertTrue(server.clientErrors.single().contains("dev theme selection failed: IllegalStateException"))
+        assertFalse(server.clientErrors.single().contains("private file path and choice"))
+        assertEquals(AppTheme.Dark, themes.choice)
+    }
+
+    @Test fun securityFailureDoesNotDuplicateTheStoreReport() {
+        hilt.inject()
+        manager.get()
+        themes.saveFailure = SecurityException("private file path")
+        themes.onSaveFailure = { reporter.report("theme save failed: SecurityException", "theme") }
+        val result = broadcastTheme("light")
+        assertEquals(Activity.RESULT_CANCELED, result.first)
+        compose.waitUntil(TIMEOUT) { server.clientErrors.isNotEmpty() }
+        compose.waitForIdle()
+        assertEquals(1, server.clientErrors.size)
+        assertTrue(server.clientErrors.single().contains("theme save failed: SecurityException"))
+        assertFalse(server.clientErrors.single().contains("private file path"))
+    }
+
     @Test fun canceledProcessScopeStillFinishesTheOrderedBroadcast() {
         hilt.inject()
         manager.get()

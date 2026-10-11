@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -527,7 +529,7 @@ private fun SessionHeader(
                     .widthIn(max = GpLayout.sessionMax)
                     .fillMaxWidth()
                     .statusBarsPadding()
-                    .height(GpSize.opt)
+                    .heightIn(min = GpSize.opt)
                     .padding(horizontal = GpSpace.s4),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -621,26 +623,37 @@ private fun TimerPill(
         shape = CircleShape,
         modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = description }.testTag("session.timer"),
     ) {
-        Row(
+        // При крупном шрифте переносим целиком подпись прогресса под таймер:
+        // цифры и слова остаются целыми, а шапка растёт вместе с пилюлей.
+        FlowRow(
             modifier = Modifier.padding(horizontal = GpSpace.s14, vertical = GpSpace.s6),
-            horizontalArrangement = Arrangement.spacedBy(GpSpace.s8),
-            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(GpSpace.s8, Alignment.CenterHorizontally),
+            verticalArrangement = Arrangement.spacedBy(GpSpace.s4),
         ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_timer),
-                contentDescription = null,
-                tint = Gp.colors.text2,
-                modifier = Modifier.size(GpSpace.s20),
-            )
-            Text(
-                text = TIMER_FORMAT.format(minutes, seconds),
-                style = Gp.type.scoreNum.copy(fontFeatureSettings = "tnum"),
-                color = Gp.colors.text,
-            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(GpSpace.s8),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.width(IntrinsicSize.Max).align(Alignment.CenterVertically),
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_timer),
+                    contentDescription = null,
+                    tint = Gp.colors.text2,
+                    modifier = Modifier.size(GpSpace.s20),
+                )
+                Text(
+                    text = TIMER_FORMAT.format(minutes, seconds),
+                    style = Gp.type.scoreNum.copy(fontFeatureSettings = "tnum"),
+                    color = Gp.colors.text,
+                    softWrap = false,
+                )
+            }
             Text(
                 text = stringResource(R.string.question_of, position + 1, total),
                 style = Gp.type.meta.copy(fontFeatureSettings = "tnum"),
                 color = Gp.colors.text2,
+                softWrap = false,
+                modifier = Modifier.align(Alignment.CenterVertically),
             )
         }
     }

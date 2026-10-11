@@ -65,7 +65,7 @@ internal class GlowRenderer(
             canvas.drawBitmap(
                 layer.image.asAndroidBitmap(),
                 null,
-                RectF(layer.origin.x, layer.origin.y, layer.origin.x + layer.size.width, layer.origin.y + layer.size.height),
+                layer.destination,
                 bitmapPaint,
             )
         }
@@ -159,4 +159,7 @@ internal data class GlowLayer(
     val image: ImageBitmap,
     val origin: Offset,
     val size: Size,
-)
+) {
+    // Размер и смещение слоя неизменны: Canvas повторно использует прямоугольник из кэша.
+    val destination = RectF(origin.x, origin.y, origin.x + size.width, origin.y + size.height)
+}

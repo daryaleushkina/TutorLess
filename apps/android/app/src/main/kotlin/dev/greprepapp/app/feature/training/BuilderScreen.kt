@@ -49,6 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
@@ -59,6 +60,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.greprepapp.api.models.Difficulty
@@ -432,6 +434,9 @@ private fun CountField(
     onChange: (String) -> Unit,
 ) {
     val colors = Gp.colors
+    // BasicTextField измеряет одну строку по метрикам глифов. Сохраняем ещё всю
+    // межстрочную высоту роли с системным масштабом и внутренние отступы капсулы.
+    val lineHeight = (Gp.type.sessionCount.lineHeight.value * LocalDensity.current.fontScale).dp
     BasicTextField(
         value = text,
         onValueChange = onChange,
@@ -447,16 +452,17 @@ private fun CountField(
         modifier =
             Modifier
                 .width(CountFieldWidth)
-                .height(GpSpace.s40)
+                .heightIn(min = maxOf(GpSpace.s40, lineHeight + GpSpace.s8))
                 .semantics { contentDescription = label }
                 .testTag("builder.count"),
         decorationBox = { field ->
             Box(
                 modifier =
                     Modifier
-                        .fillMaxSize()
+                        .fillMaxWidth()
                         .background(colors.surface2, CircleShape)
-                        .border(GpSize.hairline, colors.line, CircleShape),
+                        .border(GpSize.hairline, colors.line, CircleShape)
+                        .padding(vertical = GpSpace.s4),
                 contentAlignment = Alignment.Center,
             ) { field() }
         },
@@ -480,7 +486,7 @@ private fun Divider() {
 }
 
 @Composable
-private fun FieldRow(
+internal fun FieldRow(
     label: String,
     control: @Composable () -> Unit,
 ) {
@@ -489,12 +495,12 @@ private fun FieldRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalArrangement = Arrangement.spacedBy(GpSpace.s8),
     ) {
-        // Измеряем целую подпись: при крупном шрифте управление переходит на следующую строку.
+        // FlowRow оставляет короткую подпись целой, перенося управление. Если даже сама
+        // подпись шире строки, обычный перенос по словам сохраняет весь текст.
         Text(
             text = label,
             style = Gp.type.opt,
             color = Gp.colors.text,
-            softWrap = false,
             modifier = Modifier.padding(end = GpSpace.s12).align(Alignment.CenterVertically),
         )
         Box(Modifier.align(Alignment.CenterVertically)) { control() }

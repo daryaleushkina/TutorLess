@@ -85,6 +85,11 @@ class TrainingSnapshotTest(
     fun builderFontScale130() = snap("training-builder-font-130", systemFontScale = 1.3f) { TrainingScreens.Builder() }
 
     @Test
+    @Config(qualifiers = "ru-w360dp-h800dp-160dpi")
+    fun questionTimedFontScale130On360dp() =
+        snap("training-question-timed-360-font-130", systemFontScale = 1.3f) { Session(TrainingScreens.qcTimed) }
+
+    @Test
     fun todayWithStartedTraining() =
         snap("today-continue") {
             MainScaffold(appVersion = "0.1.0 (1)", onSignOut = {}) {

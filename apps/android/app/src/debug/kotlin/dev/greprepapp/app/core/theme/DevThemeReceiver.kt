@@ -11,6 +11,7 @@ import dev.greprepapp.app.core.report.ClientErrorReporter
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.io.IOException
 import javax.inject.Inject
 
 /** Только debug: adb broadcast выбирает тему тем же API, что будущий переключатель настроек. */
@@ -57,7 +58,10 @@ class DevThemeReceiver : BroadcastReceiver() {
                 } catch (failure: Exception) {
                     val message = "dev theme selection failed: ${failure.javaClass.simpleName}"
                     pending.resultData = message
-                    // ThemeStore уже отправил отчёт записи; здесь нужен только результат команды adb.
+                    // IO и отказ доступа уже сообщает ThemeStore; остальные ошибки select — здесь.
+                    if (failure !is IOException && failure !is SecurityException) {
+                        reporter.report(message, route = DataStoreThemeStore.ROUTE)
+                    }
                     Log.w("GrePrep", message)
                 }
             }

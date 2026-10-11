@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.Density
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
 import dev.greprepapp.app.snapshots.TrainingScreens
 import dev.greprepapp.app.testing.createAppComposeRule
+import dev.greprepapp.design.Gp
 import dev.greprepapp.design.GpTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -25,6 +26,35 @@ import org.robolectric.annotation.Config
 @Config(qualifiers = "ru-" + RobolectricDeviceQualifiers.MediumPhone)
 class BuilderFontScaleTest {
     @get:Rule val compose = createAppComposeRule()
+
+    @Test
+    fun countFieldGrowsToFitItsTextAtFontScale130() {
+        var lineHeight = 0f
+        compose.setContent {
+            val density = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(density.density, 1.3f)) {
+                GpTheme {
+                    lineHeight = with(LocalDensity.current) { Gp.type.sessionCount.lineHeight.value * this.density * this.fontScale }
+                    TrainingScreens.Builder()
+                }
+            }
+        }
+        val field = compose.onNodeWithTag("builder.count").performScrollTo()
+        val results = mutableListOf<TextLayoutResult>()
+        field.performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(results) }
+        val layout = results.single()
+        assertTrue(
+            "Вся высота строки числа должна помещаться в поле: ${maxOf(
+                lineHeight,
+                layout.multiParagraph.height,
+            )}, ${field.fetchSemanticsNode().layoutInfo.height.toFloat()}",
+            maxOf(lineHeight, layout.multiParagraph.height) <=
+                field
+                    .fetchSemanticsNode()
+                    .layoutInfo.height
+                    .toFloat(),
+        )
+    }
 
     @Test fun modeLabelStaysWholeAndTheSegmentsWrapUnderItAtLargeFont() {
         compose.setContent {

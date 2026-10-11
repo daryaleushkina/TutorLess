@@ -26,6 +26,24 @@ import org.robolectric.annotation.GraphicsMode
 @Config(sdk = [26, 28, 31, 37])
 class GlowRendererTest {
     @Test
+    @Config(sdk = [26, 27, 37])
+    @GraphicsMode(GraphicsMode.Mode.LEGACY)
+    fun rasterDrawsReuseTheDestinationRectangleForHardwareAndSoftwareCanvases() {
+        val renderer = GlowRenderer(GpDarkTheme.glow)
+        val size = Size(300f, 52f)
+        val canvas = RecordingCanvas()
+        if (android.os.Build.VERSION.SDK_INT >= 28) canvas.hardware = false
+        renderer.draw(canvas, size, 2f)
+        val destination = canvas.destination
+        renderer.draw(canvas, size, 2f)
+        assertSame(destination, canvas.destination)
+        GlowRenderer(GpDarkTheme.glow).draw(canvas, size, 2f)
+        assertSame(destination, canvas.destination)
+        renderer.draw(canvas, Size(301f, 52f), 2f)
+        assertNotSame(destination, canvas.destination)
+    }
+
+    @Test
     fun largeDenseButtonFitsInTheRasterCache() {
         val size = Size(4160f, 208f)
         val layer = GlowRenderer(GpDarkTheme.glow).layer(size, 4f)
@@ -80,6 +98,8 @@ class GlowRendererTest {
 
     private class RecordingCanvas : Canvas() {
         var bitmaps = 0
+        var hardware = true
+        var destination: RectF? = null
         var left = Float.NaN
         var right = Float.NaN
         var radius = Float.NaN
@@ -88,7 +108,7 @@ class GlowRendererTest {
         var paintColor = 0
         var offsetX = Float.NaN
 
-        override fun isHardwareAccelerated(): Boolean = true
+        override fun isHardwareAccelerated(): Boolean = hardware
 
         override fun drawBitmap(
             bitmap: Bitmap,
@@ -97,6 +117,7 @@ class GlowRendererTest {
             paint: Paint?,
         ) {
             bitmaps++
+            destination = dst
         }
 
         override fun drawRoundRect(

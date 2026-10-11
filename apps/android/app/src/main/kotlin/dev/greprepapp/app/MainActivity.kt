@@ -14,8 +14,10 @@ import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import dev.greprepapp.app.core.AppConfig
 import dev.greprepapp.app.core.report.ClientErrorReporter
@@ -63,15 +65,19 @@ class MainActivity : AppCompatActivity() {
         }
         super.onCreate(savedInstanceState)
         lifecycleScope.launch {
-            themes.state.collectLatest { state ->
-                themeResourcesTimedOut = false
-                if (!state.restoring) {
-                    installContentWhenReady()
-                    delay(THEME_RESOURCES_TIMEOUT_MS)
-                    if (!isThemeReady(themes.state.value, resources.configuration.uiMode)) {
-                        reporter.report("theme resources mismatch", route = "theme")
-                        themeResourcesTimedOut = true
+            // В фоне Android может задержать uiMode. Каждый START начинает новый срок,
+            // а STOP отменяет ожидание, чтобы не принять задержку за ошибку ресурсов.
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                themes.state.collectLatest { state ->
+                    themeResourcesTimedOut = false
+                    if (!state.restoring) {
                         installContentWhenReady()
+                        delay(THEME_RESOURCES_TIMEOUT_MS)
+                        if (!isThemeReady(themes.state.value, resources.configuration.uiMode)) {
+                            reporter.report("theme resources mismatch", route = "theme")
+                            themeResourcesTimedOut = true
+                            installContentWhenReady()
+                        }
                     }
                 }
             }

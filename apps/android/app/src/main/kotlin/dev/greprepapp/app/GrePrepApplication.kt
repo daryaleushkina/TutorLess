@@ -4,13 +4,18 @@ import android.app.Application
 import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 import dagger.hilt.android.HiltAndroidApp
+import dev.greprepapp.app.core.AppScope
 import dev.greprepapp.app.core.theme.AppNightMode
 import dev.greprepapp.app.core.theme.ThemeManager
+import kotlinx.coroutines.CoroutineScope
 import javax.inject.Inject
 import javax.inject.Provider
 
 @HiltAndroidApp
 class GrePrepApplication : Application() {
+    @Inject @AppScope
+    lateinit var appScope: CoroutineScope
+
     @Inject lateinit var themes: Provider<ThemeManager>
 
     override fun onCreate() {

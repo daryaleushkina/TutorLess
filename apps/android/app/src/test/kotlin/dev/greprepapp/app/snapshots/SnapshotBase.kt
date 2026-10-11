@@ -47,6 +47,7 @@ abstract class SnapshotBase(
         name: String,
         large: Boolean = false,
         systemFontScale: Float = 1f,
+        beforeCapture: (() -> Unit)? = null,
         content: @Composable () -> Unit,
     ) {
         var attempt by mutableIntStateOf(0)
@@ -64,6 +65,14 @@ abstract class SnapshotBase(
         repeat(ATTEMPTS) {
             compose.mainClock.advanceTimeBy(FRAME_TIME)
             compose.waitForIdle()
+            if (beforeCapture != null) {
+                // ScrollTo ожидает кадры; на время действия отпускаем тестовые часы.
+                compose.mainClock.autoAdvance = true
+                beforeCapture()
+                compose.mainClock.autoAdvance = false
+                compose.mainClock.advanceTimeBy(FRAME_TIME)
+                compose.waitForIdle()
+            }
             val frame = compose.onRoot().captureToImage().asAndroidBitmap()
             if (!frame.isSingleColor()) {
                 frame.captureRoboImage("src/test/snapshots/$name-$theme.png")

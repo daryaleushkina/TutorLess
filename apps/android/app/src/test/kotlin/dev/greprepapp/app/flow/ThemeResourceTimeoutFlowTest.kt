@@ -14,11 +14,13 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import dagger.hilt.android.testing.UninstallModules
 import dev.greprepapp.app.MainActivity
+import dev.greprepapp.app.core.theme.AppTheme
 import dev.greprepapp.app.core.theme.ThemeManager
 import dev.greprepapp.app.core.theme.ThemeModeApplier
 import dev.greprepapp.app.di.ThemeModule
 import dev.greprepapp.app.testing.NightModeResetRule
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -61,6 +63,75 @@ class ThemeResourceTimeoutFlowTest {
     @org.junit.After
     fun stopProcessScope() {
         processScope.cancel()
+    }
+
+    @Test fun themeChangedWhileStoppedWaitsForAFullVisibleDeadline() {
+        hilt.inject()
+        androidx.appcompat.app.AppCompatDelegate
+            .setDefaultNightMode(androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO)
+        val controller =
+            Robolectric
+                .buildActivity(MainActivity::class.java)
+                .create()
+                .start()
+                .resume()
+        try {
+            compose.waitUntil(5_000) {
+                !manager
+                    .get()
+                    .state.value.restoring
+            }
+            // Совпавшая светлая тема, затем выбор тёмной, пока конфигурацию Activity не доставляют.
+            runBlocking { manager.get().select(AppTheme.Light) }
+            shadowOf(Looper.getMainLooper()).idle()
+            controller.pause().stop()
+            runBlocking { manager.get().select(AppTheme.Dark) }
+            shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(5))
+            compose.waitForIdle()
+            assertEquals("Остановленная Activity не должна сообщать несовпадение", 0, server.clientErrors.size)
+
+            controller.start()
+            shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(1_999))
+            assertEquals(0, server.clientErrors.size)
+            shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(1))
+            compose.waitUntil(5_000) { server.clientErrors.isNotEmpty() }
+            assertEquals(1, server.clientErrors.size)
+            assertTrue(server.clientErrors.single().contains("theme resources mismatch"))
+        } finally {
+            controller.pause().stop().destroy()
+        }
+    }
+
+    @Test fun stoppingDuringTheDeadlineRestartsItOnNextStart() {
+        hilt.inject()
+        androidx.appcompat.app.AppCompatDelegate
+            .setDefaultNightMode(androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO)
+        val controller =
+            Robolectric
+                .buildActivity(MainActivity::class.java)
+                .create()
+                .start()
+                .resume()
+        try {
+            compose.waitUntil(5_000) {
+                !manager
+                    .get()
+                    .state.value.restoring
+            }
+            shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(1_500))
+            controller.pause().stop()
+            shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(5))
+            compose.waitForIdle()
+            assertEquals(0, server.clientErrors.size)
+            controller.start()
+            shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(1_999))
+            assertEquals(0, server.clientErrors.size)
+            shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(1))
+            compose.waitUntil(5_000) { server.clientErrors.isNotEmpty() }
+            assertEquals(1, server.clientErrors.size)
+        } finally {
+            controller.pause().stop().destroy()
+        }
     }
 
     @Test fun missingUiModeUpdateReportsOnceAndReleasesTheSplashAfterTwoSeconds() {
