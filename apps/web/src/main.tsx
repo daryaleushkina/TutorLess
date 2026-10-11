@@ -37,7 +37,10 @@ async function bootstrap(): Promise<void> {
     }
     launch = started.launch;
     // Локальную тему уже применил head; ответ DeviceStorage не задерживает первый кадр.
-    void restoreTheme(telegramThemeStorage()).catch((error: unknown) => reportError(error));
+    // Хранилище создаётся внутри фона: его сбой не должен ронять запуск ради необязательной настройки.
+    void Promise.resolve()
+      .then(() => restoreTheme(telegramThemeStorage()))
+      .catch((error: unknown) => reportError(error));
   }
 
   const queryClient = makeQueryClient(shell);

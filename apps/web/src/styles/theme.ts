@@ -43,6 +43,8 @@ export async function restoreTheme(device?: DeviceThemeStorage): Promise<void> {
     const saved = await device.getItem(THEME_STORAGE_KEY);
     // На старом клиенте выбор мог сохраниться только локально; отсутствие ключа его не отменяет.
     if (saved === null) return;
+    // Битое значение — это «выбора нет», то есть тёмная (решение Даши 10.10.2026), но не молча.
+    if (saved !== 'light' && saved !== 'dark') console.warn('Непонятная тема в DeviceStorage, беру тёмную', saved);
     const theme = parseTheme(saved);
     copyTheme(theme);
     applyTheme(theme);
