@@ -17,7 +17,7 @@
 </script>
 <style>
 /* Раскладка: шапка → герой (текст слева, телефон справа) → «прибор» по прокрутке (секции слева, телефон прилип
-   справа) → отзывы → экзамены → цена и вход → «Скачать» → подвал. На телефоне — одна колонка, экраны без рамки. */
+   справа) → экзамены → цена и вход → «Скачать» → подвал. На телефоне — одна колонка, экраны без рамки. */
 :root {
   --bg: #0A0F1F; --surface: #121931; --surface-2: #1A2343;
   --text: #EDF1FB; --text-2: #A8B1CC; --text-3: #8892B0;
@@ -578,7 +578,6 @@ section[id] { scroll-margin-top: 72px; }
     <nav class="nav" aria-label="Разделы">
       <a href="#tour">Как устроено</a>
       <a href="#mock">Пробный экзамен</a>
-      <a href="#reviews">Отзывы</a>
       <a href="#price">Цена</a>
     </nav>
     <div class="top-actions">
@@ -749,73 +748,6 @@ section[id] { scroll-margin-top: 72px; }
     </div>
   </section>
 
-  <!-- Отзывы и бланки результатов — ЗАГЛУШКИ для макета: имена, баллы, даты, вузы и фразы придуманы, на месте
-       слотов 4:5 — фото авторов. До запуска заменить настоящими историями с согласия авторов (и их фото, отчётов
-       о баллах со скрытыми номерами регистрации): выдуманные отзывы публиковать нельзя. -->
-  <section class="reviews" id="reviews" aria-labelledby="h-rev">
-    <div class="wrap">
-      <h2 class="h2 reveal" id="h-rev">Сдали без репетитора</h2>
-      <div class="rx">
-        <article class="rep rep-lg" data-from="152" data-to="161" data-min="130" data-max="170" data-dec="0">
-          <!-- сюда — фото автора отзыва, кадр 4:5 -->
-          <div class="ph" role="img" aria-label="Место для фото: <b>Алина Карпова</b>"><span class="ph-cap">фото: Алина, май 2026</span></div>
-          <div class="rep-card">
-            <p class="rep-head"><b>GRE General</b><span>сдан 14.08.2026</span></p>
-            <ul class="rep-secs"><li><span class="n">161</span><span class="l">Verbal</span></li><li><span class="n">164</span><span class="l">Quant</span></li><li><span class="n">4,5</span><span class="l">Analytical Writing</span></li></ul>
-            <p class="rep-delta"><span>Verbal: было</span><b>152</b><span>→ стало</span><b class="cnt">161</b><span class="up">▲9</span></p>
-            <div class="rep-scale" aria-hidden="true"><i class="rep-fill"></i><i class="rep-mark was"></i><i class="rep-mark now"></i><span class="rep-end min">130</span><span class="rep-end max">170</span></div>
-            <p class="rep-pct">Verbal — 87-й перцентиль</p>
-            <p class="rep-adm"><b>Принята:</b> TU Delft, MSc Urbanism</p>
-            <blockquote class="rep-quote"><p>Каждый вечер десять вопросов и разбор. Через два месяца перестала путать слова, которые раньше казались одинаковыми.</p></blockquote>
-            <p class="rep-who"><b>Алина Карпова</b>, Казань</p>
-          </div>
-        </article>
-        <div class="rx-row">
-        <article class="rep rep-md" data-from="4.5" data-to="5.5" data-min="1" data-max="6" data-dec="1">
-          <!-- сюда — фото автора отзыва, кадр 4:5 -->
-          <div class="ph" role="img" aria-label="Место для фото: <b>Тимур Рахимов</b>"><span class="ph-cap">фото: Тимур</span></div>
-          <div class="rep-card">
-            <p class="rep-head"><b>TOEFL iBT</b><span>сдан 03.09.2026</span></p>
-            <ul class="rep-secs"><li><span class="n">5,5</span><span class="l">Reading</span></li><li><span class="n">6</span><span class="l">Listening</span></li><li><span class="n">5</span><span class="l">Writing</span></li><li><span class="n">5,5</span><span class="l">Speaking</span></li><li class="total"><span class="n">5,5</span><span class="l">Итог</span></li></ul>
-            <p class="rep-delta"><span>Итог: было</span><b>4,5</b><span>→ стало</span><b class="cnt">5,5</b><span class="up">▲1</span></p>
-            <div class="rep-scale" aria-hidden="true"><i class="rep-fill"></i><i class="rep-mark was"></i><i class="rep-mark now"></i><span class="rep-end min">1</span><span class="rep-end max">6</span></div>
-            <p class="rep-adm"><b>Принят:</b> TU München, MSc Physics</p>
-            <blockquote class="rep-quote"><p>Speaking записывал в машине: ответил, послушал совет, записал ещё раз.</p></blockquote>
-            <p class="rep-who"><b>Тимур Рахимов</b>, Ташкент</p>
-          </div>
-        </article>
-          <div class="rx-col">
-        <article class="rep rep-sm" data-from="605" data-to="665" data-min="205" data-max="805" data-dec="0">
-          <!-- сюда — фото автора отзыва, кадр 4:5 -->
-          <div class="ph" role="img" aria-label="Место для фото: <b>Дана Сеитова</b>"><span class="ph-cap"></span></div>
-          <div class="rep-card">
-            <p class="rep-head"><b>GMAT Focus</b><span>сдан 22.07.2026</span></p>
-            <ul class="rep-secs"><li><span class="n">83</span><span class="l">Quant</span></li><li><span class="n">82</span><span class="l">Verbal</span></li><li><span class="n">80</span><span class="l">Data Insights</span></li><li class="total"><span class="n">665</span><span class="l">Итог</span></li></ul>
-            <p class="rep-delta"><span>Итог: было</span><b>605</b><span>→ стало</span><b class="cnt">665</b><span class="up">▲60</span></p>
-            <div class="rep-scale" aria-hidden="true"><i class="rep-fill"></i><i class="rep-mark was"></i><i class="rep-mark now"></i><span class="rep-end min">205</span><span class="rep-end max">805</span></div>
-            <p class="rep-adm"><b>Принята:</b> Imperial College London, MBA</p>
-            <blockquote class="rep-quote"><p>Data Insights пугал больше всего. Через месяц ошибалась там реже, чем в Quant.</p></blockquote>
-            <p class="rep-who"><b>Дана Сеитова</b>, Алматы</p>
-          </div>
-        </article>
-        <article class="rep rep-sm" data-from="1310" data-to="1480" data-min="400" data-max="1600" data-dec="0">
-          <!-- сюда — фото автора отзыва, кадр 4:5 -->
-          <div class="ph" role="img" aria-label="Место для фото: <b>Арсений Ким</b>"><span class="ph-cap"></span></div>
-          <div class="rep-card">
-            <p class="rep-head"><b>SAT</b><span>сдан 04.10.2026</span></p>
-            <ul class="rep-secs"><li><span class="n">720</span><span class="l">Reading and Writing</span></li><li><span class="n">760</span><span class="l">Math</span></li><li class="total"><span class="n">1480</span><span class="l">Итог</span></li></ul>
-            <p class="rep-delta"><span>Итог: было</span><b>1310</b><span>→ стало</span><b class="cnt">1480</b><span class="up">▲170</span></p>
-            <div class="rep-scale" aria-hidden="true"><i class="rep-fill"></i><i class="rep-mark was"></i><i class="rep-mark now"></i><span class="rep-end min">400</span><span class="rep-end max">1600</span></div>
-            <p class="rep-adm"><b>Принят:</b> University of Toronto, Computer Science</p>
-            <blockquote class="rep-quote"><p>Решал по десять вопросов между уроками. Math вырос раньше, чем я ожидал.</p></blockquote>
-            <p class="rep-who"><b>Арсений Ким</b>, Новосибирск</p>
-          </div>
-        </article>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
 
   <section class="price" id="price" aria-labelledby="h-price">
     <div class="wrap">
