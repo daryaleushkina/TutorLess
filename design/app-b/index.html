@@ -1,0 +1,898 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tutorless — приложение в стиле B</title>
+<!-- Приложение в стиле лендинга B «Живой разбор и стикеры», рабочая версия. Самодостаточный файл: открывается
+     прямо с диска. Содержание и устройство экранов — каталог night-studio, вид — b-stickers.html.
+     Принцип (уточнение Даши 12.10.2026): приложение простое. От лендинга — Onest с плотным трекингом, палитра
+     как акценты, томатная главная кнопка. Наклейки с кантом и глянцем — только в двух моментах: итог
+     тренировки (R15) и балл пробника (X7). На рабочих экранах нет наклонов, глянца и цветных пятен. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400..800&amp;display=swap">
+<style>
+/* ================= Обвязка каталога — нейтральная, чтобы не спорить с экранами ================= */
+:root {
+  --cat-bg: #ECEDEF; --cat-fg: #17181B; --cat-muted: #5E626B; --cat-line: #D3D5DA;
+  --cat-chip: #FFFFFF; --cat-chip-on: #17181B; --cat-chip-on-fg: #FFFFFF;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --cat-bg: #1C1D20; --cat-fg: #ECEDEF; --cat-muted: #A2A6AE; --cat-line: #34363B;
+    --cat-chip: #26282C; --cat-chip-on: #ECEDEF; --cat-chip-on-fg: #17181B;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--cat-bg); color: var(--cat-fg); font: 14px/1.45 'Onest', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+.cat-head { position: sticky; top: 0; z-index: 10; display: grid; gap: 12px; padding: 16px 24px 14px; background: color-mix(in srgb, var(--cat-bg) 92%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--cat-line); }
+.cat-title h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.015em; }
+.cat-title p { margin: 4px 0 0; color: var(--cat-muted); max-width: 100ch; }
+.cat-controls { display: flex; flex-wrap: wrap; gap: 10px 22px; }
+.cat-seg { border: 0; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.cat-seg legend { float: left; margin-right: 8px; color: var(--cat-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+.cat-seg button { font: inherit; font-size: 13px; cursor: pointer; padding: 6px 11px; border-radius: 999px; border: 1px solid var(--cat-line); background: var(--cat-chip); color: var(--cat-fg); }
+.cat-seg button[aria-pressed="true"] { background: var(--cat-chip-on); color: var(--cat-chip-on-fg); border-color: var(--cat-chip-on); }
+.cat-seg button:focus-visible { outline: 2px solid #4A6CF7; outline-offset: 2px; }
+.cat-board { padding: 24px; display: grid; gap: 48px; }
+.cat-dir > h2 { margin: 0 0 14px; font-size: 22px; font-weight: 700; letter-spacing: -0.015em; }
+.cat-row { display: flex; flex-wrap: wrap; gap: 28px 40px; align-items: flex-start; }
+.cat-screen { margin: 0; display: grid; gap: 8px; }
+.cat-screen figcaption { font-size: 13px; color: var(--cat-muted); }
+.cat-screen figcaption b { color: var(--cat-fg); font-weight: 600; }
+.cat-frames { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-start; }
+@media (max-width: 700px) { .cat-head { position: static; padding-inline: 16px; } .cat-board { padding-inline: 16px; } }
+
+/* ================= Экраны: токены ================= */
+/* Палитра лендинга B. Тёмная тема — по умолчанию в приложении, в каталоге идёт первой.
+   Акцент один — томат главной кнопки. Цвета наклеек (манго, мята, лиловый, розовый, голубой) на рабочих
+   экранах живут только в точках разделов, линиях графика и плитках экзаменов. */
+.frame {
+  --bg: #FBF3EA; --surface: #FFFDF9; --surface-2: #F3EADF; --surface-3: #EADFD2;
+  --ink: #1C1424; --ink-2: #4E4459; --ink-3: #6B6176;
+  --line: rgb(28 20 36 / 0.09); --line-2: rgb(28 20 36 / 0.18);
+  --accent: #FF5B3A; --on-accent: #1C1424; --accent-press: #F24A28;
+  --right: #0A7A50; --right-soft: rgb(67 214 163 / 0.2);
+  --wrong: #C2341A; --wrong-soft: rgb(255 107 74 / 0.14);
+  --hl: rgb(67 214 163 / 0.4);
+  /* Цвет раздела для точек и линий: в светлой теме темнее, иначе мята и лиловый тонут в молоке. */
+  --c-verbal: #7357F0; --c-quant: #0E9F6E; --c-essay: #C98A00; --c-words: #D9468F; --c-exam: #2F86D6;
+  /* Наклейки — одни в обеих темах, текст на них всегда тёмный (контраст от 6:1). */
+  --mango: #FFC53D; --mint: #43D6A3; --lilac: #B9A6FF; --pink: #FF9ECD; --sky: #82CBFF;
+  --on-st: #1C1424; --on-st-2: rgb(28 20 36 / 0.72); --rim: #FFFDF9;
+  --edge: inset 0 0 0 1px rgb(28 20 36 / 0.06);
+  --lift: 0 1px 2px rgb(90 50 30 / 0.05);
+  --sh-st: 0 1px 1px rgb(90 50 30 / 0.06), 0 6px 14px -6px rgb(90 50 30 / 0.16), 0 26px 48px -20px rgb(90 50 30 / 0.36);
+  --scrim: rgb(28 20 36 / 0.36);
+  --font: 'Onest', 'Helvetica Neue', Arial, sans-serif;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --r-s: 12px; --r-m: 18px; --r-l: 24px;
+
+  position: relative; width: 390px; height: 844px; overflow: hidden;
+  border-radius: 34px; box-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 12px 32px rgb(0 0 0 / 0.14);
+  background: var(--bg); color: var(--ink);
+  font: 400 16px/1.45 var(--font); font-feature-settings: 'ss01' 0;
+  color-scheme: light;
+}
+.frame[data-theme="dark"] {
+  --bg: #140F1C; --surface: #1E1828; --surface-2: #282133; --surface-3: #342B41;
+  --ink: #FBF4EC; --ink-2: #CEC3DA; --ink-3: #A698B6;
+  --line: rgb(251 244 236 / 0.08); --line-2: rgb(251 244 236 / 0.2);
+  --right: #5FE3AE; --right-soft: rgb(67 214 163 / 0.14);
+  --wrong: #FF8D75; --wrong-soft: rgb(255 107 74 / 0.14);
+  --hl: rgb(67 214 163 / 0.3);
+  --c-verbal: #B9A6FF; --c-quant: #43D6A3; --c-essay: #FFC53D; --c-words: #FF9ECD; --c-exam: #82CBFF;
+  --rim: #F4EADF;
+  --edge: inset 0 1px 0 rgb(255 255 255 / 0.05), inset 0 0 0 1px rgb(255 255 255 / 0.05);
+  --lift: 0 1px 2px rgb(0 0 0 / 0.25);
+  --sh-st: 0 1px 1px rgb(0 0 0 / 0.3), 0 8px 16px -8px rgb(0 0 0 / 0.5), 0 30px 56px -22px rgb(0 0 0 / 0.75);
+  --scrim: rgb(6 3 10 / 0.62);
+  color-scheme: dark;
+}
+.frame.device-desktop { width: 1280px; height: 800px; zoom: 0.62; border-radius: 18px; }
+:where(.frame) *, :where(.frame) *::before, :where(.frame) *::after { box-sizing: border-box; }
+:where(.frame) :where(p, h1, h2, h3, dl, dd, blockquote, figure, ol, ul) { margin: 0; }
+:where(.frame) :where(ul, ol) { padding: 0; list-style: none; }
+:where(.frame) button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; padding: 0; }
+:where(.frame) a { color: inherit; text-decoration: none; }
+:where(.frame) fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+:where(.frame) :focus-visible { outline: 2.5px solid var(--accent); outline-offset: 2px; border-radius: 10px; }
+.frame ::selection { background: var(--mango); color: var(--on-st); }
+.ic { width: 22px; height: 22px; flex: none; }
+.ic-sm { width: 18px; height: 18px; flex: none; }
+.sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* Цвет раздела — одна переменная: точки, полосы, линии. */
+.sec-verbal { --sec: var(--c-verbal); } .sec-quant { --sec: var(--c-quant); } .sec-essay { --sec: var(--c-essay); }
+.sec-words { --sec: var(--c-words); } .sec-exam { --sec: var(--c-exam); }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--sec, var(--ink-3)); flex: none; display: inline-block; }
+
+/* ================= Типографика: Onest 800 с плотным трекингом — голос лендинга ================= */
+.h1 { font-weight: 800; font-size: 34px; line-height: 1.04; letter-spacing: -0.035em; text-wrap: balance; }
+.h2 { font-weight: 800; font-size: 22px; line-height: 1.15; letter-spacing: -0.025em; }
+.h3 { font-weight: 700; font-size: 17px; line-height: 1.3; letter-spacing: -0.01em; }
+.muted { color: var(--ink-2); }
+.faint { color: var(--ink-3); }
+
+/* ================= Оболочка ================= */
+.app { position: relative; height: 100%; display: flex; flex-direction: column; }
+.main { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; padding: 0 20px 24px; display: flex; flex-direction: column; gap: 22px; }
+.main::-webkit-scrollbar { display: none; }
+.has-nav .main { padding-bottom: 112px; }
+
+/* Шапка раздела на телефоне: экзамен слева, профиль справа. */
+.top { display: flex; align-items: center; justify-content: space-between; min-height: 56px; padding: 10px 0 0; }
+.exam-switch { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 12px 0 10px; border-radius: 999px; background: var(--surface); box-shadow: var(--edge); font-weight: 700; font-size: 15px; letter-spacing: -0.005em; }
+.exam-switch .ic-sm { color: var(--ink-3); width: 16px; height: 16px; }
+/* Цвет экзамена — квадратик, как плитка в выборе экзамена: GRE — манго. */
+.ex-chip { width: 12px; height: 12px; border-radius: 4px; background: var(--mango); flex: none; }
+.avatar { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--lilac); color: var(--on-st); font-weight: 800; font-size: 16px; flex: none; }
+
+/* Нижние вкладки (телефон) / боковая панель (компьютер) — одна разметка. */
+.nav { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; display: flex; justify-content: space-around; padding: 8px 8px 30px; background: var(--bg); border-top: 1px solid var(--line); }
+.nav-brand, .nav .exam-switch, .nav-profile { display: none; }
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 76px; padding: 4px 6px; color: var(--ink-3); font-size: 11.5px; font-weight: 600; letter-spacing: 0.005em; }
+.nav-item[aria-current="page"] { color: var(--ink); }
+
+/* Кнопки: пилюли, как на лендинге. Томатная — одна на экране. */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 54px; padding: 0 24px; border-radius: 999px; font-weight: 700; font-size: 16.5px; letter-spacing: -0.01em; transition: transform 140ms var(--ease-out), background-color 160ms ease; }
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--accent); color: var(--on-accent); }
+.btn-primary:active { background: var(--accent-press); }
+.btn-ghost { background: var(--surface-2); color: var(--ink); }
+.btn-wide { width: 100%; }
+.icon-btn { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: var(--ink); flex: none; }
+.icon-btn.soft { width: 40px; height: 40px; background: var(--surface-2); }
+.bottom-bar { position: relative; display: flex; gap: 10px; padding: 12px 20px 32px; background: var(--bg); }
+/* Мягкий край над кнопкой: видно, что экран листается дальше, без жёсткого среза. */
+.bottom-bar::before { content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 28px; background: linear-gradient(to top, var(--bg), transparent); pointer-events: none; }
+.bottom-bar .btn-primary { flex: 1; }
+
+/* Поверхности: тихая бумага с волосяной кромкой, без цветных заливок. */
+.card { background: var(--surface); border-radius: var(--r-l); box-shadow: var(--edge), var(--lift); }
+.list { background: var(--surface); border-radius: var(--r-l); box-shadow: var(--edge), var(--lift); overflow: hidden; }
+.row { display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 12px 16px; position: relative; }
+.list > li + li > .row::before, .list > li + li.row::before { content: ''; position: absolute; top: 0; left: 16px; right: 0; height: 1px; background: var(--line); }
+.row-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.row-body b { font-weight: 650; font-size: 16.5px; letter-spacing: -0.01em; }
+.row-body small { font-size: 13.5px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chev { color: var(--ink-3); }
+.row-ic { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--surface-2); color: var(--ink-2); flex: none; }
+
+/* ================= T1 · главная тренировки ================= */
+.home-grid { display: flex; flex-direction: column; gap: 22px; }
+.home-primary, .home-side { display: flex; flex-direction: column; gap: 14px; }
+.page-title { margin-top: 6px; }
+.start { padding: 22px 20px 20px; display: flex; flex-direction: column; gap: 6px; }
+.start-title { font-weight: 800; font-size: 28px; line-height: 1.05; letter-spacing: -0.035em; }
+.start-meta { display: flex; align-items: center; gap: 8px; color: var(--ink-2); font-size: 15px; }
+.start-actions { display: flex; gap: 10px; margin-top: 16px; }
+.start-actions .btn-primary { flex: 1; }
+.start-actions .btn-ghost { width: 54px; padding: 0; }
+.sec-title { margin-top: 8px; }
+.stat { display: flex; flex-direction: column; align-items: flex-end; font-variant-numeric: tabular-nums; }
+.stat b { font-weight: 700; font-size: 16px; }
+.stat small { font-size: 12.5px; color: var(--ink-3); }
+.week { display: none; }
+/* Подписи боковых карточек переносятся: цифра в конце («52 % верно») важнее одной строки. */
+.home-side .row-body small { white-space: normal; }
+
+/* ================= T7 · шторка экзамена ================= */
+.scrim { position: absolute; inset: 0; z-index: 5; background: var(--scrim); }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; padding: 10px 20px 34px; border-radius: 30px 30px 0 0; background: var(--surface); display: flex; flex-direction: column; gap: 16px; box-shadow: 0 -10px 40px -10px rgb(0 0 0 / 0.3); }
+.grabber { align-self: center; width: 38px; height: 5px; border-radius: 3px; background: var(--line-2); }
+.exam-list { display: flex; flex-direction: column; gap: 8px; }
+.exam-row { display: flex; align-items: center; gap: 14px; min-height: 76px; padding: 12px 14px; border-radius: var(--r-m); background: var(--bg); text-align: left; width: 100%; }
+.exam-row[aria-checked="true"] { box-shadow: inset 0 0 0 2px var(--ink); }
+/* Плитка экзамена: цвет и форма вместо наклейки — без канта, глянца и наклона. */
+.exam-tile { display: grid; place-items: center; width: 72px; height: 52px; border-radius: 14px; color: var(--on-st); font-weight: 800; font-size: 16px; letter-spacing: -0.02em; flex: none; }
+.t-gre { background: var(--mango); } .t-toefl { background: var(--mint); } .t-sat { background: var(--lilac); } .t-gmat { background: var(--sky); }
+.exam-row .row-body small { white-space: normal; }
+.exam-check { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--ink); color: var(--bg); flex: none; }
+.sheet-note { font-size: 14px; color: var(--ink-3); }
+
+/* ================= Сессия: вопрос, разбор ================= */
+.stop { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 2px 6px; padding: 10px 20px 0; }
+.stop .icon-btn { margin-left: -10px; }
+.stop-meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 14px; }
+.stop-sec { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-2); font-weight: 600; }
+.stop-count { font-weight: 700; font-variant-numeric: tabular-nums; }
+.stop-count small { font-weight: 500; color: var(--ink-3); font-size: 14px; }
+.bar { grid-column: 1 / -1; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; margin-top: 4px; }
+.bar > span { display: block; height: 100%; border-radius: inherit; background: var(--ink); }
+.pager { display: inline-flex; align-items: center; gap: 2px; }
+.pager .icon-btn { width: 32px; height: 32px; color: var(--ink-3); }
+
+.q-wrap { padding-top: 18px; gap: 26px; }
+.q-instr { font-size: 14.5px; color: var(--ink-3); margin-bottom: 12px; }
+.q-text { font-size: 20px; line-height: 1.62; letter-spacing: -0.005em; text-wrap: pretty; }
+.blank { display: inline-block; min-width: 88px; padding: 0 6px; border-bottom: 2px solid var(--ink); text-align: center; font-size: 14px; font-weight: 600; color: var(--ink-3); line-height: 1.3; }
+.answers { display: flex; flex-direction: column; gap: 18px; }
+.opt-group { display: flex; flex-direction: column; gap: 8px; }
+.opt-group legend { padding: 0; margin-bottom: 8px; font-size: 13.5px; font-weight: 600; color: var(--ink-3); }
+.opt { display: flex; align-items: center; gap: 14px; min-height: 54px; padding: 0 16px; border-radius: 16px; background: var(--surface); box-shadow: var(--edge); font-size: 17px; font-weight: 500; text-align: left; width: 100%; transition: box-shadow 160ms ease; }
+.oval { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--ink-3); flex: none; display: grid; place-items: center; transition: border-color 160ms ease; }
+.oval::after { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--ink); transform: scale(0.3); opacity: 0; transition: transform 200ms var(--ease-out), opacity 140ms ease; }
+.opt[aria-checked="true"] { box-shadow: inset 0 0 0 2px var(--ink); }
+.opt[aria-checked="true"] .oval { border-color: var(--ink); }
+.opt[aria-checked="true"] .oval::after { transform: none; opacity: 1; }
+
+/* R4 · разбор. Вердикт — спокойно: цвет и знак, без наклейки. */
+.r-wrap { padding-top: 16px; gap: 24px; }
+.r-cols { display: flex; flex-direction: column; gap: 24px; }
+.r-q { display: flex; flex-direction: column; gap: 14px; }
+.verdict { display: flex; align-items: center; gap: 12px; }
+.verdict-ic { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; flex: none; }
+.verdict-wrong .verdict-ic { background: var(--wrong-soft); color: var(--wrong); }
+.verdict-right .verdict-ic { background: var(--right-soft); color: var(--right); }
+.verdict-text { display: flex; flex-direction: column; font-size: 14.5px; color: var(--ink-2); line-height: 1.35; }
+.verdict-text b { font-weight: 800; font-size: 20px; letter-spacing: -0.025em; }
+.verdict-wrong b { color: var(--wrong); } .verdict-right b { color: var(--right); }
+.q-text.sm { font-size: 16px; line-height: 1.6; color: var(--ink-2); }
+.blank.filled { font-size: inherit; min-width: 0; padding: 0 2px; font-weight: 650; }
+.blank.ok { color: var(--right); border-color: var(--right); }
+.blank.no { color: var(--wrong); border-color: var(--wrong); text-decoration: line-through; text-decoration-thickness: 1.5px; }
+.ans-table { display: flex; flex-direction: column; gap: 8px; }
+.ans-row { display: grid; grid-template-columns: 92px 1fr; gap: 8px; align-items: start; }
+.ans-row dt { color: var(--ink-3); font-size: 13.5px; padding-top: 6px; }
+.ans-row dd { display: flex; flex-wrap: wrap; gap: 6px; }
+.ans { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px 0 9px; border-radius: 999px; font-weight: 650; font-size: 15px; }
+.ans small { font-weight: 500; font-size: 12.5px; opacity: 0.85; }
+.ans-ok { background: var(--right-soft); color: var(--right); }
+.ans-no { background: var(--wrong-soft); color: var(--wrong); }
+.explain { display: flex; flex-direction: column; gap: 14px; padding-top: 22px; border-top: 1px solid var(--line); }
+.explain-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.seg { display: inline-flex; flex: none; padding: 3px; border-radius: 999px; background: var(--surface-2); }
+.seg button { min-width: 40px; min-height: 32px; padding: 0 11px; border-radius: 999px; font-size: 13px; font-weight: 700; letter-spacing: 0.02em; color: var(--ink-3); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.explain-body { display: flex; flex-direction: column; gap: 12px; font-size: 16px; line-height: 1.58; text-wrap: pretty; }
+.app[data-lang="ru"] [data-lang-block="en"], .app[data-lang="en"] [data-lang-block="ru"] { display: none; }
+/* Маркер под словом — подпись лендинга, единственная «живая» деталь разбора. */
+mark { position: relative; z-index: 0; background: none; color: inherit; font-weight: 650; }
+mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: -3px; top: 0.14em; bottom: 0.02em; border-radius: 5px; background: var(--hl); }
+.trap { padding: 14px 16px; border-radius: var(--r-m); background: var(--surface-2); font-size: 15px; }
+.trap b { display: block; margin-bottom: 2px; }
+.link-row { display: flex; align-items: center; gap: 12px; min-height: 54px; padding: 0 16px; border-radius: var(--r-m); background: var(--surface); box-shadow: var(--edge); font-weight: 600; font-size: 15px; }
+.link-row span { flex: 1; }
+.link-row .ic-sm { color: var(--ink-3); }
+.quiet { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; min-height: 36px; font-size: 13.5px; color: var(--ink-3); font-weight: 500; }
+
+/* ================= Наклейка — только для моментов (R15, X7) ================= */
+.sticker { position: relative; border-radius: 26px; padding: 20px 22px 18px; color: var(--on-st); box-shadow: 0 0 0 4px var(--rim), var(--sh-st); transform: rotate(-2deg); }
+.sticker::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: linear-gradient(180deg, rgb(255 255 255 / 0.3), transparent 40%); }
+.st-mint { background: var(--mint); } .st-mango { background: var(--mango); }
+.st-label { font-weight: 650; font-size: 14px; color: var(--on-st-2); }
+.st-big { font-weight: 800; letter-spacing: -0.05em; line-height: 0.9; font-variant-numeric: tabular-nums; }
+.moment { padding: 22px 6px 6px; }
+
+/* R15 · итог */
+.sum-wrap { padding-top: 6px; gap: 30px; }
+.sum-score { display: flex; align-items: flex-end; gap: 12px; margin-top: 8px; }
+.sum-score .st-big { font-size: 112px; }
+.sum-score span:last-child { font-weight: 800; font-size: 26px; letter-spacing: -0.03em; line-height: 1.05; padding-bottom: 10px; }
+.marks { display: flex; gap: 6px; margin-top: 16px; }
+.marks li { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: rgb(28 20 36 / 0.14); }
+.marks li.no { background: var(--on-st); color: var(--mint); }
+.marks .ic-sm { width: 14px; height: 14px; }
+.sum-sub { display: flex; align-items: center; gap: 8px; color: var(--ink-2); font-size: 14.5px; justify-content: center; }
+.repeat { display: flex; flex-direction: column; gap: 12px; }
+.note { font-size: 14px; color: var(--ink-3); }
+.stack { flex-direction: column; }
+
+/* ================= Слова ================= */
+.today { padding: 22px 20px 20px; display: flex; flex-direction: column; gap: 4px; }
+.today-num { display: flex; align-items: baseline; gap: 10px; }
+.today-num b { font-weight: 800; font-size: 64px; line-height: 0.9; letter-spacing: -0.05em; font-variant-numeric: tabular-nums; }
+.today-num span { font-weight: 800; font-size: 22px; letter-spacing: -0.025em; }
+.today .faint { font-size: 15px; margin-bottom: 14px; }
+.search { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 16px; border-radius: 16px; background: var(--surface); box-shadow: var(--edge); color: var(--ink-3); font-size: 16px; }
+.w-word { font-weight: 700; font-size: 17px; letter-spacing: -0.015em; }
+
+.w-wrap { padding-top: 18px; gap: 26px; }
+.headword { font-weight: 800; font-size: 52px; line-height: 0.98; letter-spacing: -0.045em; }
+.word-meta { display: flex; align-items: center; gap: 12px; color: var(--ink-2); font-size: 15px; margin-top: 10px; }
+.ipa { font-family: 'Helvetica Neue', Arial, 'Lucida Grande', sans-serif; color: var(--ink-3); }
+.word-meta .icon-btn { margin-left: auto; }
+.sense { display: flex; flex-direction: column; gap: 6px; }
+.sense-en { font-size: 18px; line-height: 1.45; }
+.sense-ru { color: var(--ink-2); font-size: 16px; font-weight: 600; }
+.example { margin-top: 8px; padding: 14px 16px; border-radius: var(--r-m); background: var(--surface); box-shadow: var(--edge); display: flex; flex-direction: column; gap: 4px; font-size: 15.5px; }
+.example p:last-child { color: var(--ink-3); font-size: 14px; }
+.rel { display: flex; flex-direction: column; gap: 8px; }
+.rel-label { font-size: 13.5px; font-weight: 600; color: var(--ink-3); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { padding: 7px 13px; border-radius: 999px; background: var(--surface-2); font-size: 15px; font-weight: 500; }
+
+/* ================= X7 · результат пробника ================= */
+.x-wrap { padding-top: 4px; gap: 28px; }
+.x-scores { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+.x-scores .st-big { font-size: 64px; display: block; margin-top: 4px; }
+.x-range { font-weight: 600; font-size: 14px; color: var(--on-st-2); margin-top: 6px; display: block; }
+.st-foot { margin-top: 14px; font-weight: 600; font-size: 13.5px; color: var(--on-st-2); }
+.tally .row { min-height: 56px; }
+.tally .val { font-variant-numeric: tabular-nums; color: var(--ink-2); font-size: 15px; }
+.tally .val b { color: var(--ink); font-weight: 700; }
+.x-head { display: flex; align-items: center; gap: 4px; padding: 10px 20px 0; }
+.x-head .icon-btn { margin-left: -10px; }
+.x-head span { color: var(--ink-3); font-size: 14px; font-weight: 500; }
+
+/* ================= G1 · прогресс ================= */
+.g-grid { display: flex; flex-direction: column; gap: 14px; }
+.g-col { display: flex; flex-direction: column; gap: 14px; }
+.panel { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.panel-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.panel-head small { font-size: 13px; color: var(--ink-3); }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.metric { display: flex; flex-direction: column; gap: 2px; }
+.metric-label { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 600; color: var(--ink-2); }
+.metric-num { white-space: nowrap; font-weight: 800; font-size: 30px; line-height: 1.05; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+.metric-note { font-size: 13px; color: var(--ink-3); }
+.delta { font-size: 13px; font-weight: 600; color: var(--right); }
+.trend svg { width: 100%; height: auto; display: block; }
+.trend .grid line { stroke: var(--line); stroke-width: 1; }
+.trend .axis text { fill: var(--ink-3); font: 500 10px var(--font); }
+.trend .axis .y { text-anchor: end; }
+.trend .ln { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.ln-v { stroke: var(--c-verbal); } .ln-q { stroke: var(--c-quant); }
+.end-v { fill: var(--c-verbal); } .end-q { fill: var(--c-quant); }
+.acc { display: flex; flex-direction: column; gap: 10px; }
+.acc li { display: grid; grid-template-columns: 1fr 80px 42px; align-items: center; gap: 10px; font-size: 14.5px; }
+.acc-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.acc-bar { height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+.acc-bar > span { display: block; height: 100%; border-radius: inherit; background: var(--sec); }
+.acc-val { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.acc .weak .acc-val { color: var(--wrong); }
+.weak-box { display: flex; align-items: center; gap: 12px; padding: 16px 16px 16px 20px; }
+.weak-box p { flex: 1; display: flex; flex-direction: column; font-size: 14px; color: var(--ink-3); }
+.weak-box p b { color: var(--ink); font-size: 15.5px; font-weight: 700; }
+.weak-box .btn { min-height: 42px; padding: 0 18px; font-size: 14.5px; background: var(--surface-2); }
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.cal-wd { font-size: 11px; color: var(--ink-3); text-align: center; font-weight: 600; }
+.cal-d { aspect-ratio: 1; border-radius: 8px; background: var(--surface-2); }
+/* Дни с занятиями — тихой заливкой цвета текста, без серий и пропусков. */
+.cal-d[data-l="1"] { background: color-mix(in srgb, var(--ink) 16%, var(--surface-2)); }
+.cal-d[data-l="2"] { background: color-mix(in srgb, var(--ink) 34%, var(--surface-2)); }
+.cal-d[data-l="3"] { background: color-mix(in srgb, var(--ink) 58%, var(--surface-2)); }
+.cal-d.today { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.cal-d.future { background: transparent; box-shadow: inset 0 0 0 1px var(--line); }
+.hist li { display: flex; align-items: center; gap: 12px; min-height: 56px; position: relative; }
+.hist li + li { border-top: 1px solid var(--line); }
+.hist .row-body b { font-size: 15.5px; }
+.hist-res { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; font-size: 15px; }
+.g-titlerow { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; }
+
+/* ================= G2 · профиль ================= */
+.me { display: flex; align-items: center; gap: 14px; }
+.me .avatar { width: 60px; height: 60px; font-size: 24px; }
+.me b { display: block; font-weight: 800; font-size: 22px; letter-spacing: -0.025em; }
+.me small { color: var(--ink-3); font-size: 14px; }
+.set-row { display: flex; align-items: center; gap: 12px; min-height: 58px; padding: 10px 16px; position: relative; }
+.set-row .label { flex: 1; font-weight: 600; font-size: 16px; }
+.set-row .val { color: var(--ink-3); font-size: 15px; }
+.set-row .seg button { min-width: 0; padding: 0 12px; letter-spacing: 0; font-weight: 650; }
+.list > li + li > .set-row::before, .list > li + li.set-row::before { content: ''; position: absolute; top: 0; left: 16px; right: 0; height: 1px; background: var(--line); }
+.set-row .row-ic { width: 34px; height: 34px; border-radius: 10px; }
+.legal { font-size: 12px; color: var(--ink-3); line-height: 1.5; display: flex; flex-direction: column; gap: 6px; padding: 0 4px; }
+
+/* ================= Компьютер ================= */
+.device-desktop .app.has-nav { flex-direction: row; }
+.device-desktop .nav { position: static; flex: none; width: 248px; flex-direction: column; justify-content: flex-start; gap: 2px; padding: 26px 16px 20px; border-top: 0; border-right: 1px solid var(--line); background: var(--bg); }
+.device-desktop .nav-brand { display: flex; align-items: center; gap: 10px; padding: 0 10px 22px; font-weight: 800; font-size: 21px; letter-spacing: -0.035em; }
+.brand-dot { width: 15px; height: 15px; border-radius: 5px; background: var(--accent); transform: rotate(-12deg); box-shadow: 5px -3px 0 -1px var(--mango); }
+.device-desktop .nav .exam-switch { display: inline-flex; align-self: flex-start; margin: 0 6px 18px; }
+.device-desktop .nav-item { flex-direction: row; gap: 12px; min-height: 46px; padding: 0 12px; border-radius: 14px; font-size: 15.5px; font-weight: 600; }
+.device-desktop .nav-item[aria-current="page"] { background: var(--surface); box-shadow: var(--edge); }
+.device-desktop .nav-profile { display: flex; align-items: center; gap: 12px; margin-top: auto; padding: 10px; border-radius: 14px; }
+.nav-profile b { display: block; font-weight: 700; font-size: 15px; }
+.nav-profile small { color: var(--ink-3); font-size: 13px; }
+.device-desktop .top { display: none; }
+.device-desktop .main { padding: 44px 56px 48px; }
+.device-desktop .has-nav .main { padding-bottom: 48px; }
+.device-desktop .h1 { font-size: 44px; }
+.device-desktop .page-title { margin-top: 0; }
+/* T1: старт и разделы слева, ошибки, слабое место и неделя справа. */
+.device-desktop .home-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 28px; max-width: 1000px; }
+.device-desktop .home-side { padding-top: 0; }
+.device-desktop .week { display: flex; flex-direction: column; gap: 4px; padding: 18px 20px; }
+.week b { font-weight: 800; font-size: 26px; letter-spacing: -0.035em; }
+.week span { color: var(--ink-3); font-size: 14px; }
+.device-desktop .start { padding: 28px; }
+.device-desktop .start-title { font-size: 34px; }
+.device-desktop .start-actions .btn-primary { flex: 0 0 auto; min-width: 220px; }
+/* R4: вопрос слева, разбор справа, «Дальше» — справа внизу. */
+.device-desktop .stop { padding: 22px 48px 0; max-width: 1180px; width: 100%; margin: 0 auto; }
+.device-desktop .r-wrap { padding: 32px 48px 24px; }
+.device-desktop .r-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; max-width: 1084px; width: 100%; margin: 0 auto; align-items: start; }
+.device-desktop .r-q .q-text.sm { font-size: 19px; line-height: 1.62; color: var(--ink); }
+.device-desktop .explain { padding-top: 0; border-top: 0; padding-left: 56px; margin-left: -56px; border-left: 1px solid var(--line); }
+.device-desktop .bottom-bar { justify-content: flex-end; padding: 16px 48px 28px; border-top: 1px solid var(--line); }
+.device-desktop .bottom-bar .btn-primary { flex: 0 0 auto; width: auto; min-width: 240px; }
+.device-desktop .bottom-bar::before { display: none; }
+.device-desktop .trend { max-width: 420px; }
+.device-desktop .cal { max-width: 300px; gap: 6px; }
+/* G1: балл и точность слева, календарь и история справа. */
+.device-desktop .g-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 20px; max-width: 1000px; align-items: start; }
+.device-desktop .g-titlerow { margin-top: 0; }
+</style>
+</head>
+<body>
+
+<header class="cat-head">
+  <div class="cat-title">
+    <h1>Tutorless · приложение в стиле B</h1>
+    <p>Рабочая версия стиля «Живой разбор и стикеры». От лендинга — шрифт Onest 800 с плотным трекингом, палитра и томатная главная кнопка. Наклейки с кантом и глянцем — только в двух моментах: итог тренировки (R15) и балл пробника (X7). Остальные экраны спокойные. Пример — GRE; варианты ответа нажимаются, RU/EN в разборе и тема в профиле переключаются.</p>
+  </div>
+  <div class="cat-controls" role="group" aria-label="Что показать">
+    <fieldset class="cat-seg" id="f-theme">
+      <legend>Тема</legend>
+      <button type="button" data-theme-pick="both" aria-pressed="true">Обе</button>
+      <button type="button" data-theme-pick="dark" aria-pressed="false">Тёмная</button>
+      <button type="button" data-theme-pick="light" aria-pressed="false">Светлая</button>
+    </fieldset>
+    <fieldset class="cat-seg" id="f-device">
+      <legend>Устройство</legend>
+      <button type="button" data-device="all" aria-pressed="true">Все</button>
+      <button type="button" data-device="phone" aria-pressed="false">Телефон</button>
+      <button type="button" data-device="desktop" aria-pressed="false">Компьютер</button>
+    </fieldset>
+  </div>
+</header>
+
+<main id="board" class="cat-board"></main>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-cross" viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M15.5 8.5a5 5 0 010 7M18.5 5.5a9 9 0 010 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-train" viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-words" viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 015.5 4H11v16H5.5A1.5 1.5 0 014 18.5v-13zM20 5.5A1.5 1.5 0 0018.5 4H13v16h5.5a1.5 1.5 0 001.5-1.5v-13z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-exam" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 9v4l2.5 2.5M9.5 2.5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-progress" viewBox="0 0 24 24"><path d="M3 17l5.5-5.5 4 4L21 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 7h6v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0113.7-5.6L20 8.5M20 4v4.5h-4.5M20 12a8 8 0 01-13.7 5.6L4 15.5M4 20v-4.5h4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h11l-2 4 2 4H5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="7" r="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10" cy="17" r="2" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3V4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M5 17a3 3 0 013-3h11" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-card" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 10h18M7 15h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M11 12l9-9M16 7l3 3M14 9l2 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><path d="M4 6h16v12H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M4 7l8 6 8-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+</defs></svg>
+
+<script>
+// ---------- Общие куски разметки ----------
+const ic = (id, cls = 'ic') => `<svg class="${cls}" aria-hidden="true"><use href="#${id}"/></svg>`;
+const examSwitch = `<button type="button" class="exam-switch" aria-label="Экзамен: GRE, сменить"><span class="ex-chip" aria-hidden="true"></span>GRE${ic('i-chevron-down', 'ic-sm')}</button>`;
+// Вкладки «Тренировка · Слова · Экзамен · Прогресс». На компьютере та же разметка — боковая панель:
+// бренд, экзамен, разделы и профиль внизу (просьба Даши 10.10.2026).
+const nav = (cur) => {
+  const item = (k, i, t) => `<a href="#" class="nav-item"${k === cur ? ' aria-current="page"' : ''}>${ic(i)}<span>${t}</span></a>`;
+  return `<nav class="nav" aria-label="Разделы">
+    <span class="nav-brand"><span class="brand-dot" aria-hidden="true"></span>Tutorless</span>
+    ${examSwitch}
+    ${item('train', 'i-train', 'Тренировка')}${item('words', 'i-words', 'Слова')}${item('exam', 'i-exam', 'Экзамен')}${item('progress', 'i-progress', 'Прогресс')}
+    <a href="#" class="nav-profile"${cur === 'profile' ? ' aria-current="page"' : ''}><span class="avatar" aria-hidden="true">А</span><span><b>Алина</b><small>Профиль</small></span></a>
+  </nav>`;
+};
+// Шапка раздела на телефоне: экзамен слева, аватар профиля справа.
+const topBar = `<header class="top">${examSwitch}<a href="#" class="avatar" aria-label="Профиль">А</a></header>`;
+const sessionTop = (sec, label, n, total, extra = '') => `
+  <header class="stop sec-${sec}">
+    <button type="button" class="icon-btn" aria-label="Закрыть">${ic('i-close')}</button>
+    <div class="stop-meta">
+      <span class="stop-sec"><span class="dot"></span>${label}</span>
+      <span class="pager">${extra}<span class="stop-count">${n} <small>из ${total}</small></span></span>
+    </div>
+    <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${n - 1}" aria-label="Пройдено ${n - 1} из ${total}"><span style="width:${((n - 1) / total) * 100}%"></span></div>
+  </header>`;
+const radio = (t, on = false) => `<button type="button" class="opt" role="radio" aria-checked="${on}"><span class="oval"></span><span lang="en">${t}</span></button>`;
+
+const S = [];
+const add = (s) => S.push(s);
+
+// ---------- T1 · главная тренировки ----------
+const homeHtml = `
+<div class="app has-nav">
+  ${nav('train')}
+  <div class="main">
+    ${topBar}
+    <h1 class="h1 page-title">Тренировка</h1>
+    <div class="home-grid">
+      <section class="home-primary">
+        <article class="card start sec-verbal">
+          <h2 class="start-title" lang="en">Text Completion</h2>
+          <p class="start-meta"><span class="dot"></span>Verbal · 10 вопросов · ~12 мин</p>
+          <p class="start-meta faint">Как в прошлый раз</p>
+          <div class="start-actions">
+            <button type="button" class="btn btn-primary">Начать</button>
+            <button type="button" class="btn btn-ghost" aria-label="Настроить тренировку">${ic('i-sliders')}</button>
+          </div>
+        </article>
+        <h2 class="h2 sec-title">Разделы</h2>
+        <ul class="list" role="list">
+          <li><a href="#" class="row sec-verbal"><span class="dot"></span><span class="row-body"><b>Verbal</b><small lang="en">Text Completion · Sentence Equivalence · Reading Comprehension</small></span><span class="stat"><b>68 %</b><small>верно</small></span>${ic('i-chevron-right', 'ic-sm chev')}</a></li>
+          <li><a href="#" class="row sec-quant"><span class="dot"></span><span class="row-body"><b>Quant</b><small>Quantitative Comparison · задачи · графики</small></span><span class="stat"><b>74 %</b><small>верно</small></span>${ic('i-chevron-right', 'ic-sm chev')}</a></li>
+          <li><a href="#" class="row sec-essay"><span class="dot"></span><span class="row-body"><b>Эссе</b><small><span lang="en">Analyze an Issue</span> · 30 минут</small></span><span class="stat"><b>4,5</b><small>из 6</small></span>${ic('i-chevron-right', 'ic-sm chev')}</a></li>
+        </ul>
+      </section>
+      <aside class="home-side">
+        <ul class="list" role="list">
+          <li><a href="#" class="row"><span class="row-ic">${ic('i-repeat')}</span><span class="row-body"><b>Повторить мои ошибки</b><small>12 заданий из прошлых тренировок</small></span>${ic('i-chevron-right', 'ic-sm chev')}</a></li>
+          <li><a href="#" class="row"><span class="row-ic">${ic('i-target')}</span><span class="row-body"><b>Слабое место: <span lang="en">Inference</span></b><small>Verbal · Reading Comprehension · 52&nbsp;%&nbsp;верно</small></span>${ic('i-chevron-right', 'ic-sm chev')}</a></li>
+        </ul>
+        <div class="card week"><span>Эта неделя</span><b>4 дня · 2 ч 10 мин</b><span>86 заданий</span></div>
+      </aside>
+    </div>
+  </div>
+</div>`;
+add({ id: 'T1', group: 'T', name: 'Тренировка — главная', desktop: true, html: homeHtml });
+
+// ---------- T7 · смена экзамена ----------
+// Шторка поверх главной: один активный экзамен на аккаунт, нажатие меняет его сразу (решение Даши 09.10.2026).
+// Выбор — цветом и формой: плитка в цвете экзамена, без канта и наклона. Макет рисуется так, будто готовы все
+// четыре экзамена (правило Даши).
+{
+  const sheet = `
+  <div class="scrim" aria-hidden="true"></div>
+  <section class="sheet" role="dialog" aria-modal="true" aria-label="Экзамен">
+    <span class="grabber" aria-hidden="true"></span>
+    <h2 class="h2">Экзамен</h2>
+    <div class="exam-list" role="radiogroup" aria-label="Экзамен">
+      <button type="button" class="exam-row" role="radio" aria-checked="true"><span class="exam-tile t-gre">GRE</span><span class="row-body"><b>Магистратура и PhD</b><small>Verbal · Quant · эссе</small></span><span class="exam-check">${ic('i-check', 'ic-sm')}</span></button>
+      <button type="button" class="exam-row" role="radio" aria-checked="false"><span class="exam-tile t-toefl">TOEFL</span><span class="row-body"><b>Английский для учёбы</b><small>Reading · Listening · Writing · Speaking</small></span></button>
+      <button type="button" class="exam-row" role="radio" aria-checked="false"><span class="exam-tile t-sat">SAT</span><span class="row-body"><b>Бакалавриат в США</b><small>Reading and Writing · Math</small></span></button>
+      <button type="button" class="exam-row" role="radio" aria-checked="false"><span class="exam-tile t-gmat">GMAT</span><span class="row-body"><b>Бизнес-школа</b><small>Quantitative · Verbal · Data Insights</small></span></button>
+    </div>
+    <p class="sheet-note">У каждого экзамена свой прогресс, при смене он не теряется.</p>
+  </section>`;
+  const i = homeHtml.lastIndexOf('</div>');
+  add({ id: 'T7', group: 'T', name: 'Смена экзамена — шторка', html: homeHtml.slice(0, i) + sheet + homeHtml.slice(i) });
+}
+
+// ---------- R3 · вопрос до проверки ----------
+// Рабочий экран: только текст задания и овалы, без цвета, кроме главной кнопки.
+add({ id: 'R3', group: 'R', name: 'Text Completion — до проверки', html: `
+<div class="app">
+  ${sessionTop('verbal', 'Verbal · Text Completion', 3, 10)}
+  <div class="main q-wrap">
+    <section>
+      <p class="q-instr">Выберите по одному слову для каждого пропуска.</p>
+      <p class="q-text" lang="en">Although the committee’s report was praised for its <span class="blank">(i)</span>, critics noted that its brevity came at a cost: several crucial objections were dismissed in a single <span class="blank">(ii)</span> sentence.</p>
+    </section>
+    <section class="answers">
+      <fieldset class="opt-group"><legend>Пропуск (i)</legend>${radio('thoroughness')}${radio('concision', true)}${radio('candor')}</fieldset>
+      <fieldset class="opt-group"><legend>Пропуск (ii)</legend>${radio('perfunctory')}${radio('meticulous', true)}${radio('impassioned')}</fieldset>
+    </section>
+  </div>
+  <footer class="bottom-bar">
+    <button type="button" class="btn btn-ghost">Не знаю</button>
+    <button type="button" class="btn btn-primary">Проверить</button>
+  </footer>
+</div>` });
+
+// ---------- R4 · разбор после неверного ответа ----------
+// Вердикт — словом и цветом, без наклейки. Разбор в два уровня: вердикт и таблица ответов → объяснение.
+add({ id: 'R4', group: 'R', name: 'Text Completion — неверно, разбор', desktop: true, html: `
+<div class="app" data-lang="ru">
+  ${sessionTop('verbal', 'Verbal · Text Completion', 3, 10, `<button type="button" class="icon-btn" aria-label="Предыдущий вопрос">${ic('i-back', 'ic-sm')}</button>`)}
+  <div class="main r-wrap">
+    <div class="r-cols">
+      <section class="r-q">
+        <div class="verdict verdict-wrong" role="status">
+          <span class="verdict-ic">${ic('i-cross', 'ic-sm')}</span>
+          <span class="verdict-text"><b>Неверно</b>Первый пропуск верно, второй — нет</span>
+        </div>
+        <p class="q-text sm" lang="en">Although the committee’s report was praised for its <span class="blank filled ok">concision</span>, critics noted that its brevity came at a cost: several crucial objections were dismissed in a single <span class="blank filled no">meticulous</span> sentence.</p>
+        <dl class="ans-table">
+          <div class="ans-row"><dt>Пропуск (i)</dt><dd><span class="ans ans-ok">${ic('i-check', 'ic-sm')}<span lang="en">concision</span></span></dd></div>
+          <div class="ans-row"><dt>Пропуск (ii)</dt><dd><span class="ans ans-no">${ic('i-cross', 'ic-sm')}<span lang="en">meticulous</span><small>ваш</small></span><span class="ans ans-ok">${ic('i-check', 'ic-sm')}<span lang="en">perfunctory</span></span></dd></div>
+        </dl>
+      </section>
+      <section class="explain">
+        <div class="explain-head">
+          <h2 class="h2"><span lang="en">Perfunctory</span> — «для галочки»</h2>
+          <div class="seg" role="group" aria-label="Язык разбора"><button type="button" data-lang-set="ru" aria-pressed="true">RU</button><button type="button" data-lang-set="en" aria-pressed="false">EN</button></div>
+        </div>
+        <div class="explain-body" data-lang-block="ru">
+          <p><span lang="en">«Brevity came at a cost»</span> и <span lang="en">«dismissed in a single sentence»</span> говорят, что возражения разобрали наспех. Нужно слово с оттенком <mark>«для галочки»</mark>.</p>
+          <p><b lang="en">Perfunctory</b> — сделанный формально, поверхностно. Это и есть цена краткости.</p>
+          <p class="trap"><b>Почему <span lang="en">meticulous</span> кажется верным</b>Звучит как похвала отчёту, но «скрупулёзный» спорит с <span lang="en">«dismissed»</span>: тщательно возражения не отбрасывают.</p>
+        </div>
+        <div class="explain-body" data-lang-block="en" lang="en">
+          <p>“Brevity came at a cost” and “dismissed in a single sentence” signal that the objections were handled hastily. The blank needs a word meaning <mark>“done only as a formality.”</mark></p>
+          <p><b>Perfunctory</b> — carried out with minimal effort. That is the cost of brevity.</p>
+          <p class="trap"><b>Why meticulous looks right</b>It sounds like praise for the report, but “meticulous” clashes with “dismissed”: careful work doesn’t brush objections aside.</p>
+        </div>
+        <a href="#" class="link-row">${ic('i-book', 'ic-sm')}<span>Тема: контраст после <i lang="en">although</i></span>${ic('i-chevron-right', 'ic-sm')}</a>
+        <a href="#" class="quiet">${ic('i-flag', 'ic-sm')}Сообщить об ошибке</a>
+      </section>
+    </div>
+  </div>
+  <footer class="bottom-bar"><button type="button" class="btn btn-primary btn-wide">Дальше</button></footer>
+</div>` });
+
+// ---------- R15 · итог тренировки — момент, наклейка ----------
+const marks = [1, 1, 0, 1, 1, 0, 1, 1, 0, 1].map((ok, i) =>
+  `<li class="${ok ? 'ok' : 'no'}"><span class="sr">Вопрос ${i + 1}: ${ok ? 'верно' : 'неверно'}</span>${ic(ok ? 'i-check' : 'i-cross', 'ic-sm')}</li>`).join('');
+add({ id: 'R15', group: 'R', name: 'Итог тренировки — момент', html: `
+<div class="app">
+  <header class="x-head"><button type="button" class="icon-btn" aria-label="Закрыть">${ic('i-close')}</button></header>
+  <div class="main sum-wrap">
+    <section class="moment">
+      <div class="sticker st-mint">
+        <p class="st-label"><span lang="en">Text Completion</span> · 14 мин</p>
+        <h1 class="sum-score"><span class="st-big">7</span><span>из 10<br>верно</span></h1>
+        <ol class="marks" aria-label="Ответы по порядку">${marks}</ol>
+      </div>
+    </section>
+    <section class="repeat">
+      <h2 class="h2">Что повторить</h2>
+      <ul class="list" role="list">
+        <li><a href="#" class="row"><span class="row-body"><b>Слова-сигналы контраста</b><small>2 ошибки · <span lang="en">although, yet, far from</span></small></span>${ic('i-chevron-right', 'ic-sm chev')}</a></li>
+        <li><a href="#" class="row"><span class="row-body"><b>Оценочная лексика</b><small>1 ошибка · похвала или критика</small></span>${ic('i-chevron-right', 'ic-sm chev')}</a></li>
+      </ul>
+      <p class="note">Неверные задания уже в «Повторить мои ошибки».</p>
+    </section>
+  </div>
+  <footer class="bottom-bar stack">
+    <button type="button" class="btn btn-primary btn-wide">Повторить темы · 8 вопросов</button>
+    <button type="button" class="btn btn-ghost btn-wide">Готово</button>
+  </footer>
+</div>` });
+
+// ---------- W1 · вкладка «Слова» ----------
+// Без этапов памяти и «выучено»: только сколько на сегодня и сколько времени (DESIGN.md).
+const recent = [['laconic', 'лаконичный, немногословный'], ['ephemeral', 'недолговечный, мимолётный'], ['obdurate', 'упрямый, непреклонный'], ['prodigal', 'расточительный'], ['garrulous', 'болтливый']];
+add({ id: 'W1', group: 'W', name: 'Вкладка «Слова»', html: `
+<div class="app has-nav">
+  ${nav('words')}
+  <div class="main">
+    ${topBar}
+    <h1 class="h1 page-title">Слова</h1>
+    <article class="card today">
+      <p class="today-num"><b>12</b><span>слов на сегодня</span></p>
+      <p class="faint">~5 минут, с озвучкой</p>
+      <button type="button" class="btn btn-primary btn-wide">Начать</button>
+    </article>
+    <label class="search">${ic('i-search')}<span>Найти слово</span></label>
+    <section style="display:flex;flex-direction:column;gap:12px">
+      <h2 class="h3">Недавние</h2>
+      <ul class="list" role="list">
+        ${recent.map(([w, t]) => `<li><a href="#" class="row"><span class="row-body"><span class="w-word" lang="en">${w}</span><small>${t}</small></span>${ic('i-chevron-right', 'ic-sm chev')}</a></li>`).join('')}
+      </ul>
+    </section>
+  </div>
+</div>` });
+
+// ---------- W7 · карточка слова после верного ответа ----------
+// Рабочий экран: крупное слово голосом лендинга, остальное — тихо.
+add({ id: 'W7', group: 'W', name: 'Верно — карточка слова', html: `
+<div class="app">
+  ${sessionTop('words', 'Слова на сегодня', 3, 12)}
+  <div class="main w-wrap">
+    <div class="verdict verdict-right" role="status">
+      <span class="verdict-ic">${ic('i-check', 'ic-sm')}</span>
+      <span class="verdict-text"><b>Верно</b><span><span lang="en">equivocal</span> — «двусмысленный»</span></span>
+    </div>
+    <header>
+      <h1 class="headword" lang="en">equivocal</h1>
+      <p class="word-meta"><span lang="en">adjective</span><span class="ipa">/ɪˈkwɪvəkəl/</span><button type="button" class="icon-btn soft" aria-label="Послушать equivocal">${ic('i-play', 'ic-sm')}</button></p>
+    </header>
+    <section class="sense">
+      <p class="sense-ru">двусмысленный, уклончивый</p>
+      <p class="sense-en" lang="en">open to more than one interpretation; deliberately vague to avoid committing oneself</p>
+      <blockquote class="example"><p lang="en">Asked about the merger, the CEO gave an equivocal answer that pleased no one.</p><p>На вопрос о слиянии директор ответил уклончиво и не угодил никому.</p></blockquote>
+    </section>
+    <section class="sense">
+      <p class="sense-ru">неясный, сомнительный</p>
+      <p class="sense-en" lang="en">of uncertain nature or outcome</p>
+    </section>
+    <div class="rel"><span class="rel-label">Синонимы</span><span class="chips" lang="en"><span class="chip">ambiguous</span><span class="chip">evasive</span><span class="chip">noncommittal</span></span></div>
+    <div class="rel"><span class="rel-label">Антонимы</span><span class="chips" lang="en"><span class="chip">unequivocal</span><span class="chip">explicit</span></span></div>
+  </div>
+  <footer class="bottom-bar"><button type="button" class="btn btn-primary btn-wide">Следующее слово</button></footer>
+</div>` });
+
+// ---------- X7 · результат пробника — момент, наклейка ----------
+// Балл — в шкале экзамена, «скорее всего» и диапазон; пометка «наша оценка» — на самой наклейке.
+add({ id: 'X7', group: 'X', name: 'Пробник — результат, момент', html: `
+<div class="app">
+  <header class="x-head"><button type="button" class="icon-btn" aria-label="Закрыть">${ic('i-close')}</button><span>2 октября · 1 ч 58 мин</span></header>
+  <div class="main x-wrap">
+    <h1 class="h1">Пробный экзамен 1</h1>
+    <section class="moment" style="padding-top:2px">
+      <div class="sticker st-mango">
+        <p class="st-label">Скорее всего</p>
+        <div class="x-scores">
+          <div><span class="st-label">Verbal</span><span class="st-big">154</span><span class="x-range">152–156</span></div>
+          <div><span class="st-label">Quant</span><span class="st-big">160</span><span class="x-range">158–162</span></div>
+        </div>
+        <p class="st-foot">Наша оценка, не официальный балл ETS</p>
+      </div>
+    </section>
+    <ul class="list tally" role="list">
+      <li class="row sec-verbal"><span class="dot"></span><span class="row-body"><b>Verbal</b></span><span class="val"><b>19</b> из 27 верно</span></li>
+      <li class="row sec-quant"><span class="dot"></span><span class="row-body"><b>Quant</b></span><span class="val"><b>21</b> из 27 верно</span></li>
+      <li class="row sec-essay"><span class="dot"></span><span class="row-body"><b>Эссе</b></span><span class="val"><b>4,0</b> · примерно, ±1</span></li>
+    </ul>
+    <a href="#" class="quiet"><span>Официальный пробник <span lang="en">POWERPREP</span></span></a>
+  </div>
+  <footer class="bottom-bar"><button type="button" class="btn btn-primary btn-wide">Разобрать ошибки · 14</button></footer>
+</div>` });
+
+// ---------- G1 · прогресс ----------
+// Без серий: календарь показывает дни с занятиями, пропуски не отмечаются (PRODUCT.md, «Статистика»).
+const cal = [0,0,2,1,0,3,0, 1,2,0,2,0,0,1, 3,'t',...Array(5).fill('f')].map(l =>
+  l === 't' ? '<span class="cal-d today" data-l="2"></span>' : l === 'f' ? '<span class="cal-d future"></span>' : `<span class="cal-d" data-l="${l}"></span>`).join('');
+add({ id: 'G1', group: 'G', name: 'Прогресс', desktop: true, html: `
+<div class="app has-nav">
+  ${nav('progress')}
+  <div class="main">
+    ${topBar}
+    <h1 class="h1 page-title">Прогресс</h1>
+    <div class="g-grid">
+      <div class="g-col">
+        <section class="card panel">
+          <div class="panel-head"><h2 class="h3">Примерный балл</h2><small>пробник 2 октября</small></div>
+          <div class="pair">
+            <div class="metric sec-verbal"><span class="metric-label"><span class="dot"></span>Verbal</span><span class="metric-num">152–156</span></div>
+            <div class="metric sec-quant"><span class="metric-label"><span class="dot"></span>Quant</span><span class="metric-num">158–162</span></div>
+          </div>
+          <p class="metric-note">Наша оценка, не официальный балл ETS.</p>
+        </section>
+        <section class="card panel">
+          <h2 class="h3">Точность</h2>
+          <div class="pair">
+            <div class="metric sec-verbal"><span class="metric-label"><span class="dot"></span>Verbal</span><span class="metric-num">68 %</span><span class="delta">+6 % за 2 недели</span></div>
+            <div class="metric sec-quant"><span class="metric-label"><span class="dot"></span>Quant</span><span class="metric-num">74 %</span><span class="delta">+2 % за 2 недели</span></div>
+          </div>
+          <figure class="trend" aria-label="Точность по неделям: Verbal выросла с 58 до 68 %, Quant — с 69 до 74 %">
+            <svg viewBox="0 0 320 132" aria-hidden="true">
+              <g class="grid"><line x1="28" x2="304" y1="16" y2="16"/><line x1="28" x2="304" y1="48" y2="48"/><line x1="28" x2="304" y1="80" y2="80"/><line x1="28" x2="304" y1="112" y2="112"/></g>
+              <g class="axis"><text class="y" x="22" y="19">80</text><text class="y" x="22" y="51">70</text><text class="y" x="22" y="83">60</text><text class="y" x="22" y="115">50</text>
+                <text x="40" y="129" text-anchor="middle">31 авг</text><text x="288" y="129" text-anchor="middle">5 окт</text></g>
+              <polyline class="ln ln-v" points="40,86.4 90,80 140,76.8 190,73.6 240,60.8 288,54.4"/>
+              <polyline class="ln ln-q" points="40,51.2 90,48 140,44.8 190,41.6 240,38.4 288,35.2"/>
+              <circle class="end-v" cx="288" cy="54.4" r="4.5"/><circle class="end-q" cx="288" cy="35.2" r="4.5"/>
+            </svg>
+          </figure>
+          <ul class="acc" role="list">
+            <li class="sec-verbal"><span class="acc-name" lang="en">Text Completion</span><span class="acc-bar"><span style="width:61%"></span></span><span class="acc-val">61 %</span></li>
+            <li class="sec-verbal"><span class="acc-name" lang="en">Sentence Equivalence</span><span class="acc-bar"><span style="width:77%"></span></span><span class="acc-val">77 %</span></li>
+            <li class="sec-verbal weak"><span class="acc-name" lang="en">Reading Comprehension</span><span class="acc-bar"><span style="width:52%"></span></span><span class="acc-val">52 %</span></li>
+            <li class="sec-quant"><span class="acc-name" lang="en">Quantitative Comparison</span><span class="acc-bar"><span style="width:81%"></span></span><span class="acc-val">81 %</span></li>
+            <li class="sec-quant"><span class="acc-name">Задачи</span><span class="acc-bar"><span style="width:70%"></span></span><span class="acc-val">70 %</span></li>
+          </ul>
+        </section>
+      </div>
+      <div class="g-col">
+        <div class="weak-box card"><p><b>Слабее всего — <span lang="en">Inference</span></b>52 % верно за 3 недели</p><button type="button" class="btn">Потренировать</button></div>
+        <section class="card panel">
+          <div class="panel-head"><h2 class="h3">Октябрь</h2><small>9 дней · 6 ч 40 мин</small></div>
+          <div class="cal" role="img" aria-label="Календарь занятий за октябрь: 9 дней с занятиями">
+            <span class="cal-wd">Пн</span><span class="cal-wd">Вт</span><span class="cal-wd">Ср</span><span class="cal-wd">Чт</span><span class="cal-wd">Пт</span><span class="cal-wd">Сб</span><span class="cal-wd">Вс</span>
+            ${cal}
+          </div>
+        </section>
+        <section class="card panel">
+          <h2 class="h3">История</h2>
+          <ul class="hist" role="list">
+            <li class="sec-verbal"><span class="dot"></span><span class="row-body"><b lang="en">Text Completion</b><small>Сегодня, 14:20 · 12 мин</small></span><span class="hist-res">8/10</span></li>
+            <li class="sec-quant"><span class="dot"></span><span class="row-body"><b lang="en">Quantitative Comparison</b><small>Вчера · 15 мин</small></span><span class="hist-res">13/15</span></li>
+            <li class="sec-exam"><span class="dot"></span><span class="row-body"><b>Пробный экзамен 1</b><small>2 октября · 1 ч 58 мин</small></span><span class="hist-res">V 154 · Q 160</span></li>
+          </ul>
+          <a href="#" class="quiet">Вся история</a>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>` });
+
+// ---------- G2 · профиль ----------
+// Тема и язык — переключатели из двух вариантов, без «как в системе» (PRODUCT.md, «Языки»).
+add({ id: 'G2', group: 'G', name: 'Профиль — тема и язык', html: `
+<div class="app has-nav">
+  ${nav('profile')}
+  <header class="x-head"><button type="button" class="icon-btn" aria-label="Назад">${ic('i-back')}</button></header>
+  <div class="main" style="padding-top:4px">
+    <div class="me"><span class="avatar" aria-hidden="true">А</span><span><b>Алина Карпова</b><small>Вход с Apple</small></span></div>
+    <ul class="list" role="list">
+      <li><a href="#" class="set-row"><span class="label">Экзамен</span><span class="val">GRE</span>${ic('i-chevron-right', 'ic-sm chev')}</a></li>
+    </ul>
+    <ul class="list" role="list">
+      <li class="set-row"><span class="label">Язык</span><span class="seg" role="group" aria-label="Язык"><button type="button" aria-pressed="true">Русский</button><button type="button" aria-pressed="false" lang="en">English</button></span></li>
+      <li class="set-row"><span class="label">Тема</span><span class="seg" role="group" aria-label="Тема"><button type="button" data-theme-set="light" aria-pressed="false">Светлая</button><button type="button" data-theme-set="dark" aria-pressed="true">Тёмная</button></span></li>
+      <li class="set-row"><span class="label">Текст</span><span class="seg" role="group" aria-label="Размер текста"><button type="button" aria-pressed="true">Обычный</button><button type="button" aria-pressed="false">Крупнее</button></span></li>
+    </ul>
+    <ul class="list" role="list">
+      <li><a href="#" class="set-row"><span class="row-ic">${ic('i-card', 'ic-sm')}</span><span class="label">Подписка</span><span class="val">до 9 ноября</span>${ic('i-chevron-right', 'ic-sm chev')}</a></li>
+      <li><a href="#" class="set-row"><span class="row-ic">${ic('i-key', 'ic-sm')}</span><span class="label">Способы входа</span><span class="val">Apple</span>${ic('i-chevron-right', 'ic-sm chev')}</a></li>
+      <li><a href="#" class="set-row"><span class="row-ic">${ic('i-mail', 'ic-sm')}</span><span class="label">Написать нам</span>${ic('i-chevron-right', 'ic-sm chev')}</a></li>
+    </ul>
+    <footer class="legal"><p lang="en">GRE® and TOEFL® are registered trademarks of Educational Testing Service (ETS). This product is not endorsed or approved by ETS.</p><p>Версия 0.4.0</p></footer>
+  </div>
+</div>` });
+
+// ---------- Каталог ----------
+const GROUPS = { T: 'Общее', R: 'Тренировка', W: 'Слова', X: 'Экзамен', G: 'Прогресс и профиль' };
+const state = { theme: 'both', device: 'all' };
+try { Object.assign(state, JSON.parse(localStorage.getItem('app-b') || '{}')); } catch (e) { /* по умолчанию */ }
+
+function syncControls() {
+  document.querySelectorAll('#f-theme button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themePick === state.theme)));
+  document.querySelectorAll('#f-device button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.device === state.device)));
+}
+function frame(s, device, theme) {
+  const f = document.createElement('div');
+  f.className = `frame device-${device}`;
+  f.dataset.theme = theme;
+  f.innerHTML = s.html;
+  // Профиль: в G2 тема в переключателе совпадает с темой рамки.
+  f.querySelectorAll('[data-theme-set]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themeSet === theme)));
+  return f;
+}
+function render() {
+  const board = document.getElementById('board');
+  board.textContent = '';
+  // Тёмная — тема приложения по умолчанию, в каталоге идёт первой.
+  const themes = state.theme === 'both' ? ['dark', 'light'] : [state.theme];
+  for (const g of Object.keys(GROUPS)) {
+    const list = S.filter(s => s.group === g && (state.device !== 'desktop' || s.desktop));
+    if (!list.length) continue;
+    const sec = document.createElement('section'); sec.className = 'cat-dir';
+    sec.innerHTML = `<h2>${GROUPS[g]}</h2>`;
+    const row = document.createElement('div'); row.className = 'cat-row';
+    sec.append(row);
+    for (const s of list) {
+      const devices = state.device === 'all' ? (s.desktop ? ['phone', 'desktop'] : ['phone']) : [state.device];
+      for (const d of devices) {
+        const fig = document.createElement('figure'); fig.className = 'cat-screen'; fig.id = `${s.id}-${d}`;
+        fig.innerHTML = `<figcaption><b>${s.id}</b> · ${s.name} · ${d === 'phone' ? 'телефон' : 'компьютер'}</figcaption>`;
+        const frames = document.createElement('div'); frames.className = 'cat-frames';
+        for (const t of themes) frames.append(frame(s, d, t));
+        fig.append(frames);
+        row.append(fig);
+      }
+    }
+    board.append(sec);
+  }
+}
+
+document.addEventListener('click', (e) => {
+  const ctl = e.target.closest('.cat-seg button');
+  if (ctl) {
+    if (ctl.dataset.themePick) state.theme = ctl.dataset.themePick;
+    if (ctl.dataset.device) state.device = ctl.dataset.device;
+    try { localStorage.setItem('app-b', JSON.stringify(state)); } catch (err) { /* память браузера необязательна */ }
+    syncControls(); render();
+    return;
+  }
+  const opt = e.target.closest('.frame .opt');
+  if (opt) { opt.closest('.opt-group').querySelectorAll('.opt').forEach(o => o.setAttribute('aria-checked', String(o === opt))); return; }
+  const lang = e.target.closest('.frame [data-lang-set]');
+  if (lang) {
+    const app = lang.closest('.app');
+    app.dataset.lang = lang.dataset.langSet;
+    app.querySelectorAll('[data-lang-set]').forEach(b => b.setAttribute('aria-pressed', String(b === lang)));
+    return;
+  }
+  const th = e.target.closest('.frame [data-theme-set]');
+  if (th) { const f = th.closest('.frame'); f.dataset.theme = th.dataset.themeSet; f.querySelectorAll('[data-theme-set]').forEach(b => b.setAttribute('aria-pressed', String(b === th))); return; }
+  const seg = e.target.closest('.frame .seg button');
+  if (seg) { seg.parentElement.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === seg))); return; }
+  if (e.target.closest('.frame a')) e.preventDefault();
+});
+
+syncControls();
+render();
+</script>
+</body>
+</html>
