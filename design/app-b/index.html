@@ -6,9 +6,9 @@
 <title>Tutorless — приложение в стиле B</title>
 <!-- Приложение в стиле лендинга B «Живой разбор и стикеры», рабочая версия. Самодостаточный файл: открывается
      прямо с диска. Содержание и устройство экранов — каталог night-studio, вид — b-stickers.html.
-     Принцип (уточнение Даши 12.10.2026): приложение простое. От лендинга — Onest с плотным трекингом, палитра
-     как акценты, томатная главная кнопка. Наклейки с кантом и глянцем — только в двух моментах: итог
-     тренировки (R15) и балл пробника (X7). На рабочих экранах нет наклонов, глянца и цветных пятен. -->
+     Принцип (решения Даши 12.10.2026): приложение простое. От лендинга — Onest с плотным трекингом, палитра
+     как акценты, томатная главная кнопка. Наклеек, наклонов, канта и глянца в приложении нет совсем: итог и
+     балл — ровные карточки с крупной цифрой в цвете раздела. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400..800&amp;display=swap">
@@ -48,8 +48,8 @@ body { margin: 0; background: var(--cat-bg); color: var(--cat-fg); font: 14px/1.
 
 /* ================= Экраны: токены ================= */
 /* Палитра лендинга B. Тёмная тема — по умолчанию в приложении, в каталоге идёт первой.
-   Акцент один — томат главной кнопки. Цвета наклеек (манго, мята, лиловый, розовый, голубой) на рабочих
-   экранах живут только в точках разделов, линиях графика и плитках экзаменов. */
+   Акцент один — томат главной кнопки. Цвета лендинга (манго, мята, лиловый, розовый, голубой) живут в точках
+   и цифрах разделов, линиях графика и плитках экзаменов. */
 .frame {
   --bg: #FBF3EA; --surface: #FFFDF9; --surface-2: #F3EADF; --surface-3: #EADFD2;
   --ink: #1C1424; --ink-2: #4E4459; --ink-3: #6B6176;
@@ -60,12 +60,11 @@ body { margin: 0; background: var(--cat-bg); color: var(--cat-fg); font: 14px/1.
   --hl: rgb(67 214 163 / 0.4);
   /* Цвет раздела для точек и линий: в светлой теме темнее, иначе мята и лиловый тонут в молоке. */
   --c-verbal: #7357F0; --c-quant: #0E9F6E; --c-essay: #C98A00; --c-words: #D9468F; --c-exam: #2F86D6;
-  /* Наклейки — одни в обеих темах, текст на них всегда тёмный (контраст от 6:1). */
+  /* Цвета экзаменов (плитки, аватар) — одни в обеих темах, текст на них всегда тёмный (контраст от 6:1). */
   --mango: #FFC53D; --mint: #43D6A3; --lilac: #B9A6FF; --pink: #FF9ECD; --sky: #82CBFF;
-  --on-st: #1C1424; --on-st-2: rgb(28 20 36 / 0.72); --rim: #FFFDF9;
+  --on-st: #1C1424; --on-st-2: rgb(28 20 36 / 0.72);
   --edge: inset 0 0 0 1px rgb(28 20 36 / 0.06);
   --lift: 0 1px 2px rgb(90 50 30 / 0.05);
-  --sh-st: 0 1px 1px rgb(90 50 30 / 0.06), 0 6px 14px -6px rgb(90 50 30 / 0.16), 0 26px 48px -20px rgb(90 50 30 / 0.36);
   --scrim: rgb(28 20 36 / 0.36);
   --font: 'Onest', 'Helvetica Neue', Arial, sans-serif;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -85,10 +84,8 @@ body { margin: 0; background: var(--cat-bg); color: var(--cat-fg); font: 14px/1.
   --wrong: #FF8D75; --wrong-soft: rgb(255 107 74 / 0.14);
   --hl: rgb(67 214 163 / 0.3);
   --c-verbal: #B9A6FF; --c-quant: #43D6A3; --c-essay: #FFC53D; --c-words: #FF9ECD; --c-exam: #82CBFF;
-  --rim: #F4EADF;
   --edge: inset 0 1px 0 rgb(255 255 255 / 0.05), inset 0 0 0 1px rgb(255 255 255 / 0.05);
   --lift: 0 1px 2px rgb(0 0 0 / 0.25);
-  --sh-st: 0 1px 1px rgb(0 0 0 / 0.3), 0 8px 16px -8px rgb(0 0 0 / 0.5), 0 30px 56px -22px rgb(0 0 0 / 0.75);
   --scrim: rgb(6 3 10 / 0.62);
   color-scheme: dark;
 }
@@ -261,24 +258,18 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
 .link-row .ic-sm { color: var(--ink-3); }
 .quiet { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; min-height: 36px; font-size: 13.5px; color: var(--ink-3); font-weight: 500; }
 
-/* ================= Наклейка — только для моментов (R15, X7) ================= */
-.sticker { position: relative; border-radius: 26px; padding: 20px 22px 18px; color: var(--on-st); box-shadow: 0 0 0 4px var(--rim), var(--sh-st); transform: rotate(-2deg); }
-.sticker::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: linear-gradient(180deg, rgb(255 255 255 / 0.3), transparent 40%); }
-.st-mint { background: var(--mint); } .st-mango { background: var(--mango); }
-.st-label { font-weight: 650; font-size: 14px; color: var(--on-st-2); }
-.st-big { font-weight: 800; letter-spacing: -0.05em; line-height: 0.9; font-variant-numeric: tabular-nums; }
-.moment { padding: 22px 6px 6px; }
-
-/* R15 · итог */
+/* ================= Итог и балл: ровные карточки, характер — крупной цифрой в цвете раздела ================= */
+/* Решение Даши 12.10.2026: в приложении нет наклонов и наклеек с кантом и глянцем. */
 .sum-wrap { padding-top: 6px; gap: 30px; }
-.sum-score { display: flex; align-items: flex-end; gap: 12px; margin-top: 8px; }
-.sum-score .st-big { font-size: 112px; }
-.sum-score span:last-child { font-weight: 800; font-size: 26px; letter-spacing: -0.03em; line-height: 1.05; padding-bottom: 10px; }
-.marks { display: flex; gap: 6px; margin-top: 16px; }
-.marks li { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: rgb(28 20 36 / 0.14); }
-.marks li.no { background: var(--on-st); color: var(--mint); }
-.marks .ic-sm { width: 14px; height: 14px; }
-.sum-sub { display: flex; align-items: center; gap: 8px; color: var(--ink-2); font-size: 14.5px; justify-content: center; }
+.sum { padding: 22px 22px 22px; display: flex; flex-direction: column; }
+.sum-meta { display: flex; align-items: center; gap: 8px; color: var(--ink-2); font-size: 14.5px; font-weight: 500; }
+.sum-score { display: flex; align-items: flex-end; gap: 14px; margin-top: 18px; }
+.sum-num { font-weight: 800; font-size: 120px; line-height: 0.8; letter-spacing: -0.055em; color: var(--sec); font-variant-numeric: tabular-nums; }
+.sum-of { font-weight: 800; font-size: 26px; line-height: 1.05; letter-spacing: -0.03em; padding-bottom: 2px; }
+.marks { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; margin-top: 24px; }
+.marks li { aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; background: var(--right-soft); color: var(--right); }
+.marks li.no { background: var(--wrong-soft); color: var(--wrong); }
+.marks .ic-sm { width: 15px; height: 15px; }
 .repeat { display: flex; flex-direction: column; gap: 12px; }
 .note { font-size: 14px; color: var(--ink-3); }
 .stack { flex-direction: column; }
@@ -308,11 +299,16 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
 .chip { padding: 7px 13px; border-radius: 999px; background: var(--surface-2); font-size: 15px; font-weight: 500; }
 
 /* ================= X7 · результат пробника ================= */
-.x-wrap { padding-top: 4px; gap: 28px; }
-.x-scores { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-.x-scores .st-big { font-size: 64px; display: block; margin-top: 4px; }
-.x-range { font-weight: 600; font-size: 14px; color: var(--on-st-2); margin-top: 6px; display: block; }
-.st-foot { margin-top: 14px; font-weight: 600; font-size: 13.5px; color: var(--on-st-2); }
+.x-wrap { padding-top: 4px; gap: 24px; }
+.x-card { padding: 22px; display: flex; flex-direction: column; gap: 18px; }
+.x-card-head { display: flex; align-items: center; gap: 8px; font-size: 14.5px; font-weight: 600; color: var(--ink-2); }
+.x-scores { display: grid; grid-template-columns: 1fr 1fr; }
+.x-scores > div { display: flex; flex-direction: column; }
+.x-scores > div + div { padding-left: 20px; border-left: 1px solid var(--line); }
+.x-label { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 600; color: var(--ink-2); }
+.x-num { font-weight: 800; font-size: 68px; line-height: 0.95; letter-spacing: -0.05em; color: var(--sec); font-variant-numeric: tabular-nums; margin-top: 6px; }
+.x-range { font-size: 14px; color: var(--ink-3); margin-top: 4px; }
+.x-foot { font-size: 13.5px; color: var(--ink-3); padding-top: 14px; border-top: 1px solid var(--line); }
 .tally .row { min-height: 56px; }
 .tally .val { font-variant-numeric: tabular-nums; color: var(--ink-2); font-size: 15px; }
 .tally .val b { color: var(--ink); font-weight: 700; }
@@ -424,7 +420,7 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
 <header class="cat-head">
   <div class="cat-title">
     <h1>Tutorless · приложение в стиле B</h1>
-    <p>Рабочая версия стиля «Живой разбор и стикеры». От лендинга — шрифт Onest 800 с плотным трекингом, палитра и томатная главная кнопка. Наклейки с кантом и глянцем — только в двух моментах: итог тренировки (R15) и балл пробника (X7). Остальные экраны спокойные. Пример — GRE; варианты ответа нажимаются, RU/EN в разборе и тема в профиле переключаются.</p>
+    <p>Рабочая версия стиля «Живой разбор и стикеры». От лендинга — шрифт Onest 800 с плотным трекингом, палитра и томатная главная кнопка. Наклеек и наклонов в приложении нет: итог тренировки (R15) и балл пробника (X7) — ровные карточки с крупной цифрой в цвете раздела. Пример — GRE; варианты ответа нажимаются, RU/EN в разборе и тема в профиле переключаются.</p>
   </div>
   <div class="cat-controls" role="group" aria-label="Что показать">
     <fieldset class="cat-seg" id="f-theme">
@@ -619,19 +615,18 @@ add({ id: 'R4', group: 'R', name: 'Text Completion — неверно, разб�
   <footer class="bottom-bar"><button type="button" class="btn btn-primary btn-wide">Дальше</button></footer>
 </div>` });
 
-// ---------- R15 · итог тренировки — момент, наклейка ----------
+// ---------- R15 · итог тренировки ----------
+// Ровная карточка: крупно «7 из 10» цифрой цвета раздела, ниже — отметки по каждому вопросу, внизу — кнопки.
 const marks = [1, 1, 0, 1, 1, 0, 1, 1, 0, 1].map((ok, i) =>
   `<li class="${ok ? 'ok' : 'no'}"><span class="sr">Вопрос ${i + 1}: ${ok ? 'верно' : 'неверно'}</span>${ic(ok ? 'i-check' : 'i-cross', 'ic-sm')}</li>`).join('');
-add({ id: 'R15', group: 'R', name: 'Итог тренировки — момент', html: `
+add({ id: 'R15', group: 'R', name: 'Итог тренировки', html: `
 <div class="app">
   <header class="x-head"><button type="button" class="icon-btn" aria-label="Закрыть">${ic('i-close')}</button></header>
   <div class="main sum-wrap">
-    <section class="moment">
-      <div class="sticker st-mint">
-        <p class="st-label"><span lang="en">Text Completion</span> · 14 мин</p>
-        <h1 class="sum-score"><span class="st-big">7</span><span>из 10<br>верно</span></h1>
-        <ol class="marks" aria-label="Ответы по порядку">${marks}</ol>
-      </div>
+    <section class="card sum sec-verbal">
+      <p class="sum-meta"><span class="dot"></span><span>Verbal · <span lang="en">Text Completion</span> · 14 мин</span></p>
+      <h1 class="sum-score"><span class="sum-num">7</span><span class="sum-of">из 10<br>верно</span></h1>
+      <ol class="marks" aria-label="Ответы по порядку">${marks}</ol>
     </section>
     <section class="repeat">
       <h2 class="h2">Что повторить</h2>
@@ -701,22 +696,20 @@ add({ id: 'W7', group: 'W', name: 'Верно — карточка слова', 
   <footer class="bottom-bar"><button type="button" class="btn btn-primary btn-wide">Следующее слово</button></footer>
 </div>` });
 
-// ---------- X7 · результат пробника — момент, наклейка ----------
-// Балл — в шкале экзамена, «скорее всего» и диапазон; пометка «наша оценка» — на самой наклейке.
-add({ id: 'X7', group: 'X', name: 'Пробник — результат, момент', html: `
+// ---------- X7 · результат пробника ----------
+// Балл — в шкале экзамена: «скорее всего» крупной цифрой цвета раздела и диапазон; пометка «наша оценка» — в карточке.
+add({ id: 'X7', group: 'X', name: 'Пробник — результат', html: `
 <div class="app">
   <header class="x-head"><button type="button" class="icon-btn" aria-label="Закрыть">${ic('i-close')}</button><span>2 октября · 1 ч 58 мин</span></header>
   <div class="main x-wrap">
     <h1 class="h1">Пробный экзамен 1</h1>
-    <section class="moment" style="padding-top:2px">
-      <div class="sticker st-mango">
-        <p class="st-label">Скорее всего</p>
-        <div class="x-scores">
-          <div><span class="st-label">Verbal</span><span class="st-big">154</span><span class="x-range">152–156</span></div>
-          <div><span class="st-label">Quant</span><span class="st-big">160</span><span class="x-range">158–162</span></div>
-        </div>
-        <p class="st-foot">Наша оценка, не официальный балл ETS</p>
+    <section class="card x-card">
+      <p class="x-card-head"><span class="ex-chip" aria-hidden="true"></span>GRE · скорее всего</p>
+      <div class="x-scores">
+        <div class="sec-verbal"><span class="x-label"><span class="dot"></span>Verbal</span><span class="x-num">154</span><span class="x-range">152–156</span></div>
+        <div class="sec-quant"><span class="x-label"><span class="dot"></span>Quant</span><span class="x-num">160</span><span class="x-range">158–162</span></div>
       </div>
+      <p class="x-foot">Наша оценка, не официальный балл ETS.</p>
     </section>
     <ul class="list tally" role="list">
       <li class="row sec-verbal"><span class="dot"></span><span class="row-body"><b>Verbal</b></span><span class="val"><b>19</b> из 27 верно</span></li>
@@ -797,7 +790,8 @@ add({ id: 'G1', group: 'G', name: 'Прогресс', desktop: true, html: `
 </div>` });
 
 // ---------- G2 · профиль ----------
-// Тема и язык — переключатели из двух вариантов, без «как в системе» (PRODUCT.md, «Языки»).
+// Тема и язык — переключатели из двух вариантов, без «как в системе» (PRODUCT.md, «Языки»). Экзамен здесь не
+// выбирается — он в шапке (T7). Подписка помесячная на один экзамен (решение Даши), поэтому «до … · GRE».
 add({ id: 'G2', group: 'G', name: 'Профиль — тема и язык', html: `
 <div class="app has-nav">
   ${nav('profile')}
@@ -805,15 +799,12 @@ add({ id: 'G2', group: 'G', name: 'Профиль — тема и язык', htm
   <div class="main" style="padding-top:4px">
     <div class="me"><span class="avatar" aria-hidden="true">А</span><span><b>Алина Карпова</b><small>Вход с Apple</small></span></div>
     <ul class="list" role="list">
-      <li><a href="#" class="set-row"><span class="label">Экзамен</span><span class="val">GRE</span>${ic('i-chevron-right', 'ic-sm chev')}</a></li>
-    </ul>
-    <ul class="list" role="list">
       <li class="set-row"><span class="label">Язык</span><span class="seg" role="group" aria-label="Язык"><button type="button" aria-pressed="true">Русский</button><button type="button" aria-pressed="false" lang="en">English</button></span></li>
       <li class="set-row"><span class="label">Тема</span><span class="seg" role="group" aria-label="Тема"><button type="button" data-theme-set="light" aria-pressed="false">Светлая</button><button type="button" data-theme-set="dark" aria-pressed="true">Тёмная</button></span></li>
       <li class="set-row"><span class="label">Текст</span><span class="seg" role="group" aria-label="Размер текста"><button type="button" aria-pressed="true">Обычный</button><button type="button" aria-pressed="false">Крупнее</button></span></li>
     </ul>
     <ul class="list" role="list">
-      <li><a href="#" class="set-row"><span class="row-ic">${ic('i-card', 'ic-sm')}</span><span class="label">Подписка</span><span class="val">до 9 ноября</span>${ic('i-chevron-right', 'ic-sm chev')}</a></li>
+      <li><a href="#" class="set-row"><span class="row-ic">${ic('i-card', 'ic-sm')}</span><span class="label">Подписка</span><span class="val">до 9 ноября · GRE</span>${ic('i-chevron-right', 'ic-sm chev')}</a></li>
       <li><a href="#" class="set-row"><span class="row-ic">${ic('i-key', 'ic-sm')}</span><span class="label">Способы входа</span><span class="val">Apple</span>${ic('i-chevron-right', 'ic-sm chev')}</a></li>
       <li><a href="#" class="set-row"><span class="row-ic">${ic('i-mail', 'ic-sm')}</span><span class="label">Написать нам</span>${ic('i-chevron-right', 'ic-sm chev')}</a></li>
     </ul>
