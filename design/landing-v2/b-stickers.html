@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>[Имя] — GRE и TOEFL без репетитора</title>
-<meta name="description" content="Подготовка к GRE и TOEFL без репетитора: вопросы как на экзамене, разбор каждой ошибки на вашем языке, слова и пробный экзамен с баллом.">
+<title>[Имя] — экзамен без репетитора</title>
+<meta name="description" content="Подготовка к GRE, TOEFL, SAT и GMAT без репетитора: вопросы как на экзамене, разбор каждой ошибки на вашем языке, слова и пробный экзамен с баллом в шкале экзамена.">
 <script>
   // Тема до первой отрисовки: сохранённый выбор, иначе системная. Класс js прячет стикеры до раскладки.
   (function () {
@@ -37,6 +37,10 @@
   --sh: 0 1px 1px rgb(90 50 30 / 0.06), 0 4px 10px -4px rgb(90 50 30 / 0.12), 0 22px 44px -18px rgb(90 50 30 / 0.32);
   --sh-lift: 0 1px 1px rgb(90 50 30 / 0.06), 0 8px 16px -6px rgb(90 50 30 / 0.16), 0 34px 60px -22px rgb(90 50 30 / 0.4);
   --head-bg: rgb(251 243 234 / 0.8);
+  /* Край карточки: в светлой теме — тонкая линия, в тёмной — блик сверху, чтобы бумага не тонула в фоне. */
+  --edge: inset 0 0 0 1px rgb(28 20 36 / 0.05);
+  --cta-sh: 0 1px 0 rgb(255 255 255 / 0.35) inset, 0 10px 22px -10px rgb(150 50 20 / 0.55);
+  --r-s: 14px; --r-m: 22px; --r-l: 30px;
   --font: 'Onest', 'Helvetica Neue', Arial, sans-serif;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-io: cubic-bezier(0.77, 0, 0.175, 1);
@@ -55,6 +59,9 @@
     --sh: 0 1px 1px rgb(0 0 0 / 0.3), 0 6px 14px -6px rgb(0 0 0 / 0.5), 0 26px 50px -18px rgb(0 0 0 / 0.7);
     --sh-lift: 0 1px 1px rgb(0 0 0 / 0.3), 0 10px 20px -8px rgb(0 0 0 / 0.55), 0 40px 70px -24px rgb(0 0 0 / 0.8);
     --head-bg: rgb(20 15 28 / 0.78);
+    --edge: inset 0 1px 0 rgb(255 255 255 / 0.07), inset 0 0 0 1px rgb(255 255 255 / 0.05);
+    --cta-sh: 0 1px 0 rgb(255 255 255 / 0.35) inset, 0 12px 24px -12px rgb(0 0 0 / 0.7);
+    --rim: #F4EADF;
     color-scheme: dark;
   }
 }
@@ -70,6 +77,9 @@
   --sh: 0 1px 1px rgb(0 0 0 / 0.3), 0 6px 14px -6px rgb(0 0 0 / 0.5), 0 26px 50px -18px rgb(0 0 0 / 0.7);
   --sh-lift: 0 1px 1px rgb(0 0 0 / 0.3), 0 10px 20px -8px rgb(0 0 0 / 0.55), 0 40px 70px -24px rgb(0 0 0 / 0.8);
   --head-bg: rgb(20 15 28 / 0.78);
+  --edge: inset 0 1px 0 rgb(255 255 255 / 0.07), inset 0 0 0 1px rgb(255 255 255 / 0.05);
+  --cta-sh: 0 1px 0 rgb(255 255 255 / 0.35) inset, 0 12px 24px -12px rgb(0 0 0 / 0.7);
+  --rim: #F4EADF;
   color-scheme: dark;
 }
 
@@ -132,6 +142,8 @@ section[id] { scroll-margin-top: 72px; }
 .swap-w { grid-area: 1 / 1; justify-self: start; padding: 0.04em 0.14em 0.1em; border-radius: 0.16em; color: var(--on-st); transform: translateY(45%) rotate(-2deg); opacity: 0; filter: blur(6px); transition: transform 560ms var(--ease-out), opacity 300ms ease, filter 400ms var(--ease-out); box-shadow: 0 0 0 0.05em var(--rim), var(--sh); }
 .swap-w.gre { background: var(--mango); }
 .swap-w.toefl { background: var(--mint); }
+.swap-w.sat { background: var(--lilac); }
+.swap-w.gmat { background: var(--sky); }
 .swap-w.on { transform: rotate(-2deg); opacity: 1; filter: none; }
 .swap-w.off { transform: translateY(-45%) rotate(-2deg); opacity: 0; filter: blur(6px); transition-duration: 280ms, 200ms, 280ms; }
 .lede { margin-top: 16px; max-width: 30ch; font-size: 17px; line-height: 1.45; color: var(--ink-2); text-wrap: pretty; }
@@ -140,10 +152,10 @@ section[id] { scroll-margin-top: 72px; }
 @media (min-width: 1024px) { .ex { min-height: 36px; padding: 0 14px; font-size: 15px; gap: 6px; } }
 .ex.gre { background: var(--mango); color: var(--on-st); }
 .ex.toefl { background: var(--mint); color: var(--on-st); }
-.ex.soon { box-shadow: inset 0 0 0 1.5px var(--line-2); color: var(--ink); }
-.ex.soon small { font-weight: 500; font-size: 13px; color: var(--ink-3); }
+.ex.sat { background: var(--lilac); color: var(--on-st); }
+.ex.gmat { background: var(--sky); color: var(--on-st); }
 .cta-row { margin-top: 30px; display: none; align-items: center; gap: 18px; flex-wrap: wrap; }
-.cta { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 58px; padding: 0 30px; border-radius: 999px; background: var(--cta); color: var(--on-cta); font-weight: 650; font-size: 18px; letter-spacing: -0.01em; text-decoration: none; box-shadow: 0 1px 0 rgb(255 255 255 / 0.35) inset, 0 10px 24px -10px rgb(255 91 58 / 0.7); transition: transform 160ms var(--ease-out), background-color 160ms ease; }
+.cta { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 58px; padding: 0 30px; border-radius: 999px; background: var(--cta); color: var(--on-cta); font-weight: 650; font-size: 18px; letter-spacing: -0.01em; text-decoration: none; box-shadow: var(--cta-sh); transition: transform 160ms var(--ease-out), background-color 160ms ease; }
 .cta .ico { transition: transform 200ms var(--ease-out); }
 .cta:active { transform: scale(0.97); background: var(--cta-press); }
 @media (hover: hover) and (pointer: fine) { .cta:hover .ico { transform: translateX(3px); } }
@@ -158,12 +170,15 @@ section[id] { scroll-margin-top: 72px; }
 .live .fl, .stack.on .fl { animation: float var(--fd, 7s) var(--ease-io) var(--fdl, 0s) infinite alternate; }
 .scene:not(.live) .stack .fl { animation-play-state: paused; }
 @keyframes float { from { transform: translate3d(0, -5px, 0) rotate(-0.5deg); } to { transform: translate3d(0, 5px, 0) rotate(0.6deg); } }
-.card { position: relative; border-radius: 22px; background: var(--paper); color: var(--ink); box-shadow: var(--sh); transition: transform 300ms var(--ease-out), box-shadow 300ms var(--ease-out); }
+.card { position: relative; border-radius: var(--r-m); background: var(--paper); color: var(--ink); box-shadow: var(--edge), var(--sh); transition: transform 300ms var(--ease-out), box-shadow 300ms var(--ease-out); }
 @media (hover: hover) and (pointer: fine) {
-  .st:hover .card { transform: translateY(-6px) rotate(calc(var(--r) * -0.4)) scale(1.02); box-shadow: var(--sh-lift); }
+  .st:hover .card { transform: translateY(-6px) rotate(calc(var(--r) * -0.4)) scale(1.02); box-shadow: var(--edge), var(--sh-lift); }
+  .st:hover .card.sk { box-shadow: 0 0 0 4px var(--rim), var(--sh-lift); }
 }
 /* Цветной стикер: вырубка с белым кантом, как настоящая наклейка. */
-.sk { border-radius: 20px; padding: 16px 18px; color: var(--on-st); box-shadow: 0 0 0 4px var(--rim), var(--sh); }
+.sk { border-radius: var(--r-m); padding: 16px 18px; color: var(--on-st); box-shadow: 0 0 0 4px var(--rim), var(--sh); }
+/* Глянец наклейки: светлая кромка сверху, как у отпечатанного винила. */
+.sk::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: linear-gradient(180deg, rgb(255 255 255 / 0.28), transparent 38%); }
 .sk.mango { background: var(--mango); } .sk.mint { background: var(--mint); } .sk.lilac { background: var(--lilac); }
 .sk.pink { background: var(--pink); } .sk.sky { background: var(--sky); } .sk.tomato { background: var(--tomato); }
 .sk-l { font-weight: 600; font-size: 13px; color: var(--on-st-2); }
@@ -183,7 +198,7 @@ section[id] { scroll-margin-top: 72px; }
 .opt .o::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--cta); transform: scale(0.4); opacity: 0; transition: transform 200ms var(--ease-out), opacity 150ms ease; }
 .opt .mk { margin-left: auto; width: 18px; height: 18px; opacity: 0; transform: scale(0.8); transition: transform 220ms var(--ease-out), opacity 160ms ease; }
 .tap { position: absolute; left: 6px; top: 50%; width: 30px; height: 30px; margin-top: -15px; border-radius: 50%; background: var(--cta); opacity: 0; transform: scale(0.6); pointer-events: none; }
-.q-btn { justify-self: stretch; min-height: 42px; display: grid; place-items: center; border-radius: 999px; background: var(--cta); color: var(--on-cta); font-weight: 650; font-size: 15px; transition: transform 140ms var(--ease-out), background-color 200ms ease; }
+.q-btn { justify-self: stretch; min-height: 42px; padding: 10px 16px; display: grid; place-items: center; border-radius: 999px; background: var(--cta); color: var(--on-cta); font-weight: 650; font-size: 15px; transition: transform 140ms var(--ease-out), background-color 200ms ease; }
 .q-btn .b2 { display: none; }
 @media (max-width: 1023px) { .opt-3 { display: none; } }
 /* Состояния живого разбора: выбор → нажатие → проверка */
@@ -223,7 +238,16 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
 .score { display: grid; gap: 8px; }
 .score-row { display: flex; gap: 18px; }
 .num { font-weight: 800; font-size: 44px; line-height: 0.95; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
-.num + span { display: block; margin-top: 3px; font-weight: 600; font-size: 13px; color: var(--on-st-2); }
+.num { display: block; }
+.num + span { display: block; margin-top: 4px; font-weight: 600; font-size: 13px; line-height: 1.3; color: var(--on-st-2); }
+.sc { display: grid; gap: 8px; transition: background-color 420ms ease; }
+.sc[data-x="gre"] { background: var(--mango); } .sc[data-x="toefl"] { background: var(--mint); }
+.sc[data-x="sat"] { background: var(--lilac); } .sc[data-x="gmat"] { background: var(--sky); }
+.sv-wrap { display: grid; }
+.sv { grid-area: 1 / 1; display: grid; gap: 8px; align-content: start; opacity: 0; transform: translateY(8px); filter: blur(4px); transition: opacity 240ms ease, transform 420ms var(--ease-out), filter 320ms var(--ease-out); }
+.sv.on { opacity: 1; transform: none; filter: none; }
+.word-tr { font-weight: 600; font-size: 16px; }
+@media (max-width: 1023px) { .sc { padding: 12px 13px; gap: 6px; } .sc .sv { gap: 6px; } .sc .num { font-size: 30px; } .sc .score-row { gap: 10px; } .sc .num + span { font-size: 11.5px; } .sc .sk-l, .sc .sk-foot { font-size: 12px; } }
 .sk-foot { font-weight: 500; font-size: 13px; color: var(--on-st-2); }
 
 /* Стикер слова */
@@ -233,13 +257,6 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
 .ipa { font-family: 'Helvetica Neue', Arial, 'Lucida Grande', sans-serif; font-size: 14px; color: var(--on-st-2); }
 .round { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: rgb(28 20 36 / 0.12); color: var(--on-st); flex: none; }
 .round .ico { width: 18px; height: 18px; }
-
-/* Полароид под фото */
-.ph { padding: 10px 10px 12px; border-radius: 6px; background: var(--rim); box-shadow: var(--sh); }
-.ph-img { position: relative; aspect-ratio: 4 / 5; border-radius: 2px; display: grid; place-content: center; justify-items: center; gap: 6px; overflow: hidden; color: rgb(28 20 36 / 0.55); font-weight: 600; font-size: 14px; letter-spacing: 0.02em;
-  background: repeating-linear-gradient(135deg, rgb(28 20 36 / 0.045) 0 10px, transparent 10px 20px), linear-gradient(160deg, #FFD9C7, #E6DAFF); }
-.ph-img .ico { width: 26px; height: 26px; stroke-width: 1.6; }
-.ph-cap { margin-top: 9px; font-weight: 500; font-size: 13px; line-height: 1.3; color: rgb(28 20 36 / 0.62); text-align: center; }
 
 /* Герой на компьютере */
 @media (min-width: 1024px) {
@@ -274,9 +291,10 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
   .feat-head { grid-column: 1; position: relative; padding: 18px 0 20px; border-bottom: 1px solid var(--line); }
   .feat-head h3 { font-size: 36px; color: var(--ink-3); transition: color 260ms ease; }
   .feat.on .feat-head h3 { color: var(--ink); }
-  .feat-head p { display: grid; grid-template-rows: 0fr; margin: 0; font-size: 19px; opacity: 0; transition: grid-template-rows 360ms var(--ease-out), opacity 240ms ease, margin-top 360ms var(--ease-out); }
+  .feat-head p { display: grid; grid-template-rows: 0fr; margin: 0; font-size: 19px; opacity: 0; transition: grid-template-rows 360ms var(--ease-out), opacity 240ms ease; }
   .feat-head p > span { overflow: hidden; }
-  .feat.on .feat-head p { grid-template-rows: 1fr; opacity: 1; margin-top: 10px; }
+  .feat-head p > span::before { content: ''; display: block; height: 10px; }
+  .feat.on .feat-head p { grid-template-rows: 1fr; opacity: 1; }
   .feat-btn { display: block; position: absolute; inset: 0; z-index: 2; border: 0; background: none; cursor: pointer; border-radius: 12px; }
   .prog { display: block; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; overflow: hidden; }
   .prog i { display: block; height: 100%; background: var(--cta); transform: scaleX(0); transform-origin: 0 50%; }
@@ -296,6 +314,10 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
 .steps span { padding: 4px 9px; border-radius: 999px; background: var(--paper-2); color: var(--ink-3); font-weight: 600; font-size: 12px; }
 .steps .done { color: var(--ink-2); }
 .steps .cur { background: var(--cta); color: var(--on-cta); }
+.lt { display: flex; gap: 4px; }
+.lt i { width: 22px; height: 26px; display: grid; place-items: center; border-radius: 6px; background: var(--paper); color: var(--ink); font-style: normal; font-weight: 700; font-size: 15px; box-shadow: 0 1px 0 rgb(28 20 36 / 0.15); }
+.lt i.e { background: rgb(28 20 36 / 0.12); box-shadow: none; }
+.lt.loose i { transform: rotate(-6deg); } .lt.loose i:nth-child(2) { transform: rotate(5deg) translateY(2px); }
 .big-word { font-weight: 800; font-size: 54px; line-height: 0.95; letter-spacing: -0.04em; }
 .ex-sent { padding: 10px 12px; border-radius: 14px; background: var(--paper-2); font-size: 14px; line-height: 1.45; color: var(--ink-2); }
 .ex-sent b { color: var(--ink); font-weight: 600; }
@@ -335,37 +357,63 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
 .arrow:disabled { opacity: 0.35; cursor: default; }
 .track { display: flex; gap: 16px; margin-top: 32px; padding: 18px max(16px, (100% - 1240px) / 2) 40px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: max(16px, (100% - 1240px) / 2); overscroll-behavior-x: contain; scrollbar-width: none; }
 .track::-webkit-scrollbar { display: none; }
-.xc { position: relative; flex: none; width: 292px; scroll-snap-align: start; padding: 12px 12px 20px; border-radius: 28px; color: var(--on-st); box-shadow: 0 0 0 4px var(--rim), var(--sh); display: grid; gap: 16px; align-content: start; transform: rotate(var(--r, 0deg)); }
+.xc { position: relative; flex: none; width: 300px; scroll-snap-align: start; padding: 14px 14px 22px; border-radius: var(--r-l); color: var(--on-st); box-shadow: 0 0 0 4px var(--rim), var(--sh); display: grid; gap: 14px; align-content: start; transform: rotate(var(--r, 0deg)); }
 .xc.gre { background: var(--mango); --r: -1deg; }
 .xc.toefl { background: var(--mint); --r: 1deg; }
 .xc.sat { background: var(--lilac); --r: -0.8deg; }
 .xc.gmat { background: var(--sky); --r: 0.8deg; }
-.xc .ph-img { aspect-ratio: 5 / 4; border-radius: 18px; background: repeating-linear-gradient(135deg, rgb(28 20 36 / 0.06) 0 10px, transparent 10px 20px), rgb(255 255 255 / 0.4); }
-.xc-name { padding: 0 8px; font-weight: 800; font-size: 76px; line-height: 0.85; letter-spacing: -0.05em; }
-.xc ul { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 8px; }
-.xc li { padding: 5px 11px; border-radius: 999px; box-shadow: inset 0 0 0 1.5px rgb(28 20 36 / 0.32); font-weight: 600; font-size: 14px; }
-.xc .soon-tag { position: absolute; right: 14px; top: 14px; z-index: 2; padding: 6px 12px; border-radius: 999px; background: var(--on-st); color: #FFF8F0; font-weight: 700; font-size: 14px; transform: rotate(6deg); box-shadow: 0 0 0 3px var(--rim); }
-.xc-line { padding: 0 8px; font-weight: 500; font-size: 15px; color: var(--on-st-2); }
+/* Карточка экзамена: кусок самого продукта и наклейка с баллом пробника в шкале экзамена. */
+.xc-shot { position: relative; height: 212px; }
+.mini { position: absolute; left: 4px; top: 6px; width: calc(100% - 34px); padding: 14px; display: grid; gap: 10px; align-content: start; transform: rotate(-1.6deg); box-shadow: var(--edge), 0 1px 1px rgb(28 20 36 / 0.08), 0 14px 28px -14px rgb(28 20 36 / 0.45); }
+.mini .lab { font-size: 12px; }
+.mq { font-weight: 500; font-size: 15px; line-height: 1.4; text-wrap: pretty; }
+.qc { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.qc div { padding: 8px 10px; border-radius: 12px; background: var(--paper-2); display: grid; }
+.qc small { font-size: 11px; font-weight: 600; color: var(--ink-3); }
+.qc b { font-weight: 800; font-size: 22px; letter-spacing: -0.02em; }
+.pick { justify-self: start; display: flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 11px; border-radius: 12px; font-weight: 600; font-size: 12.5px; }
+.pick.ok { background: var(--right-bg); color: var(--right); box-shadow: inset 0 0 0 1.5px var(--right); }
+.pick .ico { margin-left: 4px; width: 16px; height: 16px; stroke-width: 2.4; }
+.pick .ans { font-weight: 800; font-size: 18px; }
+.player { display: flex; align-items: center; gap: 10px; }
+.round.dark { width: 32px; height: 32px; background: var(--ink); color: var(--bg); }
+.player .wave { height: 26px; }
+.player .wave i { background: var(--line-2); }
+.player .wave i.past { background: var(--ink); }
+.opts-row { display: flex; gap: 6px; }
+.opts-row span { flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; min-height: 36px; border-radius: 12px; background: var(--paper-2); font-weight: 700; font-size: 15px; }
+.opts-row .ok { background: var(--right-bg); color: var(--right); box-shadow: inset 0 0 0 1.5px var(--right); }
+.opts-row .ico { width: 14px; height: 14px; stroke-width: 2.6; }
+.mini-sc { position: absolute; right: -6px; bottom: -14px; z-index: 2; padding: 10px 13px; border-radius: 18px; transform: rotate(5deg); }
+.mini-sc .num { font-size: 28px; }
+.mini-sc .num + span { font-size: 12px; }
+.xc-name { padding: 0 6px; font-weight: 800; font-size: 72px; line-height: 0.85; letter-spacing: -0.05em; }
+.xc-secs { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 6px; }
+.xc-secs li { padding: 5px 11px; border-radius: 999px; box-shadow: inset 0 0 0 1.5px rgb(28 20 36 / 0.3); font-weight: 600; font-size: 14px; }
 @media (min-width: 1024px) {
   .exams-sec { padding: 120px 0 40px; }
   .arrows { display: flex; }
-  .xc { width: 372px; }
-  .xc-name { font-size: 96px; }
+  .xc { width: 360px; }
+  .xc-shot { height: 232px; }
+  .xc-name { font-size: 92px; }
   .track { gap: 24px; }
 }
 
 /* ---------- Цена ---------- */
-.price { position: relative; isolation: isolate; padding: 80px 0 96px; text-align: center; }
+.price { position: relative; isolation: isolate; padding: 72px 0 80px; text-align: center; }
 .price .h2 { font-size: clamp(54px, 15vw, 96px); }
 .price .sub { margin-top: 16px; font-size: 19px; }
 .price .cta { margin-top: 34px; display: none; }
-.price-ph { display: none; }
+.price-stk { display: none; }
 @media (min-width: 1024px) {
   .price { padding: 150px 0 160px; }
   .price .cta { display: inline-flex; }
-  .price-ph { display: block; position: absolute; width: 196px; top: 50%; }
-  .price-ph.l { left: max(24px, (100% - 1240px) / 2 - 56px); margin-top: -190px; transform: rotate(-7deg); }
-  .price-ph.r { right: max(24px, (100% - 1240px) / 2 - 56px); margin-top: -110px; transform: rotate(6deg); }
+}
+/* Наклейки по бокам — только там, где им хватает места рядом с заголовком. */
+@media (min-width: 1280px) {
+  .price-stk { display: block; position: absolute; inset: 0; z-index: 0; width: auto; height: auto; max-width: none; margin: 0; pointer-events: none; }
+  .price-stk .st { pointer-events: auto; }
+  .price .wrap { position: relative; z-index: 1; }
 }
 
 /* ---------- Скачать ---------- */
@@ -394,7 +442,7 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
 
 /* ---------- Кнопка, закреплённая внизу на телефоне ---------- */
 .dock { position: fixed; z-index: 40; left: 16px; right: 16px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
-.dock .cta { width: 100%; box-shadow: 0 1px 0 rgb(255 255 255 / 0.35) inset, 0 14px 30px -10px rgb(0 0 0 / 0.45); }
+.dock .cta { width: 100%; box-shadow: 0 1px 0 rgb(255 255 255 / 0.35) inset, 0 14px 30px -10px rgb(0 0 0 / 0.45), 0 0 0 4px color-mix(in srgb, var(--bg) 70%, transparent); }
 @media (min-width: 1024px) { .dock { display: none; } }
 
 /* Меньше движения: всё стоит на месте и сразу в итоговом виде; цвет и прозрачность остаются. */
@@ -419,7 +467,6 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
   <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
   <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5.5 21V4.5M5.5 4.5h11l-2 4 2 4h-11"/></symbol>
   <symbol id="i-skip" viewBox="0 0 24 24"><path d="M5 6.5l7 5.5-7 5.5ZM13 6.5l7 5.5-7 5.5Z"/></symbol>
-  <symbol id="i-cam" viewBox="0 0 24 24"><path d="M4 8.5h3.2l1.8-2.5h6l1.8 2.5H20v10.5H4Z"/><circle cx="12" cy="13.5" r="3.4"/></symbol>
   <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M4.5 12a7.5 7.5 0 0 1 12.8-5.3L19.5 9M19.5 4.5V9H15M19.5 12a7.5 7.5 0 0 1-12.8 5.3L4.5 15M4.5 19.5V15H9"/></symbol>
   <symbol id="i-laptop" viewBox="0 0 24 24"><path d="M5 6.5A1.5 1.5 0 0 1 6.5 5h11A1.5 1.5 0 0 1 19 6.5V16H5ZM2.5 19h19"/></symbol>
   <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.3 2.4 3.4 5.2 3.4 8.5s-1.1 6.1-3.4 8.5c-2.3-2.4-3.4-5.2-3.4-8.5s1.1-6.1 3.4-8.5Z"/></symbol>
@@ -444,34 +491,42 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
   <div class="wrap">
     <div>
       <h1 class="h1" id="h1">
-        <span class="sr">GRE и TOEFL без репетитора</span>
-        <span class="h1-vis" aria-hidden="true"><span class="swap"><span class="swap-w gre on">GRE</span><span class="swap-w toefl">TOEFL</span></span><br>без репетитора</span>
+        <span class="sr">GRE, TOEFL, SAT и GMAT без репетитора</span>
+        <span class="h1-vis" aria-hidden="true"><span class="swap"><span class="swap-w gre on" data-x="gre">GRE</span><span class="swap-w toefl" data-x="toefl">TOEFL</span><span class="swap-w sat" data-x="sat">SAT</span><span class="swap-w gmat" data-x="gmat">GMAT</span></span><br>без репетитора</span>
       </h1>
       <p class="lede">Вопросы как на&nbsp;настоящем экзамене и&nbsp;разбор каждой ошибки на&nbsp;вашем языке.</p>
       <ul class="exams" aria-label="Экзамены">
         <li class="ex gre">GRE</li>
         <li class="ex toefl">TOEFL</li>
-        <li class="ex soon">SAT <small>скоро</small></li>
-        <li class="ex soon">GMAT <small>скоро</small></li>
+        <li class="ex sat">SAT</li>
+        <li class="ex gmat">GMAT</li>
       </ul>
       <div class="cta-row">
         <a class="cta" href="#signup">Начать&nbsp;— 7&nbsp;дней бесплатно <svg class="ico"><use href="#i-arrow"/></svg></a>
-        <span class="price-note">Затем [ЦЕНА] в&nbsp;месяц</span>
+        <span class="price-note">Затем 1199&nbsp;₽ в&nbsp;месяц</span>
       </div>
     </div>
 
-    <div class="stage hero-stage" style="--mh:392px; --dh:600px" role="img" aria-label="Вопрос GRE Verbal с разбором ошибки, примерный балл пробника и слово с транскрипцией">
-      <div class="st" style="--l:356px;--t:6px;--w:220px; --ml:232px;--mt:0;--mw:118px; --r:7deg; --z:1">
-        <div class="fl" style="--fd:8s;--fdl:-3s"><figure class="ph card"><div class="ph-img"><svg class="ico"><use href="#i-cam"/></svg>фото</div><figcaption class="ph-cap">Студентка за&nbsp;ноутбуком</figcaption></figure></div>
+    <div class="stage hero-stage" style="--mh:470px; --dh:600px" role="img" aria-label="Вопрос GRE Verbal с разбором ошибки, примерный балл пробного экзамена и слово с транскрипцией">
+      <div class="st d-only" style="--l:4px;--t:30px;--w:196px; --r:-6deg; --z:3">
+        <div class="fl" style="--fd:7.5s;--fdl:-2s"><div class="card sk lilac word">
+          <div class="word-h"><span class="hw">laconic</span><span class="round"><svg class="ico"><use href="#i-speaker"/></svg></span></div>
+          <span class="ipa">/ləˈkɒnɪk/</span>
+          <span class="word-tr">лаконичный</span>
+        </div></div>
       </div>
-      <div class="st d-only" style="--l:0;--t:0;--w:206px; --r:-7deg; --z:4">
-        <div class="fl" style="--fd:6.5s;--fdl:-1s"><div class="card sk mango score">
-          <span class="sk-l">Пробный экзамен</span>
-          <div class="score-row"><div><span class="num">158</span><span>Verbal</span></div><div><span class="num">164</span><span>Quant</span></div></div>
+      <div class="st" style="--l:368px;--t:0;--w:226px; --ml:206px;--mt:0;--mw:150px; --r:6deg; --z:4">
+        <div class="fl" style="--fd:6.5s;--fdl:-1s"><div class="card sk sc" id="hero-score" data-x="gre">
+          <div class="sv-wrap">
+          <div class="sv on" data-x="gre"><span class="sk-l">Пробник · GRE</span><div class="score-row"><div><span class="num">158</span><span>Verbal</span></div><div><span class="num">164</span><span>Quant</span></div></div></div>
+          <div class="sv" data-x="toefl"><span class="sk-l">Пробник · TOEFL</span><div class="score-row"><div><span class="num">5,5</span><span>Reading</span></div><div><span class="num">6</span><span>Listening</span></div></div></div>
+          <div class="sv" data-x="sat"><span class="sk-l">Пробник · SAT</span><div><span class="num">1450</span><span>Reading and Writing 710, Math 740</span></div></div>
+          <div class="sv" data-x="gmat"><span class="sk-l">Пробник · GMAT</span><div><span class="num">655</span><span>Quant 84, Verbal 83, Data Insights 80</span></div></div>
+          </div>
           <span class="sk-foot">наша оценка</span>
         </div></div>
       </div>
-      <div class="st" style="--l:64px;--t:150px;--w:360px; --ml:0;--mt:16px;--mw:300px; --r:-2.5deg; --z:2">
+      <div class="st" style="--l:66px;--t:168px;--w:360px; --ml:0;--mt:98px;--mw:300px; --r:-2.5deg; --z:2">
         <div class="fl" style="--fd:9s;--fdl:-5s"><div class="card q" id="hero-q" data-s="idle">
           <div class="q-top"><span>Verbal · Text Completion</span><b>3 из 10</b></div>
           <div class="bar"><i style="transform:scaleX(.3)"></i></div>
@@ -484,14 +539,7 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
           <div class="q-btn"><span class="b1">Проверить</span><span class="b2">Дальше</span></div>
         </div></div>
       </div>
-      <div class="st d-only" style="--l:0;--t:470px;--w:190px; --r:5deg; --z:3">
-        <div class="fl" style="--fd:7.5s;--fdl:-2s"><div class="card sk lilac word">
-          <div class="word-h"><span class="hw">laconic</span><span class="round"><svg class="ico"><use href="#i-speaker"/></svg></span></div>
-          <span class="ipa">/ləˈkɒnɪk/</span>
-          <span class="sk-h" style="font-size:16px;font-weight:600">лаконичный</span>
-        </div></div>
-      </div>
-      <div class="st" style="--l:300px;--t:366px;--w:296px; --ml:82px;--mt:236px;--mw:272px; --r:2deg; --z:5">
+      <div class="st" style="--l:302px;--t:392px;--w:296px; --ml:82px;--mt:318px;--mw:272px; --r:2deg; --z:5">
         <div class="fl" style="--fd:8.5s;--fdl:-6s"><div class="pop wait" id="hero-bub"><div class="card bub">
           <div class="bub-h"><svg class="ico"><use href="#i-x"/></svg>Неверно</div>
           <p>Нужно слово с&nbsp;оттенком <mark>«для галочки»</mark>: <b>perfunctory</b>.</p>
@@ -511,7 +559,7 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
       <div class="feat on" data-i="0">
         <div class="feat-head">
           <h3>Разбор каждой ошибки</h3>
-          <p><span>Почему ответ неверный и&nbsp;где была ловушка. На&nbsp;вашем языке.</span></p>
+          <p><span>Объясняем на&nbsp;вашем языке, почему ответ неверный и&nbsp;где была ловушка.</span></p>
           <button class="feat-btn" type="button" aria-controls="stk-0" aria-expanded="true"><span class="sr">Разбор каждой ошибки</span></button>
           <span class="prog" aria-hidden="true"><i></i></span>
         </div>
@@ -563,8 +611,8 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
               <svg class="ico" style="margin-left:auto;width:22px;height:22px;stroke-width:2.4"><use href="#i-check"/></svg>
             </div></div>
           </div>
-          <div class="st d-only" style="--l:380px;--t:0;--w:150px; --r:-6deg; --z:3">
-            <div class="fl" style="--fd:7.4s;--fdl:-5s"><div class="card sk mango"><span class="sk-l">Слово дня</span><div class="sk-h">verbose</div><span class="ipa">/vɜːˈbəʊs/</span></div></div>
+          <div class="st d-only" style="--l:356px;--t:0;--w:196px; --r:-6deg; --z:3">
+            <div class="fl" style="--fd:7.4s;--fdl:-5s"><div class="card sk mango" style="display:grid;gap:8px"><span class="sk-l">Собрать слово</span><div class="lt"><i>l</i><i>a</i><i>c</i><i>o</i><i class="e"></i><i class="e"></i><i class="e"></i></div><div class="lt loose"><i>c</i><i>n</i><i>i</i></div></div></div>
           </div>
         </div>
       </div>
@@ -572,7 +620,7 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
       <div class="feat" data-i="2">
         <div class="feat-head">
           <h3>Пробный экзамен</h3>
-          <p><span>Секции и&nbsp;таймер как на&nbsp;настоящем. В&nbsp;конце&nbsp;— балл по&nbsp;шкале экзамена.</span></p>
+          <p><span>Секции и&nbsp;таймер как в&nbsp;день экзамена, в&nbsp;конце&nbsp;— примерный балл.</span></p>
           <button class="feat-btn" type="button" aria-controls="stk-2" aria-expanded="false"><span class="sr">Пробный экзамен</span></button>
           <span class="prog" aria-hidden="true"><i></i></span>
         </div>
@@ -598,7 +646,7 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
       <div class="feat" data-i="3">
         <div class="feat-head">
           <h3>Эссе и&nbsp;речь с&nbsp;оценкой</h3>
-          <p><span>Примерный балл и&nbsp;правки прямо по&nbsp;вашему ответу.</span></p>
+          <p><span>Примерный балл и&nbsp;правки прямо в&nbsp;вашем ответе.</span></p>
           <button class="feat-btn" type="button" aria-controls="stk-3" aria-expanded="false"><span class="sr">Эссе и речь с оценкой</span></button>
           <span class="prog" aria-hidden="true"><i></i></span>
         </div>
@@ -663,7 +711,7 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
   <div class="wrap sec-h">
     <div>
       <h2 class="h2" id="exams-h">Какой экзамен сдаёте?</h2>
-      <p class="sub">GRE и&nbsp;TOEFL со&nbsp;всеми разделами. SAT и&nbsp;GMAT скоро.</p>
+      <p class="sub">Все разделы и&nbsp;пробник с&nbsp;баллом по&nbsp;шкале экзамена.</p>
     </div>
     <div class="arrows">
       <button class="arrow" type="button" data-dir="-1" aria-label="Назад" disabled><svg class="ico"><use href="#i-back"/></svg></button>
@@ -672,26 +720,48 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
   </div>
   <ul class="track" aria-label="Экзамены">
     <li class="xc gre">
-      <div class="ph-img"><svg class="ico"><use href="#i-cam"/></svg>фото</div>
-      <div class="xc-name">GRE</div>
-      <ul><li>Verbal</li><li>Quant</li><li>Эссе</li><li>Слова</li></ul>
+      <div class="xc-shot" aria-hidden="true">
+        <div class="mini card"><span class="lab">Quant · Quantitative Comparison</span>
+          <div class="qc"><div><small>Quantity A</small><b>3<sup>4</sup></b></div><div><small>Quantity B</small><b>2<sup>6</sup></b></div></div>
+          <div class="pick ok">Quantity A is greater<svg class="ico"><use href="#i-check"/></svg></div>
+        </div>
+        <div class="mini-sc sk tomato"><span class="sk-l">Пробник</span><div><span class="num">164</span><span>Quant, Verbal 158</span></div></div>
+      </div>
+      <h3 class="xc-name">GRE</h3>
+      <ul class="xc-secs"><li>Verbal</li><li>Quant</li><li>Analytical Writing</li><li>Слова</li></ul>
     </li>
     <li class="xc toefl">
-      <div class="ph-img"><svg class="ico"><use href="#i-cam"/></svg>фото</div>
-      <div class="xc-name">TOEFL</div>
-      <ul><li>Reading</li><li>Listening</li><li>Writing</li><li>Speaking</li><li>Слова</li></ul>
+      <div class="xc-shot" aria-hidden="true">
+        <div class="mini card"><span class="lab">Listening · Lecture</span>
+          <div class="player"><span class="round dark"><svg class="ico f"><use href="#i-play"/></svg></span><span class="wave"><i style="height:30%" class="past"></i><i style="height:70%" class="past"></i><i style="height:45%" class="past"></i><i style="height:90%" class="past"></i><i style="height:55%" class="past"></i><i style="height:35%"></i><i style="height:80%"></i><i style="height:50%"></i><i style="height:65%"></i><i style="height:30%"></i><i style="height:75%"></i><i style="height:40%"></i></span><span class="lab">1:12</span></div>
+          <p class="mq">What is the professor mainly discussing?</p>
+        </div>
+        <div class="mini-sc sk pink"><span class="sk-l">Пробник</span><div><span class="num">5,5</span><span>общий балл</span></div></div>
+      </div>
+      <h3 class="xc-name">TOEFL</h3>
+      <ul class="xc-secs"><li>Reading</li><li>Listening</li><li>Writing</li><li>Speaking</li><li>Слова</li></ul>
     </li>
     <li class="xc sat">
-      <span class="soon-tag">Скоро</span>
-      <div class="ph-img"><svg class="ico"><use href="#i-cam"/></svg>фото</div>
-      <div class="xc-name">SAT</div>
-      <p class="xc-line">Готовим задания и&nbsp;разборы</p>
+      <div class="xc-shot" aria-hidden="true">
+        <div class="mini card"><span class="lab">Math · вопрос 12 из&nbsp;22</span>
+          <p class="mq">If 3x&nbsp;−&nbsp;7&nbsp;=&nbsp;11, what is the value of&nbsp;x?</p>
+          <div class="pick ok"><span class="ans">6</span><svg class="ico"><use href="#i-check"/></svg></div>
+        </div>
+        <div class="mini-sc sk mango"><span class="sk-l">Пробник</span><div><span class="num">1450</span><span>Math 740</span></div></div>
+      </div>
+      <h3 class="xc-name">SAT</h3>
+      <ul class="xc-secs"><li>Reading and Writing</li><li>Math</li></ul>
     </li>
     <li class="xc gmat">
-      <span class="soon-tag">Скоро</span>
-      <div class="ph-img"><svg class="ico"><use href="#i-cam"/></svg>фото</div>
-      <div class="xc-name">GMAT</div>
-      <p class="xc-line">Готовим задания и&nbsp;разборы</p>
+      <div class="xc-shot" aria-hidden="true">
+        <div class="mini card"><span class="lab">Quantitative Reasoning</span>
+          <p class="mq">If 20% of&nbsp;n is 18, what is the value of&nbsp;n?</p>
+          <div class="opts-row"><span>72</span><span class="ok">90<svg class="ico"><use href="#i-check"/></svg></span><span>108</span></div>
+        </div>
+        <div class="mini-sc sk mint"><span class="sk-l">Пробник</span><div><span class="num">655</span><span>Verbal 83</span></div></div>
+      </div>
+      <h3 class="xc-name">GMAT</h3>
+      <ul class="xc-secs"><li>Quantitative Reasoning</li><li>Verbal Reasoning</li><li>Data Insights</li></ul>
     </li>
   </ul>
 </section>
@@ -699,11 +769,25 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
 <!-- ============ Цена ============ -->
 <section class="price" id="price" aria-labelledby="price-h">
   <div class="glow" aria-hidden="true"><i class="blob a"></i><i class="blob b"></i><i class="blob c"></i></div>
-  <figure class="ph price-ph l" aria-hidden="true"><div class="ph-img"><svg class="ico"><use href="#i-cam"/></svg>фото</div><figcaption class="ph-cap">Подготовка в&nbsp;кафе</figcaption></figure>
-  <figure class="ph price-ph r" aria-hidden="true"><div class="ph-img"><svg class="ico"><use href="#i-cam"/></svg>фото</div><figcaption class="ph-cap">После пробника</figcaption></figure>
+  <div class="stage price-stk" aria-hidden="true">
+    <div class="st" style="--l:max(24px, calc(50% - 664px));--t:96px;--w:236px; --r:-7deg; --z:1">
+      <div class="fl" style="--fd:8s;--fdl:-2s"><div class="card pad" style="display:grid;gap:6px">
+        <div class="row"><span class="lab">Слова · 9 из&nbsp;12</span><span class="round" style="background:var(--paper-2);color:var(--ink)"><svg class="ico"><use href="#i-speaker"/></svg></span></div>
+        <div class="big-word" style="font-size:40px">verbose</div>
+        <span class="ipa" style="color:var(--ink-3)">/vɜːˈbəʊs/</span>
+        <span style="font-weight:600">многословный</span>
+      </div></div>
+    </div>
+    <div class="st" style="--l:min(calc(100% - 330px), calc(50% + 410px));--t:250px;--w:300px; --r:6deg; --z:2">
+      <div class="fl" style="--fd:7s;--fdl:-4s"><div class="card sk tomato" style="display:flex;align-items:center;gap:12px">
+        <div><div class="sk-h">Повторить мои ошибки</div><span class="sk-l">12&nbsp;заданий</span></div>
+        <span class="round" style="margin-left:auto"><svg class="ico f"><use href="#i-play"/></svg></span>
+      </div></div>
+    </div>
+  </div>
   <div class="wrap">
     <h2 class="h2" id="price-h">7&nbsp;дней бесплатно</h2>
-    <p class="sub">Затем [ЦЕНА] в&nbsp;месяц.</p>
+    <p class="sub">Затем 1199&nbsp;₽ в&nbsp;месяц.</p>
     <a class="cta" href="#">Начать <svg class="ico"><use href="#i-arrow"/></svg></a>
   </div>
 </section>
@@ -833,14 +917,18 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
   }
 
   var words = document.querySelectorAll('.swap-w'), wi = 0, swapT = null;
+  var score = document.getElementById('hero-score'), svs = Array.prototype.slice.call(score.querySelectorAll('.sv'));
   function swapNext() {
     var cur = words[wi]; wi = (wi + 1) % words.length; var nx = words[wi];
     cur.classList.remove('on'); cur.classList.add('off');
     nx.style.transition = 'none'; nx.classList.remove('off'); void nx.offsetWidth; nx.style.transition = '';
     nx.classList.add('on');
+    var x = nx.dataset.x;
+    score.dataset.x = x;
+    svs.forEach(function (v) { v.classList.toggle('on', v.dataset.x === x); });
   }
   watch(document.querySelector('.swap'), function () {
-    if (!swapT) swapT = setInterval(function () { if (!document.hidden) swapNext(); }, 2600);
+    if (!swapT) swapT = setInterval(function () { if (!document.hidden) swapNext(); }, 2400);
   }, function () { clearInterval(swapT); swapT = null; });
 
   /* ---------- Сцена: на компьютере список слева и одна стопка справа, на телефоне — лента ---------- */
@@ -896,6 +984,10 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
     });
     desk.addEventListener('change', function () { stacks.forEach(function (s) { s.classList.add('dealt'); }); });
   }
+
+  var priceStk = document.querySelector('.price-stk');
+  if (reduce) priceStk.classList.add('dealt');
+  else watch(priceStk, function () { if (!priceStk.classList.contains('dealt') && priceStk.offsetParent !== null) deal(priceStk, { k: 0.35 }); }, null, 0.2);
 
   /* ---------- Карусель экзаменов ---------- */
   var track = document.querySelector('.track');
