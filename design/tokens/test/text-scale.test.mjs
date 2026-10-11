@@ -1,40 +1,33 @@
+// Проверяем размеры и трекинг всех профилей на трёх выходах, включая оставшиеся общие роли.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { resolveModes, render } from '../build.mjs';
-import { loadCatalog, catalogStyle } from './catalog-css.mjs';
 
-const fixtures = JSON.parse(await readFile(new URL('./fixtures/text-normalization.json', import.meta.url), 'utf8'));
-const catalog = await loadCatalog(fixtures.map((r) => r.file));
 const modes = await resolveModes();
 const { files } = await render();
 const camel = (name) => name.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
 const fmt = (n) => Number(n.toFixed(4));
-
-for (const { file, selector, wide, role, before } of fixtures) {
-  test(`${file}: ${selector} / ${wide ? 'wide' : 'phone'} → type.${role}`, () => {
-    const style = catalogStyle(catalog, file, selector, wide);
-    const token = modes.light.find((t) => t.path.join('.') === `type.${role}`);
-    assert.ok(token, `нет type.${role}`);
+const nativeWeight = {400: '.regular', 500: '.medium', 600: '.semibold', 650: '.semibold', 700: '.bold', 800: '.heavy'};
+for (const token of modes.light.filter((t) => t.$type === 'typography')) {
+  const role = token.path.at(-1);
+  test(`${role}: одинаковый профиль в темах и на трёх выходах`, () => {
     const value = token.$value;
-    assert.equal(style.size, value.fontSize.value);
-    assert.equal(style.height, value.lineHeight);
-    assert.equal(style.weight, value.fontWeight);
-    assert.deepEqual(style.tracking, value.letterSpacing);
-    assert.ok(Math.abs(style.size - before.size) <= 2 + 1e-9, 'размер сдвинут больше 2 px');
-    assert.ok(Math.abs(style.height - before.height) <= 0.1 + 1e-9, 'интерлиньяж сдвинут больше 0,1');
-    assert.equal(style.weight, before.weight);
-    const dark = modes.dark.find((t) => t.path.join('.') === `type.${role}`);
-    assert.deepEqual(dark.$value, value, 'обычный текст не зависит от темы');
-    const cssRole = role.replace(/-wide$/, '');
-    const css = files['web/tokens.css'].split('@media (min-width: 900px)')[role.endsWith('-wide') ? 1 : 0];
-    assert.ok(css.includes(`--font-${cssRole}: ${value.fontWeight} ${fmt(value.fontSize.value / 16)}rem/${value.lineHeight} var(--font-family-text);`));
+    assert.deepEqual(modes.dark.find((t) => t.path.join('.') === token.path.join('.')).$value, value);
+    const base = role.replace(/-wide$/, '');
+    const cssRole = role.endsWith('-wide') || !modes.light.some((t) => t.path.join('.') === `type.${role}-wide`) ? role : role + '-base';
+    const family = value.fontFamily[0] === 'IBM Plex Mono' ? 'mono' : 'text';
+    assert.ok(files['web/tokens.css'].includes(`--font-${cssRole}: ${value.fontWeight} ${fmt(value.fontSize.value / 16)}rem/${value.lineHeight} var(--font-family-${family});`));
     const tracking = fmt(value.letterSpacing.value / (value.letterSpacing.unit === 'em' ? 1 : value.fontSize.value));
-    assert.ok(css.includes(`--tracking-${cssRole}: ${tracking}em;`));
+    const height = fmt(value.fontSize.value * value.lineHeight);
+    assert.ok(files['web/tokens.css'].includes(`--tracking-${cssRole}: ${tracking}em;`));
     const swift = files['apple/GPTokens.swift'].split('\n').find((s) => s.trimStart().startsWith(`${camel(role)} = GPTextStyle(`));
     const kotlin = files['android/GpTokens.kt'].split('\n').find((s) => s.trimStart().startsWith(`val ${camel(role)} = TextStyle(`));
-    assert.ok(swift?.includes(`size: ${style.size}, lineHeight: ${fmt(style.size * style.height)}`));
-    assert.ok(kotlin?.includes(`fontSize = ${style.size}.sp, lineHeight = ${fmt(style.size * style.height)}.sp`));
+    assert.ok(swift?.includes(`size: ${value.fontSize.value}, lineHeight: ${height}, weight: ${nativeWeight[value.fontWeight]}, tracking: ${tracking}`));
+    assert.ok(swift?.includes(`fontFamily: "${value.fontFamily[0]}"`));
+    const kotlinWeight = value.fontWeight % 100 === 0 ? `FontWeight.W${value.fontWeight}` : `FontWeight(${value.fontWeight})`;
+    assert.ok(kotlin?.includes(`fontSize = ${value.fontSize.value}.sp, lineHeight = ${height}.sp, fontWeight = ${kotlinWeight}, letterSpacing = (${tracking}).em`));
+    assert.ok(files['web/tokens.css'].includes(`--font-${base}:`));
   });
 }
 

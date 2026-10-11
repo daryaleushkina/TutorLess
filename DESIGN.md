@@ -1,82 +1,128 @@
 ---
 name: GrePrepApp
-description: Подготовка к GRE® — дизайн «Ночная студия»
+description: Подготовка к GRE® — спокойный стиль B
 colors:
-  bg: "#E2E3F1"
-  surface: "#EEEFF8"
-  surface-2: "#D4D6EA"
-  text: "#11132E"
-  text-2: "#454A6E"
-  text-3: "#4F5579"
-  line: "rgb(17 19 46 / 0.1)"
-  line-strong: "rgb(17 19 46 / 0.22)"
-  accent: "#3B3FB0"
-  on-accent: "#FFFFFF"
-  accent-soft: "rgb(59 63 176 / 0.1)"
-  focus: "#3B3FB0"
-  right: "#00664E"
-  right-soft: "rgb(0 102 78 / 0.11)"
-  wrong: "#A82F17"
-  wrong-soft: "rgb(168 47 23 / 0.1)"
-  verbal: "#5A3FD6"
-  verbal-soft: "rgb(90 63 214 / 0.11)"
-  quant: "#00664E"
-  quant-soft: "rgb(0 102 78 / 0.11)"
-  essay: "#844C00"
-  essay-soft: "rgb(132 76 0 / 0.11)"
-  words: "#A12A60"
-  words-soft: "rgb(161 42 96 / 0.11)"
-  exam: "#0E1430"
-  exam-soft: "rgb(14 20 48 / 0.08)"
-  nav-bg: "#E8E9F5"
-  reading: "#2354C5"
-  reading-soft: "rgb(35 84 197 / 0.1)"
-  listening: "#006677"
-  listening-soft: "rgb(0 102 119 / 0.1)"
-  writing: "#894E00"
-  writing-soft: "rgb(137 78 0 / 0.1)"
-  speaking: "#A92864"
-  speaking-soft: "rgb(169 40 100 / 0.1)"
+  bg: "#FBF3EA"
+  surface: "#FFFDF9"
+  surface-2: "#F3EADF"
+  surface-3: "#EADFD2"
+  text: "#1C1424"
+  text-2: "#4E4459"
+  text-3: "#6B6176"
+  line: "rgb(28 20 36 / 0.09)"
+  line-strong: "rgb(28 20 36 / 0.18)"
+  accent: "#FF5B3A"
+  on-accent: "#1C1424"
+  focus: "#E84523"
+  nav-bg: "#FBF3EA"
+  right: "#00724A"
+  right-soft: "rgb(67 214 163 / 0.2)"
+  wrong: "#BA2C11"
+  wrong-soft: "rgb(255 107 74 / 0.14)"
+  highlight: "rgb(67 214 163 / 0.4)"
+  verbal: "#7357F0"
+  quant: "#0E9F6E"
+  essay: "#C98A00"
+  words: "#D9468F"
+  exam: "#2F86D6"
+  exam-gre: "#FFC53D"
+  exam-toefl: "#43D6A3"
+  exam-sat: "#B9A6FF"
+  exam-gmat: "#82CBFF"
+  accent-soft: "rgb(255 91 58 / 0.14)"
+  verbal-soft: "rgb(115 87 240 / 0.1)"
+  quant-soft: "rgb(14 159 110 / 0.1)"
+  essay-soft: "rgb(201 138 0 / 0.1)"
+  words-soft: "rgb(217 70 143 / 0.1)"
+  exam-soft: "rgb(47 134 214 / 0.1)"
+  exam-gre-soft: "rgb(255 197 61 / 0.1)"
+  exam-toefl-soft: "rgb(67 214 163 / 0.1)"
+  exam-sat-soft: "rgb(185 166 255 / 0.1)"
+  exam-gmat-soft: "rgb(130 203 255 / 0.1)"
+  reading: "#82CBFF"
+  reading-soft: "rgb(130 203 255 / 0.1)"
+  listening: "#43D6A3"
+  listening-soft: "rgb(67 214 163 / 0.1)"
+  writing: "#FFC53D"
+  writing-soft: "rgb(255 197 61 / 0.1)"
+  speaking: "#FF9ECD"
+  speaking-soft: "rgb(255 158 205 / 0.1)"
+  verbal-ink: "#6747DF"
+  quant-ink: "#00724D"
+  essay-ink: "#875B00"
+  words-ink: "#B82374"
+  exam-ink: "#0066B2"
+  reading-ink: "#1C6998"
+  listening-ink: "#007252"
+  writing-ink: "#805E00"
+  speaking-ink: "#9D4573"
+  exam-gre-ink: "#805E00"
+  exam-toefl-ink: "#007252"
+  exam-sat-ink: "#6B56A8"
+  exam-gmat-ink: "#1C6998"
   sign-in-apple-bg: "#000000"
   sign-in-apple-text: "#FFFFFF"
   sign-in-google-bg: "#FFFFFF"
   sign-in-google-stroke: "#747775"
   sign-in-google-text: "#1F1F1F"
-  bg-dark: "#0A0F1F"
-  surface-dark: "#121931"
-  surface-2-dark: "#1A2343"
-  text-dark: "#EDF1FB"
-  text-2-dark: "#A8B1CC"
-  text-3-dark: "#8892B0"
-  line-dark: "rgb(168 184 232 / 0.1)"
-  line-strong-dark: "rgb(168 184 232 / 0.22)"
-  accent-dark: "#5CCFFF"
-  on-accent-dark: "#051425"
-  accent-soft-dark: "rgb(92 207 255 / 0.13)"
-  focus-dark: "#5CCFFF"
-  right-dark: "#6BE3A4"
-  right-soft-dark: "rgb(107 227 164 / 0.13)"
-  wrong-dark: "#FF8B78"
-  wrong-soft-dark: "rgb(255 139 120 / 0.13)"
-  verbal-dark: "#A897FF"
-  verbal-soft-dark: "rgb(168 151 255 / 0.16)"
-  quant-dark: "#4FD9B0"
-  quant-soft-dark: "rgb(79 217 176 / 0.15)"
-  essay-dark: "#FFBE63"
-  essay-soft-dark: "rgb(255 190 99 / 0.15)"
-  words-dark: "#FF86B4"
-  words-soft-dark: "rgb(255 134 180 / 0.15)"
-  exam-dark: "#EDF1FB"
-  exam-soft-dark: "rgb(237 241 251 / 0.1)"
-  nav-bg-dark: "#0D1328"
-  reading-dark: "#8DB1FF"
-  reading-soft-dark: "rgb(141 177 255 / 0.16)"
-  listening-dark: "#5FD3E6"
-  listening-soft-dark: "rgb(95 211 230 / 0.15)"
-  writing-dark: "#FFBE63"
-  writing-soft-dark: "rgb(255 190 99 / 0.15)"
-  speaking-dark: "#FF86B4"
-  speaking-soft-dark: "rgb(255 134 180 / 0.15)"
+  bg-dark: "#140F1C"
+  surface-dark: "#1E1828"
+  surface-2-dark: "#282133"
+  surface-3-dark: "#342B41"
+  text-dark: "#FBF4EC"
+  text-2-dark: "#CEC3DA"
+  text-3-dark: "#A698B6"
+  line-dark: "rgb(251 244 236 / 0.08)"
+  line-strong-dark: "rgb(251 244 236 / 0.2)"
+  accent-dark: "#FF5B3A"
+  on-accent-dark: "#1C1424"
+  focus-dark: "#FF5B3A"
+  nav-bg-dark: "#140F1C"
+  right-dark: "#5FE3AE"
+  right-soft-dark: "rgb(67 214 163 / 0.14)"
+  wrong-dark: "#FF8D75"
+  wrong-soft-dark: "rgb(255 107 74 / 0.14)"
+  highlight-dark: "rgb(67 214 163 / 0.3)"
+  verbal-dark: "#B9A6FF"
+  quant-dark: "#43D6A3"
+  essay-dark: "#FFC53D"
+  words-dark: "#FF9ECD"
+  exam-dark: "#82CBFF"
+  exam-gre-dark: "#FFC53D"
+  exam-toefl-dark: "#43D6A3"
+  exam-sat-dark: "#B9A6FF"
+  exam-gmat-dark: "#82CBFF"
+  accent-soft-dark: "rgb(255 91 58 / 0.14)"
+  verbal-soft-dark: "rgb(185 166 255 / 0.14)"
+  quant-soft-dark: "rgb(67 214 163 / 0.14)"
+  essay-soft-dark: "rgb(255 197 61 / 0.14)"
+  words-soft-dark: "rgb(255 158 205 / 0.14)"
+  exam-soft-dark: "rgb(130 203 255 / 0.14)"
+  exam-gre-soft-dark: "rgb(255 197 61 / 0.14)"
+  exam-toefl-soft-dark: "rgb(67 214 163 / 0.14)"
+  exam-sat-soft-dark: "rgb(185 166 255 / 0.14)"
+  exam-gmat-soft-dark: "rgb(130 203 255 / 0.14)"
+  reading-dark: "#82CBFF"
+  reading-soft-dark: "rgb(130 203 255 / 0.14)"
+  listening-dark: "#43D6A3"
+  listening-soft-dark: "rgb(67 214 163 / 0.14)"
+  writing-dark: "#FFC53D"
+  writing-soft-dark: "rgb(255 197 61 / 0.14)"
+  speaking-dark: "#FF9ECD"
+  speaking-soft-dark: "rgb(255 158 205 / 0.14)"
+  verbal-ink-dark: "#B9A6FF"
+  quant-ink-dark: "#43D6A3"
+  essay-ink-dark: "#FFC53D"
+  words-ink-dark: "#FF9ECD"
+  exam-ink-dark: "#82CBFF"
+  reading-ink-dark: "#82CBFF"
+  listening-ink-dark: "#43D6A3"
+  writing-ink-dark: "#FFC53D"
+  speaking-ink-dark: "#FF9ECD"
+  exam-gre-ink-dark: "#FFC53D"
+  exam-toefl-ink-dark: "#43D6A3"
+  exam-sat-ink-dark: "#B9A6FF"
+  exam-gmat-ink-dark: "#82CBFF"
   sign-in-apple-bg-dark: "#FFFFFF"
   sign-in-apple-text-dark: "#000000"
   sign-in-google-bg-dark: "#131314"
@@ -84,256 +130,245 @@ colors:
   sign-in-google-text-dark: "#E3E3E3"
 typography:
   body:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "16px"
     fontWeight: 400
     lineHeight: "23.2px"
-    letterSpacing: "-0.005em"
+    letterSpacing: "0em"
   h1:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "34px"
-    fontWeight: 600
-    lineHeight: "39.1px"
-    letterSpacing: "-0.03em"
+    fontWeight: 800
+    lineHeight: "35.36px"
+    letterSpacing: "-0.035em"
   h1-wide:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "44px"
-    fontWeight: 600
-    lineHeight: "50.6px"
-    letterSpacing: "-0.03em"
+    fontWeight: 800
+    lineHeight: "45.76px"
+    letterSpacing: "-0.035em"
   h2:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "19px"
-    fontWeight: 600
-    lineHeight: "23.75px"
-    letterSpacing: "-0.015em"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "22px"
+    fontWeight: 800
+    lineHeight: "25.3px"
+    letterSpacing: "-0.025em"
   h3:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "16px"
-    fontWeight: 600
-    lineHeight: "20.8px"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "17px"
+    fontWeight: 700
+    lineHeight: "22.1px"
     letterSpacing: "-0.01em"
   eyebrow:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "13px"
     fontWeight: 500
     lineHeight: "18.85px"
     letterSpacing: "0em"
   lead:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "17px"
     fontWeight: 400
     lineHeight: "24.65px"
     letterSpacing: "-0.005em"
   button:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "16px"
-    fontWeight: 600
-    lineHeight: "23.2px"
-    letterSpacing: "0.005em"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "16.5px"
+    fontWeight: 700
+    lineHeight: "23.925px"
+    letterSpacing: "-0.01em"
   exam-switch:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "14px"
-    fontWeight: 600
-    lineHeight: "20.3px"
-    letterSpacing: "0.02em"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "15px"
+    fontWeight: 700
+    lineHeight: "21.75px"
+    letterSpacing: "-0.005em"
   start-title:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "30px"
-    fontWeight: 600
-    lineHeight: "34.5px"
-    letterSpacing: "-0.03em"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "28px"
+    fontWeight: 800
+    lineHeight: "29.4px"
+    letterSpacing: "-0.035em"
   start-title-wide:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "44px"
-    fontWeight: 600
-    lineHeight: "50.6px"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "34px"
+    fontWeight: 800
+    lineHeight: "35.7px"
     letterSpacing: "-0.035em"
   meta:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "14px"
     fontWeight: 400
     lineHeight: "20.3px"
     letterSpacing: "-0.005em"
   section-name:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "17px"
-    fontWeight: 600
-    lineHeight: "24.65px"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "16.5px"
+    fontWeight: 650
+    lineHeight: "23.925px"
     letterSpacing: "-0.01em"
   caption:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "13px"
     fontWeight: 400
     lineHeight: "18.85px"
     letterSpacing: "-0.005em"
   section-stat:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "24px"
-    fontWeight: 300
-    lineHeight: "25.2px"
-    letterSpacing: "-0.02em"
-    fontWeightDark: 200
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "16px"
+    fontWeight: 700
+    lineHeight: "23.2px"
+    letterSpacing: "0em"
   section-stat-wide:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "28px"
-    fontWeight: 300
-    lineHeight: "29.4px"
-    letterSpacing: "-0.02em"
-    fontWeightDark: 200
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "16px"
+    fontWeight: 700
+    lineHeight: "23.2px"
+    letterSpacing: "0em"
   session-count:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "22px"
-    fontWeight: 300
+    fontWeight: 800
     lineHeight: "31.9px"
-    letterSpacing: "-0.02em"
-    fontWeightDark: 200
+    letterSpacing: "-0.04em"
   session-count-wide:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "26px"
-    fontWeight: 300
+    fontWeight: 800
     lineHeight: "37.7px"
-    letterSpacing: "-0.02em"
-    fontWeightDark: 200
+    letterSpacing: "-0.04em"
   q-text:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "20px"
     fontWeight: 400
-    lineHeight: "32px"
-    letterSpacing: "-0.01em"
+    lineHeight: "32.4px"
+    letterSpacing: "-0.005em"
   q-text-wide:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "24px"
-    fontWeight: 400
-    lineHeight: "38.4px"
-    letterSpacing: "-0.01em"
-  opt:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "17px"
-    fontWeight: 500
-    lineHeight: "24.65px"
-    letterSpacing: "-0.005em"
-  answer:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "15px"
-    fontWeight: 500
-    lineHeight: "21.75px"
-    letterSpacing: "-0.005em"
-  explain-body:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "15px"
-    fontWeight: 400
-    lineHeight: "23.25px"
-    letterSpacing: "-0.005em"
-  action:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "15px"
-    fontWeight: 500
-    lineHeight: "21.75px"
-    letterSpacing: "-0.005em"
-  seg:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "13px"
-    fontWeight: 600
-    lineHeight: "18.85px"
-    letterSpacing: "-0.005em"
-  score-label:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "13px"
-    fontWeight: 500
-    lineHeight: "18.85px"
-    letterSpacing: "-0.005em"
-  score-num:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "32px"
-    fontWeight: 300
-    lineHeight: "32px"
-    letterSpacing: "-0.04em"
-    fontWeightDark: 200
-  score-num-wide:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "44px"
-    fontWeight: 300
-    lineHeight: "44px"
-    letterSpacing: "-0.04em"
-    fontWeightDark: 200
-  stat-value:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "18px"
-    fontWeight: 300
-    lineHeight: "26.1px"
-    letterSpacing: "-0.02em"
-    fontWeightDark: 200
-  exam-title:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "36px"
-    fontWeight: 600
-    lineHeight: "41.4px"
-    letterSpacing: "-0.03em"
-  exam-title-wide:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "48px"
-    fontWeight: 600
-    lineHeight: "55.2px"
-    letterSpacing: "-0.03em"
-  exam-name:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "48px"
-    fontWeight: 300
-    lineHeight: "48px"
-    letterSpacing: "-0.04em"
-    fontWeightDark: 200
-  exam-name-wide:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "60px"
-    fontWeight: 300
-    lineHeight: "60px"
-    letterSpacing: "-0.04em"
-    fontWeightDark: 200
-  headword:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "56px"
-    fontWeight: 300
-    lineHeight: "56px"
-    letterSpacing: "-0.04em"
-    fontWeightDark: 200
-  headword-wide:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "88px"
-    fontWeight: 300
-    lineHeight: "88px"
-    letterSpacing: "-0.04em"
-    fontWeightDark: 200
-  sense-en:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "20px"
     fontWeight: 400
-    lineHeight: "28px"
-    letterSpacing: "-0.01em"
-  word-meta:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "15px"
-    fontWeight: 400
-    lineHeight: "21.75px"
+    lineHeight: "32.4px"
     letterSpacing: "-0.005em"
-  example:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+  opt:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "17px"
-    fontWeight: 400
+    fontWeight: 500
     lineHeight: "24.65px"
-    letterSpacing: "-0.005em"
-  nav-label:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "11px"
-    fontWeight: 500
-    lineHeight: "15.95px"
-    letterSpacing: "-0.005em"
-  nav-label-wide:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    letterSpacing: "0em"
+  answer:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "15px"
-    fontWeight: 500
+    fontWeight: 650
     lineHeight: "21.75px"
-    letterSpacing: "-0.005em"
+    letterSpacing: "0em"
+  explain-body:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "16px"
+    fontWeight: 400
+    lineHeight: "25.28px"
+    letterSpacing: "0em"
+  action:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "15px"
+    fontWeight: 600
+    lineHeight: "21.75px"
+    letterSpacing: "0em"
+  seg:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "13px"
+    fontWeight: 700
+    lineHeight: "18.85px"
+    letterSpacing: "0.02em"
+  score-label:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "14px"
+    fontWeight: 600
+    lineHeight: "20.3px"
+    letterSpacing: "0em"
+  score-num:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "30px"
+    fontWeight: 800
+    lineHeight: "31.5px"
+    letterSpacing: "-0.04em"
+  score-num-wide:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "30px"
+    fontWeight: 800
+    lineHeight: "31.5px"
+    letterSpacing: "-0.04em"
+  stat-value:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "16px"
+    fontWeight: 700
+    lineHeight: "23.2px"
+    letterSpacing: "0em"
+  exam-title:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "22px"
+    fontWeight: 800
+    lineHeight: "25.3px"
+    letterSpacing: "-0.025em"
+  exam-title-wide:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "22px"
+    fontWeight: 800
+    lineHeight: "25.3px"
+    letterSpacing: "-0.025em"
+  exam-name:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "16px"
+    fontWeight: 800
+    lineHeight: "23.2px"
+    letterSpacing: "-0.02em"
+  exam-name-wide:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "16px"
+    fontWeight: 800
+    lineHeight: "23.2px"
+    letterSpacing: "-0.02em"
+  headword:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "52px"
+    fontWeight: 800
+    lineHeight: "50.96px"
+    letterSpacing: "-0.045em"
+  headword-wide:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "52px"
+    fontWeight: 800
+    lineHeight: "50.96px"
+    letterSpacing: "-0.045em"
+  sense-en:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "18px"
+    fontWeight: 400
+    lineHeight: "26.1px"
+    letterSpacing: "0em"
+  word-meta:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "15px"
+    fontWeight: 400
+    lineHeight: "21.75px"
+    letterSpacing: "0em"
+  example:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "15.5px"
+    fontWeight: 400
+    lineHeight: "22.475px"
+    letterSpacing: "0em"
+  nav-label:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "11.5px"
+    fontWeight: 600
+    lineHeight: "16.675px"
+    letterSpacing: "0.005em"
+  nav-label-wide:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "15.5px"
+    fontWeight: 600
+    lineHeight: "22.475px"
+    letterSpacing: "0.005em"
   ipa:
     fontFamily: "'IBM Plex Mono', ui-monospace, Menlo, monospace"
     fontSize: "14px"
@@ -341,202 +376,187 @@ typography:
     lineHeight: "20.3px"
     letterSpacing: "-0.005em"
   week-count:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "28px"
-    fontWeight: 300
-    lineHeight: "40.6px"
-    letterSpacing: "-0.03em"
-    fontWeightDark: 200
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "26px"
+    fontWeight: 800
+    lineHeight: "37.7px"
+    letterSpacing: "-0.035em"
   num-label:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "20px"
     fontWeight: 500
     lineHeight: "24px"
     letterSpacing: "-0.015em"
   num-label-wide:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "28px"
     fontWeight: 500
     lineHeight: "33.6px"
     letterSpacing: "-0.015em"
   num-unit:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "22px"
-    fontWeight: 600
+    fontWeight: 800
     lineHeight: "31.9px"
-    letterSpacing: "-0.015em"
+    letterSpacing: "-0.025em"
   prompt-title:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "24px"
     fontWeight: 600
     lineHeight: "30px"
     letterSpacing: "-0.015em"
   prompt-title-wide:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "30px"
-    fontWeight: 600
-    lineHeight: "34.5px"
-    letterSpacing: "-0.03em"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "28px"
+    fontWeight: 800
+    lineHeight: "29.4px"
+    letterSpacing: "-0.035em"
   input-compact:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "17px"
     fontWeight: 500
     lineHeight: "17px"
     letterSpacing: "0em"
   input-compact-wide:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "19px"
     fontWeight: 500
     lineHeight: "19px"
     letterSpacing: "0em"
   input-letter:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "26px"
     fontWeight: 500
     lineHeight: "37.7px"
     letterSpacing: "-0.0031em"
   input-display:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "26px"
     fontWeight: 500
     lineHeight: "31.2px"
     letterSpacing: "0.01em"
   h1-compact:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "34px"
-    fontWeight: 600
-    lineHeight: "39.1px"
-    letterSpacing: "-0.03em"
+    fontWeight: 800
+    lineHeight: "35.36px"
+    letterSpacing: "-0.035em"
   h1-compact-wide:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "40px"
-    fontWeight: 600
-    lineHeight: "46px"
-    letterSpacing: "-0.03em"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "44px"
+    fontWeight: 800
+    lineHeight: "45.76px"
+    letterSpacing: "-0.035em"
   complete-words-text:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "18px"
     fontWeight: 400
     lineHeight: "38.7px"
     letterSpacing: "-0.005em"
   complete-words-text-wide:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "22px"
     fontWeight: 400
     lineHeight: "48.4px"
     letterSpacing: "-0.005em"
   sentence-assembly:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "20px"
     fontWeight: 400
     lineHeight: "46px"
     letterSpacing: "-0.004em"
   sentence-assembly-wide:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "24px"
     fontWeight: 400
     lineHeight: "55.2px"
     letterSpacing: "-0.0033em"
   num-s:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "48px"
-    fontWeight: 300
+    fontWeight: 800
     lineHeight: "48px"
     letterSpacing: "-0.04em"
-    fontWeightDark: 200
   num-s-wide:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "60px"
-    fontWeight: 300
+    fontWeight: 800
     lineHeight: "60px"
     letterSpacing: "-0.04em"
-    fontWeightDark: 200
   num-m:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "56px"
-    fontWeight: 300
-    lineHeight: "56px"
-    letterSpacing: "-0.04em"
-    fontWeightDark: 200
-  num-m-wide:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "72px"
-    fontWeight: 300
-    lineHeight: "72px"
-    letterSpacing: "-0.04em"
-    fontWeightDark: 200
-  num-l:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "70px"
-    fontWeight: 300
-    lineHeight: "70px"
-    letterSpacing: "-0.04em"
-    fontWeightDark: 200
-  num-l-wide:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "88px"
-    fontWeight: 300
-    lineHeight: "88px"
-    letterSpacing: "-0.04em"
-    fontWeightDark: 200
-  num-xl:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "88px"
-    fontWeight: 300
-    lineHeight: "83.6px"
-    letterSpacing: "-0.04em"
-    fontWeightDark: 200
-  num-xl-wide:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "120px"
-    fontWeight: 300
-    lineHeight: "114px"
-    letterSpacing: "-0.04em"
-    fontWeightDark: 200
-  num-xxl:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "104px"
-    fontWeight: 300
-    lineHeight: "93.6px"
-    letterSpacing: "-0.04em"
-    fontWeightDark: 200
-  num-xxl-wide:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "144px"
-    fontWeight: 300
-    lineHeight: "129.6px"
-    letterSpacing: "-0.04em"
-    fontWeightDark: 200
-  num-compact:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
-    fontSize: "36px"
-    fontWeight: 300
-    lineHeight: "37.8px"
-    letterSpacing: "-0.03em"
-    fontWeightDark: 200
-  num-compact-wide:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "52px"
-    fontWeight: 300
+    fontWeight: 800
+    lineHeight: "50.96px"
+    letterSpacing: "-0.045em"
+  num-m-wide:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "52px"
+    fontWeight: 800
+    lineHeight: "50.96px"
+    letterSpacing: "-0.045em"
+  num-l:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "64px"
+    fontWeight: 800
+    lineHeight: "57.6px"
+    letterSpacing: "-0.05em"
+  num-l-wide:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "64px"
+    fontWeight: 800
+    lineHeight: "57.6px"
+    letterSpacing: "-0.05em"
+  num-xl:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "68px"
+    fontWeight: 800
+    lineHeight: "64.6px"
+    letterSpacing: "-0.05em"
+  num-xl-wide:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "68px"
+    fontWeight: 800
+    lineHeight: "64.6px"
+    letterSpacing: "-0.05em"
+  num-xxl:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "120px"
+    fontWeight: 800
+    lineHeight: "96px"
+    letterSpacing: "-0.055em"
+  num-xxl-wide:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "120px"
+    fontWeight: 800
+    lineHeight: "96px"
+    letterSpacing: "-0.055em"
+  num-compact:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "36px"
+    fontWeight: 800
+    lineHeight: "37.8px"
+    letterSpacing: "-0.04em"
+  num-compact-wide:
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
+    fontSize: "52px"
+    fontWeight: 800
     lineHeight: "54.6px"
-    letterSpacing: "-0.03em"
-    fontWeightDark: 200
+    letterSpacing: "-0.04em"
   word-title:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "40px"
-    fontWeight: 300
+    fontWeight: 800
     lineHeight: "44px"
-    letterSpacing: "-0.02em"
-    fontWeightDark: 200
+    letterSpacing: "-0.045em"
   word-title-wide:
-    fontFamily: "Geologica, Onest, system-ui, sans-serif"
+    fontFamily: "Onest, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "56px"
-    fontWeight: 300
+    fontWeight: 800
     lineHeight: "61.6px"
-    letterSpacing: "-0.02em"
-    fontWeightDark: 200
+    letterSpacing: "-0.045em"
 fontFamilies:
-  text: "Geologica, Onest, system-ui, sans-serif"
+  text: "Onest, 'Helvetica Neue', Arial, sans-serif"
   mono: "'IBM Plex Mono', ui-monospace, Menlo, monospace"
   math: "'Source Serif 4', Georgia, serif"
   system: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif"
@@ -544,8 +564,10 @@ fontWeights:
   regular: 400
   medium: 500
   semibold: 600
-  thin: 300
-  thin-dark: 200
+  bold: 700
+  extrabold: 800
+  demibold: 650
+  thin: 800
 signIn:
   apple:
     fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif"
@@ -559,11 +581,11 @@ signIn:
     tracking: "0.25px"
     lineHeight: "20px"
 shadows:
-  glow: "0px 10px 28px -8px rgb(59 63 176 / 0.4)"
-  glow-dark: "0px 10px 32px -6px rgb(92 207 255 / 0.5)"
+  glow: "none"
+  glow-dark: "none"
 rounded:
-  "s": "10px"
-  "m": "16px"
+  "s": "12px"
+  "m": "18px"
   "l": "24px"
   "full": "999px"
 spacing:
@@ -585,13 +607,13 @@ spacing:
   "64": "64px"
   "72": "72px"
 layout:
-  "gutter": "22px"
-  "gutter-wide": "64px"
-  "main-top": "12px"
+  "gutter": "20px"
+  "gutter-wide": "56px"
+  "main-top": "0px"
   "main-top-wide": "44px"
-  "main-bottom-nav": "96px"
-  "nav-bottom": "28px"
-  "sidebar-width": "232px"
+  "main-bottom-nav": "112px"
+  "nav-bottom": "30px"
+  "sidebar-width": "248px"
   "content-max": "720px"
   "breakpoint-wide": "900px"
   "auth-column-max": "400px"
@@ -604,27 +626,26 @@ components:
     backgroundColor: "{colors.accent}"
     textColor: "{colors.on-accent}"
     rounded: "{rounded.full}"
-    shadow: "{shadows.glow}"
-    minHeight: "52px"
-    padding: "0 22px"
+    minHeight: "54px"
+    padding: "0 20px"
   button-secondary:
     backgroundColor: "{colors.surface-2}"
     textColor: "{colors.text}"
     rounded: "{rounded.full}"
-    minHeight: "52px"
+    minHeight: "54px"
   card:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.text}"
     rounded: "{rounded.l}"
-    padding: "22px"
+    padding: "20px"
   answer-option:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.text}"
     rounded: "{rounded.m}"
-    minHeight: "52px"
+    minHeight: "54px"
     padding: "10px 14px"
   exam-switch:
-    backgroundColor: "{colors.surface-2}"
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.text}"
     rounded: "{rounded.full}"
     minHeight: "40px"
@@ -634,245 +655,202 @@ components:
     borderColor: "{colors.line}"
 ---
 
-# Design System: GrePrepApp — «Ночная студия»
+# Design System: Tutorless — стиль B, рабочая версия
 
 Значения в шапке этого файла и CSS-переменные ниже генерируются из
 `design/tokens/src` (`pnpm --dir design/tokens build`): веб — `generated/web/tokens.css`,
 Apple — `generated/apple/GPTokens.swift` и `GPColors.xcassets`, Android —
 `generated/android/GpTokens.kt`. Шапку руками не править; здесь — смысл и правила.
-Как переводить код со старых токенов «Шагов» — `design/tokens/MIGRATION.md`.
-Тема — атрибут `data-theme` на `<html>` (без него — как в системе), крупный текст —
+Как переводить код со старых имён — `design/tokens/MIGRATION.md` (разделы «Ночная
+студия» и «Стиль B»). Тема — атрибут `data-theme` на `<html>`; по умолчанию тёмная
+(решение Даши 10.10.2026), выбор хранится на устройстве. Крупный текст —
 `data-text-size="large"` (112,5 %).
 
-Нарисовано всё в каталоге `design/night-studio/index.html` (около 80 экранов, обе темы,
-телефон и компьютер; решение Даши 10.10.2026). **Каталог — эталон вида**: экран в коде
-сверяется с экраном каталога по его номеру (T1, R19, G2…), а не придумывается заново.
-Этот файл — правила, которые из каталога не видны.
+**Эталоны вида.** Приложение — `design/app-b/index.html` (10 ключевых экранов,
+телефон в двух темах, компьютер для главной, разбора и прогресса). Лендинг —
+`design/landing-v2/b-stickers.html`. Устройство остальных экранов (состав, порядок,
+поведение) — по каталогу `design/night-studio/index.html` с номерами экранов (T1,
+R19, G2…), вид — по `app-b`, пока каталог не перерисован в стиле B.
 
 ## Overview
 
-**Creative North Star: «Ночная студия»**
+**Creative North Star: «Тёплая тетрадь»**
 
-Тихое место для работы: глубокий чернильно-синий в тёмной теме и лавандовый в светлой,
-глубина — слоями поверхности, а не тенями. Один акцент — лазурный в тёмной, индиго в
-светлой, — и светится только главное действие. Цифры (балл, «3 из 10», проценты, слово на
-карточке) крупные и тонкие; заголовки и текст — плотные и спокойные.
+Приложение для часовой подготовки к экзамену, поэтому оно простое: спокойная бумага
+(«тёплое молоко» в светлой теме, «баклажан» в тёмной), много воздуха, одна томатная
+кнопка на экран. Характер — в шрифте и цифрах: Onest с плотным трекингом, крупные
+плотные цифры итогов, цвет раздела там, где он помогает понять, где ты.
 
-Система одна для мини-аппа Telegram, сайта и приложений на Swift и Kotlin: общие — цвета,
-шрифт, тексты, порядок экранов и путь; у каждой платформы свои родные механизмы (системные
-шторки и жесты, Material на Android), но в наших токенах. Решение Даши 05.10.2026,
-`PRODUCT.md`, «Platform».
+Лендинг громче приложения: на нём живут наклейки, наклоны и движение. В приложении
+этого нет (решение Даши 12.10.2026: «само приложение должно быть простым», «кривые
+карточки не нравятся»).
+
+Система одна для мини-аппа Telegram, сайта и приложений на Swift и Kotlin; у каждой
+платформы свои системные механизмы (вкладки, шторки, жесты, Material на Android) в
+наших цветах и шрифте (`PRODUCT.md`, «Platform»).
 
 **Key Characteristics:**
-- Тёмная задумана первой; светлая — не инверсия, а «Лаванда» с тем же характером.
-- Один источник света на экране — главная кнопка (`--shadow-glow`).
-- Тонкие крупные цифры (`--font-weight-thin`) против плотного текста 500–600.
-- Цвет раздела — метка (точка, подпись, полоса), а не заливка.
-- Ошибка — спокойно: свой цвет и значок, без красной тревоги.
+- Спокойные поверхности, тонкая кромка, без теней-«парения» и стекла.
+- Одна главная кнопка — томатная, без свечения.
+- Крупные плотные цифры (Onest 800) — итог, балл, счётчик.
+- Цвет раздела и экзамена — метка, а не заливка экрана.
+- Ошибка — спокойно: слово, цвет и значок, без красной тревоги.
 
 ## Colors
 
-Обе темы — на одних ролях; значения светлой и тёмной — в шапке.
-
 ### Primary
-- **Акцент** (`--color-accent`; индиго #3B3FB0 · лазурный #5CCFFF) с текстом
-  `--color-on-accent`: главная кнопка, активная вкладка, выбранный вариант ответа, полоса
-  прогресса сессии, ссылки-действия. Мягкая подложка — `--color-accent-soft` (выбранное,
-  аватар, пункт боковой панели). Кольцо фокуса — `--color-focus`.
+- **Томатный акцент** (`--color-accent`, текст на нём `--color-on-accent` — тёмный):
+  главная кнопка, одна на экран. Мягкая пара `--color-accent-soft` — подложки
+  выбранного там, где нужен акцент. Кольцо фокуса — `--color-focus`.
 
-### Secondary — цвета разделов
-- GRE: **Verbal** (`--color-verbal`), **Quant** (`--color-quant`), **Слова**
-  (`--color-words`), **Эссе** (`--color-essay`), **Экзамен** (`--color-exam`).
-- TOEFL: **Reading**, **Listening**, **Writing**, **Speaking** (`--color-reading` и т. д.).
-- У каждого — мягкая пара `*-soft`: чип, круглая кнопка раздела, подсветка карточки старта
-  в тёмной теме.
+### Secondary — разделы и экзамены
+- Разделы GRE: Verbal (`--color-verbal`, лиловый), Quant (`--color-quant`, мятный),
+  эссе (`--color-essay`, манго), слова (`--color-words`, розовый); TOEFL — Reading,
+  Listening, Writing, Speaking (`--color-reading` и т. д.).
+- Экзамены (переключатель, шторка выбора, бейджи): GRE — манго, TOEFL — мята,
+  SAT — лиловый, GMAT — небесный (`--color-exam-gre`, `-toefl`, `-sat`, `-gmat` и
+  их `*-soft`).
+- Палитра лендинга (манго, мята, лиловый, розовый, небесный) в приложении — только
+  в этих ролях.
+- **Текст цветом раздела или экзамена — только `*-ink`** (`--color-verbal-ink`,
+  `--color-exam-gre-ink` и т. д.): тот же оттенок, темнее в светлой теме, AA 4,5 : 1
+  на всех поверхностях. Базовый цвет — для точек, плашек, линий графика, заливок
+  (подробности — `MIGRATION.md`, «Стиль B»).
 
 ### Tertiary
-- **Верно** (`--color-right`, `--color-right-soft`) и **неверно** (`--color-wrong`,
-  `--color-wrong-soft`): вердикт, ответы в таблице разбора, пропуск в тексте.
+- **Верно / неверно** (`--color-right`, `--color-wrong` и `*-soft`): вердикт, ответы в
+  разборе, отметки итога.
+- **Маркер** (`--color-highlight`): подсветка ключевой фразы в разборе — как
+  маркером по бумаге.
 
 ### Neutral
-- **Фон** (`--color-bg`), **поверхность** (`--color-surface`: карточки, варианты, шторка),
-  **вторая поверхность** (`--color-surface-2`: сегменты, чипы, «ловушка» в разборе,
-  шторка в тёмной теме), **нижняя панель** (`--color-nav-bg`).
-- **Текст** в три ступени: `--color-text` (основной), `--color-text-2` (пояснения,
-  перевод), `--color-text-3` (мета, подписи, неактивные вкладки). Каждая — не ниже
-  4,5 : 1 на `bg`, `surface` и `surface-2` в обеих темах (тест `design/tokens/test/contrast.test.mjs`).
-- **Линии** — `--color-line` (разделители, обводка в светлой) и `--color-line-strong`
-  (ручка шторки, рамки, которые должны читаться).
+- **Фон** `--color-bg`, **поверхности** `--color-surface`, `--color-surface-2`,
+  `--color-surface-3` (глубже — темнее/плотнее), **нижняя панель** `--color-nav-bg`.
+- **Текст** в три ступени: `--color-text`, `--color-text-2`, `--color-text-3` — каждая
+  не ниже 4,5 : 1 на `bg` и поверхностях в обеих темах (тест
+  `design/tokens/test/contrast.test.mjs`).
+- **Линии**: `--color-line` (кромка карточек, разделители), `--color-line-strong`.
 
 ### Named Rules
-**Правило метки.** Цвет раздела — точка, короткая подпись, полоса точности, мягкая
-подложка. Большими заливками цвета разделов не красим.
+**Правило одной кнопки.** Томатный — только у главного действия экрана. Выбранный
+вариант ответа, полоса прогресса и активная вкладка — цветом текста, не томатом.
 
-**Правило одного света.** Свечение `--shadow-glow` — только у главного действия экрана
-(главная кнопка, «перейти» на карточке экзамена) и у полосы прогресса. Второго светящегося
-элемента на экране нет.
+**Правило метки.** Цвет раздела и экзамена — точка, квадратик, цифра итога, линия
+графика. Большими заливками не красим.
 
 **Правило двух цветов ответа.** Верно — `--color-right` и галочка; неверно —
-`--color-wrong` и крестик. Красной заливки нет.
+`--color-wrong` и крестик.
 
-**Правило официальных кнопок.** Вход — только Apple и Google (issue #42; в мини-аппе вход
-по initData без кнопки). Кнопки — их официального вида (`--sign-in-apple-*`,
-`--sign-in-google-*`): «Вход с Apple» — чёрная или белая, Google — белая с рамкой или
-тёмная с цветной «G». Свои стили к ним не применяем.
+**Правило официальных кнопок.** Вход — только Apple и Google (#42; в мини-аппе — по
+initData). «Вход с Apple» — системным шрифтом (`--sign-in-apple-*`), Google — Roboto
+по правилам Google (`--sign-in-google-*`).
 
 ## Typography
 
-**Font:** Geologica (`--font-family-text`) — заголовки, текст и цифры; кириллица и
-латиница одного рисунка, лицензия OFL. В приложения — вшитым файлом, на сайт — со своего
-сервера, без сторонних шрифтовых сервисов.
-**Mono:** IBM Plex Mono (`--font-family-mono`) — транскрипция слова.
-**Формулы Quant:** переменные — курсив с засечками (Source Serif 4, `--font-family-math`), как в математическом
-наборе.
+**Font:** Onest (`--font-family-text`, переменный 400–800) — всё: заголовки, текст,
+цифры. Кириллица и латиница одного рисунка, OFL; в приложения — вшитым файлом, на
+сайт — со своего сервера. **Mono:** IBM Plex Mono — транскрипция. **Формулы Quant:**
+Source Serif 4, курсив. **Системный** (`--font-family-system`) — только кнопка Apple и
+измеритель MainButton Telegram.
 
-**Character:** Контраст веса, а не размера: цифры тонкие (`--font-weight-thin` — 300 в
-светлой, 200 в тёмной: светлое на тёмном выглядит жирнее), текст 400, заголовки 500–600.
-Жирнее 600 нет. Числа — `tabular-nums`.
+**Character:** плотно и уверенно: заголовки и крупные цифры — Onest 800 с
+отрицательным трекингом, текст — 400–500. Числа — `tabular-nums`.
 
 ### Hierarchy
-Роли — `--font-<роль>` и `--tracking-<роль>`; с 900 px часть ролей крупнее (вариант
-`-wide` в шапке, те же имена переменных). Точные размеры — в шапке.
-- **Крупные тонкие цифры — шкала из пяти ступеней** (телефон / широкий): `num-s` 48/60,
-  `num-m` 56/72, `num-l` 70/88, `num-xl` 88/120, `num-xxl` 104/144 — итоги, баллы, обратный
-  отсчёт, крупная статистика, слово на карточке. Новое крупное число берёт ступень, а не свой
-  размер; `headword`, `exam-name` и другие прежние имена — ссылки на ступени.
-- **Малые тонкие цифры:** `score-num` (балл), `session-count` («3 из 10»), `section-stat`,
-  `stat-value`, `week-count`, общий `num-compact` 36/52; слово-заголовок — `word-title` 40/56.
-- **Заголовки:** `h1` (экран-раздел), `start-title` (карточка старта), `exam-title`,
-  `h2` (карточка, шторка), `h3` (подзаголовок, тише цветом).
-- **Задание:** `q-text` (текст задания, строка до ~70 знаков), `opt` (вариант ответа),
-  `answer` (ответ в таблице разбора), `explain-body` (разбор).
-- **Остальное:** `body`, `lead`, `meta`, `caption`, `eyebrow`, `section-name`,
-  `button`, `action`, `seg`, `nav-label`, `exam-switch`, `score-label`, `ipa`,
-  `word-meta`, `sense-en`, `example`.
+Роли — `--font-<роль>` и `--tracking-<роль>`, с 900 px часть крупнее (`-wide`).
+- **Крупные цифры — шкала** `num-s` … `num-xxl` (итог тренировки, балл пробника,
+  статистика) и малые `num-compact`, `score-num`, `session-count`. Новое крупное
+  число берёт ступень, а не свой размер.
+- **Заголовки:** `h1` (экран-раздел), `start-title`, `h2`, `h3`.
+- **Задание и разбор:** `q-text`, `opt`, `answer`, `explain-body`.
+- **Остальное:** `body`, `lead`, `meta`, `caption`, `section-name`, `button`, `action`,
+  `seg`, `nav-label`, `exam-switch`, `ipa`, `sense-en`, `example`.
 
 ### Named Rules
-**Правило без рубрик.** Подписи-рубрики, которые и так понятны, не пишем. Слово на экране
-обязано помогать действию. `eyebrow` — без капса и разрядки.
-
+**Правило без рубрик.** Подписи-рубрики, которые и так понятны, не пишем.
 **Правило ёлочек.** Русский текст — только «ёлочки»; английский — “…”.
 
 ## Layout
 
-**Телефон** — одна колонка, поля `--layout-gutter` (22 px), сверху `--layout-main-top`.
-Экраны-разделы — с нижними вкладками; содержимое не уходит под них
-(`--layout-main-bottom-nav`), последнее видно при любой прокрутке. Длинное (текст Reading,
-эссе, разбор) листается внутри экрана; первый экран осмыслен без прокрутки.
-
-**Компьютер** (с `--layout-breakpoint-wide`, 900 px) — слева боковая панель
-`--layout-sidebar-width` (232 px): переключатель экзамена сверху, разделы, профиль внизу.
-Поля шире (`--layout-gutter-wide`). Две колонки — только по делу: главная (старт + разделы
-| неделя), задание (текст | варианты), разбор (вопрос | разбор), прогресс (2 × 2).
-Сессия — без боковой панели, главная кнопка справа внизу над линией.
-
-Отступы — шкала `--space-*` (шаг 4); воздух между группами больше, чем внутри. Касание —
-не меньше `--size-tap-target` (44).
+**Телефон** — одна колонка, поля `--layout-gutter`; экраны-разделы с нижними вкладками,
+последнее видно при любой прокрутке; длинное листается внутри экрана.
+**Компьютер** (с 900 px) — боковая панель `--layout-sidebar-width`: переключатель
+экзамена сверху, разделы, профиль внизу; две колонки — только по делу (задание |
+варианты, вопрос | разбор, прогресс 2 × 2). Узкие колонки по ролям:
+`--layout-auth-column-max` (вход), `--layout-text-max` (экраны состояний),
+`--layout-session-max` (шапка и действия сессии до перестройки R1–R20).
+Отступы — шкала `--space-*`; касание — не меньше `--size-tap-target`.
 
 ### Named Rules
-**Правило одной задачи.** Экран сессии — одна задача и одна главная кнопка в одном месте;
-конец виден («3 из 10», полоса прогресса).
-
-**Правило ширины по делу.** Вторая колонка на компьютере — только когда она помогает
-задаче; лишняя ширина остаётся пустой.
+**Правило одной задачи.** Экран сессии — одна задача и одна главная кнопка; конец
+виден («3 из 10», полоса).
 
 ## Elevation & Depth
 
-Глубина — слоями поверхности: `bg` → `surface` → `surface-2`. Теней у карточек нет; в
-светлой теме карточку отделяет `--color-line`, в тёмной — сама поверхность. Шторка в
-тёмной теме поднимается на `surface-2` с линией сверху; под шторкой — затемнение.
-
-Движение: нажатие — `--motion-press-scale` за `--motion-duration-press`; смена выбора
-варианта — цвет фона и рамки за 160 мс на `--motion-easing-out`; появление разбора и
-шторок — `--motion-duration-reveal`. При уменьшенной анимации — без масштаба, сдвигов и
-переходов цвета.
-
-### Shadow Vocabulary
-- **Свечение** (`--shadow-glow`): только главное действие — см. «Правило одного света».
+Глубина — слоями поверхности (`bg` → `surface` → `surface-2` → `surface-3`) и тонкой
+кромкой. Теней почти нет: едва заметная «подложка» у карточек, никакого свечения
+(`--shadow-glow` устарел и равен нулю). Шторка — поверхность с затемнением под ней.
+Движение: нажатие — `--motion-press-scale`, смена выбора — цвет за 160 мс на
+`--motion-easing-out`, разбор и шторки — `--motion-duration-reveal`; при уменьшенной
+анимации — без масштаба и сдвигов.
 
 ## Shapes
 
-Радиусы по ролям: `--radius-s` (10) — пункт боковой панели, мелкие подложки; `--radius-m`
-(16) — варианты ответа, вердикт, пример, ссылки на тему; `--radius-l` (24) — карточки и
-секции; `--radius-full` — кнопки, переключатель экзамена, сегменты, чипы, аватар. Шторка —
-28 сверху на телефоне, 24 по кругу на компьютере. Вложенный радиус = внешний минус отступ.
+Радиусы по ролям: `--radius-s` (12) — мелкие подложки, `--radius-m` (18) — варианты
+ответа, вердикт, строки, `--radius-l` (24) — карточки и секции, `--radius-full` —
+кнопки, сегменты, чипы, переключатель экзамена, аватар. Вложенный радиус = внешний
+минус отступ. **Никаких наклонов** в приложении.
 
 ## Components
 
 ### Buttons
-- **Primary:** капсула высотой `--size-button` (52), `--color-accent` с
-  `--color-on-accent` и `--shadow-glow`; одна на экран. Недоступная — `surface-2` и
-  `text-3`, без свечения.
-- **Secondary (ghost):** капсула на `--color-surface-2` без рамки — «Пропустить», «Назад».
-- **Ссылки:** текст без стрелок; шеврон `›` — только у строки списка, которая открывает
-  экран.
+- **Главная:** капсула `--size-button`, `--color-accent` с `--color-on-accent`, одна на
+  экран, без свечения. Недоступная — `surface-2` и `text-3`.
+- **Вторичная:** капсула на `--color-surface-2`.
+- **Ссылки:** текст без стрелок; шеврон — только у строки, которая открывает экран.
 
 ### Варианты ответа
-- Строка `--size-opt` (52) на `surface`, в светлой — с линией. Слева **овал** (один ответ)
-  или **квадрат** (несколько ответов) — **без букв** A–E и без подсказок клавиш, как на
-  экзамене. Выбранный — рамка и подложка `accent` / `accent-soft`, овал с точкой, квадрат
-  с галочкой.
-- После проверки — отметки по «Правилу двух цветов ответа»; пропуск в тексте подсвечивается
-  `right` или `wrong`.
+- Строка `--size-opt` на `surface` с кромкой; овал (один ответ) или квадрат (несколько)
+  — **без букв** и без подсказок клавиш. Выбранный — рамка цвета текста и овал с
+  точкой. После проверки — по «Правилу двух цветов ответа».
 
-### Сессия
-- Сверху: назад, раздел (точка + название), счётчик тонкими цифрами, полоса прогресса
-  `--size-session-bar` цвета `accent`.
-- **Назад и вперёд по вопросам** — в «Практике» и в разборе (R19, R20); на экзамене —
-  по правилам экзамена.
-- Разбор: вердикт → таблица «ваш ответ / верный» → объяснение с сегментом **RU / EN**
-  («на вашем языке») → «ловушка» на `surface-2` → ссылка на тему → «Сообщить об ошибке».
+### Сессия и разбор
+- Сверху: закрыть, раздел (точка + название), «3 из 10», полоса прогресса цветом
+  текста. Назад и вперёд по вопросам — в «Практике» и в разборе (R19, R20).
+- Разбор: вердикт словом и значком → ответы с отметками → объяснение с маркером
+  ключевой фразы и сегментом **RU / EN** → «где ловушка» на `surface-2` → тема для
+  повторения → «Сообщить об ошибке».
 
-### Cards / Containers
-- **Карточка старта** — главная карточка тренировки: подпись цветом раздела, заголовок
-  `start-title`, мета, главная кнопка. В тёмной теме — мягкая подсветка цветом раздела из
-  угла. Карточка такого веса на экране одна.
-- **Секции** — список разделов на одной поверхности, строки `--size-section-row` с точкой
-  раздела, названием, типами заданий и тонкой цифрой справа.
-- Без рамок в тёмной теме; внутренние отступы 16–22 на телефоне, 26–34 на компьютере.
-
-### Шторка
-- Калькулятор, «Сообщить об ошибке», смена экзамена (T7), выбор языка разбора. Телефон —
-  снизу с ручкой; компьютер — по центру, 520 px. Закрывается жестом, затемнением и
-  кнопкой.
-
-### Inputs / Fields
-- **Сегменты** (`seg`): два варианта на `surface-2`, выбранный — `surface` (в тёмной —
-  `accent-soft` с текстом `accent`).
-- **Переключатели настроек** — всегда два варианта: «Светлая / Тёмная»,
-  «Русский / English», «Обычный / Крупнее».
-- **Число** — поле с любым значением, без кнопок 5/10/20.
+### Итоги — «моменты»
+- **Итог тренировки (R15)** и **балл пробника (X7)** — ровные карточки: крупная цифра
+  ступени `num-*` в цвете раздела или экзамена, ряд отметок по вопросам, пометка
+  «наша оценка» у балла. Наклеек, канта, глянца и наклонов нет.
 
 ### Navigation
-- **Вкладки:** «Тренировка · Слова · Экзамен · Прогресс» с иконками; активная — цвет
-  `accent` с лёгким свечением иконки. Телефон — внизу на `--color-nav-bg`; компьютер —
-  боковая панель, активный пункт на `accent-soft`. Внутри сессии вкладок нет.
-- **Переключатель экзамена** — капсула с названием экзамена: на телефоне в шапке
-  экрана-раздела, на компьютере вверху боковой панели. Нажатие — шторка T7. Экран выбора
-  экзамена T3 — при первом входе, если ссылка не принесла экзамен.
-- **Профиль** — аватар в шапке справа на телефоне, низ боковой панели на компьютере;
-  ведёт на G2 «Профиль» (там же тема).
-- **Нативные приложения:** вкладки, шторки и жесты — системные механизмы в наших цветах и
-  шрифте; вид экранов — по каталогу.
+- **Вкладки** «Тренировка · Слова · Экзамен · Прогресс» с иконками; активная — цвет
+  текста, неактивные — `text-3`. Внутри сессии вкладок нет.
+- **Переключатель экзамена** — капсула с квадратиком цвета экзамена в шапке
+  экрана-раздела (телефон) или вверху боковой панели (компьютер); открывает шторку
+  T7 с четырьмя плитками экзаменов.
+- **Профиль** — аватар в шапке справа (телефон), низ боковой панели (компьютер):
+  тема, язык, размер текста, подписка («до … · GRE»), выход. Строки «Экзамен» в
+  профиле нет — экзамен меняется переключателем.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** сверять экран с каталогом по номеру и в обеих темах.
-- **Do** показывать конец: «3 из 10», полоса прогресса, карта частей пробника.
-- **Do** держать одну главную кнопку на экране в одном и том же месте.
-- **Do** раскрывать разбор в два уровня: вердикт и одна фраза → подробности, плюс RU/EN.
+- **Do** сверять экран с эталоном (`app-b`) и с каталогом по номеру, в обеих темах.
+- **Do** показывать конец: «3 из 10», полоса прогресса.
+- **Do** держать одну главную кнопку на экране в одном месте.
 - **Do** брать цвета, размеры, радиусы, шрифты и длительности только из токенов.
 
 ### Don't:
-- **Don't** добавлять серии, очки, лиги, значки, красные счётчики и маскотов на экраны
-  заданий.
+- **Don't** переносить в приложение наклейки, наклоны, глянец и пятна лендинга.
+- **Don't** добавлять серии, очки, лиги, значки, красные счётчики и маскотов.
 - **Don't** ставить буквы в овалы ответов и подсказки клавиш на экран задания.
-- **Don't** светить чем-то, кроме главного действия.
-- **Don't** писать подписи-рубрики и ставить стрелки у простых ссылок.
+- **Don't** красить томатным что-либо, кроме главной кнопки.
 - **Don't** показывать этапы памяти и расписание повторений слов.
-- **Don't** использовать в русском тексте кавычки-«лапки» — только «ёлочки».
-- **Don't** заливать большие области цветом раздела.
-- **Don't** рисовать свои версии кнопок входа Apple и Google и возвращать вход через
-  Telegram на сайт и в приложения.
+- **Don't** писать «скоро» и показывать недоделанное: все экраны и макеты рисуются
+  как готовые.
+- **Don't** использовать в русском тексте «лапки» — только «ёлочки».
 - **Don't** прятать таймер пробника — он виден всегда.
