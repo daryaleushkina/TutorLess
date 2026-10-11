@@ -355,6 +355,182 @@ func (s *Server) handleGetHealthRequest(args [0]string, argsEscaped bool, w http
 	}
 }
 
+// handleGetHomeRequest handles getHome operation.
+//
+// Только данные текущего пользователя и exam. Определения
+// — решение техлида 11.10.2026. Ответы — сохранённые позиции
+// training_items с answeredAt: повторная отправка и изменение ответа
+// в «Проверке» не создают ещё одну попытку. «Не знаю» и
+// пустой отправленный ответ считаются неверными;
+// позиции без answeredAt не считаются. История учитывает и
+// начатые, и завершённые тренировки, включая задания,
+// впоследствии снятые с публикации. Нет доступа к
+// тренировкам — 403 forbidden.
+//
+// GET /api/home
+func (s *Server) handleGetHomeRequest(args [0]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+	statusWriter := &codeRecorder{ResponseWriter: w}
+	w = statusWriter
+	ctx := r.Context()
+
+	var (
+		err          error
+		opErrContext = ogenerrors.OperationContext{
+			Name: GetHomeOperation,
+			ID:   "getHome",
+		}
+	)
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+			sctx, ok, err := s.securityBearerAuth(ctx, GetHomeOperation, r)
+			if err != nil {
+				err = &ogenerrors.SecurityError{
+					OperationContext: opErrContext,
+					Security:         "BearerAuth",
+					Err:              err,
+				}
+				if encodeErr := encodeErrorResponse(s.h.NewError(ctx, err), w); encodeErr != nil {
+					defer recordError("Security:BearerAuth", err)
+				}
+				return
+			}
+			if ok {
+				satisfied[0] |= 1 << 0
+				ctx = sctx
+			}
+		}
+		{
+			sctx, ok, err := s.securityCookieAuth(ctx, GetHomeOperation, r)
+			if err != nil {
+				err = &ogenerrors.SecurityError{
+					OperationContext: opErrContext,
+					Security:         "CookieAuth",
+					Err:              err,
+				}
+				if encodeErr := encodeErrorResponse(s.h.NewError(ctx, err), w); encodeErr != nil {
+					defer recordError("Security:CookieAuth", err)
+				}
+				return
+			}
+			if ok {
+				satisfied[0] |= 1 << 1
+				ctx = sctx
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+				{0b00000010},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			err = &ogenerrors.SecurityError{
+				OperationContext: opErrContext,
+				Err:              ogenerrors.ErrSecurityRequirementIsNotSatisfied,
+			}
+			if encodeErr := encodeErrorResponse(s.h.NewError(ctx, err), w); encodeErr != nil {
+				defer recordError("Security", err)
+			}
+			return
+		}
+	}
+	params, err := decodeGetHomeParams(args, argsEscaped, r)
+	if err != nil {
+		err = &ogenerrors.DecodeParamsError{
+			OperationContext: opErrContext,
+			Err:              err,
+		}
+		defer recordError("DecodeParams", err)
+		s.cfg.ErrorHandler(ctx, w, r, err)
+		return
+	}
+
+	var rawBody []byte
+
+	var response *Home
+	if m := s.cfg.Middleware; m != nil {
+		mreq := middleware.Request{
+			Context:          ctx,
+			OperationName:    GetHomeOperation,
+			OperationSummary: "Данные главной тренировки выбранного экзамена",
+			OperationID:      "getHome",
+			Body:             nil,
+			RawBody:          rawBody,
+			Params: middleware.Parameters{
+				{
+					Name: "exam",
+					In:   "query",
+				}: params.Exam,
+				{
+					Name: "tz",
+					In:   "query",
+				}: params.Tz,
+				{
+					Name: "types",
+					In:   "query",
+				}: params.Types,
+			},
+			Raw: r,
+		}
+
+		type (
+			Request  = struct{}
+			Params   = GetHomeParams
+			Response = *Home
+		)
+		response, err = middleware.HookMiddleware[
+			Request,
+			Params,
+			Response,
+		](
+			m,
+			mreq,
+			unpackGetHomeParams,
+			func(ctx context.Context, request Request, params Params) (response Response, err error) {
+				response, err = s.h.GetHome(ctx, params)
+				return response, err
+			},
+		)
+	} else {
+		response, err = s.h.GetHome(ctx, params)
+	}
+	if err != nil {
+		if errRes, ok := errors.Into[*ErrorStatusCode](err); ok {
+			if err := encodeErrorResponse(errRes, w); err != nil {
+				defer recordError("Internal", err)
+			}
+			return
+		}
+		if errors.Is(err, ht.ErrNotImplemented) {
+			s.cfg.ErrorHandler(ctx, w, r, err)
+			return
+		}
+		if err := encodeErrorResponse(s.h.NewError(ctx, err), w); err != nil {
+			defer recordError("Internal", err)
+		}
+		return
+	}
+
+	if err := encodeGetHomeResponse(response, w); err != nil {
+		defer recordError("EncodeResponse", err)
+		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
+			s.cfg.ErrorHandler(ctx, w, r, err)
+		}
+		return
+	}
+}
+
 // handleGetMeRequest handles getMe operation.
 //
 // Кто вошёл.
@@ -1615,6 +1791,166 @@ func (s *Server) handleSetActiveExamRequest(args [0]string, argsEscaped bool, w 
 	}
 }
 
+// handleSetLocaleRequest handles setLocale operation.
+//
+// Сменить язык аккаунта для всех устройств.
+//
+// PUT /api/me/locale
+func (s *Server) handleSetLocaleRequest(args [0]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+	statusWriter := &codeRecorder{ResponseWriter: w}
+	w = statusWriter
+	ctx := r.Context()
+
+	var (
+		err          error
+		opErrContext = ogenerrors.OperationContext{
+			Name: SetLocaleOperation,
+			ID:   "setLocale",
+		}
+	)
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+			sctx, ok, err := s.securityBearerAuth(ctx, SetLocaleOperation, r)
+			if err != nil {
+				err = &ogenerrors.SecurityError{
+					OperationContext: opErrContext,
+					Security:         "BearerAuth",
+					Err:              err,
+				}
+				if encodeErr := encodeErrorResponse(s.h.NewError(ctx, err), w); encodeErr != nil {
+					defer recordError("Security:BearerAuth", err)
+				}
+				return
+			}
+			if ok {
+				satisfied[0] |= 1 << 0
+				ctx = sctx
+			}
+		}
+		{
+			sctx, ok, err := s.securityCookieAuth(ctx, SetLocaleOperation, r)
+			if err != nil {
+				err = &ogenerrors.SecurityError{
+					OperationContext: opErrContext,
+					Security:         "CookieAuth",
+					Err:              err,
+				}
+				if encodeErr := encodeErrorResponse(s.h.NewError(ctx, err), w); encodeErr != nil {
+					defer recordError("Security:CookieAuth", err)
+				}
+				return
+			}
+			if ok {
+				satisfied[0] |= 1 << 1
+				ctx = sctx
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+				{0b00000010},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			err = &ogenerrors.SecurityError{
+				OperationContext: opErrContext,
+				Err:              ogenerrors.ErrSecurityRequirementIsNotSatisfied,
+			}
+			if encodeErr := encodeErrorResponse(s.h.NewError(ctx, err), w); encodeErr != nil {
+				defer recordError("Security", err)
+			}
+			return
+		}
+	}
+
+	var rawBody []byte
+	request, rawBody, close, err := s.decodeSetLocaleRequest(r)
+	if err != nil {
+		err = &ogenerrors.DecodeRequestError{
+			OperationContext: opErrContext,
+			Err:              err,
+		}
+		defer recordError("DecodeRequest", err)
+		s.cfg.ErrorHandler(ctx, w, r, err)
+		return
+	}
+	defer func() {
+		if err := close(); err != nil {
+			recordError("CloseRequest", err)
+		}
+	}()
+
+	var response *User
+	if m := s.cfg.Middleware; m != nil {
+		mreq := middleware.Request{
+			Context:          ctx,
+			OperationName:    SetLocaleOperation,
+			OperationSummary: "Сменить язык аккаунта для всех устройств",
+			OperationID:      "setLocale",
+			Body:             request,
+			RawBody:          rawBody,
+			Params:           middleware.Parameters{},
+			Raw:              r,
+		}
+
+		type (
+			Request  = *LocaleChoice
+			Params   = struct{}
+			Response = *User
+		)
+		response, err = middleware.HookMiddleware[
+			Request,
+			Params,
+			Response,
+		](
+			m,
+			mreq,
+			nil,
+			func(ctx context.Context, request Request, params Params) (response Response, err error) {
+				response, err = s.h.SetLocale(ctx, request)
+				return response, err
+			},
+		)
+	} else {
+		response, err = s.h.SetLocale(ctx, request)
+	}
+	if err != nil {
+		if errRes, ok := errors.Into[*ErrorStatusCode](err); ok {
+			if err := encodeErrorResponse(errRes, w); err != nil {
+				defer recordError("Internal", err)
+			}
+			return
+		}
+		if errors.Is(err, ht.ErrNotImplemented) {
+			s.cfg.ErrorHandler(ctx, w, r, err)
+			return
+		}
+		if err := encodeErrorResponse(s.h.NewError(ctx, err), w); err != nil {
+			defer recordError("Internal", err)
+		}
+		return
+	}
+
+	if err := encodeSetLocaleResponse(response, w); err != nil {
+		defer recordError("EncodeResponse", err)
+		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
+			s.cfg.ErrorHandler(ctx, w, r, err)
+		}
+		return
+	}
+}
+
 // handleSignInForDevelopmentRequest handles signInForDevelopment operation.
 //
 // Включается переменной DEV_AUTH=1, которую сервер
@@ -2153,8 +2489,11 @@ func (s *Server) handleSignOutRequest(args [0]string, argsEscaped bool, w http.R
 // Всё нужное для сессии приходит одним ответом, чтобы
 // начатая тренировка дожила без сети (PRODUCT.md, «Operating
 // Context»). Задания — только проверенные, сначала те, что
-// человек ещё не решал. Нет ни одного подходящего — 409
-// no_questions. Нет доступа к тренировкам — 403 forbidden.
+// человек ещё не решал. source=mistakes оставляет только
+// задания с последним неверным ответом самого человека,
+// сохраняя фильтры exam, section, questionTypes, topicIds и difficulty. Нет ни
+// одного подходящего — 409 no_questions. Нет доступа к
+// тренировкам — 403 forbidden.
 //
 // POST /api/trainings
 func (s *Server) handleStartTrainingRequest(args [0]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {

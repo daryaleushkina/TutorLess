@@ -138,7 +138,7 @@ func (q *Queries) FinishTraining(ctx context.Context, arg FinishTrainingParams) 
 
 const getLastTrainingRequest = `-- name: GetLastTrainingRequest :one
 SELECT (request || jsonb_build_object('exam', exam_id))::jsonb AS request
-FROM trainings WHERE user_id = $1 AND exam_id = $2 ORDER BY started_at DESC LIMIT 1
+FROM trainings WHERE user_id = $1 AND exam_id = $2 ORDER BY started_at DESC, id DESC LIMIT 1
 `
 
 type GetLastTrainingRequestParams struct {
@@ -320,23 +320,32 @@ WITH seen AS (
   SELECT DISTINCT i.question_id
   FROM trainings tr
   JOIN training_items i ON i.training_id = tr.id
-  WHERE tr.user_id = $7
+  WHERE tr.user_id = $8
+), latest AS (
+  SELECT DISTINCT ON (i.question_id) i.question_id, i.correct
+  FROM trainings tr JOIN training_items i ON i.training_id = tr.id
+  WHERE $1::boolean
+    AND tr.user_id = $8 AND tr.exam_id = $2 AND i.answered_at IS NOT NULL
+  ORDER BY i.question_id, i.answered_at DESC, tr.started_at DESC, tr.id DESC
 )
 SELECT q.id
 FROM questions q
 JOIN topics t ON t.id = q.topic_id
 LEFT JOIN seen s ON s.question_id = q.id
+LEFT JOIN latest l ON l.question_id = q.id
 WHERE q.status = 'approved'
-  AND t.exam_id = $1
-  AND t.section = $2
-  AND q.question_type = ANY ($3::text[])
-  AND (cardinality($4::text[]) = 0 OR q.topic_id = ANY ($4::text[]))
-  AND ($5::text IS NULL OR q.difficulty = $5::text)
+  AND (NOT $1::boolean OR l.correct = false)
+  AND t.exam_id = $2
+  AND t.section = $3
+  AND q.question_type = ANY ($4::text[])
+  AND (cardinality($5::text[]) = 0 OR q.topic_id = ANY ($5::text[]))
+  AND ($6::text IS NULL OR q.difficulty = $6::text)
 ORDER BY s.question_id IS NOT NULL, random()
-LIMIT $6::integer
+LIMIT $7::integer
 `
 
 type PickQuestionsParams struct {
+	MistakesOnly  bool
 	ExamID        string
 	Section       string
 	QuestionTypes []string
@@ -350,6 +359,7 @@ type PickQuestionsParams struct {
 // по тренировкам самого человека (индекс по user_id), а не по всем показам задания всем людям.
 func (q *Queries) PickQuestions(ctx context.Context, arg PickQuestionsParams) ([]uuid.UUID, error) {
 	rows, err := q.db.Query(ctx, pickQuestions,
+		arg.MistakesOnly,
 		arg.ExamID,
 		arg.Section,
 		arg.QuestionTypes,

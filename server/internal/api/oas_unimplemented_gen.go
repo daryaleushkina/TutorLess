@@ -40,6 +40,23 @@ func (UnimplementedHandler) GetHealth(ctx context.Context) (r *Health, _ error) 
 	return r, ht.ErrNotImplemented
 }
 
+// GetHome implements getHome operation.
+//
+// Только данные текущего пользователя и exam. Определения
+// — решение техлида 11.10.2026. Ответы — сохранённые позиции
+// training_items с answeredAt: повторная отправка и изменение ответа
+// в «Проверке» не создают ещё одну попытку. «Не знаю» и
+// пустой отправленный ответ считаются неверными;
+// позиции без answeredAt не считаются. История учитывает и
+// начатые, и завершённые тренировки, включая задания,
+// впоследствии снятые с публикации. Нет доступа к
+// тренировкам — 403 forbidden.
+//
+// GET /api/home
+func (UnimplementedHandler) GetHome(ctx context.Context, params GetHomeParams) (r *Home, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // GetMe implements getMe operation.
 //
 // Кто вошёл.
@@ -117,6 +134,15 @@ func (UnimplementedHandler) SetActiveExam(ctx context.Context, req *ExamChoice) 
 	return r, ht.ErrNotImplemented
 }
 
+// SetLocale implements setLocale operation.
+//
+// Сменить язык аккаунта для всех устройств.
+//
+// PUT /api/me/locale
+func (UnimplementedHandler) SetLocale(ctx context.Context, req *LocaleChoice) (r *User, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // SignInForDevelopment implements signInForDevelopment operation.
 //
 // Включается переменной DEV_AUTH=1, которую сервер
@@ -175,8 +201,11 @@ func (UnimplementedHandler) SignOut(ctx context.Context) (r *SignOutNoContent, _
 // Всё нужное для сессии приходит одним ответом, чтобы
 // начатая тренировка дожила без сети (PRODUCT.md, «Operating
 // Context»). Задания — только проверенные, сначала те, что
-// человек ещё не решал. Нет ни одного подходящего — 409
-// no_questions. Нет доступа к тренировкам — 403 forbidden.
+// человек ещё не решал. source=mistakes оставляет только
+// задания с последним неверным ответом самого человека,
+// сохраняя фильтры exam, section, questionTypes, topicIds и difficulty. Нет ни
+// одного подходящего — 409 no_questions. Нет доступа к
+// тренировкам — 403 forbidden.
 //
 // POST /api/trainings
 func (UnimplementedHandler) StartTraining(ctx context.Context, req *TrainingRequest) (r *TrainingSession, _ error) {

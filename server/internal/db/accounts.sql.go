@@ -126,6 +126,20 @@ func (q *Queries) ListIdentities(ctx context.Context, userID uuid.UUID) ([]ListI
 	return items, nil
 }
 
+const setUserLocale = `-- name: SetUserLocale :exec
+UPDATE users SET locale = $1::text WHERE id = $2
+`
+
+type SetUserLocaleParams struct {
+	Locale string
+	UserID uuid.UUID
+}
+
+func (q *Queries) SetUserLocale(ctx context.Context, arg SetUserLocaleParams) error {
+	_, err := q.db.Exec(ctx, setUserLocale, arg.Locale, arg.UserID)
+	return err
+}
+
 const setUserRole = `-- name: SetUserRole :exec
 UPDATE users SET role = $2 WHERE id = $1
 `

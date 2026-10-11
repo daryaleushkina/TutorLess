@@ -1024,6 +1024,311 @@ public enum Operations {
             }
         }
     }
+    /// Сменить язык аккаунта для всех устройств
+    ///
+    /// - Remark: HTTP `PUT /api/me/locale`.
+    /// - Remark: Generated from `#/paths//api/me/locale/put(setLocale)`.
+    public enum SetLocale {
+        public static let id: Swift.String = "setLocale"
+        public struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/api/me/locale/PUT/header`.
+            public struct Headers: Sendable, Hashable {
+                public var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.SetLocale.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                public init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.SetLocale.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            public var headers: Operations.SetLocale.Input.Headers
+            /// - Remark: Generated from `#/paths/api/me/locale/PUT/requestBody`.
+            @frozen public enum Body: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/me/locale/PUT/requestBody/content/application\/json`.
+                case json(Components.Schemas.LocaleChoice)
+            }
+            public var body: Operations.SetLocale.Input.Body
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - headers:
+            ///   - body:
+            public init(
+                headers: Operations.SetLocale.Input.Headers = .init(),
+                body: Operations.SetLocale.Input.Body
+            ) {
+                self.headers = headers
+                self.body = body
+            }
+        }
+        @frozen public enum Output: Sendable, Hashable {
+            public struct Ok: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/me/locale/PUT/responses/200/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/me/locale/PUT/responses/200/content/application\/json`.
+                    case json(Components.Schemas.User)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.User {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.SetLocale.Output.Ok.Body
+                /// Creates a new `Ok`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.SetLocale.Output.Ok.Body) {
+                    self.body = body
+                }
+            }
+            /// Пользователь с выбранным языком (тот же ответ, что GET /api/me)
+            ///
+            /// - Remark: Generated from `#/paths//api/me/locale/put(setLocale)/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            case ok(Operations.SetLocale.Output.Ok)
+            /// The associated value of the enum case if `self` is `.ok`.
+            ///
+            /// - Throws: An error if `self` is not `.ok`.
+            /// - SeeAlso: `.ok`.
+            public var ok: Operations.SetLocale.Output.Ok {
+                get throws {
+                    switch self {
+                    case let .ok(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "ok",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Любая ошибка — машинный код, текст для журнала, id запроса
+            ///
+            /// - Remark: Generated from `#/paths//api/me/locale/put(setLocale)/responses/default`.
+            ///
+            /// HTTP response code: `default`.
+            case `default`(statusCode: Swift.Int, Components.Responses._Error)
+            /// The associated value of the enum case if `self` is `.`default``.
+            ///
+            /// - Throws: An error if `self` is not `.`default``.
+            /// - SeeAlso: `.`default``.
+            public var `default`: Components.Responses._Error {
+                get throws {
+                    switch self {
+                    case let .`default`(_, response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "default",
+                            response: self
+                        )
+                    }
+                }
+            }
+        }
+        @frozen public enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case other(Swift.String)
+            public init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            public var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                }
+            }
+            public static var allCases: [Self] {
+                [
+                    .json
+                ]
+            }
+        }
+    }
+    /// Данные главной тренировки выбранного экзамена
+    ///
+    /// Только данные текущего пользователя и exam. Определения — решение техлида 11.10.2026. Ответы — сохранённые позиции training_items с answeredAt: повторная отправка и изменение ответа в «Проверке» не создают ещё одну попытку. «Не знаю» и пустой отправленный ответ считаются неверными; позиции без answeredAt не считаются. История учитывает и начатые, и завершённые тренировки, включая задания, впоследствии снятые с публикации. Нет доступа к тренировкам — 403 forbidden.
+    ///
+    /// - Remark: HTTP `GET /api/home`.
+    /// - Remark: Generated from `#/paths//api/home/get(getHome)`.
+    public enum GetHome {
+        public static let id: Swift.String = "getHome"
+        public struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/api/home/GET/query`.
+            public struct Query: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/home/GET/query/exam`.
+                public var exam: Components.Schemas.Exam
+                /// IANA-зона клиента из базы зон сервера, включая UTC; неизвестная зона или Local — 400 bad_request
+                ///
+                /// - Remark: Generated from `#/paths/api/home/GET/query/tz`.
+                public var tz: Swift.String
+                /// Типы заданий, которые клиент умеет показывать. Если последний запрос содержит тип вне списка, lastTraining — null. Статистика разделов, ошибок и слабого типа от списка не зависит.
+                ///
+                /// - Remark: Generated from `#/paths/api/home/GET/query/types`.
+                public var types: [Components.Schemas.QuestionType]
+                /// Creates a new `Query`.
+                ///
+                /// - Parameters:
+                ///   - exam:
+                ///   - tz: IANA-зона клиента из базы зон сервера, включая UTC; неизвестная зона или Local — 400 bad_request
+                ///   - types: Типы заданий, которые клиент умеет показывать. Если последний запрос содержит тип вне списка, lastTraining — null. Статистика разделов, ошибок и слабого типа от списка не зависит.
+                public init(
+                    exam: Components.Schemas.Exam,
+                    tz: Swift.String,
+                    types: [Components.Schemas.QuestionType]
+                ) {
+                    self.exam = exam
+                    self.tz = tz
+                    self.types = types
+                }
+            }
+            public var query: Operations.GetHome.Input.Query
+            /// - Remark: Generated from `#/paths/api/home/GET/header`.
+            public struct Headers: Sendable, Hashable {
+                public var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.GetHome.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                public init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.GetHome.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            public var headers: Operations.GetHome.Input.Headers
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - query:
+            ///   - headers:
+            public init(
+                query: Operations.GetHome.Input.Query,
+                headers: Operations.GetHome.Input.Headers = .init()
+            ) {
+                self.query = query
+                self.headers = headers
+            }
+        }
+        @frozen public enum Output: Sendable, Hashable {
+            public struct Ok: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/home/GET/responses/200/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/home/GET/responses/200/content/application\/json`.
+                    case json(Components.Schemas.Home)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.Home {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.GetHome.Output.Ok.Body
+                /// Creates a new `Ok`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.GetHome.Output.Ok.Body) {
+                    self.body = body
+                }
+            }
+            /// Статистика и параметры для запуска тренировки
+            ///
+            /// - Remark: Generated from `#/paths//api/home/get(getHome)/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            case ok(Operations.GetHome.Output.Ok)
+            /// The associated value of the enum case if `self` is `.ok`.
+            ///
+            /// - Throws: An error if `self` is not `.ok`.
+            /// - SeeAlso: `.ok`.
+            public var ok: Operations.GetHome.Output.Ok {
+                get throws {
+                    switch self {
+                    case let .ok(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "ok",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Любая ошибка — машинный код, текст для журнала, id запроса
+            ///
+            /// - Remark: Generated from `#/paths//api/home/get(getHome)/responses/default`.
+            ///
+            /// HTTP response code: `default`.
+            case `default`(statusCode: Swift.Int, Components.Responses._Error)
+            /// The associated value of the enum case if `self` is `.`default``.
+            ///
+            /// - Throws: An error if `self` is not `.`default``.
+            /// - SeeAlso: `.`default``.
+            public var `default`: Components.Responses._Error {
+                get throws {
+                    switch self {
+                    case let .`default`(_, response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "default",
+                            response: self
+                        )
+                    }
+                }
+            }
+        }
+        @frozen public enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case other(Swift.String)
+            public init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            public var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                }
+            }
+            public static var allCases: [Self] {
+                [
+                    .json
+                ]
+            }
+        }
+    }
     /// Экзамены и разделы в порядке прохождения
     ///
     /// - Remark: HTTP `GET /api/exams`.
@@ -1582,7 +1887,7 @@ public enum Operations {
     }
     /// Начать тренировку — сессия со всеми заданиями и разборами сразу
     ///
-    /// Всё нужное для сессии приходит одним ответом, чтобы начатая тренировка дожила без сети (PRODUCT.md, «Operating Context»). Задания — только проверенные, сначала те, что человек ещё не решал. Нет ни одного подходящего — 409 no_questions. Нет доступа к тренировкам — 403 forbidden.
+    /// Всё нужное для сессии приходит одним ответом, чтобы начатая тренировка дожила без сети (PRODUCT.md, «Operating Context»). Задания — только проверенные, сначала те, что человек ещё не решал. source=mistakes оставляет только задания с последним неверным ответом самого человека, сохраняя фильтры exam, section, questionTypes, topicIds и difficulty. Нет ни одного подходящего — 409 no_questions. Нет доступа к тренировкам — 403 forbidden.
     ///
     /// - Remark: HTTP `POST /api/trainings`.
     /// - Remark: Generated from `#/paths//api/trainings/post(startTraining)`.
