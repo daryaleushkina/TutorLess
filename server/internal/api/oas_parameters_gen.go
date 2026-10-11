@@ -81,6 +81,228 @@ func decodeFinishTrainingParams(args [1]string, argsEscaped bool, r *http.Reques
 	return params, nil
 }
 
+// GetHomeParams is parameters of getHome operation.
+type GetHomeParams struct {
+	Exam Exam
+	// IANA-зона клиента из базы зон сервера, включая UTC;
+	// неизвестная зона или Local — 400 bad_request.
+	Tz string
+	// Типы заданий, которые клиент умеет показывать. Если
+	// последний запрос содержит тип вне списка, lastTraining — null.
+	// Статистика разделов, ошибок и слабого типа от списка
+	// не зависит.
+	Types []QuestionType `json:",omitempty"`
+}
+
+func unpackGetHomeParams(packed middleware.Parameters) (params GetHomeParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "exam",
+			In:   "query",
+		}
+		params.Exam = packed[key].(Exam)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "tz",
+			In:   "query",
+		}
+		params.Tz = packed[key].(string)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "types",
+			In:   "query",
+		}
+		params.Types = packed[key].([]QuestionType)
+	}
+	return params
+}
+
+func decodeGetHomeParams(args [0]string, argsEscaped bool, r *http.Request) (params GetHomeParams, _ error) {
+	q := uri.NewQueryDecoder(r.URL.Query())
+	// Decode query: exam.
+	if err := func() error {
+		cfg := uri.QueryParameterDecodingConfig{
+			Name:    "exam",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.HasParam(cfg); err == nil {
+			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.Exam = Exam(c)
+				return nil
+			}); err != nil {
+				return err
+			}
+			if err := func() error {
+				if err := params.Exam.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "exam",
+			In:   "query",
+			Err:  err,
+		}
+	}
+	// Decode query: tz.
+	if err := func() error {
+		cfg := uri.QueryParameterDecodingConfig{
+			Name:    "tz",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.HasParam(cfg); err == nil {
+			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.Tz = c
+				return nil
+			}); err != nil {
+				return err
+			}
+			if err := func() error {
+				if err := (validate.String{
+					MinLength:     1,
+					MinLengthSet:  true,
+					MaxLength:     100,
+					MaxLengthSet:  true,
+					Email:         false,
+					Hostname:      false,
+					Regex:         nil,
+					MinNumeric:    0,
+					MinNumericSet: false,
+					MaxNumeric:    0,
+					MaxNumericSet: false,
+				}).Validate(string(params.Tz)); err != nil {
+					return errors.Wrap(err, "string")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "tz",
+			In:   "query",
+			Err:  err,
+		}
+	}
+	// Decode query: types.
+	if err := func() error {
+		cfg := uri.QueryParameterDecodingConfig{
+			Name:    "types",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.HasParam(cfg); err == nil {
+			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				params.Types = nil
+				return d.DecodeArray(func(d uri.Decoder) error {
+					var paramsDotTypesVal QuestionType
+					if err := func() error {
+						val, err := d.DecodeValue()
+						if err != nil {
+							return err
+						}
+
+						c, err := conv.ToString(val)
+						if err != nil {
+							return err
+						}
+
+						paramsDotTypesVal = QuestionType(c)
+						return nil
+					}(); err != nil {
+						return err
+					}
+					params.Types = append(params.Types, paramsDotTypesVal)
+					return nil
+				})
+			}); err != nil {
+				return err
+			}
+			if err := func() error {
+				if params.Types == nil {
+					return errors.New("nil is invalid value")
+				}
+				if err := (validate.Array{
+					MinLength:    1,
+					MinLengthSet: true,
+					MaxLength:    20,
+					MaxLengthSet: true,
+				}).ValidateLength(len(params.Types)); err != nil {
+					return errors.Wrap(err, "array")
+				}
+				var failures []validate.FieldError
+				for i, elem := range params.Types {
+					if err := func() error {
+						if err := elem.Validate(); err != nil {
+							return err
+						}
+						return nil
+					}(); err != nil {
+						failures = append(failures, validate.FieldError{
+							Name:  fmt.Sprintf("[%d]", i),
+							Error: err,
+						})
+					}
+				}
+				if len(failures) > 0 {
+					return &validate.Error{Fields: failures}
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "types",
+			In:   "query",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
 // GetTrainingParams is parameters of getTraining operation.
 type GetTrainingParams struct {
 	TrainingId uuid.UUID

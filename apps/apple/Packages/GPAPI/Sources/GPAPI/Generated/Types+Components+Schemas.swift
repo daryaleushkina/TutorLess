@@ -325,6 +325,186 @@ extension Components {
             case ru = "ru"
             case en = "en"
         }
+        /// - Remark: Generated from `#/components/schemas/LocaleChoice`.
+        public struct LocaleChoice: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/LocaleChoice/locale`.
+            public var locale: Components.Schemas.Locale
+            /// Creates a new `LocaleChoice`.
+            ///
+            /// - Parameters:
+            ///   - locale:
+            public init(locale: Components.Schemas.Locale) {
+                self.locale = locale
+            }
+            public enum CodingKeys: String, CodingKey {
+                case locale
+            }
+        }
+        /// - Remark: Generated from `#/components/schemas/Home`.
+        public struct Home: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/Home/lastTraining`.
+            public var lastTraining: Components.Schemas.LastTraining?
+            /// Все разделы экзамена в порядке справочника; без ответов — нули; точность correct / total
+            ///
+            /// - Remark: Generated from `#/components/schemas/Home/sections`.
+            public var sections: [Components.Schemas.SectionStats]
+            /// Число разных опубликованных заданий (status=approved), последний сохранённый ответ на которые неверный, за всё время. Последний — по answeredAt, при совпадении по началу тренировки и её id. Неотвеченные позиции не заменяют последний ответ; черновики и снятые задания не считаются. Число соответствует source=mistakes без дополнительных фильтров конструктора.
+            ///
+            /// - Remark: Generated from `#/components/schemas/Home/mistakes`.
+            public var mistakes: Swift.Int
+            /// - Remark: Generated from `#/components/schemas/Home/weakSpot`.
+            public var weakSpot: Components.Schemas.WeakSpot?
+            /// - Remark: Generated from `#/components/schemas/Home/week`.
+            public var week: Components.Schemas.WeekStats
+            /// Creates a new `Home`.
+            ///
+            /// - Parameters:
+            ///   - lastTraining:
+            ///   - sections: Все разделы экзамена в порядке справочника; без ответов — нули; точность correct / total
+            ///   - mistakes: Число разных опубликованных заданий (status=approved), последний сохранённый ответ на которые неверный, за всё время. Последний — по answeredAt, при совпадении по началу тренировки и её id. Неотвеченные позиции не заменяют последний ответ; черновики и снятые задания не считаются. Число соответствует source=mistakes без дополнительных фильтров конструктора.
+            ///   - weakSpot:
+            ///   - week:
+            public init(
+                lastTraining: Components.Schemas.LastTraining? = nil,
+                sections: [Components.Schemas.SectionStats],
+                mistakes: Swift.Int,
+                weakSpot: Components.Schemas.WeakSpot? = nil,
+                week: Components.Schemas.WeekStats
+            ) {
+                self.lastTraining = lastTraining
+                self.sections = sections
+                self.mistakes = mistakes
+                self.weakSpot = weakSpot
+                self.week = week
+            }
+            public enum CodingKeys: String, CodingKey {
+                case lastTraining
+                case sections
+                case mistakes
+                case weakSpot
+                case week
+            }
+        }
+        /// Последняя начатая тренировка по startedAt (при совпадении — id), даже без ответов. Нет тренировки или её запрос содержит тип вне переданного types — null. Запрос старого сервера без exam дополняется из строки тренировки. Нечитаемый старый запрос — null и запись ошибки в журнал сервера.
+        ///
+        /// - Remark: Generated from `#/components/schemas/LastTraining`.
+        public struct LastTraining: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/LastTraining/request`.
+            public var request: Components.Schemas.TrainingRequest
+            /// Фактическое число заданий сессии; request.count — исходное пожелание, оно может быть больше
+            ///
+            /// - Remark: Generated from `#/components/schemas/LastTraining/size`.
+            public var size: Swift.Int
+            /// Creates a new `LastTraining`.
+            ///
+            /// - Parameters:
+            ///   - request:
+            ///   - size: Фактическое число заданий сессии; request.count — исходное пожелание, оно может быть больше
+            public init(
+                request: Components.Schemas.TrainingRequest,
+                size: Swift.Int
+            ) {
+                self.request = request
+                self.size = size
+            }
+            public enum CodingKeys: String, CodingKey {
+                case request
+                case size
+            }
+        }
+        /// - Remark: Generated from `#/components/schemas/SectionStats`.
+        public struct SectionStats: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/SectionStats/section`.
+            public var section: Components.Schemas.Section
+            /// - Remark: Generated from `#/components/schemas/SectionStats/total`.
+            public var total: Swift.Int
+            /// - Remark: Generated from `#/components/schemas/SectionStats/correct`.
+            public var correct: Swift.Int
+            /// Creates a new `SectionStats`.
+            ///
+            /// - Parameters:
+            ///   - section:
+            ///   - total:
+            ///   - correct:
+            public init(
+                section: Components.Schemas.Section,
+                total: Swift.Int,
+                correct: Swift.Int
+            ) {
+                self.section = section
+                self.total = total
+                self.correct = correct
+            }
+            public enum CodingKeys: String, CodingKey {
+                case section
+                case total
+                case correct
+            }
+        }
+        /// Тип с наименьшей точностью среди типов с минимум 10 сохранёнными ответами за скользящие последние 30 суток и точностью строго ниже 70 процентов. Интервал [сейчас - 30 суток, сейчас]. При одинаковой точности — тип в лексикографическом порядке. Нет кандидата — null.
+        ///
+        /// - Remark: Generated from `#/components/schemas/WeakSpot`.
+        public struct WeakSpot: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/WeakSpot/questionType`.
+            public var questionType: Components.Schemas.QuestionType
+            /// - Remark: Generated from `#/components/schemas/WeakSpot/section`.
+            public var section: Components.Schemas.Section
+            /// Процент верных ответов, 100 * correct / total, без округления
+            ///
+            /// - Remark: Generated from `#/components/schemas/WeakSpot/accuracy`.
+            public var accuracy: Swift.Double
+            /// Creates a new `WeakSpot`.
+            ///
+            /// - Parameters:
+            ///   - questionType:
+            ///   - section:
+            ///   - accuracy: Процент верных ответов, 100 * correct / total, без округления
+            public init(
+                questionType: Components.Schemas.QuestionType,
+                section: Components.Schemas.Section,
+                accuracy: Swift.Double
+            ) {
+                self.questionType = questionType
+                self.section = section
+                self.accuracy = accuracy
+            }
+            public enum CodingKeys: String, CodingKey {
+                case questionType
+                case section
+                case accuracy
+            }
+        }
+        /// Текущая календарная неделя в tz: от понедельника 00:00 включительно до следующего понедельника 00:00 исключительно (учитываются переходы летнего времени). days — число местных дат с ответами, answers — число сохранённых ответов в этом интервале. Ответы сессии упорядочены по answeredAt, при совпадении — по позиции. Для каждого ответа интервал начинается с предыдущего answeredAt, для первого — со startedAt. Каждый интервал ограничен 300 секундами: пауза дольше — человек отошёл. Время сессии ограничено timeLimitSeconds, если лимит есть, включая расход до начала недели. Для ответов недели берётся только часть интервала после её начала; первый ответ учитывает время от startedAt только если старт тоже в неделе. minutes = floor(sum(учтённых секунд) / 60). Завершение без ответа и elapsedMs не добавляют времени. Сначала суммируются интервалы всех сессий, затем округляются минуты; лимит сессии не возобновляется с началом новой недели.
+        ///
+        /// - Remark: Generated from `#/components/schemas/WeekStats`.
+        public struct WeekStats: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/WeekStats/days`.
+            public var days: Swift.Int
+            /// - Remark: Generated from `#/components/schemas/WeekStats/answers`.
+            public var answers: Swift.Int
+            /// - Remark: Generated from `#/components/schemas/WeekStats/minutes`.
+            public var minutes: Swift.Int
+            /// Creates a new `WeekStats`.
+            ///
+            /// - Parameters:
+            ///   - days:
+            ///   - answers:
+            ///   - minutes:
+            public init(
+                days: Swift.Int,
+                answers: Swift.Int,
+                minutes: Swift.Int
+            ) {
+                self.days = days
+                self.answers = answers
+                self.minutes = minutes
+            }
+            public enum CodingKeys: String, CodingKey {
+                case days
+                case answers
+                case minutes
+            }
+        }
         /// - Remark: Generated from `#/components/schemas/User`.
         public struct User: Codable, Hashable, Sendable {
             /// - Remark: Generated from `#/components/schemas/User/id`.
@@ -850,8 +1030,17 @@ extension Components {
                 case maxQuestions
             }
         }
+        /// catalog (также при отсутствии поля) — весь каталог; mistakes — только свои последние неверные ответы
+        ///
+        /// - Remark: Generated from `#/components/schemas/TrainingSource`.
+        @frozen public enum TrainingSource: String, Codable, Hashable, Sendable, CaseIterable {
+            case catalog = "catalog"
+            case mistakes = "mistakes"
+        }
         /// - Remark: Generated from `#/components/schemas/TrainingRequest`.
         public struct TrainingRequest: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/TrainingRequest/source`.
+            public var source: Components.Schemas.TrainingSource?
             /// - Remark: Generated from `#/components/schemas/TrainingRequest/exam`.
             public var exam: Components.Schemas.Exam
             /// - Remark: Generated from `#/components/schemas/TrainingRequest/section`.
@@ -873,6 +1062,7 @@ extension Components {
             /// Creates a new `TrainingRequest`.
             ///
             /// - Parameters:
+            ///   - source:
             ///   - exam:
             ///   - section:
             ///   - questionTypes: Конструктор даёт один тип; «Проверка на время» — все типы раздела вперемешку (макет R16)
@@ -881,6 +1071,7 @@ extension Components {
             ///   - count:
             ///   - mode:
             public init(
+                source: Components.Schemas.TrainingSource? = nil,
                 exam: Components.Schemas.Exam,
                 section: Components.Schemas.Section,
                 questionTypes: [Components.Schemas.QuestionType],
@@ -889,6 +1080,7 @@ extension Components {
                 count: Swift.Int,
                 mode: Components.Schemas.TrainingMode
             ) {
+                self.source = source
                 self.exam = exam
                 self.section = section
                 self.questionTypes = questionTypes
@@ -898,6 +1090,7 @@ extension Components {
                 self.mode = mode
             }
             public enum CodingKeys: String, CodingKey {
+                case source
                 case exam
                 case section
                 case questionTypes

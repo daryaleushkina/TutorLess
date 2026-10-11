@@ -10,7 +10,7 @@ ORDER BY t.position, t.id;
 -- name: GetLastTrainingRequest :one
 -- Старый сервер после миграции ещё пишет JSON без exam; источником истины остаётся столбец строки.
 SELECT (request || jsonb_build_object('exam', exam_id))::jsonb AS request
-FROM trainings WHERE user_id = $1 AND exam_id = $2 ORDER BY started_at DESC LIMIT 1;
+FROM trainings WHERE user_id = $1 AND exam_id = $2 ORDER BY started_at DESC, id DESC LIMIT 1;
 
 -- Подбор заданий: только проверенные, сначала те, что человек ещё не видел, внутри — случайно. Виденное —
 -- по тренировкам самого человека (индекс по user_id), а не по всем показам задания всем людям.
@@ -20,12 +20,20 @@ WITH seen AS (
   FROM trainings tr
   JOIN training_items i ON i.training_id = tr.id
   WHERE tr.user_id = sqlc.arg(user_id)
+), latest AS (
+  SELECT DISTINCT ON (i.question_id) i.question_id, i.correct
+  FROM trainings tr JOIN training_items i ON i.training_id = tr.id
+  WHERE sqlc.arg(mistakes_only)::boolean
+    AND tr.user_id = sqlc.arg(user_id) AND tr.exam_id = sqlc.arg(exam_id) AND i.answered_at IS NOT NULL
+  ORDER BY i.question_id, i.answered_at DESC, tr.started_at DESC, tr.id DESC
 )
 SELECT q.id
 FROM questions q
 JOIN topics t ON t.id = q.topic_id
 LEFT JOIN seen s ON s.question_id = q.id
+LEFT JOIN latest l ON l.question_id = q.id
 WHERE q.status = 'approved'
+  AND (NOT sqlc.arg(mistakes_only)::boolean OR l.correct = false)
   AND t.exam_id = sqlc.arg(exam_id)
   AND t.section = sqlc.arg(section)
   AND q.question_type = ANY (sqlc.arg(question_types)::text[])
