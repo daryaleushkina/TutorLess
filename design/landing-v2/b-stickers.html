@@ -53,6 +53,7 @@
   --edge: inset 0 0 0 1px rgb(28 20 36 / 0.05);
   --cta-sh: 0 1px 0 rgb(255 255 255 / 0.35) inset, 0 10px 22px -10px rgb(150 50 20 / 0.55);
   --r-s: 14px; --r-m: 22px; --r-l: 30px;
+  --tsh-1: rgb(90 50 30 / 0.08); --tsh-2: rgb(90 50 30 / 0.2);
   --font: 'Onest', 'Helvetica Neue', Arial, sans-serif;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-io: cubic-bezier(0.77, 0, 0.175, 1);
@@ -74,6 +75,7 @@
     --edge: inset 0 1px 0 rgb(255 255 255 / 0.07), inset 0 0 0 1px rgb(255 255 255 / 0.05);
     --cta-sh: 0 1px 0 rgb(255 255 255 / 0.35) inset, 0 12px 24px -12px rgb(0 0 0 / 0.7);
     --rim: #F4EADF;
+    --tsh-1: rgb(0 0 0 / 0.35); --tsh-2: rgb(0 0 0 / 0.55);
     color-scheme: dark;
   }
 }
@@ -92,6 +94,7 @@
   --edge: inset 0 1px 0 rgb(255 255 255 / 0.07), inset 0 0 0 1px rgb(255 255 255 / 0.05);
   --cta-sh: 0 1px 0 rgb(255 255 255 / 0.35) inset, 0 12px 24px -12px rgb(0 0 0 / 0.7);
   --rim: #F4EADF;
+  --tsh-1: rgb(0 0 0 / 0.35); --tsh-2: rgb(0 0 0 / 0.55);
   color-scheme: dark;
 }
 
@@ -422,21 +425,73 @@ html[lang="en"] .seg span:nth-child(2) { background: var(--ink); color: var(--bg
   .track { gap: 24px; }
 }
 
-/* ---------- Цена ---------- */
-.price { position: relative; isolation: isolate; padding: 72px 0 80px; text-align: center; }
-.price .h2 { font-size: clamp(54px, 15vw, 96px); }
-.price .sub { margin-top: 16px; font-size: 19px; }
-.price .cta { margin-top: 34px; display: none; }
-.price-stk { display: none; }
+/* ---------- Цена: билет и четыре экзамена ---------- */
+.price { position: relative; isolation: isolate; padding: 64px 0 72px; }
+.price-grid { display: grid; gap: 22px; }
+.price-sk { position: relative; display: inline-block; justify-self: start; margin-left: 4px; padding: 0.06em 0.2em 0.1em; border-radius: 0.2em; background: var(--mango); color: var(--on-st); font-weight: 800; font-size: clamp(50px, 14vw, 96px); line-height: 0.98; letter-spacing: -0.04em; white-space: nowrap; transform: rotate(-2.5deg); box-shadow: 0 0 0 5px var(--rim), var(--sh); }
+.price-sk::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: linear-gradient(180deg, rgb(255 255 255 / 0.3), transparent 40%); }
+.price-sub { margin-top: 26px; font-weight: 500; font-size: 18px; line-height: 1.4; color: var(--ink-2); text-wrap: pretty; }
+.price-sub b { color: var(--ink); font-weight: 700; white-space: nowrap; }
+
+/* Билет: две части с вырезами по линии отрыва. Маска срезает и тень, поэтому тень — фильтром на обёртке. */
+.ticket { display: grid; }
+.t-part { filter: drop-shadow(0 2px 2px var(--tsh-1)) drop-shadow(0 16px 22px var(--tsh-2)); }
+.t-body { position: relative; background: var(--paper); }
+.t-main .t-body { padding: 22px 20px 24px; border-radius: var(--r-l) var(--r-l) 0 0;
+  -webkit-mask: radial-gradient(circle 15px at 0 100%, #0000 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle 15px at 100% 100%, #0000 97%, #000) right / 51% 100% no-repeat;
+          mask: radial-gradient(circle 15px at 0 100%, #0000 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle 15px at 100% 100%, #0000 97%, #000) right / 51% 100% no-repeat; }
+.t-stub .t-body { padding: 24px 20px 22px; border-radius: 0 0 var(--r-l) var(--r-l);
+  -webkit-mask: radial-gradient(circle 15px at 0 0, #0000 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle 15px at 100% 0, #0000 97%, #000) right / 51% 100% no-repeat;
+          mask: radial-gradient(circle 15px at 0 0, #0000 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle 15px at 100% 0, #0000 97%, #000) right / 51% 100% no-repeat; }
+/* Линия отрыва — пунктир между вырезами. */
+.t-stub .t-body::before { content: ''; position: absolute; top: 0; left: 24px; right: 24px; height: 2px; background: linear-gradient(90deg, var(--line-2) 55%, transparent 0) 0 0 / 12px 2px repeat-x; }
+/* Корешок уже надорван: чуть съехал и повернулся. Анимация приводит его сюда же. */
+.t-stub { transform: translate(3px, 9px) rotate(1.4deg); transform-origin: 0 0; }
+.t-head h3 { font-weight: 800; font-size: 28px; line-height: 1.05; letter-spacing: -0.03em; }
+.t-head p { margin-top: 6px; font-weight: 500; font-size: 16px; color: var(--ink-2); }
+.t-exams { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
+.te { position: relative; padding: 12px 14px 13px; border-radius: 18px; color: var(--on-st); transform: rotate(var(--r)); box-shadow: 0 0 0 3px var(--rim), 0 8px 14px -8px rgb(28 20 36 / 0.45); }
+.te::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: linear-gradient(180deg, rgb(255 255 255 / 0.28), transparent 40%); }
+.te.gre { background: var(--mango); } .te.toefl { background: var(--mint); } .te.sat { background: var(--lilac); } .te.gmat { background: var(--sky); }
+.te b { display: block; font-weight: 800; font-size: 34px; line-height: 0.92; letter-spacing: -0.04em; }
+.te span { display: block; margin-top: 6px; font-weight: 600; font-size: 13px; color: var(--on-st-2); }
+.t-incl { display: flex; flex-wrap: wrap; gap: 8px; }
+.t-incl li { display: inline-flex; align-items: center; gap: 7px; min-height: 36px; padding: 0 13px 0 7px; border-radius: 999px; background: var(--paper-2); font-weight: 600; font-size: 14px; }
+.ck { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--mint); color: var(--on-st); flex: none; }
+.ck .ico { width: 13px; height: 13px; stroke-width: 3; }
+.buy .cta { width: 100%; }
+
+/* Шкала пробного периода: на телефоне вертикальная, на компьютере в строку. */
+.trial { display: grid; gap: 22px; margin-top: 6px; }
+.steps3 { position: relative; display: grid; gap: 18px; }
+.steps3::before { content: ''; position: absolute; left: 19px; top: 20px; bottom: 26px; width: 2px; background: linear-gradient(180deg, var(--line-2) 55%, transparent 0) 0 0 / 2px 10px repeat-y; }
+.steps3 li { position: relative; display: grid; grid-template-columns: 40px 1fr; gap: 14px; align-items: start; }
+.dot { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--paper); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line-2); }
+.dot .ico { width: 19px; height: 19px; }
+.now .dot { background: var(--cta); color: var(--on-cta); box-shadow: none; }
+.st3 { display: grid; gap: 2px; padding-top: 1px; }
+.st3 b { font-weight: 700; font-size: 17px; }
+.st3 span { font-size: 15px; line-height: 1.4; color: var(--ink-2); }
+.cancel { font-weight: 750; font-size: 22px; line-height: 1.25; letter-spacing: -0.02em; text-wrap: balance; }
+
 @media (min-width: 1024px) {
-  .price { padding: 150px 0 160px; }
-  .price .cta { display: inline-flex; }
-}
-/* Наклейки по бокам — только там, где им хватает места рядом с заголовком. */
-@media (min-width: 1280px) {
-  .price-stk { display: block; position: absolute; inset: 0; z-index: 0; width: auto; height: auto; max-width: none; margin: 0; pointer-events: none; }
-  .price-stk .st { pointer-events: auto; }
-  .price .wrap { position: relative; z-index: 1; }
+  .price { padding: 120px 0 128px; }
+  .price-grid { grid-template-columns: minmax(0, 1fr) 540px; grid-template-areas: "offer ticket" "buy ticket" "trial trial"; column-gap: 72px; row-gap: 30px; }
+  .offer { grid-area: offer; align-self: end; }
+  .ticket { grid-area: ticket; align-self: center; }
+  .buy { grid-area: buy; align-self: start; }
+  .buy .cta { width: auto; }
+  .trial { grid-area: trial; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 56px; align-items: center; margin-top: 34px; padding-top: 36px; border-top: 1px solid var(--line); }
+  .price-sub { font-size: 21px; }
+  .t-main .t-body { padding: 28px 28px 30px; }
+  .t-stub .t-body { padding: 28px 28px 26px; }
+  .t-head h3 { font-size: 34px; }
+  .te b { font-size: 44px; }
+  .te { padding: 16px 18px; }
+  .steps3 { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+  .steps3::before { left: 20px; top: 19px; bottom: auto; width: calc((200% + 40px) / 3); height: 2px; background: linear-gradient(90deg, var(--line-2) 55%, transparent 0) 0 0 / 10px 2px repeat-x; }
+  .steps3 li { grid-template-columns: 1fr; gap: 12px; }
+  .cancel { font-size: 26px; }
 }
 
 /* ---------- Скачать ---------- */
@@ -466,7 +521,10 @@ html[lang="en"] .seg span:nth-child(2) { background: var(--ink); color: var(--bg
 /* ---------- Кнопка, закреплённая внизу на телефоне ---------- */
 .dock { position: fixed; z-index: 40; left: 16px; right: 16px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
 .dock .cta { width: 100%; box-shadow: 0 1px 0 rgb(255 255 255 / 0.35) inset, 0 14px 30px -10px rgb(0 0 0 / 0.45), 0 0 0 4px color-mix(in srgb, var(--bg) 70%, transparent); }
+.dock { transition: transform 260ms var(--ease-out), opacity 200ms ease; }
+.dock.away { transform: translateY(130%); opacity: 0; pointer-events: none; }
 @media (min-width: 1024px) { .dock { display: none; } }
+.js .price-grid:not(.dealt) .pa, .js .price-grid:not(.dealt) .te, .js .price-grid:not(.dealt) .t-incl li { opacity: 0; }
 
 /* Меньше движения: всё стоит на месте и сразу в итоговом виде; цвет и прозрачность остаются. */
 @media (prefers-reduced-motion: reduce) {
@@ -491,6 +549,9 @@ html[lang="en"] .seg span:nth-child(2) { background: var(--ink); color: var(--bg
   <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5.5 21V4.5M5.5 4.5h11l-2 4 2 4h-11"/></symbol>
   <symbol id="i-skip" viewBox="0 0 24 24"><path d="M5 6.5l7 5.5-7 5.5ZM13 6.5l7 5.5-7 5.5Z"/></symbol>
   <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M4.5 12a7.5 7.5 0 0 1 12.8-5.3L19.5 9M19.5 4.5V9H15M19.5 12a7.5 7.5 0 0 1-12.8 5.3L4.5 15M4.5 19.5V15H9"/></symbol>
+  <symbol id="i-unlock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 6.8-1.2"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6.5 16.5V11a5.5 5.5 0 0 1 11 0v5.5l1.5 1.5H5Z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/></symbol>
+  <symbol id="i-card" viewBox="0 0 24 24"><rect x="3.5" y="6" width="17" height="12" rx="2.5"/><path d="M3.5 10h17M7 14.5h3"/></symbol>
   <symbol id="i-laptop" viewBox="0 0 24 24"><path d="M5 6.5A1.5 1.5 0 0 1 6.5 5h11A1.5 1.5 0 0 1 19 6.5V16H5ZM2.5 19h19"/></symbol>
   <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.3 2.4 3.4 5.2 3.4 8.5s-1.1 6.1-3.4 8.5c-2.3-2.4-3.4-5.2-3.4-8.5s1.1-6.1 3.4-8.5Z"/></symbol>
   <symbol id="i-tg" viewBox="0 0 24 24"><path d="M20.6 4.6 3.4 11.3c-.8.3-.8 1.4 0 1.7l4.3 1.5 1.7 5.2c.2.6 1 .8 1.5.3l2.4-2.3 4.6 3.4c.6.4 1.4.1 1.6-.6l2.6-13.4c.2-.9-.6-1.6-1.5-1.3Z"/><path d="m7.7 14.5 9.1-6.4-6.7 7.4"/></symbol>
@@ -791,28 +852,50 @@ html[lang="en"] .seg span:nth-child(2) { background: var(--ink); color: var(--bg
 </section>
 
 <!-- ============ Цена ============ -->
+<!-- Концепция «Билет + четыре экзамена» (решение Даши 12.10.2026): пробный период с картой и напоминанием
+     до списания, только месячная подписка; без скидок, зачёркнутых цен, таймеров, отзывов и рейтингов. -->
 <section class="price" id="price" aria-labelledby="price-h">
   <div class="glow" aria-hidden="true"><i class="blob a"></i><i class="blob b"></i><i class="blob c"></i></div>
-  <div class="stage price-stk" aria-hidden="true">
-    <div class="st" style="--l:max(24px, calc(50% - 664px));--t:96px;--w:236px; --r:-7deg; --z:1">
-      <div class="fl" style="--fd:8s;--fdl:-2s"><div class="card pad" style="display:grid;gap:6px">
-        <div class="row"><span class="lab" data-en="Words · 9 of 12">Слова · 9 из&nbsp;12</span><span class="round" style="background:var(--paper-2);color:var(--ink)"><svg class="ico"><use href="#i-speaker"/></svg></span></div>
-        <div class="big-word" style="font-size:40px">verbose</div>
-        <span class="ipa" style="color:var(--ink-3)">/vɜːˈbəʊs/</span>
-        <span style="font-weight:600" data-en="using more words than needed">многословный</span>
+  <div class="wrap price-grid">
+    <div class="offer">
+      <h2 class="price-sk pa" id="price-h"><span data-en="7 days — 0&nbsp;₽">7&nbsp;дней&nbsp;— 0&nbsp;₽</span></h2>
+      <p class="price-sub" data-en="then 1199&nbsp;₽ a month · <b>about 40&nbsp;₽ a day</b>">потом 1199&nbsp;₽ в&nbsp;месяц · <b>около 40&nbsp;₽ в&nbsp;день</b></p>
+    </div>
+
+    <div class="ticket">
+      <div class="t-part t-main pa"><div class="t-body">
+        <div class="t-head">
+          <h3 data-en="Everything included">Всё включено</h3>
+          <p data-en="Four exams, one price">Четыре экзамена за&nbsp;одну цену</p>
+        </div>
+        <ul class="t-exams" aria-label="Экзамены" data-en-label="Exams">
+          <li class="te gre" style="--r:-2deg"><b>GRE</b><span data-en="3 sections">3&nbsp;раздела</span></li>
+          <li class="te toefl" style="--r:1.5deg"><b>TOEFL</b><span data-en="4 sections">4&nbsp;раздела</span></li>
+          <li class="te sat" style="--r:1deg"><b>SAT</b><span data-en="2 sections">2&nbsp;раздела</span></li>
+          <li class="te gmat" style="--r:-1.5deg"><b>GMAT</b><span data-en="3 sections">3&nbsp;раздела</span></li>
+        </ul>
+      </div></div>
+      <div class="t-part t-stub pa"><div class="t-body">
+        <ul class="t-incl">
+          <li><span class="ck"><svg class="ico"><use href="#i-check"/></svg></span><span data-en="Practice">Тренировки</span></li>
+          <li><span class="ck"><svg class="ico"><use href="#i-check"/></svg></span><span data-en="Explanations in your language">Разбор на&nbsp;вашем языке</span></li>
+          <li><span class="ck"><svg class="ico"><use href="#i-check"/></svg></span><span data-en="Vocabulary">Слова</span></li>
+          <li><span class="ck"><svg class="ico"><use href="#i-check"/></svg></span><span data-en="Scored practice tests">Пробники с&nbsp;баллом</span></li>
+          <li><span class="ck"><svg class="ico"><use href="#i-check"/></svg></span><span data-en="Scored essays">Эссе с&nbsp;оценкой</span></li>
+        </ul>
       </div></div>
     </div>
-    <div class="st" style="--l:min(calc(100% - 330px), calc(50% + 410px));--t:250px;--w:300px; --r:6deg; --z:2">
-      <div class="fl" style="--fd:7s;--fdl:-4s"><div class="card sk tomato" style="display:flex;align-items:center;gap:12px">
-        <div><div class="sk-h" data-en="Review my mistakes">Повторить мои ошибки</div><span class="sk-l" data-en="12 questions">12&nbsp;заданий</span></div>
-        <span class="round" style="margin-left:auto"><svg class="ico f"><use href="#i-play"/></svg></span>
-      </div></div>
+
+    <div class="buy"><a class="cta" href="#signup"><span data-en="Try 7 days free">Начать&nbsp;— 7&nbsp;дней бесплатно</span> <svg class="ico"><use href="#i-arrow"/></svg></a></div>
+
+    <div class="trial">
+      <ol class="steps3">
+        <li class="now"><span class="dot"><svg class="ico"><use href="#i-unlock"/></svg></span><span class="st3"><b data-en="Today">Сегодня</b><span data-en="everything unlocked">открываем всё</span></span></li>
+        <li><span class="dot"><svg class="ico"><use href="#i-bell"/></svg></span><span class="st3"><b data-en="Day 5">День 5</b><span data-en="we remind you">напомним, что скоро оплата</span></span></li>
+        <li><span class="dot"><svg class="ico"><use href="#i-card"/></svg></span><span class="st3"><b data-en="Day 8">День 8</b><span data-en="first payment of 1199&nbsp;₽">первый платёж 1199&nbsp;₽</span></span></li>
+      </ol>
+      <p class="cancel" data-en="Cancel anytime in your profile, two taps.">Отменить можно в&nbsp;любой момент&nbsp;— в&nbsp;профиле, в&nbsp;два нажатия.</p>
     </div>
-  </div>
-  <div class="wrap">
-    <h2 class="h2" id="price-h" data-en="7 days free">7&nbsp;дней бесплатно</h2>
-    <p class="sub" data-en="Then 1199&nbsp;₽ a month.">Затем 1199&nbsp;₽ в&nbsp;месяц.</p>
-    <a class="cta" href="#"><span data-en="Start">Начать</span> <svg class="ico"><use href="#i-arrow"/></svg></a>
   </div>
 </section>
 
@@ -1041,9 +1124,44 @@ html[lang="en"] .seg span:nth-child(2) { background: var(--ink); color: var(--bg
     desk.addEventListener('change', function () { stacks.forEach(function (s) { s.classList.add('dealt'); }); });
   }
 
-  var priceStk = document.querySelector('.price-stk');
-  if (reduce) priceStk.classList.add('dealt');
-  else watch(priceStk, function () { if (!priceStk.classList.contains('dealt') && priceStk.offsetParent !== null) deal(priceStk, { k: 0.35 }); }, null, 0.2);
+  /* ---------- Цена: билет отрывается, наклейки ложатся по одной ---------- */
+  var priceGrid = document.querySelector('.price-grid');
+  function priceIn() {
+    priceGrid.classList.add('dealt');
+    if (reduce) return;
+    var sk = priceGrid.querySelector('.price-sk');
+    sk.animate([
+      { transform: 'translateY(-26px) rotate(-9deg) scale(1.08)', opacity: 0 },
+      { opacity: 1, offset: 0.35 },
+      { transform: 'rotate(-2.5deg)', opacity: 1 }
+    ], { duration: 760, easing: EASE, fill: 'backwards' });
+    priceGrid.querySelector('.t-main').animate([
+      { transform: 'translateY(30px)', opacity: 0 }, { transform: 'none', opacity: 1 }
+    ], { duration: 640, delay: 140, easing: EASE, fill: 'backwards' });
+    // Корешок сначала едет вместе с билетом, затем надрывается по линии вырезов.
+    priceGrid.querySelector('.t-stub').animate([
+      { transform: 'translateY(30px)', opacity: 0, easing: EASE },
+      { transform: 'translate(0, 0) rotate(0deg)', opacity: 1, offset: 0.5, easing: 'cubic-bezier(0.32, 0.72, 0, 1)' },
+      { transform: 'translate(3px, 9px) rotate(1.4deg)', opacity: 1 }
+    ], { duration: 1300, delay: 140, fill: 'backwards' });
+    priceGrid.querySelectorAll('.te').forEach(function (el, i) {
+      var r = parseFloat(el.style.getPropertyValue('--r')) || 0;
+      el.animate([
+        { transform: 'translateY(-16px) rotate(' + (r + (i % 2 ? -7 : 7)) + 'deg) scale(1.14)', opacity: 0 },
+        { opacity: 1, offset: 0.4 },
+        { transform: 'rotate(' + r + 'deg)', opacity: 1 }
+      ], { duration: 520, delay: 560 + i * 120, easing: EASE, fill: 'backwards' });
+    });
+    priceGrid.querySelectorAll('.t-incl li').forEach(function (el, i) {
+      el.animate([{ transform: 'translateY(8px) scale(0.96)', opacity: 0 }, { transform: 'none', opacity: 1 }],
+        { duration: 340, delay: 1180 + i * 60, easing: EASE, fill: 'backwards' });
+    });
+  }
+  if (reduce) priceGrid.classList.add('dealt');
+  else watch(priceGrid.querySelector('.ticket'), function () { if (!priceGrid.classList.contains('dealt')) priceIn(); }, null, 0.2);
+  // На телефоне закреплённая кнопка уступает место кнопке блока цены, чтобы двух одинаковых не было на экране.
+  var dock = document.querySelector('.dock');
+  watch(priceGrid.querySelector('.buy'), function () { dock.classList.add('away'); }, function () { dock.classList.remove('away'); });
 
   /* ---------- Карусель экзаменов ---------- */
   var track = document.querySelector('.track');
