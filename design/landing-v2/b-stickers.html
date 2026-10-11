@@ -11,6 +11,18 @@
     var d = document.documentElement;
     d.classList.add('js');
     try { var t = localStorage.getItem('landing-theme'); if (t === 'light' || t === 'dark') d.dataset.theme = t; } catch (e) { /* без памяти браузера */ }
+    // Язык (PRODUCT.md, «Языки»): сохранённый выбор, иначе русский — кроме браузера, у которого первый язык
+    // английский и русского в списке нет. Английский текст подставляет скрипт в конце страницы; до него страница скрыта.
+    var l = null;
+    try { l = localStorage.getItem('landing-lang'); } catch (e) { /* без памяти браузера */ }
+    if (l !== 'ru' && l !== 'en') {
+      var list = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || 'ru'];
+      var hasRu = false;
+      for (var i = 0; i < list.length; i++) if (/^ru\b/i.test(list[i])) hasRu = true;
+      l = (/^en\b/i.test(list[0] || '') && !hasRu) ? 'en' : 'ru';
+    }
+    d.lang = l;
+    if (l === 'en') d.classList.add('i18n-pending');
   })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -84,6 +96,7 @@
 }
 
 * { box-sizing: border-box; }
+.i18n-pending body { opacity: 0; }
 html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 400 17px/1.5 var(--font); -webkit-font-smoothing: antialiased; overflow-x: clip; -webkit-tap-highlight-color: transparent; }
 h1, h2, h3, p, ul, ol, figure { margin: 0; }
@@ -105,6 +118,13 @@ section[id] { scroll-margin-top: 72px; }
 .top .wrap { display: flex; align-items: center; gap: 6px; min-height: 64px; }
 .brand { margin-right: auto; font-weight: 800; font-size: 21px; letter-spacing: -0.03em; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
 .brand-dot { width: 14px; height: 14px; border-radius: 5px; background: var(--cta); transform: rotate(-12deg); box-shadow: 5px -3px 0 -1px var(--mango); }
+.lang { display: inline-flex; flex: none; padding: 3px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line-2); }
+.lang button { min-width: 36px; height: 34px; padding: 0 8px; border: 0; border-radius: 999px; background: none; color: var(--ink-3); font-weight: 700; font-size: 13px; letter-spacing: 0.03em; cursor: pointer; transition: background-color 160ms ease, color 160ms ease, transform 140ms var(--ease-out); }
+.lang button:active { transform: scale(0.95); }
+.lang button[aria-pressed="true"] { background: var(--ink); color: var(--bg); cursor: default; }
+@media (hover: hover) and (pointer: fine) { .lang button[aria-pressed="false"]:hover { color: var(--ink); } }
+.ink { color: var(--ink); }
+u.stress { text-decoration-thickness: 2px; text-underline-offset: 3px; }
 .theme { width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 14px; background: none; color: var(--ink-2); cursor: pointer; transition: color 160ms ease, background-color 160ms ease; }
 .theme .i-moon, .theme[data-mode="light"] .i-sun { display: none; }
 .theme[data-mode="light"] .i-moon { display: block; }
@@ -115,7 +135,7 @@ section[id] { scroll-margin-top: 72px; }
   .theme:hover { color: var(--ink); background: var(--line); }
   .link:hover { color: var(--ink); }
 }
-@media (max-width: 420px) { .link { padding: 0 8px; } .pill { padding: 0 14px; } .top .wrap { gap: 2px; } }
+@media (max-width: 420px) { .link { padding: 0 7px; font-size: 15px; } .pill { padding: 0 13px; font-size: 15px; } .top .wrap { gap: 2px; } .brand { font-size: 19px; gap: 7px; } .theme { width: 38px; } .lang button { min-width: 30px; height: 32px; padding: 0 6px; font-size: 12px; } }
 
 /* ---------- Мягкое свечение: три размытых пятна на трансформациях, без canvas и видео ---------- */
 .glow { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; contain: strict; }
@@ -233,6 +253,9 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
 .seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--paper-2); justify-self: start; }
 .seg span { min-width: 32px; padding: 3px 9px; border-radius: 999px; text-align: center; font-weight: 600; font-size: 12px; color: var(--ink-3); }
 .seg .cur { background: var(--ink); color: var(--bg); }
+/* В английской версии разбор написан по-английски — активен EN; сам список языков разбора тот же. */
+html[lang="en"] .seg span:nth-child(1) { background: none; color: var(--ink-3); }
+html[lang="en"] .seg span:nth-child(2) { background: var(--ink); color: var(--bg); }
 
 /* Стикер балла */
 .score { display: grid; gap: 8px; }
@@ -477,10 +500,11 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="#" aria-label="[Имя], на главную"><span class="brand-dot" aria-hidden="true"></span>[Имя]</a>
+    <a class="brand" href="#" aria-label="[Имя], на главную" data-en-label="[Name], home"><span class="brand-dot" aria-hidden="true"></span><span data-en="[Name]">[Имя]</span></a>
+    <div class="lang" role="group" aria-label="Язык" data-en-label="Language"><button type="button" data-lang="ru" aria-pressed="true">RU</button><button type="button" data-lang="en" aria-pressed="false">EN</button></div>
     <button class="theme" type="button" aria-label="Светлая тема"><svg class="ico i-sun"><use href="#i-sun"/></svg><svg class="ico i-moon"><use href="#i-moon"/></svg></button>
-    <a class="link" href="#">Войти</a>
-    <a class="pill" href="#get">Скачать</a>
+    <a class="link" href="#" data-en="Log in">Войти</a>
+    <a class="pill" href="#get" data-en="Download">Скачать</a>
   </div>
 </header>
 
@@ -491,44 +515,44 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
   <div class="wrap">
     <div>
       <h1 class="h1" id="h1">
-        <span class="sr">GRE, TOEFL, SAT и GMAT без репетитора</span>
-        <span class="h1-vis" aria-hidden="true"><span class="swap"><span class="swap-w gre on" data-x="gre">GRE</span><span class="swap-w toefl" data-x="toefl">TOEFL</span><span class="swap-w sat" data-x="sat">SAT</span><span class="swap-w gmat" data-x="gmat">GMAT</span></span><br>без репетитора</span>
+        <span class="sr" data-en="GRE, TOEFL, SAT and GMAT prep without a tutor">GRE, TOEFL, SAT и GMAT без репетитора</span>
+        <span class="h1-vis" aria-hidden="true"><span class="swap"><span class="swap-w gre on" data-x="gre">GRE</span><span class="swap-w toefl" data-x="toefl">TOEFL</span><span class="swap-w sat" data-x="sat">SAT</span><span class="swap-w gmat" data-x="gmat">GMAT</span></span><br><span data-en="without a tutor">без репетитора</span></span>
       </h1>
-      <p class="lede">Вопросы как на&nbsp;настоящем экзамене и&nbsp;разбор каждой ошибки на&nbsp;вашем языке.</p>
-      <ul class="exams" aria-label="Экзамены">
+      <p class="lede" data-en="Questions just like the real exam, with every mistake explained in&nbsp;your language.">Вопросы как на&nbsp;настоящем экзамене и&nbsp;разбор каждой ошибки на&nbsp;вашем языке.</p>
+      <ul class="exams" aria-label="Экзамены" data-en-label="Exams">
         <li class="ex gre">GRE</li>
         <li class="ex toefl">TOEFL</li>
         <li class="ex sat">SAT</li>
         <li class="ex gmat">GMAT</li>
       </ul>
       <div class="cta-row">
-        <a class="cta" href="#signup">Начать&nbsp;— 7&nbsp;дней бесплатно <svg class="ico"><use href="#i-arrow"/></svg></a>
-        <span class="price-note">Затем 1199&nbsp;₽ в&nbsp;месяц</span>
+        <a class="cta" href="#signup"><span data-en="Try 7 days free">Начать&nbsp;— 7&nbsp;дней бесплатно</span> <svg class="ico"><use href="#i-arrow"/></svg></a>
+        <span class="price-note" data-en="Then 1199&nbsp;₽ a month">Затем 1199&nbsp;₽ в&nbsp;месяц</span>
       </div>
     </div>
 
-    <div class="stage hero-stage" style="--mh:470px; --dh:600px" role="img" aria-label="Вопрос GRE Verbal с разбором ошибки, примерный балл пробного экзамена и слово с транскрипцией">
+    <div class="stage hero-stage" style="--mh:470px; --dh:600px" role="img" aria-label="Вопрос GRE Verbal с разбором ошибки, примерный балл пробного экзамена и слово с транскрипцией" data-en-label="A GRE Verbal question with the mistake explained, a practice test score and a word with its pronunciation">
       <div class="st d-only" style="--l:4px;--t:30px;--w:196px; --r:-6deg; --z:3">
         <div class="fl" style="--fd:7.5s;--fdl:-2s"><div class="card sk lilac word">
           <div class="word-h"><span class="hw">laconic</span><span class="round"><svg class="ico"><use href="#i-speaker"/></svg></span></div>
           <span class="ipa">/ləˈkɒnɪk/</span>
-          <span class="word-tr">лаконичный</span>
+          <span class="word-tr" data-en="brief, few words">лаконичный</span>
         </div></div>
       </div>
       <div class="st" style="--l:368px;--t:0;--w:226px; --ml:206px;--mt:0;--mw:150px; --r:6deg; --z:4">
         <div class="fl" style="--fd:6.5s;--fdl:-1s"><div class="card sk sc" id="hero-score" data-x="gre">
           <div class="sv-wrap">
-          <div class="sv on" data-x="gre"><span class="sk-l">Пробник · GRE</span><div class="score-row"><div><span class="num">158</span><span>Verbal</span></div><div><span class="num">164</span><span>Quant</span></div></div></div>
-          <div class="sv" data-x="toefl"><span class="sk-l">Пробник · TOEFL</span><div class="score-row"><div><span class="num">5,5</span><span>Reading</span></div><div><span class="num">6</span><span>Listening</span></div></div></div>
-          <div class="sv" data-x="sat"><span class="sk-l">Пробник · SAT</span><div><span class="num">1450</span><span>Reading and Writing 710, Math 740</span></div></div>
-          <div class="sv" data-x="gmat"><span class="sk-l">Пробник · GMAT</span><div><span class="num">655</span><span>Quant 84, Verbal 83, Data Insights 80</span></div></div>
+          <div class="sv on" data-x="gre"><span class="sk-l" data-en="Practice test · GRE">Пробник · GRE</span><div class="score-row"><div><span class="num">158</span><span>Verbal</span></div><div><span class="num">164</span><span>Quant</span></div></div></div>
+          <div class="sv" data-x="toefl"><span class="sk-l" data-en="Practice test · TOEFL">Пробник · TOEFL</span><div class="score-row"><div><span class="num" data-en="5.5">5,5</span><span>Reading</span></div><div><span class="num">6</span><span>Listening</span></div></div></div>
+          <div class="sv" data-x="sat"><span class="sk-l" data-en="Practice test · SAT">Пробник · SAT</span><div><span class="num">1450</span><span>Reading and Writing 710, Math 740</span></div></div>
+          <div class="sv" data-x="gmat"><span class="sk-l" data-en="Practice test · GMAT">Пробник · GMAT</span><div><span class="num">655</span><span>Quant 84, Verbal 83, Data Insights 80</span></div></div>
           </div>
-          <span class="sk-foot">наша оценка</span>
+          <span class="sk-foot" data-en="our estimate">наша оценка</span>
         </div></div>
       </div>
       <div class="st" style="--l:66px;--t:168px;--w:360px; --ml:0;--mt:98px;--mw:300px; --r:-2.5deg; --z:2">
         <div class="fl" style="--fd:9s;--fdl:-5s"><div class="card q" id="hero-q" data-s="idle">
-          <div class="q-top"><span>Verbal · Text Completion</span><b>3 из 10</b></div>
+          <div class="q-top"><span>Verbal · Text Completion</span><b data-en="3 of 10">3 из 10</b></div>
           <div class="bar"><i style="transform:scaleX(.3)"></i></div>
           <p class="q-text">Although the report was praised for its concision, several objections were dismissed in a&nbsp;single <span class="blank">meticulous</span> sentence.</p>
           <div class="opts">
@@ -536,13 +560,13 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
             <div class="opt m"><span class="tap"></span><span class="o"></span>meticulous<svg class="ico mk x"><use href="#i-x"/></svg></div>
             <div class="opt opt-3"><span class="o"></span>impassioned</div>
           </div>
-          <div class="q-btn"><span class="b1">Проверить</span><span class="b2">Дальше</span></div>
+          <div class="q-btn"><span class="b1" data-en="Check">Проверить</span><span class="b2" data-en="Next">Дальше</span></div>
         </div></div>
       </div>
       <div class="st" style="--l:302px;--t:392px;--w:296px; --ml:82px;--mt:318px;--mw:272px; --r:2deg; --z:5">
         <div class="fl" style="--fd:8.5s;--fdl:-6s"><div class="pop wait" id="hero-bub"><div class="card bub">
-          <div class="bub-h"><svg class="ico"><use href="#i-x"/></svg>Неверно</div>
-          <p>Нужно слово с&nbsp;оттенком <mark>«для галочки»</mark>: <b>perfunctory</b>.</p>
+          <div class="bub-h"><svg class="ico"><use href="#i-x"/></svg><span data-en="Wrong">Неверно</span></div>
+          <p data-en="You need a word that means <mark>“just going through the motions”</mark>: <b>perfunctory</b>.">Нужно слово с&nbsp;оттенком <mark>«для галочки»</mark>: <b>perfunctory</b>.</p>
           <div class="seg" aria-hidden="true"><span class="cur">RU</span><span>EN</span><span>UZ</span><span>KK</span></div>
         </div></div></div>
       </div>
@@ -552,21 +576,21 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
 
 <!-- ============ Сцена на месте ============ -->
 <section class="scene" id="inside" aria-labelledby="inside-h">
-  <h2 class="sr" id="inside-h">Что есть в&nbsp;[Имя]</h2>
+  <h2 class="sr" id="inside-h" data-en="What’s inside [Name]">Что есть в&nbsp;[Имя]</h2>
   <div class="scene-pin"><div class="wrap scene-grid">
     <div class="feats">
 
       <div class="feat on" data-i="0">
         <div class="feat-head">
-          <h3>Разбор каждой ошибки</h3>
-          <p><span>Объясняем на&nbsp;вашем языке, почему ответ неверный и&nbsp;где была ловушка.</span></p>
-          <button class="feat-btn" type="button" aria-controls="stk-0" aria-expanded="true"><span class="sr">Разбор каждой ошибки</span></button>
+          <h3 data-en="Every mistake, explained">Разбор каждой ошибки</h3>
+          <p data-en="<span>Why your answer was wrong and where the trap was, in&nbsp;your language.</span>"><span>Объясняем на&nbsp;вашем языке, почему ответ неверный и&nbsp;где была ловушка.</span></p>
+          <button class="feat-btn" type="button" aria-controls="stk-0" aria-expanded="true"><span class="sr" data-en="Every mistake, explained">Разбор каждой ошибки</span></button>
           <span class="prog" aria-hidden="true"><i></i></span>
         </div>
-        <div class="stage stack on" id="stk-0" style="--mh:392px" role="img" aria-label="Вопрос с неверным ответом и разбор: почему верно perfunctory">
+        <div class="stage stack on" id="stk-0" style="--mh:392px" role="img" aria-label="Вопрос с неверным ответом и разбор: почему верно perfunctory" data-en-label="A wrong answer and the explanation of why perfunctory is right">
           <div class="st" style="--l:0;--t:36px;--w:340px; --ml:0;--mt:0;--mw:300px; --r:-3deg; --z:1">
             <div class="fl" style="--fd:8s;--fdl:-2s"><div class="card q" data-s="checked">
-              <div class="q-top"><span>Verbal · Text Completion</span><b>3 из 10</b></div>
+              <div class="q-top"><span>Verbal · Text Completion</span><b data-en="3 of 10">3 из 10</b></div>
               <p class="q-text">…several objections were dismissed in a&nbsp;single <span class="blank">meticulous</span> sentence.</p>
               <div class="opts">
                 <div class="opt p"><span class="o"></span>perfunctory<svg class="ico mk ok"><use href="#i-check"/></svg></div>
@@ -576,68 +600,68 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
           </div>
           <div class="st" style="--l:196px;--t:214px;--w:344px; --ml:52px;--mt:170px;--mw:300px; --r:2deg; --z:2">
             <div class="fl" style="--fd:7s;--fdl:-4s"><div class="card bub">
-              <div class="row"><div class="bub-h"><svg class="ico"><use href="#i-x"/></svg>Неверно</div><div class="seg" aria-hidden="true"><span class="cur">RU</span><span>EN</span><span>UZ</span><span>KK</span></div></div>
-              <p>«Dismissed in&nbsp;a&nbsp;single sentence»&nbsp;— возражения разобрали <mark>наспех</mark>.</p>
-              <p class="dim"><b style="color:var(--ink)">Meticulous</b> звучит как похвала, но&nbsp;тщательно возражения не&nbsp;отбрасывают.</p>
+              <div class="row"><div class="bub-h"><svg class="ico"><use href="#i-x"/></svg><span data-en="Wrong">Неверно</span></div><div class="seg" aria-hidden="true"><span class="cur">RU</span><span>EN</span><span>UZ</span><span>KK</span></div></div>
+              <p data-en="“Dismissed in&nbsp;a&nbsp;single sentence” means the objections got handled <mark>in a rush</mark>.">«Dismissed in&nbsp;a&nbsp;single sentence»&nbsp;— возражения разобрали <mark>наспех</mark>.</p>
+              <p class="dim" data-en="<b class=ink>Meticulous</b> sounds like praise, but nobody brushes off objections meticulously."><b class="ink">Meticulous</b> звучит как похвала, но&nbsp;тщательно возражения не&nbsp;отбрасывают.</p>
             </div></div>
           </div>
           <div class="st d-only" style="--l:330px;--t:20px;--w:200px; --r:6deg; --z:3">
-            <div class="fl" style="--fd:6.5s;--fdl:-1s"><div class="card sk pink"><span class="sk-l">Повторить тему</span><div class="sk-h">Контраст после although</div></div></div>
+            <div class="fl" style="--fd:6.5s;--fdl:-1s"><div class="card sk pink"><span class="sk-l" data-en="Review this topic">Повторить тему</span><div class="sk-h" data-en="Contrast after although">Контраст после although</div></div></div>
           </div>
         </div>
       </div>
 
       <div class="feat" data-i="1">
         <div class="feat-head">
-          <h3>Слова в&nbsp;шесть шагов</h3>
-          <p><span>Услышать, узнать, собрать, написать, перевести и&nbsp;сказать вслух.</span></p>
-          <button class="feat-btn" type="button" aria-controls="stk-1" aria-expanded="false"><span class="sr">Слова в шесть шагов</span></button>
+          <h3 data-en="Words in six steps">Слова в&nbsp;шесть шагов</h3>
+          <p data-en="<span>Hear it, spot it, build it, write it, translate it, then say it out loud.</span>"><span>Услышать, узнать, собрать, написать, перевести и&nbsp;сказать вслух.</span></p>
+          <button class="feat-btn" type="button" aria-controls="stk-1" aria-expanded="false"><span class="sr" data-en="Words in six steps">Слова в шесть шагов</span></button>
           <span class="prog" aria-hidden="true"><i></i></span>
         </div>
-        <div class="stage stack" id="stk-1" style="--mh:380px" role="img" aria-label="Карточка слова laconic: транскрипция, перевод, пример и шаги">
+        <div class="stage stack" id="stk-1" style="--mh:380px" role="img" aria-label="Карточка слова laconic: транскрипция, перевод, пример и шаги" data-en-label="The word laconic with pronunciation, meaning, an example and the six steps">
           <div class="st" style="--l:24px;--t:40px;--w:370px; --ml:0;--mt:0;--mw:310px; --r:-2deg; --z:1">
             <div class="fl" style="--fd:8.5s;--fdl:-3s"><div class="card pad" style="display:grid;gap:12px">
-              <div class="row"><span class="lab">Слова · 8 из&nbsp;12</span><span class="round" style="background:var(--paper-2);color:var(--ink)"><svg class="ico"><use href="#i-speaker"/></svg></span></div>
+              <div class="row"><span class="lab" data-en="Words · 8 of 12">Слова · 8 из&nbsp;12</span><span class="round" style="background:var(--paper-2);color:var(--ink)"><svg class="ico"><use href="#i-speaker"/></svg></span></div>
               <div><div class="big-word">laconic</div><div class="ipa" style="color:var(--ink-3);margin-top:6px">adjective · /ləˈkɒnɪk/</div></div>
-              <div style="font-weight:600;font-size:17px">лаконичный, немногословный</div>
+              <div style="font-weight:600;font-size:17px" data-en="brief, using very few words">лаконичный, немногословный</div>
               <div class="ex-sent">His <b>laconic</b> reply&nbsp;— “Fine.”&nbsp;— ended the discussion.</div>
-              <div class="steps"><span class="done">Услышать</span><span class="done">Узнать</span><span class="done">Собрать</span><span class="done">Написать</span><span class="done">Перевести</span><span class="cur">Сказать</span></div>
+              <div class="steps"><span class="done" data-en="Hear">Услышать</span><span class="done" data-en="Spot">Узнать</span><span class="done" data-en="Build">Собрать</span><span class="done" data-en="Write">Написать</span><span class="done" data-en="Translate">Перевести</span><span class="cur" data-en="Say">Сказать</span></div>
             </div></div>
           </div>
           <div class="st" style="--l:300px;--t:350px;--w:232px; --ml:120px;--mt:300px;--mw:226px; --r:4deg; --z:2">
             <div class="fl" style="--fd:6.8s;--fdl:-2s"><div class="card sk mint" style="display:flex;align-items:center;gap:12px">
               <span class="round"><svg class="ico"><use href="#i-mic"/></svg></span>
-              <div><span class="sk-l">Услышано</span><div class="sk-h">“laconic”</div></div>
+              <div><span class="sk-l" data-en="Heard">Услышано</span><div class="sk-h">“laconic”</div></div>
               <svg class="ico" style="margin-left:auto;width:22px;height:22px;stroke-width:2.4"><use href="#i-check"/></svg>
             </div></div>
           </div>
-          <div class="st d-only" style="--l:356px;--t:0;--w:196px; --r:-6deg; --z:3">
-            <div class="fl" style="--fd:7.4s;--fdl:-5s"><div class="card sk mango" style="display:grid;gap:8px"><span class="sk-l">Собрать слово</span><div class="lt"><i>l</i><i>a</i><i>c</i><i>o</i><i class="e"></i><i class="e"></i><i class="e"></i></div><div class="lt loose"><i>c</i><i>n</i><i>i</i></div></div></div>
+          <div class="st d-only" style="--l:370px;--t:-44px;--w:196px; --r:-6deg; --z:3">
+            <div class="fl" style="--fd:7.4s;--fdl:-5s"><div class="card sk mango" style="display:grid;gap:8px"><span class="sk-l" data-en="Build the word">Собрать слово</span><div class="lt"><i>l</i><i>a</i><i>c</i><i>o</i><i class="e"></i><i class="e"></i><i class="e"></i></div><div class="lt loose"><i>c</i><i>n</i><i>i</i></div></div></div>
           </div>
         </div>
       </div>
 
       <div class="feat" data-i="2">
         <div class="feat-head">
-          <h3>Пробный экзамен</h3>
-          <p><span>Секции и&nbsp;таймер как в&nbsp;день экзамена, в&nbsp;конце&nbsp;— примерный балл.</span></p>
-          <button class="feat-btn" type="button" aria-controls="stk-2" aria-expanded="false"><span class="sr">Пробный экзамен</span></button>
+          <h3 data-en="Practice tests">Пробный экзамен</h3>
+          <p data-en="<span>Timed sections just like test day, with an estimated score at the end.</span>"><span>Секции и&nbsp;таймер как в&nbsp;день экзамена, в&nbsp;конце&nbsp;— примерный балл.</span></p>
+          <button class="feat-btn" type="button" aria-controls="stk-2" aria-expanded="false"><span class="sr" data-en="Practice tests">Пробный экзамен</span></button>
           <span class="prog" aria-hidden="true"><i></i></span>
         </div>
-        <div class="stage stack" id="stk-2" style="--mh:400px" role="img" aria-label="Пробный экзамен GRE с таймером и примерный балл">
+        <div class="stage stack" id="stk-2" style="--mh:400px" role="img" aria-label="Пробный экзамен GRE с таймером и примерный балл" data-en-label="A timed GRE practice test and its estimated score">
           <div class="st" style="--l:0;--t:44px;--w:360px; --ml:0;--mt:0;--mw:306px; --r:-2deg; --z:1">
             <div class="fl" style="--fd:8s;--fdl:-1s"><div class="card pad" style="display:grid;gap:16px">
-              <div class="row"><span class="lab">Пробный экзамен · GRE</span><svg class="ico" style="color:var(--ink-3)"><use href="#i-clock"/></svg></div>
-              <div><div class="timer">14:32</div><div style="margin-top:6px;font-weight:600;font-size:15px">Quant 2 · вопрос 9 из&nbsp;15</div></div>
-              <div class="map"><span class="done">Эссе</span><span class="done">Verbal 1</span><span class="done">Verbal 2</span><span class="done">Quant 1</span><span class="cur">Quant 2</span></div>
-              <div class="chips"><span><svg class="ico"><use href="#i-flag"/></svg>Отметить</span><span><svg class="ico"><use href="#i-skip"/></svg>Пропустить</span></div>
+              <div class="row"><span class="lab" data-en="Practice test · GRE">Пробный экзамен · GRE</span><svg class="ico" style="color:var(--ink-3)"><use href="#i-clock"/></svg></div>
+              <div><div class="timer">14:32</div><div style="margin-top:6px;font-weight:600;font-size:15px" data-en="Quant 2 · question 9 of 15">Quant 2 · вопрос 9 из&nbsp;15</div></div>
+              <div class="map"><span class="done" data-en="Essay">Эссе</span><span class="done">Verbal 1</span><span class="done">Verbal 2</span><span class="done">Quant 1</span><span class="cur">Quant 2</span></div>
+              <div class="chips"><span><svg class="ico"><use href="#i-flag"/></svg><span data-en="Mark">Отметить</span></span><span><svg class="ico"><use href="#i-skip"/></svg><span data-en="Skip">Пропустить</span></span></div>
             </div></div>
           </div>
           <div class="st" style="--l:262px;--t:262px;--w:270px; --ml:96px;--mt:232px;--mw:240px; --r:4deg; --z:2">
             <div class="fl" style="--fd:7s;--fdl:-4s"><div class="card sk mango score">
-              <span class="sk-l">Результат</span>
+              <span class="sk-l" data-en="Result">Результат</span>
               <div class="score-row"><div><span class="num">158</span><span>Verbal</span></div><div><span class="num">164</span><span>Quant</span></div></div>
-              <span class="sk-foot">Эссе 4,0 · примерно. Наша оценка, не&nbsp;официальная</span>
+              <span class="sk-foot" data-en="Essay 4.0, approx. Our estimate, not an official score">Эссе 4,0 · примерно. Наша оценка, не&nbsp;официальная</span>
             </div></div>
           </div>
         </div>
@@ -645,26 +669,26 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
 
       <div class="feat" data-i="3">
         <div class="feat-head">
-          <h3>Эссе и&nbsp;речь с&nbsp;оценкой</h3>
-          <p><span>Примерный балл и&nbsp;правки прямо в&nbsp;вашем ответе.</span></p>
-          <button class="feat-btn" type="button" aria-controls="stk-3" aria-expanded="false"><span class="sr">Эссе и речь с оценкой</span></button>
+          <h3 data-en="Essays and speaking, scored">Эссе и&nbsp;речь с&nbsp;оценкой</h3>
+          <p data-en="<span>An estimated score, plus edits right inside your answer.</span>"><span>Примерный балл и&nbsp;правки прямо в&nbsp;вашем ответе.</span></p>
+          <button class="feat-btn" type="button" aria-controls="stk-3" aria-expanded="false"><span class="sr" data-en="Essays and speaking, scored">Эссе и речь с оценкой</span></button>
           <span class="prog" aria-hidden="true"><i></i></span>
         </div>
-        <div class="stage stack" id="stk-3" style="--mh:400px" role="img" aria-label="Эссе с правкой в тексте, примерный балл 4,5 из 6 и совет по произношению">
+        <div class="stage stack" id="stk-3" style="--mh:400px" role="img" aria-label="Эссе с правкой в тексте, примерный балл 4,5 из 6 и совет по произношению" data-en-label="An essay with an edit in the text, an estimated 4.5 out of 6 and a pronunciation tip">
           <div class="st" style="--l:10px;--t:96px;--w:390px; --ml:0;--mt:16px;--mw:306px; --r:-2deg; --z:1">
             <div class="fl" style="--fd:8.6s;--fdl:-2s"><div class="card pad" style="display:grid;gap:12px">
               <span class="lab">Analytical Writing · Issue</span>
               <p class="essay">Governments should fund public transport before new roads. <del>Also</del> <mark>Moreover</mark>, cities that did so saw cleaner air within a&nbsp;decade.</p>
-              <div class="note"><b>Связка.</b> «Also» в&nbsp;начале фразы звучит разговорно, в&nbsp;эссе лучше «Moreover».</div>
+              <div class="note" data-en="<b>Linking word.</b> “Also” at the start of a sentence sounds casual. In an essay, “Moreover” reads better."><b>Связка.</b> «Also» в&nbsp;начале фразы звучит разговорно, в&nbsp;эссе лучше «Moreover».</div>
             </div></div>
           </div>
           <div class="st" style="--l:356px;--t:40px;--w:164px; --ml:208px;--mt:0;--mw:136px; --r:8deg; --z:3">
-            <div class="fl" style="--fd:6.4s;--fdl:-3s"><div class="card sk pink"><span class="num">4,5</span><span class="sk-foot" style="display:block;margin-top:4px">из&nbsp;6 · примерно</span></div></div>
+            <div class="fl" style="--fd:6.4s;--fdl:-3s"><div class="card sk pink"><span class="num" data-en="4.5">4,5</span><span class="sk-foot" style="display:block;margin-top:4px" data-en="out of 6, approx.">из&nbsp;6 · примерно</span></div></div>
           </div>
           <div class="st" style="--l:214px;--t:304px;--w:300px; --ml:60px;--mt:300px;--mw:280px; --r:3deg; --z:2">
             <div class="fl" style="--fd:7.6s;--fdl:-5s"><div class="card sk sky" style="display:grid;gap:8px">
               <div class="row"><span class="sk-l">TOEFL · Speaking</span><span class="round"><svg class="ico"><use href="#i-mic"/></svg></span></div>
-              <div style="font-weight:600;font-size:15px;line-height:1.4">sta<u style="text-decoration-thickness:2px;text-underline-offset:3px">ti</u>stics: ударение на&nbsp;второй слог</div>
+              <div style="font-weight:600;font-size:15px;line-height:1.4" data-en="sta<u class=stress>ti</u>stics: stress the second syllable">sta<u class="stress">ti</u>stics: ударение на&nbsp;второй слог</div>
             </div></div>
           </div>
         </div>
@@ -672,32 +696,32 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
 
       <div class="feat" data-i="4">
         <div class="feat-head">
-          <h3>Слабые места</h3>
-          <p><span>Точность по&nbsp;каждой теме и&nbsp;тренировка на&nbsp;своих ошибках.</span></p>
-          <button class="feat-btn" type="button" aria-controls="stk-4" aria-expanded="false"><span class="sr">Слабые места</span></button>
+          <h3 data-en="Weak spots">Слабые места</h3>
+          <p data-en="<span>Your accuracy on every topic, and drills built from your own mistakes.</span>"><span>Точность по&nbsp;каждой теме и&nbsp;тренировка на&nbsp;своих ошибках.</span></p>
+          <button class="feat-btn" type="button" aria-controls="stk-4" aria-expanded="false"><span class="sr" data-en="Weak spots">Слабые места</span></button>
           <span class="prog" aria-hidden="true"><i></i></span>
         </div>
-        <div class="stage stack" id="stk-4" style="--mh:340px" role="img" aria-label="Точность по темам и кнопка повторить мои ошибки">
+        <div class="stage stack" id="stk-4" style="--mh:340px" role="img" aria-label="Точность по темам и кнопка повторить мои ошибки" data-en-label="Accuracy by topic and a button to review my mistakes">
           <div class="st" style="--l:0;--t:50px;--w:370px; --ml:0;--mt:0;--mw:306px; --r:-2deg; --z:1">
             <div class="fl" style="--fd:8s;--fdl:-3s"><div class="card pad" style="display:grid;gap:16px">
-              <div class="row"><span class="lab">Точность по&nbsp;темам</span><span class="lab">GRE</span></div>
+              <div class="row"><span class="lab" data-en="Accuracy by topic">Точность по&nbsp;темам</span><span class="lab">GRE</span></div>
               <ul class="acc">
                 <li><span>Text Completion</span><span class="b"><i style="transform:scaleX(.61)"></i></span><span class="p">61%</span></li>
                 <li class="weak"><span>Reading</span><span class="b"><i style="transform:scaleX(.52)"></i></span><span class="p">52%</span></li>
                 <li><span>Comparison</span><span class="b"><i style="transform:scaleX(.81)"></i></span><span class="p">81%</span></li>
-                <li><span>Задачи</span><span class="b"><i style="transform:scaleX(.70)"></i></span><span class="p">70%</span></li>
+                <li><span data-en="Problem Solving">Задачи</span><span class="b"><i style="transform:scaleX(.70)"></i></span><span class="p">70%</span></li>
               </ul>
-              <span class="lab">Октябрь · 9&nbsp;дней · 6&nbsp;ч 40&nbsp;мин</span>
+              <span class="lab" data-en="October · 9 days · 6 h 40 min">Октябрь · 9&nbsp;дней · 6&nbsp;ч 40&nbsp;мин</span>
             </div></div>
           </div>
           <div class="st" style="--l:270px;--t:296px;--w:262px; --ml:84px;--mt:262px;--mw:252px; --r:4deg; --z:2">
             <div class="fl" style="--fd:6.8s;--fdl:-1s"><div class="card sk tomato" style="display:flex;align-items:center;gap:12px">
-              <div><div class="sk-h">Повторить мои ошибки</div><span class="sk-l">12&nbsp;заданий</span></div>
+              <div><div class="sk-h" data-en="Review my mistakes">Повторить мои ошибки</div><span class="sk-l" data-en="12 questions">12&nbsp;заданий</span></div>
               <span class="round" style="margin-left:auto"><svg class="ico f"><use href="#i-play"/></svg></span>
             </div></div>
           </div>
           <div class="st d-only" style="--l:330px;--t:0;--w:200px; --r:-5deg; --z:3">
-            <div class="fl" style="--fd:7.2s;--fdl:-4s"><div class="card sk lilac"><span class="sk-l">Слабое место</span><div class="sk-h">Inference в&nbsp;Reading</div></div></div>
+            <div class="fl" style="--fd:7.2s;--fdl:-4s"><div class="card sk lilac"><span class="sk-l" data-en="Weak spot">Слабое место</span><div class="sk-h" data-en="Inference in Reading">Inference в&nbsp;Reading</div></div></div>
           </div>
         </div>
       </div>
@@ -710,25 +734,25 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
 <section class="exams-sec" id="exams" aria-labelledby="exams-h">
   <div class="wrap sec-h">
     <div>
-      <h2 class="h2" id="exams-h">Какой экзамен сдаёте?</h2>
-      <p class="sub">Все разделы и&nbsp;пробник с&nbsp;баллом по&nbsp;шкале экзамена.</p>
+      <h2 class="h2" id="exams-h" data-en="Which exam are you taking?">Какой экзамен сдаёте?</h2>
+      <p class="sub" data-en="Every section, plus practice tests scored on the real scale.">Все разделы и&nbsp;пробник с&nbsp;баллом по&nbsp;шкале экзамена.</p>
     </div>
     <div class="arrows">
-      <button class="arrow" type="button" data-dir="-1" aria-label="Назад" disabled><svg class="ico"><use href="#i-back"/></svg></button>
-      <button class="arrow" type="button" data-dir="1" aria-label="Дальше"><svg class="ico"><use href="#i-arrow"/></svg></button>
+      <button class="arrow" type="button" data-dir="-1" aria-label="Назад" data-en-label="Back" disabled><svg class="ico"><use href="#i-back"/></svg></button>
+      <button class="arrow" type="button" data-dir="1" aria-label="Дальше" data-en-label="Next"><svg class="ico"><use href="#i-arrow"/></svg></button>
     </div>
   </div>
-  <ul class="track" aria-label="Экзамены">
+  <ul class="track" aria-label="Экзамены" data-en-label="Exams">
     <li class="xc gre">
       <div class="xc-shot" aria-hidden="true">
         <div class="mini card"><span class="lab">Quant · Quantitative Comparison</span>
           <div class="qc"><div><small>Quantity A</small><b>3<sup>4</sup></b></div><div><small>Quantity B</small><b>2<sup>6</sup></b></div></div>
           <div class="pick ok">Quantity A is greater<svg class="ico"><use href="#i-check"/></svg></div>
         </div>
-        <div class="mini-sc sk tomato"><span class="sk-l">Пробник</span><div><span class="num">164</span><span>Quant, Verbal 158</span></div></div>
+        <div class="mini-sc sk tomato"><span class="sk-l" data-en="Practice test">Пробник</span><div><span class="num">164</span><span>Quant, Verbal 158</span></div></div>
       </div>
       <h3 class="xc-name">GRE</h3>
-      <ul class="xc-secs"><li>Verbal</li><li>Quant</li><li>Analytical Writing</li><li>Слова</li></ul>
+      <ul class="xc-secs"><li>Verbal</li><li>Quant</li><li>Analytical Writing</li><li data-en="Vocabulary">Слова</li></ul>
     </li>
     <li class="xc toefl">
       <div class="xc-shot" aria-hidden="true">
@@ -736,18 +760,18 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
           <div class="player"><span class="round dark"><svg class="ico f"><use href="#i-play"/></svg></span><span class="wave"><i style="height:30%" class="past"></i><i style="height:70%" class="past"></i><i style="height:45%" class="past"></i><i style="height:90%" class="past"></i><i style="height:55%" class="past"></i><i style="height:35%"></i><i style="height:80%"></i><i style="height:50%"></i><i style="height:65%"></i><i style="height:30%"></i><i style="height:75%"></i><i style="height:40%"></i></span><span class="lab">1:12</span></div>
           <p class="mq">What is the professor mainly discussing?</p>
         </div>
-        <div class="mini-sc sk pink"><span class="sk-l">Пробник</span><div><span class="num">5,5</span><span>общий балл</span></div></div>
+        <div class="mini-sc sk pink"><span class="sk-l" data-en="Practice test">Пробник</span><div><span class="num" data-en="5.5">5,5</span><span data-en="overall">общий балл</span></div></div>
       </div>
       <h3 class="xc-name">TOEFL</h3>
-      <ul class="xc-secs"><li>Reading</li><li>Listening</li><li>Writing</li><li>Speaking</li><li>Слова</li></ul>
+      <ul class="xc-secs"><li>Reading</li><li>Listening</li><li>Writing</li><li>Speaking</li><li data-en="Vocabulary">Слова</li></ul>
     </li>
     <li class="xc sat">
       <div class="xc-shot" aria-hidden="true">
-        <div class="mini card"><span class="lab">Math · вопрос 12 из&nbsp;22</span>
+        <div class="mini card"><span class="lab" data-en="Math · question 12 of 22">Math · вопрос 12 из&nbsp;22</span>
           <p class="mq">If 3x&nbsp;−&nbsp;7&nbsp;=&nbsp;11, what is the value of&nbsp;x?</p>
           <div class="pick ok"><span class="ans">6</span><svg class="ico"><use href="#i-check"/></svg></div>
         </div>
-        <div class="mini-sc sk mango"><span class="sk-l">Пробник</span><div><span class="num">1450</span><span>Math 740</span></div></div>
+        <div class="mini-sc sk mango"><span class="sk-l" data-en="Practice test">Пробник</span><div><span class="num">1450</span><span>Math 740</span></div></div>
       </div>
       <h3 class="xc-name">SAT</h3>
       <ul class="xc-secs"><li>Reading and Writing</li><li>Math</li></ul>
@@ -758,7 +782,7 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
           <p class="mq">If 20% of&nbsp;n is 18, what is the value of&nbsp;n?</p>
           <div class="opts-row"><span>72</span><span class="ok">90<svg class="ico"><use href="#i-check"/></svg></span><span>108</span></div>
         </div>
-        <div class="mini-sc sk mint"><span class="sk-l">Пробник</span><div><span class="num">655</span><span>Verbal 83</span></div></div>
+        <div class="mini-sc sk mint"><span class="sk-l" data-en="Practice test">Пробник</span><div><span class="num">655</span><span>Verbal 83</span></div></div>
       </div>
       <h3 class="xc-name">GMAT</h3>
       <ul class="xc-secs"><li>Quantitative Reasoning</li><li>Verbal Reasoning</li><li>Data Insights</li></ul>
@@ -772,36 +796,36 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
   <div class="stage price-stk" aria-hidden="true">
     <div class="st" style="--l:max(24px, calc(50% - 664px));--t:96px;--w:236px; --r:-7deg; --z:1">
       <div class="fl" style="--fd:8s;--fdl:-2s"><div class="card pad" style="display:grid;gap:6px">
-        <div class="row"><span class="lab">Слова · 9 из&nbsp;12</span><span class="round" style="background:var(--paper-2);color:var(--ink)"><svg class="ico"><use href="#i-speaker"/></svg></span></div>
+        <div class="row"><span class="lab" data-en="Words · 9 of 12">Слова · 9 из&nbsp;12</span><span class="round" style="background:var(--paper-2);color:var(--ink)"><svg class="ico"><use href="#i-speaker"/></svg></span></div>
         <div class="big-word" style="font-size:40px">verbose</div>
         <span class="ipa" style="color:var(--ink-3)">/vɜːˈbəʊs/</span>
-        <span style="font-weight:600">многословный</span>
+        <span style="font-weight:600" data-en="using more words than needed">многословный</span>
       </div></div>
     </div>
     <div class="st" style="--l:min(calc(100% - 330px), calc(50% + 410px));--t:250px;--w:300px; --r:6deg; --z:2">
       <div class="fl" style="--fd:7s;--fdl:-4s"><div class="card sk tomato" style="display:flex;align-items:center;gap:12px">
-        <div><div class="sk-h">Повторить мои ошибки</div><span class="sk-l">12&nbsp;заданий</span></div>
+        <div><div class="sk-h" data-en="Review my mistakes">Повторить мои ошибки</div><span class="sk-l" data-en="12 questions">12&nbsp;заданий</span></div>
         <span class="round" style="margin-left:auto"><svg class="ico f"><use href="#i-play"/></svg></span>
       </div></div>
     </div>
   </div>
   <div class="wrap">
-    <h2 class="h2" id="price-h">7&nbsp;дней бесплатно</h2>
-    <p class="sub">Затем 1199&nbsp;₽ в&nbsp;месяц.</p>
-    <a class="cta" href="#">Начать <svg class="ico"><use href="#i-arrow"/></svg></a>
+    <h2 class="h2" id="price-h" data-en="7 days free">7&nbsp;дней бесплатно</h2>
+    <p class="sub" data-en="Then 1199&nbsp;₽ a month.">Затем 1199&nbsp;₽ в&nbsp;месяц.</p>
+    <a class="cta" href="#"><span data-en="Start">Начать</span> <svg class="ico"><use href="#i-arrow"/></svg></a>
   </div>
 </section>
 
 <!-- ============ Скачать ============ -->
 <section class="get" id="get" aria-labelledby="get-h">
   <div class="wrap">
-    <h2 class="h2" id="get-h" style="font-size:clamp(36px,8vw,52px)">Скачать [Имя]</h2>
+    <h2 class="h2" id="get-h" style="font-size:clamp(36px,8vw,52px)" data-en="Get [Name]">Скачать [Имя]</h2>
     <div class="tiles">
-      <a class="tile" href="#"><svg class="ico f"><use href="#i-apple"/></svg><span><b>App Store</b><small>iPhone и&nbsp;iPad</small></span></a>
+      <a class="tile" href="#"><svg class="ico f"><use href="#i-apple"/></svg><span><b>App Store</b><small data-en="iPhone and iPad">iPhone и&nbsp;iPad</small></span></a>
       <a class="tile" href="#"><svg class="ico f"><use href="#i-gplay"/></svg><span><b>Google Play</b><small>Android</small></span></a>
-      <a class="tile" href="#"><svg class="ico"><use href="#i-laptop"/></svg><span><b>Mac</b><small>Файл .dmg</small></span></a>
-      <a class="tile" href="#"><svg class="ico"><use href="#i-tg"/></svg><span><b>Telegram</b><small>Мини-апп</small></span></a>
-      <a class="tile" href="#"><svg class="ico"><use href="#i-globe"/></svg><span><b>Браузер</b><small>Без установки</small></span></a>
+      <a class="tile" href="#"><svg class="ico"><use href="#i-laptop"/></svg><span><b>Mac</b><small data-en=".dmg download">Файл .dmg</small></span></a>
+      <a class="tile" href="#"><svg class="ico"><use href="#i-tg"/></svg><span><b>Telegram</b><small data-en="Mini app">Мини-апп</small></span></a>
+      <a class="tile" href="#"><svg class="ico"><use href="#i-globe"/></svg><span><b data-en="Browser">Браузер</b><small data-en="Nothing to install">Без установки</small></span></a>
     </div>
   </div>
 </section>
@@ -809,12 +833,12 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
 
 <footer class="foot">
   <div class="wrap">
-    <p>©&nbsp;[Имя], 2026</p>
+    <p data-en="©&nbsp;[Name], 2026">©&nbsp;[Имя], 2026</p>
     <p>GRE® and TOEFL® are registered trademarks of Educational Testing Service (ETS). SAT® is a registered trademark of the College Board. GMAT™ is a trademark of the Graduate Management Admission Council (GMAC). This product is not endorsed or approved by ETS, the College Board or GMAC.</p>
   </div>
 </footer>
 
-<div class="dock"><a class="cta" href="#signup">Начать&nbsp;— 7&nbsp;дней бесплатно</a></div>
+<div class="dock"><a class="cta" href="#signup"><span data-en="Try 7 days free">Начать&nbsp;— 7&nbsp;дней бесплатно</span></a></div>
 
 <script>
 (function () {
@@ -824,13 +848,45 @@ mark::before { content: ''; position: absolute; z-index: -1; left: -3px; right: 
   var desk = matchMedia('(min-width: 1024px)');
   var EASE = 'cubic-bezier(0.23, 1, 0.32, 1)';
 
+  /* ---------- Язык: RU / EN ---------- */
+  // Русский текст — в разметке, английский — в data-en рядом с ним. Задания на наклейках по-английски в обеих версиях.
+  var meta = document.querySelector('meta[name="description"]');
+  var META = {
+    ru: { title: document.title, desc: meta.content },
+    en: { title: '[Name]: GRE, TOEFL, SAT and GMAT prep without a tutor', desc: 'GRE, TOEFL, SAT and GMAT prep without a tutor: questions just like the real exam, every mistake explained in your language, vocabulary and practice tests scored on the real scale.' }
+  };
+  var texts = Array.prototype.slice.call(document.querySelectorAll('[data-en]'));
+  var labels = Array.prototype.slice.call(document.querySelectorAll('[data-en-label]'));
+  texts.forEach(function (n) { n.dataset.ru = n.innerHTML; });
+  labels.forEach(function (n) { n.dataset.ruLabel = n.getAttribute('aria-label'); });
+  var langBtns = Array.prototype.slice.call(document.querySelectorAll('.lang button'));
+  function lang() { return root.lang === 'en' ? 'en' : 'ru'; }
+  function applyLang(l) {
+    root.lang = l;
+    texts.forEach(function (n) { n.innerHTML = l === 'en' ? n.dataset.en : n.dataset.ru; });
+    labels.forEach(function (n) { n.setAttribute('aria-label', l === 'en' ? n.dataset.enLabel : n.dataset.ruLabel); });
+    document.title = META[l].title; meta.content = META[l].desc;
+    langBtns.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.lang === l)); });
+    if (themeBtn) syncTheme(); // при первом вызове кнопка темы ещё не найдена — её подпись выставит syncTheme ниже
+  }
+  if (lang() === 'en') applyLang('en');
+  root.classList.remove('i18n-pending');
+  langBtns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (b.dataset.lang === lang()) return;
+      try { localStorage.setItem('landing-lang', b.dataset.lang); } catch (e) { /* без памяти браузера выбор живёт до перезагрузки */ }
+      applyLang(b.dataset.lang);
+    });
+  });
+
   /* ---------- Тема: солнце/луна ---------- */
   var themeBtn = document.querySelector('.theme');
   function curTheme() { return root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); }
   function syncTheme() {
     var t = curTheme();
     themeBtn.dataset.mode = t;
-    themeBtn.setAttribute('aria-label', t === 'dark' ? 'Светлая тема' : 'Тёмная тема');
+    var en = lang() === 'en';
+    themeBtn.setAttribute('aria-label', t === 'dark' ? (en ? 'Light theme' : 'Светлая тема') : (en ? 'Dark theme' : 'Тёмная тема'));
   }
   themeBtn.addEventListener('click', function () {
     root.dataset.theme = curTheme() === 'dark' ? 'light' : 'dark';
