@@ -116,8 +116,9 @@
 .overviewCell[aria-current] { border-color: var(--training-color); }
 .overviewCell svg { position: absolute; top: 0; right: 0; width: var(--space-14); height: var(--space-14); color: var(--training-color); }
 .summary { width: 100%; max-width: var(--layout-content-max); margin-inline: auto; }
-.score { display: flex; align-items: baseline; gap: var(--space-12); font: var(--font-score-num); letter-spacing: var(--tracking-score-num); font-variant-numeric: tabular-nums; }
-.score small { font: var(--font-h2); letter-spacing: var(--tracking-h2); }
+/* Итог тренировки — крупная тонкая цифра, как в каталоге (R2: num-xxl, подпись — num-label). */
+.score { display: flex; align-items: baseline; gap: var(--space-12); font: var(--font-num-xxl); letter-spacing: var(--tracking-num-xxl); font-variant-numeric: tabular-nums; }
+.score small { font: var(--font-num-label); letter-spacing: var(--tracking-num-label); color: var(--color-text-2); }
 .reviewTopics { display: grid; gap: var(--space-20); }
 .reviewTopics h2 { font: var(--font-h2); letter-spacing: var(--tracking-h2); }
 .reviewTopic { display: flex; align-items: flex-start; gap: var(--space-12); }
