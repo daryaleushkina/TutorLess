@@ -934,7 +934,7 @@ struct ScreenSnapshotTests {
                                 precision: precision, perceptualPrecision: Self.perceptual,
                                 layout: .device(config: config),
                                 traits: UITraitCollection(userInterfaceStyle: style)
-                            ),
+                            ).comparingPersistedImage(),
                             named:
                                 "\(name)-\(device == .phone ? "iphone" : "ipad")-\(style == .dark ? "dark" : "light")",
                             fileID: fileID, file: file, testName: testName, line: line, column: column
