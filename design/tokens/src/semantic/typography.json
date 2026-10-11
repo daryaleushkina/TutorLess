@@ -4,12 +4,12 @@
       "$type": "fontFamily",
       "text": {
         "$value": [
-          "Geologica",
           "Onest",
-          "system-ui",
+          "Helvetica Neue",
+          "Arial",
           "sans-serif"
         ],
-        "$description": "Geologica для текста и заголовков; запасные — как в core.css (решение Даши 10.10.2026)."
+        "$description": "Onest Variable 400–800, как в приложении B (решение Даши 12.10.2026)."
       },
       "mono": {
         "$value": [
@@ -49,6 +49,19 @@
       },
       "semibold": {
         "$value": 600
+      },
+      "bold": {
+        "$value": 700
+      },
+      "extrabold": {
+        "$value": 800
+      },
+      "demibold": {
+        "$value": 650
+      },
+      "thin": {
+        "$value": "{font.weight.extrabold}",
+        "$description": "Устарел: ссылка на 800 для совместимости; от темы не зависит (решение Даши 12.10.2026)."
       }
     },
     "text-scale-large": {
@@ -59,7 +72,7 @@
   },
   "type": {
     "$type": "typography",
-    "$description": "Роли ядра и общие профили текста; крупные тонкие числа — пять ступеней num-s…num-xxl. Псевдонимы ссылаются на ступени; тонкий вес тематический.",
+    "$description": "Роли стиля B: Onest, плотный трекинг, крупные цифры 800. Имена прежних профилей сохранены для платформ.",
     "body": {
       "$value": {
         "fontFamily": "{font.family.text}",
@@ -70,11 +83,11 @@
         "fontWeight": "{font.weight.regular}",
         "lineHeight": 1.45,
         "letterSpacing": {
-          "value": -0.005,
+          "value": 0,
           "unit": "em"
         }
       },
-      "$description": "Основной текст .frame."
+      "$description": "Профиль .frame из design/app-b/index.html."
     },
     "h1": {
       "$value": {
@@ -83,14 +96,14 @@
           "value": 34,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.semibold}",
-        "lineHeight": 1.15,
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.04,
         "letterSpacing": {
-          "value": -0.03,
+          "value": -0.035,
           "unit": "em"
         }
       },
-      "$description": "Заголовок экрана .frame .h1."
+      "$description": "Профиль .h1 из design/app-b/index.html."
     },
     "h1-wide": {
       "$value": {
@@ -99,45 +112,46 @@
           "value": 44,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.semibold}",
-        "lineHeight": 1.15,
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.04,
         "letterSpacing": {
-          "value": -0.03,
+          "value": -0.035,
           "unit": "em"
         }
-      }
+      },
+      "$description": "Профиль .h1 из design/app-b/index.html."
     },
     "h2": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 19,
+          "value": 22,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.semibold}",
-        "lineHeight": 1.25,
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.15,
         "letterSpacing": {
-          "value": -0.015,
+          "value": -0.025,
           "unit": "em"
         }
       },
-      "$description": "Заголовок карточки .frame .h2."
+      "$description": "Профиль .h2 из design/app-b/index.html."
     },
     "h3": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 16,
+          "value": 17,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.semibold}",
+        "fontWeight": "{font.weight.bold}",
         "lineHeight": 1.3,
         "letterSpacing": {
           "value": -0.01,
           "unit": "em"
         }
       },
-      "$description": "Подзаголовок .frame .h3."
+      "$description": "Профиль .h3 из design/app-b/index.html."
     },
     "eyebrow": {
       "$value": {
@@ -175,64 +189,65 @@
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 16,
+          "value": 16.5,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.semibold}",
+        "fontWeight": "{font.weight.bold}",
         "lineHeight": 1.45,
         "letterSpacing": {
-          "value": 0.005,
+          "value": -0.01,
           "unit": "em"
         }
       },
-      "$description": "Текст кнопки .frame .btn."
+      "$description": "Профиль .btn из design/app-b/index.html."
     },
     "exam-switch": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 14,
+          "value": 15,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.semibold}",
+        "fontWeight": "{font.weight.bold}",
         "lineHeight": 1.45,
         "letterSpacing": {
-          "value": 0.02,
+          "value": -0.005,
           "unit": "em"
         }
       },
-      "$description": "Переключатель экзамена."
+      "$description": "Профиль .exam-switch из design/app-b/index.html."
     },
     "start-title": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 30,
+          "value": 28,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.semibold}",
-        "lineHeight": 1.15,
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.05,
         "letterSpacing": {
-          "value": -0.03,
+          "value": -0.035,
           "unit": "em"
         }
       },
-      "$description": "Заголовок карточки тренировки."
+      "$description": "Профиль .start-title из design/app-b/index.html."
     },
     "start-title-wide": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 44,
+          "value": 34,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.semibold}",
-        "lineHeight": 1.15,
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.05,
         "letterSpacing": {
           "value": -0.035,
           "unit": "em"
         }
-      }
+      },
+      "$description": "Профиль .start-title из design/app-b/index.html."
     },
     "meta": {
       "$value": {
@@ -254,17 +269,17 @@
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 17,
+          "value": 16.5,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.semibold}",
+        "fontWeight": "{font.weight.demibold}",
         "lineHeight": 1.45,
         "letterSpacing": {
           "value": -0.01,
           "unit": "em"
         }
       },
-      "$description": "Название раздела."
+      "$description": "Профиль .row-body b из design/app-b/index.html."
     },
     "caption": {
       "$value": {
@@ -286,32 +301,33 @@
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 24,
+          "value": 16,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.thin}",
-        "lineHeight": 1.05,
+        "fontWeight": "{font.weight.bold}",
+        "lineHeight": 1.45,
         "letterSpacing": {
-          "value": -0.02,
+          "value": 0,
           "unit": "em"
         }
       },
-      "$description": "Тонкие цифры статистики раздела."
+      "$description": "Профиль .stat b из design/app-b/index.html."
     },
     "section-stat-wide": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 28,
+          "value": 16,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.thin}",
-        "lineHeight": 1.05,
+        "fontWeight": "{font.weight.bold}",
+        "lineHeight": 1.45,
         "letterSpacing": {
-          "value": -0.02,
+          "value": 0,
           "unit": "em"
         }
-      }
+      },
+      "$description": "Профиль .stat b из design/app-b/index.html."
     },
     "session-count": {
       "$value": {
@@ -320,14 +336,14 @@
           "value": 22,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.thin}",
+        "fontWeight": "{font.weight.extrabold}",
         "lineHeight": 1.45,
         "letterSpacing": {
-          "value": -0.02,
+          "value": -0.04,
           "unit": "em"
         }
       },
-      "$description": "Тонкий счётчик сессии."
+      "$description": "Крупный профиль Onest 800; имя сохранено для совместимости со шкалой платформ."
     },
     "session-count-wide": {
       "$value": {
@@ -336,13 +352,14 @@
           "value": 26,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.thin}",
+        "fontWeight": "{font.weight.extrabold}",
         "lineHeight": 1.45,
         "letterSpacing": {
-          "value": -0.02,
+          "value": -0.04,
           "unit": "em"
         }
-      }
+      },
+      "$description": "Крупный профиль Onest 800; имя сохранено для совместимости со шкалой платформ."
     },
     "q-text": {
       "$value": {
@@ -352,28 +369,29 @@
           "unit": "px"
         },
         "fontWeight": "{font.weight.regular}",
-        "lineHeight": 1.6,
+        "lineHeight": 1.62,
         "letterSpacing": {
-          "value": -0.01,
+          "value": -0.005,
           "unit": "em"
         }
       },
-      "$description": "Итоговое правило .frame .q-text; базовые 19/1.55 переопределены."
+      "$description": "Профиль .q-text из design/app-b/index.html."
     },
     "q-text-wide": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 24,
+          "value": 20,
           "unit": "px"
         },
         "fontWeight": "{font.weight.regular}",
-        "lineHeight": 1.6,
+        "lineHeight": 1.62,
         "letterSpacing": {
-          "value": -0.01,
+          "value": -0.005,
           "unit": "em"
         }
-      }
+      },
+      "$description": "Профиль .q-text из design/app-b/index.html."
     },
     "opt": {
       "$value": {
@@ -385,11 +403,11 @@
         "fontWeight": "{font.weight.medium}",
         "lineHeight": 1.45,
         "letterSpacing": {
-          "value": -0.005,
+          "value": 0,
           "unit": "em"
         }
       },
-      "$description": "Вариант ответа .frame .opt."
+      "$description": "Профиль .opt из design/app-b/index.html."
     },
     "answer": {
       "$value": {
@@ -398,30 +416,30 @@
           "value": 15,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.medium}",
+        "fontWeight": "{font.weight.demibold}",
         "lineHeight": 1.45,
         "letterSpacing": {
-          "value": -0.005,
+          "value": 0,
           "unit": "em"
         }
       },
-      "$description": "Ответ .frame .ans."
+      "$description": "Профиль .ans из design/app-b/index.html."
     },
     "explain-body": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 15,
+          "value": 16,
           "unit": "px"
         },
         "fontWeight": "{font.weight.regular}",
-        "lineHeight": 1.55,
+        "lineHeight": 1.58,
         "letterSpacing": {
-          "value": -0.005,
+          "value": 0,
           "unit": "em"
         }
       },
-      "$description": "Текст разбора .explain-body."
+      "$description": "Профиль .explain-body из design/app-b/index.html."
     },
     "action": {
       "$value": {
@@ -430,14 +448,14 @@
           "value": 15,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.medium}",
+        "fontWeight": "{font.weight.semibold}",
         "lineHeight": 1.45,
         "letterSpacing": {
-          "value": -0.005,
+          "value": 0,
           "unit": "em"
         }
       },
-      "$description": "Ссылка на тему .topic-link; чип .chip."
+      "$description": "Профиль .link-row из design/app-b/index.html."
     },
     "seg": {
       "$value": {
@@ -446,140 +464,166 @@
           "value": 13,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.semibold}",
+        "fontWeight": "{font.weight.bold}",
         "lineHeight": 1.45,
         "letterSpacing": {
-          "value": -0.005,
+          "value": 0.02,
           "unit": "em"
         }
       },
-      "$description": "Переключатель языка разбора."
+      "$description": "Профиль .seg button из design/app-b/index.html."
     },
     "score-label": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 13,
+          "value": 14,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.medium}",
+        "fontWeight": "{font.weight.semibold}",
         "lineHeight": 1.45,
         "letterSpacing": {
-          "value": -0.005,
+          "value": 0,
           "unit": "em"
         }
       },
-      "$description": "Подпись балла."
+      "$description": "Профиль .x-label из design/app-b/index.html."
     },
     "score-num": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 32,
+          "value": 30,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.thin}",
-        "lineHeight": 1,
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.05,
         "letterSpacing": {
           "value": -0.04,
           "unit": "em"
         }
       },
-      "$description": "Тонкий балл прогресса."
+      "$description": "Профиль .metric-num из design/app-b/index.html."
     },
     "score-num-wide": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 44,
+          "value": 30,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.thin}",
-        "lineHeight": 1,
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.05,
         "letterSpacing": {
           "value": -0.04,
           "unit": "em"
         }
-      }
+      },
+      "$description": "Профиль .metric-num из design/app-b/index.html."
     },
     "stat-value": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 18,
+          "value": 16,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.thin}",
+        "fontWeight": "{font.weight.bold}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .stat b из design/app-b/index.html."
+    },
+    "exam-title": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 22,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.15,
+        "letterSpacing": {
+          "value": -0.025,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .h2 из design/app-b/index.html."
+    },
+    "exam-title-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 22,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.15,
+        "letterSpacing": {
+          "value": -0.025,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .h2 из design/app-b/index.html."
+    },
+    "exam-name": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 16,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
         "lineHeight": 1.45,
         "letterSpacing": {
           "value": -0.02,
           "unit": "em"
         }
       },
-      "$description": "Тонкие цифры точности и истории .acc-val, .hist-res."
+      "$description": "Профиль .exam-tile из design/app-b/index.html."
     },
-    "exam-title": {
+    "exam-name-wide": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 36,
+          "value": 16,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.semibold}",
-        "lineHeight": 1.15,
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.45,
         "letterSpacing": {
-          "value": -0.03,
+          "value": -0.02,
           "unit": "em"
         }
       },
-      "$description": "Заголовок выбора экзамена."
-    },
-    "exam-title-wide": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 48,
-          "unit": "px"
-        },
-        "fontWeight": "{font.weight.semibold}",
-        "lineHeight": 1.15,
-        "letterSpacing": {
-          "value": -0.03,
-          "unit": "em"
-        }
-      }
-    },
-    "exam-name": {
-      "$value": "{type.num-s}",
-      "$description": "Псевдоним num-s для совместимости платформ; значения задаёт общая ступень."
-    },
-    "exam-name-wide": {
-      "$value": "{type.num-s-wide}",
-      "$description": "Псевдоним num-s-wide для совместимости платформ; значения задаёт общая ступень."
+      "$description": "Профиль .exam-tile из design/app-b/index.html."
     },
     "headword": {
       "$value": "{type.num-m}",
       "$description": "Псевдоним num-m для совместимости платформ; значения задаёт общая ступень."
     },
     "headword-wide": {
-      "$value": "{type.num-l-wide}",
+      "$value": "{type.num-m-wide}",
       "$description": "Псевдоним num-l-wide для совместимости платформ; значения задаёт общая ступень."
     },
     "sense-en": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 20,
+          "value": 18,
           "unit": "px"
         },
         "fontWeight": "{font.weight.regular}",
-        "lineHeight": 1.4,
+        "lineHeight": 1.45,
         "letterSpacing": {
-          "value": -0.01,
+          "value": 0,
           "unit": "em"
         }
       },
-      "$description": "Значение слова на английском."
+      "$description": "Профиль .sense-en из design/app-b/index.html."
     },
     "word-meta": {
       "$value": {
@@ -591,58 +635,59 @@
         "fontWeight": "{font.weight.regular}",
         "lineHeight": 1.45,
         "letterSpacing": {
-          "value": -0.005,
+          "value": 0,
           "unit": "em"
         }
       },
-      "$description": "Метаданные слова."
+      "$description": "Профиль .word-meta из design/app-b/index.html."
     },
     "example": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 17,
+          "value": 15.5,
           "unit": "px"
         },
         "fontWeight": "{font.weight.regular}",
         "lineHeight": 1.45,
         "letterSpacing": {
-          "value": -0.005,
+          "value": 0,
           "unit": "em"
         }
       },
-      "$description": "Пример употребления."
+      "$description": "Профиль .example из design/app-b/index.html."
     },
     "nav-label": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 11,
+          "value": 11.5,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.medium}",
+        "fontWeight": "{font.weight.semibold}",
         "lineHeight": 1.45,
         "letterSpacing": {
-          "value": -0.005,
+          "value": 0.005,
           "unit": "em"
         }
       },
-      "$description": "Подпись нижней навигации."
+      "$description": "Профиль .nav-item из design/app-b/index.html."
     },
     "nav-label-wide": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 15,
+          "value": 15.5,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.medium}",
+        "fontWeight": "{font.weight.semibold}",
         "lineHeight": 1.45,
         "letterSpacing": {
-          "value": -0.005,
+          "value": 0.005,
           "unit": "em"
         }
-      }
+      },
+      "$description": "Профиль .nav-item из design/app-b/index.html."
     },
     "ipa": {
       "$value": {
@@ -664,17 +709,17 @@
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 28,
+          "value": 26,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.thin}",
+        "fontWeight": "{font.weight.extrabold}",
         "lineHeight": 1.45,
         "letterSpacing": {
-          "value": -0.03,
+          "value": -0.035,
           "unit": "em"
         }
       },
-      "$description": "Тонкий счётчик недели на компьютере."
+      "$description": "Профиль .week b из design/app-b/index.html."
     },
     "num-label": {
       "$value": {
@@ -715,14 +760,14 @@
           "value": 22,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.semibold}",
+        "fontWeight": "{font.weight.extrabold}",
         "lineHeight": 1.45,
         "letterSpacing": {
-          "value": -0.015,
+          "value": -0.025,
           "unit": "em"
         }
       },
-      "$description": "Единица счёта: число слов на старте и в итоге изучения."
+      "$description": "Профиль .today-num span из design/app-b/index.html."
     },
     "prompt-title": {
       "$value": {
@@ -816,17 +861,17 @@
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 40,
+          "value": 44,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.semibold}",
-        "lineHeight": 1.15,
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.04,
         "letterSpacing": {
-          "value": -0.03,
+          "value": -0.035,
           "unit": "em"
         }
       },
-      "$description": "Компактный заголовок на широких экранах G1 и G6."
+      "$description": "Профиль .h1 из design/app-b/index.html."
     },
     "complete-words-text": {
       "$value": {
@@ -899,14 +944,14 @@
           "value": 48,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.thin}",
+        "fontWeight": "{font.weight.extrabold}",
         "lineHeight": 1,
         "letterSpacing": {
           "value": -0.04,
           "unit": "em"
         }
       },
-      "$description": "Малое крупное число или короткое слово."
+      "$description": "Крупный профиль Onest 800; имя сохранено для совместимости со шкалой платформ."
     },
     "num-s-wide": {
       "$value": {
@@ -915,142 +960,142 @@
           "value": 60,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.thin}",
+        "fontWeight": "{font.weight.extrabold}",
         "lineHeight": 1,
         "letterSpacing": {
           "value": -0.04,
           "unit": "em"
         }
       },
-      "$description": "Малое крупное число или короткое слово. Широкий профиль."
+      "$description": "Крупный профиль Onest 800; имя сохранено для совместимости со шкалой платформ."
     },
     "num-m": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 56,
+          "value": 52,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.thin}",
-        "lineHeight": 1,
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 0.98,
         "letterSpacing": {
-          "value": -0.04,
+          "value": -0.045,
           "unit": "em"
         }
       },
-      "$description": "Среднее крупное число или слово."
+      "$description": "Профиль .headword из design/app-b/index.html."
     },
     "num-m-wide": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 72,
+          "value": 52,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.thin}",
-        "lineHeight": 1,
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 0.98,
         "letterSpacing": {
-          "value": -0.04,
+          "value": -0.045,
           "unit": "em"
         }
       },
-      "$description": "Среднее крупное число или слово. Широкий профиль."
+      "$description": "Профиль .headword из design/app-b/index.html."
     },
     "num-l": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 70,
+          "value": 64,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.thin}",
-        "lineHeight": 1,
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 0.9,
         "letterSpacing": {
-          "value": -0.04,
+          "value": -0.05,
           "unit": "em"
         }
       },
-      "$description": "Крупная статистика, компактный итог и обратный отсчёт."
+      "$description": "Профиль .today-num b из design/app-b/index.html."
     },
     "num-l-wide": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 88,
+          "value": 64,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.thin}",
-        "lineHeight": 1,
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 0.9,
         "letterSpacing": {
-          "value": -0.04,
+          "value": -0.05,
           "unit": "em"
         }
       },
-      "$description": "Крупная статистика, компактный итог и обратный отсчёт. Широкий профиль."
+      "$description": "Профиль .today-num b из design/app-b/index.html."
     },
     "num-xl": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 88,
+          "value": 68,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.thin}",
+        "fontWeight": "{font.weight.extrabold}",
         "lineHeight": 0.95,
         "letterSpacing": {
-          "value": -0.04,
+          "value": -0.05,
           "unit": "em"
         }
       },
-      "$description": "Баллы и итог изучения слов."
+      "$description": "Профиль .x-num из design/app-b/index.html."
     },
     "num-xl-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 68,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 0.95,
+        "letterSpacing": {
+          "value": -0.05,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .x-num из design/app-b/index.html."
+    },
+    "num-xxl": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
           "value": 120,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.thin}",
-        "lineHeight": 0.95,
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 0.8,
         "letterSpacing": {
-          "value": -0.04,
+          "value": -0.055,
           "unit": "em"
         }
       },
-      "$description": "Баллы и итог изучения слов. Широкий профиль."
-    },
-    "num-xxl": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 104,
-          "unit": "px"
-        },
-        "fontWeight": "{font.weight.thin}",
-        "lineHeight": 0.9,
-        "letterSpacing": {
-          "value": -0.04,
-          "unit": "em"
-        }
-      },
-      "$description": "Основное число итогового экрана."
+      "$description": "Профиль .sum-num из design/app-b/index.html."
     },
     "num-xxl-wide": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 144,
+          "value": 120,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.thin}",
-        "lineHeight": 0.9,
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 0.8,
         "letterSpacing": {
-          "value": -0.04,
+          "value": -0.055,
           "unit": "em"
         }
       },
-      "$description": "Основное число итогового экрана. Широкий профиль."
+      "$description": "Профиль .sum-num из design/app-b/index.html."
     },
     "num-compact": {
       "$value": {
@@ -1059,14 +1104,14 @@
           "value": 36,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.thin}",
+        "fontWeight": "{font.weight.extrabold}",
         "lineHeight": 1.05,
         "letterSpacing": {
-          "value": -0.03,
+          "value": -0.04,
           "unit": "em"
         }
       },
-      "$description": "Промежуточное малое число, которое не попало в роли ядра."
+      "$description": "Крупный профиль Onest 800; имя сохранено для совместимости со шкалой платформ."
     },
     "num-compact-wide": {
       "$value": {
@@ -1075,14 +1120,14 @@
           "value": 52,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.thin}",
+        "fontWeight": "{font.weight.extrabold}",
         "lineHeight": 1.05,
         "letterSpacing": {
-          "value": -0.03,
+          "value": -0.04,
           "unit": "em"
         }
       },
-      "$description": "Широкий промежуточный профиль малого числа."
+      "$description": "Крупный профиль Onest 800; имя сохранено для совместимости со шкалой платформ."
     },
     "word-title": {
       "$value": {
@@ -1091,14 +1136,14 @@
           "value": 40,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.thin}",
+        "fontWeight": "{font.weight.extrabold}",
         "lineHeight": 1.1,
         "letterSpacing": {
-          "value": -0.02,
+          "value": -0.045,
           "unit": "em"
         }
       },
-      "$description": "Слово-заголовок, не попавшее в крупную числовую шкалу."
+      "$description": "Крупный профиль Onest 800; имя сохранено для совместимости со шкалой платформ."
     },
     "word-title-wide": {
       "$value": {
@@ -1107,14 +1152,14 @@
           "value": 56,
           "unit": "px"
         },
-        "fontWeight": "{font.weight.thin}",
+        "fontWeight": "{font.weight.extrabold}",
         "lineHeight": 1.1,
         "letterSpacing": {
-          "value": -0.02,
+          "value": -0.045,
           "unit": "em"
         }
       },
-      "$description": "Широкий профиль слова-заголовка вне числовой шкалы."
+      "$description": "Крупный профиль Onest 800; имя сохранено для совместимости со шкалой платформ."
     }
   }
 }

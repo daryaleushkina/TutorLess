@@ -1,0 +1,1382 @@
+<!doctype html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>[Имя] · подготовка к GRE и TOEFL</title>
+<meta name="description" content="Подготовка к GRE и TOEFL без репетитора: задания как на экзамене, разбор каждой ошибки на вашем языке, слова и пробный экзамен.">
+<meta name="theme-color" content="#07080A">
+<script>
+  // Тема до первой отрисовки: сохранённый выбор, иначе тёмная — направление задумано от неё.
+  (function () {
+    var t = null;
+    try { t = localStorage.getItem('landing-theme'); } catch (e) { /* хранилище недоступно — тёмная по умолчанию */ }
+    if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('anim');
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@200..600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --font: "Inter Tight", system-ui, -apple-system, sans-serif;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-io: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --gutter: 16px;
+  --maxw: 1180px;
+  --r-s: 10px; --r-m: 14px; --r-l: 22px; --r-xl: 30px;
+
+  color-scheme: light;
+  --bg: #FAFAFB;
+  --surface: #FFFFFF;
+  --surface-2: #F3F3F5;
+  --surface-3: #E9E9ED;
+  --line: rgb(12 13 18 / 0.08);
+  --line-2: rgb(12 13 18 / 0.14);
+  --text: #0C0D10;
+  --text-2: #4B4F58;
+  --text-3: #686C76;
+  --accent: #3B3FB0;
+  --accent-soft: rgb(59 63 176 / 0.09);
+  --on-accent: #FFFFFF;
+  --cta: #0C0D10;
+  --on-cta: #FFFFFF;
+  --right: #00664E;
+  --right-soft: rgb(0 102 78 / 0.1);
+  --wrong: #A82F17;
+  --wrong-soft: rgb(168 47 23 / 0.09);
+  --verbal: #5A3FD6;
+  --quant: #00664E;
+  --essay: #844C00;
+  --words: #A12A60;
+  --reading: #2354C5;
+  --listening: #006677;
+  --writing: #894E00;
+  --speaking: #A92864;
+  --nav-bg: rgb(250 250 251 / 0.74);
+  --win-bg: #FFFFFF;
+  --win-side: #F7F7F9;
+  --win-shadow: 0 1px 0 rgb(255 255 255 / 0.7) inset, 0 50px 90px -50px rgb(16 18 28 / 0.32), 0 14px 30px -18px rgb(16 18 28 / 0.14);
+  --phone-ring: #E3E3E8;
+  --dim: rgb(10 11 14 / 0.42);
+  --sel: rgb(59 63 176 / 0.18);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #07080A; --surface: #0F1013; --surface-2: #15161A; --surface-3: #1C1D22;
+    --line: rgb(255 255 255 / 0.07); --line-2: rgb(255 255 255 / 0.12);
+    --text: #F1F2F4; --text-2: #A2A6AF; --text-3: #7C808A;
+    --accent: #5CCFFF; --accent-soft: rgb(92 207 255 / 0.12); --on-accent: #04131E;
+    --cta: #F1F2F4; --on-cta: #07080A;
+    --right: #6BE3A4; --right-soft: rgb(107 227 164 / 0.12); --wrong: #FF8B78; --wrong-soft: rgb(255 139 120 / 0.12);
+    --verbal: #A897FF; --quant: #4FD9B0; --essay: #FFBE63; --words: #FF86B4;
+    --reading: #8DB1FF; --listening: #5FD3E6; --writing: #FFBE63; --speaking: #FF86B4;
+    --nav-bg: rgb(16 17 20 / 0.66); --win-bg: #0D0E11; --win-side: #111216;
+    --win-shadow: 0 1px 0 rgb(255 255 255 / 0.06) inset, 0 60px 120px -40px rgb(0 0 0 / 0.95), 0 0 0 1px rgb(0 0 0 / 0.6);
+    --phone-ring: #1F2025; --dim: rgb(0 0 0 / 0.66); --sel: rgb(92 207 255 / 0.28);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #07080A; --surface: #0F1013; --surface-2: #15161A; --surface-3: #1C1D22;
+  --line: rgb(255 255 255 / 0.07); --line-2: rgb(255 255 255 / 0.12);
+  --text: #F1F2F4; --text-2: #A2A6AF; --text-3: #7C808A;
+  --accent: #5CCFFF; --accent-soft: rgb(92 207 255 / 0.12); --on-accent: #04131E;
+  --cta: #F1F2F4; --on-cta: #07080A;
+  --right: #6BE3A4; --right-soft: rgb(107 227 164 / 0.12); --wrong: #FF8B78; --wrong-soft: rgb(255 139 120 / 0.12);
+  --verbal: #A897FF; --quant: #4FD9B0; --essay: #FFBE63; --words: #FF86B4;
+  --reading: #8DB1FF; --listening: #5FD3E6; --writing: #FFBE63; --speaking: #FF86B4;
+  --nav-bg: rgb(16 17 20 / 0.66); --win-bg: #0D0E11; --win-side: #111216;
+  --win-shadow: 0 1px 0 rgb(255 255 255 / 0.06) inset, 0 60px 120px -40px rgb(0 0 0 / 0.95), 0 0 0 1px rgb(0 0 0 / 0.6);
+  --phone-ring: #1F2025; --dim: rgb(0 0 0 / 0.66); --sel: rgb(92 207 255 / 0.28);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: 88px; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 400 17px/1.5 var(--font); letter-spacing: -0.011em;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility; overflow-x: clip;
+  transition: background-color 240ms ease, color 240ms ease;
+}
+::selection { background: var(--sel); color: var(--text); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 8px; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; letter-spacing: inherit; }
+h1, h2, h3, p, ul, ol { margin: 0; padding: 0; }
+ul, ol { list-style: none; }
+svg { display: block; flex: none; }
+.num { font-variant-numeric: tabular-nums; }
+.wrap { width: min(var(--maxw), 100% - 2 * var(--gutter)); margin-inline: auto; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+html { scrollbar-color: var(--surface-3) var(--bg); }
+
+/* ——— Типографика ——— */
+.h1 {
+  font-size: clamp(44px, 6.4vw, 84px); line-height: 0.98; font-weight: 500;
+  letter-spacing: -0.04em; text-wrap: balance;
+}
+.h2 {
+  font-size: clamp(32px, 4vw, 52px); line-height: 1.02; font-weight: 500;
+  letter-spacing: -0.035em; text-wrap: balance;
+}
+.lead { font-size: clamp(17px, 1.45vw, 20px); line-height: 1.45; color: var(--text-2); letter-spacing: -0.015em; text-wrap: pretty; }
+.muted { color: var(--text-2); }
+
+/* ——— Кнопки ——— */
+.cta {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  height: 52px; padding: 0 26px; border-radius: 999px;
+  background: var(--cta); color: var(--on-cta);
+  font-size: 16px; font-weight: 500; letter-spacing: -0.01em; white-space: nowrap;
+  transition: transform 160ms var(--ease-out), opacity 160ms ease, background-color 240ms ease;
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.25) inset, 0 10px 30px -12px rgb(0 0 0 / 0.5);
+}
+.cta:active { transform: scale(0.97); }
+@media (hover: hover) and (pointer: fine) { .cta:hover { opacity: 0.88; } }
+
+/* ——— Меню-пилюля ——— */
+.nav { position: fixed; inset: 12px 0 auto; z-index: 50; display: flex; justify-content: center; padding-inline: var(--gutter); pointer-events: none; }
+.nav-pill {
+  pointer-events: auto; display: flex; align-items: center; gap: 6px; width: 100%; max-width: 760px;
+  height: 52px; padding: 0 6px 0 16px; border-radius: 999px;
+  background: var(--nav-bg); border: 1px solid var(--line-2);
+  -webkit-backdrop-filter: saturate(160%) blur(18px); backdrop-filter: saturate(160%) blur(18px);
+  box-shadow: 0 10px 30px -18px rgb(0 0 0 / 0.5);
+}
+.brand { display: inline-flex; align-items: center; gap: 9px; font-weight: 600; font-size: 16px; letter-spacing: -0.02em; margin-right: auto; height: 40px; }
+.brand svg { width: 20px; height: 20px; color: var(--text); }
+.nav-links { display: none; gap: 2px; margin-right: auto; }
+.nav-links a, .nav-login { height: 36px; padding: 0 12px; display: inline-flex; align-items: center; border-radius: 999px; font-size: 14.5px; color: var(--text-2); transition: color 160ms ease, background-color 160ms ease; }
+@media (hover: hover) and (pointer: fine) { .nav-links a:hover, .nav-login:hover { color: var(--text); background: var(--surface-3); } }
+.nav-end { display: flex; align-items: center; gap: 2px; }
+.icon-btn { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 999px; color: var(--text-2); transition: color 160ms ease, background-color 160ms ease, transform 160ms var(--ease-out); }
+.icon-btn:active { transform: scale(0.94); }
+@media (hover: hover) and (pointer: fine) { .icon-btn:hover { color: var(--text); background: var(--surface-3); } }
+.icon-btn svg { width: 19px; height: 19px; }
+.theme-sun, :root[data-theme="light"] .theme-moon { display: none; }
+:root[data-theme="light"] .theme-sun { display: block; }
+.nav-dl { height: 38px; padding: 0 16px; display: inline-flex; align-items: center; border-radius: 999px; background: var(--cta); color: var(--on-cta); font-size: 14.5px; font-weight: 500; margin-left: 4px; transition: transform 160ms var(--ease-out), opacity 160ms ease; }
+.nav-dl:active { transform: scale(0.96); }
+@media (min-width: 900px) {
+  .nav { inset-block-start: 16px; }
+  .nav-pill { height: 54px; padding-left: 18px; }
+  .brand { margin-right: 28px; }
+  .nav-links { display: flex; }
+}
+
+/* ——— Герой ——— */
+.hero { position: relative; padding-top: 112px; isolation: isolate; overflow-x: clip; }
+.hero-copy { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
+.hero-copy .h1 { max-width: 11ch; }
+.hero-copy .lead { max-width: 30ch; }
+.exams { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.exams li {
+  height: 32px; padding: 0 12px; display: inline-flex; align-items: center; gap: 6px; border-radius: 999px;
+  border: 1px solid var(--line-2); background: color-mix(in srgb, var(--bg) 70%, transparent);
+  font-size: 14px; font-weight: 500; letter-spacing: 0;
+}
+.exams li.soon { color: var(--text-3); border-style: dashed; }
+.exams small { font-size: 12.5px; font-weight: 400; }
+.hero .cta { margin-top: 10px; }
+
+.globe-wrap {
+  position: absolute; z-index: 0; left: 50%; top: 330px; width: 600px; aspect-ratio: 1;
+  transform: translateX(-50%); pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 78%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 78%);
+}
+.globe-wrap canvas { width: 100%; height: 100%; opacity: 0; transition: opacity 1800ms ease; }
+.globe-wrap canvas.on { opacity: 1; }
+:root[data-theme="light"] .globe-wrap canvas.on { opacity: 0.8; }
+html:not(.anim) .globe-wrap canvas.on { transition: none; }
+
+.stage { position: relative; z-index: 1; margin-top: 44px; display: flex; justify-content: center; }
+
+/* ——— Окно продукта (компьютер) ——— */
+.win {
+  display: none; width: 100%; height: 600px; border-radius: 18px; overflow: hidden;
+  background: var(--win-bg); border: 1px solid var(--line-2); box-shadow: var(--win-shadow);
+  flex-direction: column;
+}
+.win-bar { height: 40px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 16px; border-bottom: 1px solid var(--line); }
+.win-bar i { width: 11px; height: 11px; border-radius: 50%; background: var(--surface-3); }
+.win-body { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.s-top { display: flex; align-items: center; gap: 14px; padding: 18px 28px 14px; font-size: 14px; }
+.s-x { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 999px; background: var(--surface-2); color: var(--text-2); }
+.s-x svg { width: 15px; height: 15px; }
+.s-sec { display: inline-flex; align-items: center; gap: 8px; color: var(--text-2); font-weight: 500; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--c, var(--verbal)); flex: none; }
+.s-count { margin-left: auto; color: var(--text-3); font-size: 14px; }
+.s-count b { font-weight: 300; font-size: 22px; color: var(--text); letter-spacing: -0.02em; margin-right: 2px; }
+.s-bar { height: 3px; margin: 0 28px; border-radius: 3px; background: var(--surface-3); overflow: hidden; }
+.s-bar i { display: block; height: 100%; width: 100%; background: var(--accent); border-radius: inherit; transform-origin: left; transform: scaleX(var(--p, 0.3)); }
+.win-cols { flex: 1; display: grid; grid-template-columns: 1fr 432px; min-height: 0; margin-top: 2px; }
+.q-col { padding: 40px 56px 28px; display: flex; flex-direction: column; min-width: 0; }
+.q-text { font-size: 21px; line-height: 1.5; letter-spacing: -0.015em; max-width: 30em; }
+.q-text .blank { display: inline-block; width: 4.6em; border-bottom: 1.5px solid var(--text-3); height: 1em; vertical-align: -0.12em; margin: 0 0.15em; }
+.opts { display: grid; gap: 10px; margin-top: 30px; max-width: 420px; }
+.opt {
+  height: 54px; display: flex; align-items: center; gap: 14px; padding: 0 18px; border-radius: var(--r-m);
+  background: var(--surface); border: 1px solid var(--line-2); font-size: 17px; letter-spacing: -0.01em;
+  transition: border-color 160ms var(--ease-out), background-color 160ms var(--ease-out), transform 160ms var(--ease-out), color 160ms ease;
+}
+:root[data-theme="dark"] .opt { background: var(--surface-2); border-color: var(--line); }
+.oval { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--text-3); display: grid; place-items: center; flex: none; transition: border-color 160ms ease, background-color 160ms ease; }
+.oval::after { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); transform: scale(0.4); opacity: 0; transition: transform 200ms var(--ease-out), opacity 160ms ease; }
+.mark { margin-left: auto; width: 18px; height: 18px; opacity: 0; transform: scale(0.8); transition: opacity 200ms ease, transform 240ms var(--ease-out); }
+.opt.sel { border-color: var(--accent); background: var(--accent-soft); }
+.opt.sel .oval { border-color: var(--accent); }
+.opt.sel .oval::after { transform: none; opacity: 1; }
+.opt.is-wrong { border-color: var(--wrong); background: var(--wrong-soft); }
+.opt.is-wrong .oval { border-color: var(--wrong); }
+.opt.is-wrong .oval::after { background: var(--wrong); }
+.opt.is-wrong .mark.x { opacity: 1; transform: none; color: var(--wrong); }
+.opt.is-right { border-color: color-mix(in srgb, var(--right) 60%, transparent); }
+.opt.is-right .mark.ok { opacity: 1; transform: none; color: var(--right); }
+.q-actions { margin-top: auto; display: flex; gap: 10px; justify-content: flex-end; padding-top: 20px; }
+.btn {
+  height: 46px; padding: 0 22px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center;
+  font-size: 15.5px; font-weight: 500; letter-spacing: -0.01em; white-space: nowrap;
+  transition: transform 160ms var(--ease-out), background-color 200ms ease, color 200ms ease, opacity 200ms ease;
+}
+.btn.ghost { background: var(--surface-2); color: var(--text-2); }
+.btn.acc { background: var(--accent); color: var(--on-accent); box-shadow: 0 8px 26px -10px color-mix(in srgb, var(--accent) 70%, transparent); }
+.btn.off { background: var(--surface-2); color: var(--text-3); box-shadow: none; }
+.btn.press { transform: scale(0.96); }
+
+.ex-col { border-left: 1px solid var(--line); background: var(--win-side); padding: 30px 32px 24px; display: flex; flex-direction: column; gap: 16px; min-width: 0; overflow: hidden; }
+.verdict { display: flex; gap: 12px; align-items: flex-start; }
+.v-ic { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--wrong-soft); color: var(--wrong); flex: none; }
+.v-ic svg { width: 14px; height: 14px; }
+.verdict b { display: block; font-weight: 600; font-size: 17px; letter-spacing: -0.02em; }
+.verdict div > span { display: block; color: var(--text-2); font-size: 15px; line-height: 1.4; margin-top: 2px; }
+.ans { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; font-size: 14.5px; padding: 12px 14px; border-radius: var(--r-m); background: var(--surface); border: 1px solid var(--line); }
+:root[data-theme="dark"] .ans { background: var(--surface-2); }
+.ans dt { color: var(--text-3); }
+.ans dd { margin: 0; font-weight: 500; }
+.ans .w { color: var(--wrong); text-decoration: line-through; text-decoration-thickness: 1px; }
+.ans .r { color: var(--right); }
+.seg { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--surface-3); gap: 2px; align-self: flex-start; }
+.seg span { height: 26px; min-width: 38px; padding: 0 10px; display: grid; place-items: center; border-radius: 999px; font-size: 12.5px; font-weight: 600; color: var(--text-3); letter-spacing: 0.02em; }
+.seg span.on { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgb(0 0 0 / 0.12); }
+:root[data-theme="dark"] .seg span.on { background: var(--accent-soft); color: var(--accent); box-shadow: none; }
+.ex-text { font-size: 15px; line-height: 1.55; color: var(--text); text-wrap: pretty; }
+.ex-text em { font-style: normal; font-weight: 600; }
+.trap { padding: 12px 14px; border-radius: var(--r-m); background: var(--surface-3); font-size: 14.5px; line-height: 1.5; color: var(--text-2); }
+:root[data-theme="dark"] .trap { background: var(--surface-2); }
+.trap b { display: block; color: var(--text); font-weight: 600; font-size: 13px; margin-bottom: 2px; }
+.topic { display: flex; align-items: center; gap: 8px; font-size: 14.5px; color: var(--text-2); }
+.topic a, .topic span.lnk { color: var(--accent); font-weight: 500; }
+.ex-foot { margin-top: auto; display: flex; justify-content: flex-end; }
+
+/* ——— Телефон ——— */
+.phone {
+  position: relative; width: min(100%, 360px); height: 640px; border-radius: 46px; padding: 9px;
+  background: var(--phone-ring); box-shadow: var(--win-shadow);
+}
+.ph-scr { position: relative; height: 100%; border-radius: 38px; overflow: hidden; background: var(--win-bg); display: flex; flex-direction: column; }
+.ph-status { height: 44px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 26px 0 30px; font-size: 14px; font-weight: 600; letter-spacing: -0.01em; }
+.ph-status .ic { display: flex; gap: 5px; align-items: center; color: var(--text); }
+.ph-status .ic i { display: block; width: 16px; height: 9px; border-radius: 2px; border: 1.2px solid currentColor; position: relative; }
+.ph-status .ic i::after { content: ""; position: absolute; inset: 1px 3px 1px 1px; background: currentColor; border-radius: 1px; }
+.ph-status .ic b { display: block; width: 14px; height: 9px; background: linear-gradient(to right, currentColor 2px, transparent 2px 4px, currentColor 4px 6px, transparent 6px 8px, currentColor 8px 10px, transparent 10px 12px, currentColor 12px); -webkit-mask: linear-gradient(to top, #000, #000) bottom/100% 100%; clip-path: polygon(0 100%, 100% 0, 100% 100%); }
+.ph .s-top { padding: 6px 18px 10px; font-size: 13px; gap: 10px; }
+.ph .s-x { width: 30px; height: 30px; }
+.ph .s-count b { font-size: 19px; }
+.ph .s-bar { margin: 0 18px; }
+.ph-body { flex: 1; display: flex; flex-direction: column; padding: 22px 20px 18px; min-height: 0; }
+.ph .q-text { font-size: 17px; line-height: 1.5; }
+.ph .opts { margin-top: 22px; gap: 8px; }
+.ph .opt { height: 50px; font-size: 16px; padding: 0 16px; }
+.ph .q-actions { justify-content: stretch; }
+.ph .q-actions .btn { flex: 1; height: 50px; }
+
+.sheet {
+  position: absolute; inset: auto 0 0; z-index: 3; padding: 10px 20px 18px; border-radius: 26px 26px 38px 38px;
+  background: var(--surface); border-top: 1px solid var(--line-2);
+  box-shadow: 0 -24px 60px -20px rgb(0 0 0 / 0.45);
+  display: flex; flex-direction: column; gap: 12px;
+  transition: transform 560ms var(--ease-drawer);
+}
+:root[data-theme="dark"] .sheet { background: var(--surface-2); }
+.sheet::before { content: ""; width: 36px; height: 4px; border-radius: 4px; background: var(--line-2); align-self: center; margin-bottom: 4px; }
+.sheet .ex-text { font-size: 14.5px; }
+.sheet .trap { font-size: 13.5px; }
+.sheet .btn { height: 44px; padding: 0 24px; }
+.sheet-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 2px; }
+
+/* ——— Сцена «Как устроено» ——— */
+section { position: relative; }
+.sec { padding-block: 112px; }
+.sec-head { display: grid; gap: 14px; margin-bottom: 44px; }
+.scene { display: grid; gap: 28px; }
+.scene > * { min-width: 0; }
+.scene-left .h2 { margin-bottom: 28px; }
+.scene-list { display: flex; gap: 6px; overflow-x: auto; scroll-padding-inline: var(--gutter); scrollbar-width: none; margin-inline: calc(-1 * var(--gutter)); padding-inline: var(--gutter); scroll-snap-type: x mandatory; }
+.scene-list::-webkit-scrollbar { display: none; }
+.s-item {
+  position: relative; flex: none; text-align: left; scroll-snap-align: start;
+  height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line-2);
+  font-size: 15px; font-weight: 500; color: var(--text-3); overflow: hidden;
+  transition: color 200ms ease, background-color 200ms ease, border-color 200ms ease;
+}
+.s-item.on { color: var(--on-cta); background: var(--cta); border-color: transparent; }
+.s-item .s-desc { display: none; }
+.s-item .bar { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: transparent; }
+.s-item .bar i { display: block; height: 100%; background: currentColor; opacity: 0.35; transform-origin: left; transform: scaleX(0); }
+.scene-line { min-height: 3em; color: var(--text-2); font-size: 16px; }
+.scene-stage { display: flex; justify-content: center; }
+.scr { position: absolute; inset: 0; display: flex; flex-direction: column; opacity: 0; visibility: hidden; transition: opacity 380ms var(--ease-out), transform 420ms var(--ease-out), filter 380ms var(--ease-out), visibility 0s linear 420ms; transform: scale(0.985); filter: blur(6px); }
+.scr.on { opacity: 1; visibility: visible; transform: none; filter: none; transition-delay: 0s; }
+.ph-scr.multi .ph-status { position: relative; z-index: 2; }
+.ph-scr.multi { display: block; }
+.ph-scr.multi .scr { top: 44px; }
+
+@media (min-width: 900px) {
+  .scene { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 64px; }
+  .scene-list { flex-direction: column; overflow: visible; margin: 0; padding: 0; gap: 0; }
+  .s-item {
+    height: auto; padding: 22px 0 24px; border: 0; border-radius: 0; border-top: 1px solid var(--line);
+    background: none !important; color: var(--text-3); font-size: 22px; letter-spacing: -0.025em;
+  }
+  .s-item:last-child { border-bottom: 1px solid var(--line); }
+  .s-item.on { color: var(--text); }
+  .s-item .s-desc { display: block; font-size: 16px; font-weight: 400; letter-spacing: -0.01em; margin-top: 6px; color: var(--text-3); line-height: 1.45; transition: color 200ms ease; }
+  .s-item.on .s-desc { color: var(--text-2); }
+  .s-item .bar { top: -1px; bottom: auto; height: 1px; }
+  .s-item .bar i { opacity: 1; background: var(--text); }
+  @media (hover: hover) and (pointer: fine) { .s-item:not(.on):hover { color: var(--text-2); } }
+  .scene-line { display: none; }
+  .scene-left .h2 { margin-bottom: 56px; }
+  .scene-stage .phone { height: 680px; }
+}
+
+/* экраны внутри телефона сцены */
+.w-steps { display: flex; gap: 4px; margin: 4px 0 0; }
+.w-steps i { flex: 1; height: 3px; border-radius: 3px; background: var(--surface-3); }
+.w-steps i.done { background: var(--words); }
+.w-steps i.now { background: color-mix(in srgb, var(--words) 45%, var(--surface-3)); }
+.w-step-name { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text-3); margin-top: 8px; }
+.w-step-name b { color: var(--words); font-weight: 600; }
+.word { font-size: 56px; font-weight: 200; letter-spacing: -0.04em; line-height: 1; margin-top: 34px; }
+:root[data-theme="light"] .word { font-weight: 300; }
+.w-meta { color: var(--text-3); font-size: 14px; margin-top: 10px; }
+.w-tr { font-size: 18px; margin-top: 18px; letter-spacing: -0.015em; }
+.w-ex { margin-top: 16px; padding: 14px; border-radius: var(--r-m); background: var(--surface-2); font-size: 14px; line-height: 1.5; }
+.w-ex span { display: block; color: var(--text-2); margin-top: 4px; }
+.mic-row { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.heard { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--right); font-weight: 500; }
+.heard svg { width: 16px; height: 16px; }
+.mic { width: 68px; height: 68px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--on-accent); box-shadow: 0 10px 30px -10px color-mix(in srgb, var(--accent) 80%, transparent); }
+.mic svg { width: 26px; height: 26px; }
+.wave { display: flex; align-items: center; gap: 3px; height: 22px; }
+.wave i { width: 3px; border-radius: 3px; background: var(--text-3); height: calc(var(--h) * 1px); }
+
+.score-big { display: flex; align-items: baseline; gap: 10px; margin-top: 26px; }
+.score-big b { font-size: 76px; font-weight: 200; letter-spacing: -0.045em; line-height: 0.9; }
+:root[data-theme="light"] .score-big b { font-weight: 300; }
+.score-big span { color: var(--text-3); font-size: 14px; }
+.said { margin-top: 22px; font-size: 14.5px; line-height: 1.55; color: var(--text-2); }
+.said small { display: block; font-size: 12.5px; color: var(--text-3); margin-bottom: 4px; }
+.said mark { background: var(--wrong-soft); color: var(--wrong); border-radius: 4px; padding: 0 3px; }
+.fb { margin-top: 16px; display: grid; border-top: 1px solid var(--line); }
+.fb li { padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 14px; line-height: 1.45; display: grid; grid-template-columns: 104px 1fr; gap: 8px; }
+.fb li b { font-weight: 600; }
+
+/* ——— Бенто ——— */
+.bento { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin-inline: calc(-1 * var(--gutter)); padding: 4px var(--gutter) 8px; scroll-padding-inline: var(--gutter); }
+.bento::-webkit-scrollbar { display: none; }
+.card {
+  position: relative; flex: none; width: 82%; max-width: 320px; height: 420px; scroll-snap-align: start;
+  border-radius: var(--r-l); background: var(--surface); border: 1px solid var(--line);
+  overflow: hidden; display: flex; flex-direction: column; text-align: left;
+  transition: border-color 200ms ease, transform 200ms var(--ease-out);
+}
+:root[data-theme="light"] .card { border-color: var(--line-2); }
+button.card:active { transform: scale(0.985); }
+@media (hover: hover) and (pointer: fine) { button.card:hover { border-color: var(--line-2); } button.card:hover .plus { background: var(--cta); color: var(--on-cta); } }
+.card-txt { padding: 24px 24px 0; display: grid; gap: 6px; }
+.card h3 { font-size: 21px; font-weight: 500; letter-spacing: -0.025em; line-height: 1.15; padding-right: 44px; }
+.card p { color: var(--text-2); font-size: 15.5px; line-height: 1.45; max-width: 32ch; }
+.plus { position: absolute; top: 18px; right: 18px; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--line-2); color: var(--text-2); transition: background-color 200ms ease, color 200ms ease; }
+.plus svg { width: 14px; height: 14px; }
+.card-vis { margin-top: auto; padding: 0 24px 24px; position: relative; }
+@media (min-width: 900px) {
+  .bento { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 380px; overflow: visible; margin: 0; padding: 0; gap: 14px; }
+  .card { width: auto; max-width: none; height: auto; }
+  .card.wide { grid-column: span 2; }
+}
+
+/* визуалы карточек */
+.month { margin-top: 26px; padding-top: 16px; border-top: 1px solid var(--line); }
+.month-h { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-3); margin-bottom: 10px; }
+.cal.wide-cal { display: flex; flex-wrap: wrap; justify-content: space-between; row-gap: 8px; }
+.cal.wide-cal i { width: 10px; height: 10px; aspect-ratio: auto; border-radius: 50%; }
+.cal.wide-cal i.y { opacity: 0.9; }
+@media (max-width: 899px) { .cal.wide-cal { justify-content: flex-start; gap: 7px; } }
+.pr-row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px 24px; }
+@media (max-width: 899px) { .card .weak { flex-basis: 100%; max-width: none; } .card .weak li span { width: 120px; } .card .pr-score b { font-size: 56px; } }
+.pr-score { display: grid; }
+.pr-score b { font-size: 64px; font-weight: 200; letter-spacing: -0.045em; line-height: 0.9; }
+:root[data-theme="light"] .pr-score b { font-weight: 300; }
+.pr-score span { font-size: 13px; color: var(--text-3); margin-top: 6px; }
+.weak { display: grid; gap: 8px; min-width: 0; flex: 1; max-width: 300px; }
+.weak li { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.weak li span { flex: none; width: 128px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.weak li i { flex: 1; height: 4px; border-radius: 4px; background: var(--surface-3); position: relative; overflow: hidden; }
+.weak li i::after { content: ""; position: absolute; inset: 0; width: var(--w); border-radius: inherit; background: var(--c, var(--text-3)); }
+.stack { position: relative; height: 196px; }
+.stack .mini { position: absolute; left: 0; right: 0; border-radius: var(--r-m); background: var(--surface-2); border: 1px solid var(--line); padding: 14px 16px; font-size: 14px; line-height: 1.45; }
+:root[data-theme="light"] .stack .mini { background: var(--surface); border-color: var(--line-2); }
+.stack .mini:nth-child(1) { top: 0; transform: scale(0.9); opacity: 0.45; }
+.stack .mini:nth-child(2) { top: 18px; transform: scale(0.95); opacity: 0.75; }
+.stack .mini:nth-child(3) { top: 40px; box-shadow: 0 18px 40px -20px rgb(0 0 0 / 0.5); }
+.mini-meta { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-3); margin-bottom: 8px; }
+.mini-meta .x { margin-left: auto; color: var(--wrong); display: inline-flex; align-items: center; gap: 4px; }
+.mini-meta .x svg { width: 12px; height: 12px; }
+.mini .btn { height: 40px; width: 100%; margin-top: 14px; font-size: 14.5px; }
+.off-card { display: grid; gap: 10px; }
+.off-line { display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--text-3); }
+.off-line svg { width: 16px; height: 16px; }
+.queue { display: grid; gap: 6px; }
+.queue li { display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 14px; border-radius: 12px; background: var(--surface-2); font-size: 14px; }
+:root[data-theme="light"] .queue li { background: var(--surface-2); }
+.queue li .dot { --c: var(--text-3); }
+.queue li em { margin-left: auto; font-style: normal; color: var(--text-3); font-size: 12.5px; }
+.queue li.cur { background: transparent; border: 1px dashed var(--line-2); color: var(--text-2); }
+.theme-card .card-vis { display: grid; gap: 18px; }
+.duo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; height: 172px; }
+.duo div { border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 8px; border: 1px solid; }
+.duo .d-l { background: #FFFFFF; border-color: rgb(12 13 18 / 0.12); color: #0C0D10; }
+.duo .d-d { background: #0F1013; border-color: rgb(255 255 255 / 0.1); color: #F1F2F4; }
+.duo b { font-size: 34px; font-weight: 200; letter-spacing: -0.04em; line-height: 1; margin-top: auto; }
+.duo .d-l b { font-weight: 300; }
+.duo small { font-size: 12px; opacity: 0.6; }
+.duo i { display: block; height: 6px; border-radius: 6px; width: 70%; background: currentColor; opacity: 0.12; }
+.duo i + i { width: 46%; }
+.tseg { justify-self: start; display: inline-flex; padding: 4px; border-radius: 999px; background: var(--surface-3); gap: 2px; align-self: flex-start; }
+.tseg button { height: 38px; padding: 0 18px; border-radius: 999px; font-size: 14.5px; font-weight: 500; color: var(--text-2); transition: background-color 200ms ease, color 200ms ease; }
+.tseg button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgb(0 0 0 / 0.14); }
+:root[data-theme="dark"] .tseg button[aria-pressed="true"] { background: var(--cta); color: var(--on-cta); }
+
+/* ——— Окно подробностей ——— */
+dialog.dlg {
+  padding: 0; border: 1px solid var(--line-2); border-radius: 28px; background: var(--surface); color: var(--text);
+  width: min(1040px, 100% - 16px); max-width: none; max-height: min(720px, 100dvh - 16px); overflow: auto; overscroll-behavior: contain;
+  box-shadow: 0 40px 120px -30px rgb(0 0 0 / 0.7);
+}
+:root[data-theme="dark"] dialog.dlg { background: #0D0E11; }
+dialog.dlg::backdrop { background: var(--dim); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+html.anim dialog.dlg[open]::backdrop { animation: fade 320ms ease both; }
+@keyframes fade { from { opacity: 0; } }
+.dlg-in { display: grid; gap: 28px; padding: 28px 22px 22px; }
+.dlg-close { position: absolute; top: 14px; right: 14px; z-index: 2; background: var(--surface-2); }
+.dlg h3 { font-size: clamp(30px, 3.4vw, 44px); line-height: 1.02; font-weight: 500; letter-spacing: -0.035em; padding-right: 48px; text-wrap: balance; }
+.dlg .dlg-lead { color: var(--text-2); margin-top: 12px; font-size: 17px; max-width: 34ch; }
+.facts { margin-top: 26px; display: grid; border-top: 1px solid var(--line); }
+.facts li { display: flex; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); font-size: 15.5px; line-height: 1.45; color: var(--text-2); }
+.facts li svg { width: 18px; height: 18px; color: var(--text); margin-top: 2px; }
+.dlg-vis { display: flex; justify-content: center; align-items: center; border-radius: 20px; background: var(--surface-2); padding: 28px 16px; overflow: hidden; }
+:root[data-theme="dark"] .dlg-vis { background: #121317; }
+.dlg-vis .phone { height: 560px; width: min(100%, 320px); }
+@media (min-width: 900px) {
+  .dlg-in { grid-template-columns: 1fr 1fr; padding: 48px; gap: 48px; align-items: center; }
+  .dlg-close { top: 20px; right: 20px; }
+}
+/* экраны в окнах подробностей */
+.p-title { font-size: 28px; font-weight: 600; letter-spacing: -0.03em; }
+.p-sub { color: var(--text-3); font-size: 13.5px; margin-top: 4px; }
+.p-card { margin-top: 18px; padding: 16px; border-radius: 18px; background: var(--surface-2); }
+:root[data-theme="light"] .p-card { background: var(--surface-2); }
+.p-card h4 { margin: 0 0 10px; font-size: 13px; font-weight: 500; color: var(--text-3); }
+.p-list { display: grid; }
+.p-list li { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 14.5px; }
+.p-list li:last-child { border-bottom: 0; }
+.p-list li em { margin-left: auto; font-style: normal; color: var(--text-3); font-size: 13px; }
+.cal { display: grid; grid-template-columns: repeat(7, 12px); justify-content: space-between; gap: 12px 0; padding: 4px 2px; }
+.cal i { width: 12px; height: 12px; border-radius: 50%; background: var(--surface-3); }
+.cal i.y { background: var(--text); opacity: 0.85; }
+
+/* ——— Экзамены ——— */
+.tabs { position: relative; display: flex; gap: 2px; padding: 4px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); width: max-content; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { position: relative; z-index: 1; height: 40px; padding: 0 18px; border-radius: 999px; font-size: 15px; font-weight: 500; color: var(--text-2); white-space: nowrap; transition: color 200ms ease; display: inline-flex; align-items: center; gap: 6px; }
+.tab[aria-selected="true"] { color: var(--on-cta); }
+.tab:disabled { color: var(--text-3); cursor: default; }
+.tab small { font-size: 12px; font-weight: 400; }
+.tab-ind { position: absolute; z-index: 0; top: 4px; left: 0; height: 40px; border-radius: 999px; background: var(--cta); transition: transform 320ms var(--ease-out), width 320ms var(--ease-out); }
+.panels { margin-top: 28px; display: grid; }
+.panel { grid-area: 1 / 1; display: grid; gap: 12px; transition: opacity 260ms ease, transform 320ms var(--ease-out); }
+.panel[hidden] { display: grid; opacity: 0; transform: translateY(6px); pointer-events: none; visibility: hidden; }
+.box { border-radius: var(--r-l); background: var(--surface); border: 1px solid var(--line); padding: 24px; display: flex; flex-direction: column; }
+.box .timer, .box .res-foot { margin-top: auto; }
+.box .tl, .box .tl-rows, .box .res { margin-bottom: 26px; }
+:root[data-theme="light"] .box { border-color: var(--line-2); }
+.box-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.box-head h3 { font-size: 20px; font-weight: 500; letter-spacing: -0.025em; }
+.box-head span { color: var(--text-3); font-size: 14px; }
+.tl { display: flex; gap: 4px; margin-top: 22px; }
+.timer { border-top: 0 !important; padding-top: 0 !important; }
+.tl div { flex: var(--m) 1 0; min-width: 0; }
+.tl i { display: block; height: 6px; border-radius: 6px; background: var(--c); opacity: 0.9; }
+.tl b, .tl span { display: none !important; }
+.tl b { display: block; font-size: 13.5px; font-weight: 500; margin-top: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tl span { display: block; font-size: 13px; color: var(--text-3); margin-top: 2px; }
+.tl-rows { display: grid; border-top: 1px solid var(--line); }
+.tl-rows li { display: flex; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--line); font-size: 15.5px; }
+.tl-rows li em { margin-left: auto; font-style: normal; color: var(--text-3); font-size: 14.5px; }
+.box .tl { margin-bottom: 8px; }
+.timer { margin-top: 26px; display: flex; align-items: center; gap: 12px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 14.5px; color: var(--text-2); }
+.timer svg { width: 18px; height: 18px; color: var(--text); }
+.res { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; margin-top: 22px; }
+.res div { display: grid; }
+.res span { font-size: 14px; color: var(--text-3); display: inline-flex; align-items: center; gap: 7px; }
+.res b { font-size: clamp(56px, 6vw, 84px); font-weight: 200; letter-spacing: -0.05em; line-height: 1; margin-top: 4px; }
+:root[data-theme="light"] .res b { font-weight: 300; }
+.res small { font-size: 14px; color: var(--text-2); margin-top: 10px; }
+.res.four b { font-size: clamp(44px, 4.4vw, 60px); }
+.res-foot { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14.5px; color: var(--text-2); flex-wrap: wrap; }
+.res-foot b { color: var(--text); font-weight: 500; }
+@media (max-width: 599px) {
+  .timer { border-top: 0; padding-top: 0; margin-top: 16px; }
+}
+@media (min-width: 900px) {
+  .panel { grid-template-columns: 1.25fr 1fr; gap: 14px; }
+  .box { padding: 32px; }
+}
+
+/* ——— Цена и скачать ——— */
+.price { text-align: center; display: grid; justify-items: center; gap: 16px; }
+.price .h1 { max-width: none; font-size: clamp(52px, 8vw, 112px); }
+.price .lead { margin-top: 2px; }
+.price .cta { margin-top: 18px; }
+.dl { margin-top: 120px; }
+.dl-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+.dl-head h2 { font-size: clamp(26px, 2.6vw, 34px); font-weight: 500; letter-spacing: -0.03em; }
+.dl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.dl-tile {
+  display: flex; flex-direction: column; gap: 22px; padding: 18px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line);
+  transition: border-color 200ms ease, transform 160ms var(--ease-out), background-color 200ms ease;
+}
+:root[data-theme="light"] .dl-tile { border-color: var(--line-2); }
+.dl-tile:active { transform: scale(0.98); }
+@media (hover: hover) and (pointer: fine) { .dl-tile:hover { border-color: var(--text-3); } }
+.dl-tile svg { width: 24px; height: 24px; }
+.dl-tile b { display: block; font-weight: 500; font-size: 16px; letter-spacing: -0.015em; }
+.dl-tile span { display: block; color: var(--text-3); font-size: 14px; margin-top: 2px; }
+.dl-tile:last-child { grid-column: span 2; }
+@media (min-width: 900px) {
+  .dl-grid { grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  .dl-tile { padding: 22px; gap: 44px; }
+  .dl-tile:last-child { grid-column: auto; }
+}
+
+/* ——— Подвал ——— */
+.foot { padding: 64px 0 120px; border-top: 1px solid var(--line); margin-top: 120px; }
+.foot-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; font-size: 14.5px; color: var(--text-2); }
+.foot-row .brand { margin-right: auto; color: var(--text); }
+.foot-row a:not(.brand) { transition: color 160ms ease; }
+@media (hover: hover) and (pointer: fine) { .foot-row a:not(.brand):hover { color: var(--text); } }
+.legal { margin-top: 28px; font-size: 12.5px; line-height: 1.55; color: var(--text-3); max-width: 80ch; }
+@media (min-width: 900px) { .foot { padding-bottom: 64px; } }
+
+/* ——— Кнопка внизу на телефоне ——— */
+.dock {
+  position: fixed; z-index: 40; left: 0; right: 0; bottom: 0; padding: 24px var(--gutter) calc(12px + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, var(--bg) 45%, transparent);
+  transform: translateY(110%); transition: transform 380ms var(--ease-drawer); pointer-events: none;
+}
+.dock.on { transform: none; pointer-events: auto; }
+.dock .cta { width: 100%; }
+@media (min-width: 900px) { .dock { display: none; } }
+
+/* ——— Широкий экран ——— */
+@media (min-width: 900px) {
+  :root { --gutter: 40px; }
+  .hero { padding-top: 150px; }
+  .hero-copy { align-items: center; text-align: center; gap: 20px; }
+  .hero-copy .h1 { max-width: 20ch; font-size: clamp(56px, 5.4vw, 80px); }
+  .hero-copy .lead { max-width: 56ch; }
+  .exams { justify-content: center; }
+  .globe-wrap { top: 300px; width: 1520px; -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 40%, transparent 66%); mask-image: linear-gradient(to bottom, #000 0%, #000 40%, transparent 66%); }
+  .win { max-width: 1100px; }
+  .stage { margin-top: 60px; }
+  .stage .phone { display: none; }
+  .win { display: flex; }
+  .sec { padding-block: 160px; }
+  .sec-head { margin-bottom: 64px; }
+  .price .lead { font-size: 21px; }
+}
+@media (min-width: 900px) and (max-width: 1100px) {
+  .win-cols { grid-template-columns: 1fr 380px; }
+  .q-col { padding: 36px 36px 24px; }
+}
+
+/* ——— Стартовая анимация ——— */
+/* Без JS и при «уменьшить движение» разметка уже в итоговом кадре; классы шагов снимает скрипт и проигрывает сборку. */
+html.anim .hero:not(.s1) .rise { opacity: 0; transform: translateY(14px); filter: blur(6px); }
+.rise { transition: opacity 800ms var(--ease-out), transform 900ms var(--ease-out), filter 800ms var(--ease-out); transition-delay: calc(var(--d, 0) * 1ms); }
+html.anim .hero:not(.s2) .stage { opacity: 0; transform: translateY(36px) scale(0.985); }
+.stage { transition: opacity 900ms var(--ease-out), transform 1100ms var(--ease-out); }
+.q-text .wd { display: inline-block; transition: opacity 420ms var(--ease-out), filter 420ms var(--ease-out), transform 420ms var(--ease-out); transition-delay: calc(var(--i) * 22ms); }
+html.anim .hero:not(.s3) .q-text .wd { opacity: 0; filter: blur(4px); transform: translateY(4px); }
+.hero .opt { transition: border-color 160ms var(--ease-out), background-color 160ms var(--ease-out), transform 520ms var(--ease-out), color 160ms ease, opacity 480ms var(--ease-out); }
+html.anim .hero:not(.s4) .opt { opacity: 0; transform: translateY(8px); }
+.hero .opt:nth-child(2) { transition-delay: 0ms, 0ms, 70ms, 0ms, 70ms; }
+.hero .opt:nth-child(3) { transition-delay: 0ms, 0ms, 140ms, 0ms, 140ms; }
+html.anim .hero:not(.s4) .q-actions { opacity: 0; }
+.hero .q-actions { transition: opacity 500ms ease 200ms; }
+.ex-col > * { transition: opacity 500ms var(--ease-out), transform 600ms var(--ease-out), filter 500ms var(--ease-out); transition-delay: calc(var(--d, 0) * 1ms); }
+html.anim .hero:not(.s7) .ex-col > * { opacity: 0; transform: translateX(14px); filter: blur(4px); }
+html.anim .hero:not(.s7) .sheet { transform: translateY(102%); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .scr { transform: none !important; filter: none !important; transition: opacity 200ms ease, visibility 0s linear 200ms; }
+  .scr.on { transition: opacity 200ms ease; }
+  .tab-ind, .panel, .dock, .sheet { transition-duration: 0ms !important; }
+  .s-item .bar { display: none; }
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-ok" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></g></symbol>
+    <symbol id="i-off" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 3l18 18M8.5 16.3a5 5 0 0 1 6.4-.4M5 12.6a10 10 0 0 1 4-2.4M19 12.6a10 10 0 0 0-3.6-2.3M2 9a15 15 0 0 1 4.2-2.6M22 9A15 15 0 0 0 10.6 5.1"/><circle cx="12" cy="19.5" r=".6" fill="currentColor"/></g></symbol>
+    <symbol id="i-dot" viewBox="0 0 24 24"><path d="M6 12.5l4 4L18 8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-timer" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 2M9.5 2.5h5"/></g></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9.2"/><ellipse cx="12" cy="12" rx="4" ry="9.2"/><path d="M3 12h18" stroke-linecap="round"/></g></symbol>
+  </defs>
+</svg>
+
+<header class="nav">
+  <nav class="nav-pill" aria-label="Главное меню">
+    <a class="brand" href="#top" aria-label="[Имя], наверх"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-globe"/></svg>[Имя]</a>
+    <div class="nav-links">
+      <a href="#how">Как устроено</a>
+      <a href="#exams">Экзамены</a>
+      <a href="#price">Цена</a>
+    </div>
+    <div class="nav-end">
+      <button class="icon-btn" id="theme-btn" type="button" aria-label="Включить светлую тему">
+        <svg class="theme-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.6A8.5 8.5 0 0 1 9.4 4a8.5 8.5 0 1 0 10.6 10.6z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+        <svg class="theme-sun" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></g></svg>
+      </button>
+      <a class="nav-login" href="#">Войти</a>
+      <a class="nav-dl" href="#download">Скачать</a>
+    </div>
+  </nav>
+</header>
+
+<main>
+<section class="hero s1 s2 s3 s4 s5 s6 s7" id="top">
+  <div class="globe-wrap" aria-hidden="true"><canvas id="globe"></canvas></div>
+  <div class="wrap hero-copy">
+    <h1 class="h1 rise">Подготовка к&nbsp;экзамену без репетитора</h1>
+    <p class="lead rise" style="--d:90">Задания как на&nbsp;экзамене и&nbsp;разбор каждой ошибки на&nbsp;вашем языке.</p>
+    <ul class="exams rise" style="--d:170" aria-label="Экзамены">
+      <li>GRE</li><li>TOEFL</li><li class="soon">SAT <small>скоро</small></li><li class="soon">GMAT <small>скоро</small></li>
+    </ul>
+    <a class="cta rise" id="hero-cta" href="#" style="--d:240">Начать&nbsp;— 7&nbsp;дней бесплатно</a>
+  </div>
+
+  <div class="wrap stage">
+    <!-- компьютер: окно приложения, вопрос и разбор рядом -->
+    <div class="win" role="img" aria-label="Приложение на компьютере: вопрос Verbal и разбор ошибки">
+      <div class="win-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="win-body" aria-hidden="true">
+        <div class="s-top">
+          <span class="s-x"><svg viewBox="0 0 24 24"><use href="#i-x"/></svg></span>
+          <span class="s-sec"><i class="dot"></i>Verbal · Text Completion</span>
+          <span class="s-count num"><b>3</b> из 10</span>
+        </div>
+        <div class="s-bar"><i style="--p:.3"></i></div>
+        <div class="win-cols">
+          <div class="q-col">
+            <p class="q-text">Although the committee’s report was praised for its concision, several objections were dismissed in a single <span class="blank"></span> sentence.</p>
+            <div class="opts">
+              <div class="opt is-right"><span class="oval"></span>perfunctory<svg class="mark ok" viewBox="0 0 24 24"><use href="#i-ok"/></svg></div>
+              <div class="opt sel is-wrong" data-pick><span class="oval"></span>meticulous<svg class="mark x" viewBox="0 0 24 24"><use href="#i-x"/></svg></div>
+              <div class="opt"><span class="oval"></span>impassioned</div>
+            </div>
+            <div class="q-actions">
+              <span class="btn ghost">Не знаю</span>
+              <span class="btn acc" data-check>Дальше</span>
+            </div>
+          </div>
+          <div class="ex-col">
+            <div class="verdict" style="--d:0">
+              <span class="v-ic"><svg viewBox="0 0 24 24"><use href="#i-x"/></svg></span>
+              <div><b>Неверно.</b><span>Нужно слово с&nbsp;оттенком «для галочки».</span></div>
+            </div>
+            <dl class="ans" style="--d:90"><dt>Ваш ответ</dt><dd class="w">meticulous</dd><dt>Верный</dt><dd class="r">perfunctory</dd></dl>
+            <div class="seg" style="--d:170"><span class="on">RU</span><span>EN</span><span>UZ</span><span>KK</span></div>
+            <p class="ex-text" style="--d:230">«Dismissed in a&nbsp;single sentence» значит, что возражения разобрали наспех. <em>Perfunctory</em>&nbsp;— сделанный формально.</p>
+            <div class="trap" style="--d:300"><b>Ловушка</b><em style="font-style:normal">Meticulous</em> звучит как похвала, но&nbsp;тщательно возражения не&nbsp;отбрасывают.</div>
+            <div class="topic" style="--d:360">Повторить: <span class="lnk">контраст после although</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- телефон: тот же вопрос, разбор выезжает шторкой -->
+    <div class="phone ph" role="img" aria-label="Приложение на телефоне: вопрос Verbal и разбор ошибки">
+      <div class="ph-scr" aria-hidden="true">
+        <div class="ph-status"><span class="num">9:41</span><span class="ic"><b></b><i></i></span></div>
+        <div class="s-top">
+          <span class="s-x"><svg viewBox="0 0 24 24"><use href="#i-x"/></svg></span>
+          <span class="s-sec"><i class="dot"></i>Verbal</span>
+          <span class="s-count num"><b>3</b> из 10</span>
+        </div>
+        <div class="s-bar"><i style="--p:.3"></i></div>
+        <div class="ph-body">
+          <p class="q-text">Although the committee’s report was praised for its concision, several objections were dismissed in a single <span class="blank"></span> sentence.</p>
+          <div class="opts">
+            <div class="opt is-right"><span class="oval"></span>perfunctory<svg class="mark ok" viewBox="0 0 24 24"><use href="#i-ok"/></svg></div>
+            <div class="opt sel is-wrong" data-pick><span class="oval"></span>meticulous<svg class="mark x" viewBox="0 0 24 24"><use href="#i-x"/></svg></div>
+            <div class="opt"><span class="oval"></span>impassioned</div>
+          </div>
+          <div class="q-actions"><span class="btn acc" data-check>Проверить</span></div>
+        </div>
+        <div class="sheet">
+          <div class="verdict">
+            <span class="v-ic"><svg viewBox="0 0 24 24"><use href="#i-x"/></svg></span>
+            <div><b>Неверно.</b><span>Нужно слово с&nbsp;оттенком «для галочки».</span></div>
+          </div>
+          <p class="ex-text">«Dismissed in a&nbsp;single sentence» значит, что возражения разобрали наспех. <em>Perfunctory</em>&nbsp;— сделанный формально.</p>
+          <div class="sheet-row"><div class="seg"><span class="on">RU</span><span>EN</span><span>UZ</span><span>KK</span></div><span class="btn acc">Дальше</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+  // Сборка интерфейса в герое: вопрос → выбор → разбор. Итоговый кадр уже в разметке — при «уменьшить движение» скрипт ничего не трогает.
+  (function () {
+    var hero = document.querySelector('.hero');
+    if (!document.documentElement.classList.contains('anim')) return;
+    hero.querySelectorAll('.q-text').forEach(function (p) {
+      var i = 0;
+      p.childNodes.forEach(function (n) {
+        if (n.nodeType !== 3) { if (n.classList) n.classList.add('wd'), n.style.setProperty('--i', i++); return; }
+        var frag = document.createDocumentFragment();
+        n.textContent.split(/(\s+)/).forEach(function (w) {
+          if (!w) return;
+          if (/^\s+$/.test(w)) { frag.appendChild(document.createTextNode(w)); return; }
+          var s = document.createElement('span'); s.className = 'wd'; s.style.setProperty('--i', i++); s.textContent = w; frag.appendChild(s);
+        });
+        p.replaceChild(frag, n);
+      });
+    });
+    var picks = hero.querySelectorAll('[data-pick]'), rights = hero.querySelectorAll('.opt.is-right'), checks = hero.querySelectorAll('[data-check]');
+    picks.forEach(function (o) { o.classList.remove('sel', 'is-wrong'); });
+    rights.forEach(function (o) { o.classList.remove('is-right'); });
+    checks.forEach(function (b) { b.dataset.final = b.textContent; b.textContent = 'Проверить'; b.classList.add('off'); });
+    hero.classList.remove('s1', 's2', 's3', 's4', 's5', 's6', 's7');
+    var steps = [
+      [120, function () { hero.classList.add('s1'); }],
+      [520, function () { hero.classList.add('s2'); }],
+      [1050, function () { hero.classList.add('s3'); }],
+      [1700, function () { hero.classList.add('s4'); }],
+      [2500, function () { picks.forEach(function (o) { o.classList.add('sel'); }); checks.forEach(function (b) { b.classList.remove('off'); }); }],
+      [3150, function () { checks.forEach(function (b) { b.classList.add('press'); }); }],
+      [3300, function () {
+        checks.forEach(function (b) { b.classList.remove('press'); });
+        picks.forEach(function (o) { o.classList.add('is-wrong'); });
+        rights.forEach(function (o) { o.classList.add('is-right'); });
+        checks.forEach(function (b) { b.textContent = b.dataset.final; });
+      }],
+      [3420, function () { hero.classList.add('s7'); }]
+    ];
+    // Сборка стартует, когда пришёл шрифт (не дольше 900 мс), — иначе первые шаги проигрываются системным шрифтом.
+    var started = false;
+    function start() {
+      if (started) return; started = true;
+      var t0 = performance.now();
+      requestAnimationFrame(function () {
+        steps.forEach(function (s) { setTimeout(s[1], Math.max(0, s[0] - (performance.now() - t0))); });
+      });
+    }
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(start);
+    setTimeout(start, 900);
+  })();
+</script>
+
+<section class="sec" id="how" aria-labelledby="how-h">
+  <div class="wrap">
+    <div class="scene">
+      <div class="scene-left">
+        <h2 class="h2" id="how-h">Как проходит тренировка</h2>
+        <div class="scene-list" role="tablist" aria-label="Шаги тренировки">
+          <button class="s-item on" role="tab" aria-selected="true" aria-controls="scene-ph" data-i="0" data-line="Все разделы и&nbsp;типы заданий, с&nbsp;таймером или без.">
+            <span class="bar"><i></i></span>Вопросы как на&nbsp;экзамене<span class="s-desc">Все разделы и&nbsp;типы заданий, с&nbsp;таймером или без.</span>
+          </button>
+          <button class="s-item" role="tab" aria-selected="false" aria-controls="scene-ph" data-i="1" data-line="Почему верен другой ответ и&nbsp;где ловушка. На&nbsp;вашем языке.">
+            <span class="bar"><i></i></span>Разбор ошибки<span class="s-desc">Почему верен другой ответ и&nbsp;где ловушка. На&nbsp;вашем языке.</span>
+          </button>
+          <button class="s-item" role="tab" aria-selected="false" aria-controls="scene-ph" data-i="2" data-line="Услышать, узнать, собрать, написать, перевести, сказать.">
+            <span class="bar"><i></i></span>Слова<span class="s-desc">Услышать, узнать, собрать, написать, перевести, сказать.</span>
+          </button>
+          <button class="s-item" role="tab" aria-selected="false" aria-controls="scene-ph" data-i="3" data-line="Эссе, письмо и&nbsp;речь с&nbsp;примерной оценкой и&nbsp;советом, что поправить.">
+            <span class="bar"><i></i></span>Эссе и&nbsp;устная часть<span class="s-desc">Эссе, письмо и&nbsp;речь с&nbsp;примерной оценкой и&nbsp;советом, что поправить.</span>
+          </button>
+        </div>
+        <p class="scene-line" aria-hidden="true">Все разделы и&nbsp;типы заданий, с&nbsp;таймером или без.</p>
+      </div>
+
+      <div class="scene-stage">
+        <div class="phone ph" id="scene-ph" role="tabpanel" aria-label="Экран приложения">
+          <div class="ph-scr multi">
+            <div class="ph-status" aria-hidden="true"><span class="num">9:41</span><span class="ic"><b></b><i></i></span></div>
+
+            <div class="scr on" aria-hidden="false">
+              <div class="s-top"><span class="s-x"><svg viewBox="0 0 24 24"><use href="#i-x"/></svg></span><span class="s-sec"><i class="dot" style="--c:var(--quant)"></i>Quant</span><span class="s-count num"><b>6</b> из 12</span></div>
+              <div class="s-bar"><i style="--p:.5"></i></div>
+              <div class="ph-body">
+                <p class="q-text" style="font-size:16px;color:var(--text-2)">x&nbsp;&gt; 0</p>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px">
+                  <div class="trap" style="text-align:center;padding:18px 8px;background:var(--surface-2)"><b style="font-weight:500;color:var(--text-3);font-size:12.5px">Quantity A</b><span style="font-size:20px;color:var(--text)">(x&nbsp;+ 1)²</span></div>
+                  <div class="trap" style="text-align:center;padding:18px 8px;background:var(--surface-2)"><b style="font-weight:500;color:var(--text-3);font-size:12.5px">Quantity B</b><span style="font-size:20px;color:var(--text)">x²&nbsp;+ 1</span></div>
+                </div>
+                <div class="opts" style="margin-top:16px">
+                  <div class="opt sel"><span class="oval"></span>Quantity A is greater</div>
+                  <div class="opt"><span class="oval"></span>Quantity B is greater</div>
+                  <div class="opt"><span class="oval"></span>The two are equal</div>
+                  <div class="opt"><span class="oval"></span>Cannot be determined</div>
+                </div>
+                <div class="q-actions"><span class="btn acc">Проверить</span></div>
+              </div>
+            </div>
+
+            <div class="scr" aria-hidden="true">
+              <div class="s-top"><span class="s-x"><svg viewBox="0 0 24 24"><use href="#i-x"/></svg></span><span class="s-sec"><i class="dot"></i>Verbal</span><span class="s-count num"><b>3</b> из 10</span></div>
+              <div class="s-bar"><i style="--p:.3"></i></div>
+              <div class="ph-body" style="gap:14px">
+                <div class="verdict"><span class="v-ic"><svg viewBox="0 0 24 24"><use href="#i-x"/></svg></span><div><b>Неверно.</b><span>Нужно слово с&nbsp;оттенком «для галочки».</span></div></div>
+                <dl class="ans"><dt>Ваш ответ</dt><dd class="w">meticulous</dd><dt>Верный</dt><dd class="r">perfunctory</dd></dl>
+                <div class="seg"><span class="on">RU</span><span>EN</span><span>UZ</span><span>KK</span></div>
+                <p class="ex-text">«Dismissed in a&nbsp;single sentence» значит, что возражения разобрали наспех. <em>Perfunctory</em>&nbsp;— сделанный формально.</p>
+                <div class="trap"><b>Ловушка</b>Meticulous звучит как похвала, но&nbsp;тщательно возражения не&nbsp;отбрасывают.</div>
+                <div class="q-actions" style="padding-top:0"><span class="btn acc">Дальше</span></div>
+              </div>
+            </div>
+
+            <div class="scr" aria-hidden="true">
+              <div class="s-top"><span class="s-x"><svg viewBox="0 0 24 24"><use href="#i-x"/></svg></span><span class="s-sec"><i class="dot" style="--c:var(--words)"></i>Слова</span><span class="s-count num"><b>8</b> из 12</span></div>
+              <div class="ph-body" style="padding-top:8px">
+                <div class="w-steps"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="now"></i></div>
+                <div class="w-step-name"><span>Скажите слово вслух</span></div>
+                <div class="word">laconic</div>
+                <div class="w-meta">adjective · /ləˈkɒnɪk/</div>
+                <div class="w-tr">лаконичный, немногословный</div>
+                <div class="w-ex">His laconic reply, “Fine,” ended the discussion.<span>Его лаконичный ответ «Хорошо» закончил разговор.</span></div>
+                <div class="mic-row">
+                  <span class="heard"><svg viewBox="0 0 24 24"><use href="#i-ok"/></svg>Услышано: “laconic”</span>
+                  <span class="mic"><svg viewBox="0 0 24 24"><use href="#i-mic"/></svg></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="scr" aria-hidden="true">
+              <div class="s-top"><span class="s-x"><svg viewBox="0 0 24 24"><use href="#i-x"/></svg></span><span class="s-sec"><i class="dot" style="--c:var(--speaking)"></i>TOEFL · Speaking</span><span class="s-count num"><b>2</b> из 4</span></div>
+              <div class="ph-body" style="padding-top:4px">
+                <div class="score-big"><b class="num">4,5</b><span>из 6 · примерно</span></div>
+                <p class="said"><small>Что вы сказали</small>I prefer studying in groups, because other people notice mistakes that I miss. My friends helped me understand <mark>statistics</mark> before the exam.</p>
+                <ul class="fb">
+                  <li><b>Содержание</b><span>Добавьте вывод одной фразой.</span></li>
+                  <li><b>Язык</b><span>Вместо because попробуйте since.</span></li>
+                  <li><b>Произношение</b><span>statistics: ударение на&nbsp;второй слог.</span></li>
+                </ul>
+                <div class="q-actions"><span class="btn ghost">Ещё раз</span><span class="btn acc">Дальше</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="more" aria-labelledby="more-h" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head"><h2 class="h2" id="more-h">Что ещё внутри</h2></div>
+    <div class="bento">
+      <button class="card wide" type="button" data-dlg="dlg-progress" aria-haspopup="dialog">
+        <div class="card-txt"><h3>Прогресс</h3><p>Примерный балл по&nbsp;пробникам и&nbsp;темы, которые проседают.</p></div>
+        <span class="plus" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-plus"/></svg></span>
+        <div class="card-vis" aria-hidden="true">
+          <div class="pr-row">
+            <div class="pr-score"><b class="num">158</b><span>Verbal · наша оценка</span></div>
+            <ul class="weak">
+              <li><span>Inference</span><i style="--w:38%;--c:var(--wrong)"></i></li>
+              <li><span>Text Completion</span><i style="--w:56%"></i></li>
+              <li><span>Data Interpretation</span><i style="--w:64%"></i></li>
+            </ul>
+          </div>
+          <div class="month"><div class="month-h"><span>Октябрь</span><span class="num">19 дней</span></div><div class="cal wide-cal"><i class="y"></i><i></i><i class="y"></i><i class="y"></i><i></i><i class="y"></i><i class="y"></i><i class="y"></i><i></i><i class="y"></i><i class="y"></i><i class="y"></i><i></i><i></i><i class="y"></i><i class="y"></i><i></i><i class="y"></i><i class="y"></i><i class="y"></i><i></i><i class="y"></i><i class="y"></i><i class="y"></i><i></i><i class="y"></i><i class="y"></i><i></i></div></div>
+        </div>
+      </button>
+
+      <button class="card" type="button" data-dlg="dlg-mistakes" aria-haspopup="dialog">
+        <div class="card-txt"><h3>Свои ошибки</h3><p>Неверно решённые задания возвращаются.</p></div>
+        <span class="plus" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-plus"/></svg></span>
+        <div class="card-vis" aria-hidden="true">
+          <div class="stack">
+            <div class="mini">&nbsp;</div>
+            <div class="mini">&nbsp;</div>
+            <div class="mini">
+              <div class="mini-meta"><i class="dot"></i>Verbal · Text Completion<span class="x"><svg viewBox="0 0 24 24"><use href="#i-x"/></svg>было</span></div>
+              Although the committee’s report was praised for its concision…
+              <span class="btn acc">Повторить мои ошибки · 12</span>
+            </div>
+          </div>
+        </div>
+      </button>
+
+      <button class="card" type="button" data-dlg="dlg-offline" aria-haspopup="dialog">
+        <div class="card-txt"><h3>Без сети</h3><p>Начатая тренировка не&nbsp;прервётся.</p></div>
+        <span class="plus" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-plus"/></svg></span>
+        <div class="card-vis off-card" aria-hidden="true">
+          <span class="off-line"><svg viewBox="0 0 24 24"><use href="#i-off"/></svg>Нет сети</span>
+          <ul class="queue">
+            <li><i class="dot"></i>Вопрос 4<em>ответ сохранён</em></li>
+            <li><i class="dot"></i>Вопрос 5<em>ответ сохранён</em></li>
+            <li class="cur"><i class="dot" style="--c:var(--accent)"></i>Вопрос 6<em>сейчас</em></li>
+          </ul>
+        </div>
+      </button>
+
+      <div class="card wide theme-card">
+        <div class="card-txt"><h3>Светлая и&nbsp;тёмная</h3><p>Попробуйте прямо здесь.</p></div>
+        <div class="card-vis">
+          <div class="duo" aria-hidden="true">
+            <div class="d-l"><i></i><i></i><b class="num">164</b><small>Quant</small></div>
+            <div class="d-d"><i></i><i></i><b class="num">164</b><small>Quant</small></div>
+          </div>
+          <div class="tseg" role="group" aria-label="Тема страницы">
+            <button type="button" data-set-theme="light" aria-pressed="false">Светлая</button>
+            <button type="button" data-set-theme="dark" aria-pressed="true">Тёмная</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="exams" aria-labelledby="exams-h" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 class="h2" id="exams-h">Пробный экзамен</h2>
+      <p class="lead">Секции и&nbsp;время как на&nbsp;настоящем. В&nbsp;конце&nbsp;— балл по&nbsp;шкале экзамена.</p>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Экзамен">
+      <span class="tab-ind" aria-hidden="true"></span>
+      <button class="tab" role="tab" id="t-gre" aria-selected="true" aria-controls="p-gre">GRE</button>
+      <button class="tab" role="tab" id="t-toefl" aria-selected="false" aria-controls="p-toefl" tabindex="-1">TOEFL</button>
+      <button class="tab" role="tab" aria-selected="false" disabled>SAT <small>скоро</small></button>
+      <button class="tab" role="tab" aria-selected="false" disabled>GMAT <small>скоро</small></button>
+    </div>
+    <div class="panels">
+      <div class="panel" id="p-gre" role="tabpanel" aria-labelledby="t-gre">
+        <div class="box">
+          <div class="box-head"><h3>GRE General Test</h3><span class="num">1&nbsp;ч 58&nbsp;мин</span></div>
+          <div class="tl">
+            <div style="--m:30;--c:var(--essay)"><i></i><b>Analytical Writing</b><span class="num">30 мин</span></div>
+            <div style="--m:18;--c:var(--verbal)"><i></i><b>Verbal 1</b><span class="num">18 мин</span></div>
+            <div style="--m:23;--c:var(--verbal)"><i></i><b>Verbal 2</b><span class="num">23 мин</span></div>
+            <div style="--m:21;--c:var(--quant)"><i></i><b>Quant 1</b><span class="num">21 мин</span></div>
+            <div style="--m:26;--c:var(--quant)"><i></i><b>Quant 2</b><span class="num">26 мин</span></div>
+          </div>
+          <ul class="tl-rows">
+            <li><i class="dot" style="--c:var(--essay)"></i>Analytical Writing<em class="num">30 мин</em></li>
+            <li><i class="dot"></i>Verbal 1<em class="num">18 мин</em></li>
+            <li><i class="dot"></i>Verbal 2<em class="num">23 мин</em></li>
+            <li><i class="dot" style="--c:var(--quant)"></i>Quant 1<em class="num">21 мин</em></li>
+            <li><i class="dot" style="--c:var(--quant)"></i>Quant 2<em class="num">26 мин</em></li>
+          </ul>
+          <p class="timer"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-timer"/></svg>Можно пройти одну секцию, если нет времени на&nbsp;всё.</p>
+        </div>
+        <div class="box">
+          <div class="box-head"><h3>Результат</h3><span>наша оценка</span></div>
+          <div class="res">
+            <div><span><i class="dot"></i>Verbal</span><b class="num">158</b><small class="num">19 из 27 верно</small></div>
+            <div><span><i class="dot" style="--c:var(--quant)"></i>Quant</span><b class="num">164</b><small class="num">21 из 27 верно</small></div>
+          </div>
+          <div class="res-foot"><span>Эссе <b class="num">4,0</b> · примерно</span><span class="btn ghost" style="height:40px">Разобрать ошибки</span></div>
+        </div>
+      </div>
+
+      <div class="panel" id="p-toefl" role="tabpanel" aria-labelledby="t-toefl" hidden>
+        <div class="box">
+          <div class="box-head"><h3>TOEFL iBT</h3><span>4&nbsp;части</span></div>
+          <div class="tl">
+            <div style="--m:1;--c:var(--reading)"><i></i><b>Reading</b></div>
+            <div style="--m:1;--c:var(--listening)"><i></i><b>Listening</b></div>
+            <div style="--m:1;--c:var(--writing)"><i></i><b>Writing</b></div>
+            <div style="--m:1;--c:var(--speaking)"><i></i><b>Speaking</b></div>
+          </div>
+          <ul class="tl-rows">
+            <li><i class="dot" style="--c:var(--reading)"></i>Reading</li>
+            <li><i class="dot" style="--c:var(--listening)"></i>Listening</li>
+            <li><i class="dot" style="--c:var(--writing)"></i>Writing</li>
+            <li><i class="dot" style="--c:var(--speaking)"></i>Speaking</li>
+          </ul>
+          <p class="timer"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-mic"/></svg>Устную часть записываете голосом.</p>
+        </div>
+        <div class="box">
+          <div class="box-head"><h3>Результат</h3><span>наша оценка</span></div>
+          <div class="res four">
+            <div><span><i class="dot" style="--c:var(--reading)"></i>Reading</span><b class="num">5</b></div>
+            <div><span><i class="dot" style="--c:var(--listening)"></i>Listening</span><b class="num">4,5</b></div>
+            <div><span><i class="dot" style="--c:var(--writing)"></i>Writing</span><b class="num">4,5</b></div>
+            <div><span><i class="dot" style="--c:var(--speaking)"></i>Speaking</span><b class="num">4</b></div>
+          </div>
+          <div class="res-foot"><span>Итог <b class="num">4,5</b></span><span class="btn ghost" style="height:40px">Разобрать ошибки</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="price" aria-labelledby="price-h" style="padding-top:40px">
+  <div class="wrap">
+    <div class="price">
+      <h2 class="h1" id="price-h">7&nbsp;дней бесплатно</h2>
+      <p class="lead">Затем [ЦЕНА] в&nbsp;месяц.</p>
+      <a class="cta" id="price-cta" href="#">Начать&nbsp;— 7&nbsp;дней бесплатно</a>
+    </div>
+
+    <div class="dl" id="download">
+      <div class="dl-head"><h2>Скачать [Имя]</h2></div>
+      <div class="dl-grid">
+        <a class="dl-tile" href="#">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.37 12.6c-.02-2.2 1.8-3.26 1.88-3.31-1.03-1.5-2.62-1.7-3.18-1.72-1.35-.14-2.64.8-3.33.8-.69 0-1.74-.78-2.86-.76-1.47.02-2.83.86-3.59 2.17-1.53 2.66-.39 6.59 1.1 8.75.73 1.05 1.6 2.24 2.74 2.2 1.1-.04 1.52-.71 2.84-.71 1.33 0 1.7.71 2.86.69 1.18-.02 1.93-1.07 2.65-2.13.84-1.22 1.18-2.4 1.2-2.46-.03-.01-2.3-.88-2.31-3.52zM14.2 6.13c.6-.74 1.01-1.75.9-2.77-.87.04-1.93.58-2.55 1.31-.56.65-1.05 1.69-.92 2.68.97.08 1.96-.49 2.57-1.22z"/></svg>
+          <div><b>iPhone и&nbsp;iPad</b><span>App Store</span></div>
+        </a>
+        <a class="dl-tile" href="#">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4.2 2.6c-.2.22-.32.56-.32 1v16.8c0 .44.12.78.33 1l9.36-9.4zM14.6 13l2.95 2.96-10.6 6.03c-.5.28-.92.25-1.2.04zm0-2L4.75 2c.29-.2.72-.24 1.2.04l10.6 6.03zm3.9 4.4L15.3 12l3.2-3.4 3.43 1.95c1 .57 1 1.5 0 2.06z"/></svg>
+          <div><b>Android</b><span>Google Play</span></div>
+        </a>
+        <a class="dl-tile" href="#">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="4" y="4.5" width="16" height="11" rx="1.8"/><path d="M2 19.5h20" stroke-linecap="round"/></g></svg>
+          <div><b>Mac</b><span>Файл .dmg</span></div>
+        </a>
+        <a class="dl-tile" href="#">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.4 4.2 2.9 11.3c-1.26.5-1.25 1.2-.23 1.52l4.75 1.48 1.83 5.6c.22.62.11.86.76.86.5 0 .73-.23 1-.5l2.3-2.24 4.8 3.54c.88.49 1.52.24 1.74-.82l3.15-14.84c.32-1.3-.5-1.88-1.35-1.5zM8.1 14.03l9.5-6c.47-.29.9-.13.55.18l-8.13 7.34-.32 3.38z"/></svg>
+          <div><b>Telegram</b><span>Мини-апп</span></div>
+        </a>
+        <a class="dl-tile" href="#">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-globe"/></svg>
+          <div><b>Браузер</b><span>Без установки</span></div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-row">
+      <a class="brand" href="#top"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-globe"/></svg>[Имя]</a>
+      <a href="#">Войти</a>
+      <a href="#download">Скачать</a>
+      <span>© [Имя], 2026</span>
+    </div>
+    <p class="legal" lang="en">GRE® and TOEFL® are registered trademarks of Educational Testing Service (ETS). SAT® is a registered trademark of the College Board. GMAT™ is a trademark of the Graduate Management Admission Council (GMAC). This product is not endorsed or approved by ETS, the College Board or GMAC.</p>
+  </div>
+</footer>
+
+<div class="dock" id="dock"><a class="cta" href="#" tabindex="-1">Начать&nbsp;— 7&nbsp;дней бесплатно</a></div>
+
+<!-- Окна подробностей: карточка раскрывается в окно -->
+<dialog class="dlg" id="dlg-progress" aria-labelledby="dlg-progress-h">
+  <button class="icon-btn dlg-close" type="button" aria-label="Закрыть"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x"/></svg></button>
+  <div class="dlg-in">
+    <div>
+      <h3 id="dlg-progress-h">Прогресс</h3>
+      <p class="dlg-lead">Видно, что подтянуть, и&nbsp;сколько вы набрали бы на&nbsp;экзамене.</p>
+      <ul class="facts">
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-dot"/></svg>История тренировок и&nbsp;пробников, разборы можно открыть снова</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-dot"/></svg>Точность по&nbsp;разделам, типам заданий и&nbsp;темам</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-dot"/></svg>Календарь занятий без серий и&nbsp;отметок о&nbsp;пропусках</li>
+      </ul>
+    </div>
+    <div class="dlg-vis" aria-hidden="true">
+      <div class="phone ph"><div class="ph-scr">
+        <div class="ph-status"><span class="num">9:41</span><span class="ic"><b></b><i></i></span></div>
+        <div class="ph-body" style="padding-top:10px">
+          <div class="p-title">Прогресс</div>
+          <div class="p-sub">GRE · примерный балл, наша оценка</div>
+          <div class="pr-row" style="margin-top:16px"><div class="pr-score"><b class="num">158</b><span>Verbal</span></div><div class="pr-score"><b class="num">164</b><span>Quant</span></div></div>
+          <div class="p-card"><h4>Слабые места</h4>
+            <ul class="p-list"><li><i class="dot" style="--c:var(--wrong)"></i>Inference<em>потренировать</em></li><li><i class="dot"></i>Text Completion<em>потренировать</em></li></ul>
+          </div>
+          <div class="p-card"><h4>Октябрь</h4>
+            <div class="cal"><i class="y"></i><i></i><i class="y"></i><i class="y"></i><i></i><i></i><i class="y"></i><i class="y"></i><i class="y"></i><i></i><i class="y"></i><i></i><i class="y"></i><i></i></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="dlg" id="dlg-mistakes" aria-labelledby="dlg-mistakes-h">
+  <button class="icon-btn dlg-close" type="button" aria-label="Закрыть"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x"/></svg></button>
+  <div class="dlg-in">
+    <div>
+      <h3 id="dlg-mistakes-h">Свои ошибки</h3>
+      <p class="dlg-lead">Задания, где вы ошиблись, собираются в&nbsp;отдельную тренировку.</p>
+      <ul class="facts">
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-dot"/></svg>После каждой тренировки&nbsp;— 1–3 темы, которые стоит повторить</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-dot"/></svg>Тренировка по&nbsp;ним в&nbsp;одно нажатие</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-dot"/></svg>У&nbsp;каждой темы&nbsp;— короткий разбор с&nbsp;примерами</li>
+      </ul>
+    </div>
+    <div class="dlg-vis" aria-hidden="true">
+      <div class="phone ph"><div class="ph-scr">
+        <div class="ph-status"><span class="num">9:41</span><span class="ic"><b></b><i></i></span></div>
+        <div class="ph-body" style="padding-top:10px">
+          <div class="p-title">Повторить мои ошибки</div>
+          <div class="p-sub">12 заданий из прошлых тренировок</div>
+          <div class="p-card"><h4>Что повторить</h4>
+            <ul class="p-list">
+              <li><i class="dot"></i>Контраст после although<em>4</em></li>
+              <li><i class="dot"></i>Inference<em>5</em></li>
+              <li><i class="dot" style="--c:var(--quant)"></i>Quantitative Comparison<em>3</em></li>
+            </ul>
+          </div>
+          <div class="q-actions"><span class="btn acc">Начать</span></div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="dlg" id="dlg-offline" aria-labelledby="dlg-offline-h">
+  <button class="icon-btn dlg-close" type="button" aria-label="Закрыть"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x"/></svg></button>
+  <div class="dlg-in">
+    <div>
+      <h3 id="dlg-offline-h">Без сети</h3>
+      <p class="dlg-lead">В&nbsp;метро или самолёте начатая тренировка идёт дальше.</p>
+      <ul class="facts">
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-dot"/></svg>Задания, разборы и&nbsp;озвучка скачиваются при старте</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-dot"/></svg>Ответы копятся на&nbsp;устройстве</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-dot"/></svg>Уходят на&nbsp;сервер, когда сеть вернётся</li>
+      </ul>
+    </div>
+    <div class="dlg-vis" aria-hidden="true">
+      <div class="phone ph"><div class="ph-scr">
+        <div class="ph-status"><span class="num">9:41</span><span class="ic"><b></b><i></i></span></div>
+        <div class="s-top"><span class="s-x"><svg viewBox="0 0 24 24"><use href="#i-x"/></svg></span><span class="s-sec"><i class="dot"></i>Verbal</span><span class="s-count num"><b>6</b> из 10</span></div>
+        <div class="s-bar"><i style="--p:.6"></i></div>
+        <div class="ph-body">
+          <span class="off-line" style="margin-bottom:14px"><svg viewBox="0 0 24 24"><use href="#i-off"/></svg>Нет сети</span>
+          <p class="q-text">The critic’s praise was so <span class="blank"></span> that even the director suspected flattery.</p>
+          <div class="opts">
+            <div class="opt"><span class="oval"></span>effusive</div>
+            <div class="opt"><span class="oval"></span>grudging</div>
+            <div class="opt"><span class="oval"></span>tepid</div>
+          </div>
+          <div class="q-actions"><span class="btn acc off">Проверить</span></div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</dialog>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var reduced = !root.classList.contains('anim');
+
+  /* ——— Тема ——— */
+  var themeBtn = document.getElementById('theme-btn');
+  function currentTheme() { return root.dataset.theme === 'light' ? 'light' : 'dark'; }
+  function syncTheme() {
+    var t = currentTheme();
+    themeBtn.setAttribute('aria-label', t === 'dark' ? 'Включить светлую тему' : 'Включить тёмную тему');
+    document.querySelectorAll('[data-set-theme]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.setTheme === t)); });
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = t === 'dark' ? '#07080A' : '#FAFAFB';
+    if (window.__globeTheme) window.__globeTheme(t);
+  }
+  function setTheme(t) {
+    root.dataset.theme = t;
+    try { localStorage.setItem('landing-theme', t); } catch (e) { /* без памяти: тема живёт до перезагрузки */ }
+    syncTheme();
+  }
+  themeBtn.addEventListener('click', function () { setTheme(currentTheme() === 'dark' ? 'light' : 'dark'); });
+  document.querySelectorAll('[data-set-theme]').forEach(function (b) { b.addEventListener('click', function () { setTheme(b.dataset.setTheme); }); });
+  syncTheme();
+
+  /* ——— Сцена «Как проходит тренировка» ——— */
+  var items = Array.prototype.slice.call(document.querySelectorAll('.s-item'));
+  var screens = document.querySelectorAll('#scene-ph .scr');
+  var line = document.querySelector('.scene-line');
+  var sceneEl = document.getElementById('how');
+  var auto = !reduced, cur = 0, DUR = 6000, fill = null;
+  function show(i) {
+    cur = i;
+    items.forEach(function (b, k) { b.classList.toggle('on', k === i); b.setAttribute('aria-selected', String(k === i)); b.tabIndex = k === i ? 0 : -1; });
+    screens.forEach(function (s, k) { s.classList.toggle('on', k === i); s.setAttribute('aria-hidden', String(k !== i)); });
+    line.innerHTML = items[i].dataset.line;
+    if (fill) { fill.cancel(); fill = null; }
+    if (auto) {
+      var bar = items[i].querySelector('.bar i');
+      fill = bar.animate([{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duration: DUR, easing: 'linear', fill: 'forwards' });
+      if (!sceneVisible) fill.pause();
+      fill.onfinish = function () { show((cur + 1) % items.length); };
+    }
+  }
+  var sceneVisible = false;
+  new IntersectionObserver(function (es) {
+    sceneVisible = es[0].isIntersecting;
+    if (fill) { if (sceneVisible) fill.play(); else fill.pause(); }
+  }, { threshold: 0.35 }).observe(sceneEl);
+  items.forEach(function (b, k) {
+    b.addEventListener('click', function () {
+      auto = false;
+      show(k);
+      if (window.matchMedia('(max-width: 899px)').matches) b.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: reduced ? 'auto' : 'smooth' });
+    });
+    b.addEventListener('keydown', function (e) {
+      var d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
+      if (!d) return;
+      e.preventDefault(); auto = false;
+      var n = (k + d + items.length) % items.length; show(n); items[n].focus();
+    });
+  });
+  show(0);
+
+  /* ——— Вкладки экзаменов ——— */
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('.tab:not(:disabled)'));
+  var ind = document.querySelector('.tab-ind');
+  function placeInd(t) { ind.style.width = t.offsetWidth + 'px'; ind.style.transform = 'translateX(' + t.offsetLeft + 'px)'; }
+  function selectTab(t) {
+    tabs.forEach(function (x) {
+      var on = x === t;
+      x.setAttribute('aria-selected', String(on)); x.tabIndex = on ? 0 : -1;
+      document.getElementById(x.getAttribute('aria-controls')).hidden = !on;
+    });
+    placeInd(t);
+  }
+  tabs.forEach(function (t, k) {
+    t.addEventListener('click', function () { selectTab(t); });
+    t.addEventListener('keydown', function (e) {
+      var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (!d) return; e.preventDefault();
+      var n = tabs[(k + d + tabs.length) % tabs.length]; selectTab(n); n.focus();
+    });
+  });
+  ind.style.transition = 'none'; placeInd(tabs[0]);
+  requestAnimationFrame(function () { ind.style.transition = ''; });
+  document.fonts && document.fonts.ready.then(function () { placeInd(tabs.filter(function (t) { return t.getAttribute('aria-selected') === 'true'; })[0]); });
+  window.addEventListener('resize', function () { placeInd(tabs.filter(function (t) { return t.getAttribute('aria-selected') === 'true'; })[0]); });
+
+  /* ——— Карточка раскрывается в окно ——— */
+  var ROUND_CARD = 22, ROUND_DLG = 28;
+  function insetFrom(card, dlg) {
+    var r = card.getBoundingClientRect(), d = dlg.getBoundingClientRect();
+    var top = Math.max(0, r.top - d.top), left = Math.max(0, r.left - d.left);
+    var right = Math.max(0, d.right - r.right), bottom = Math.max(0, d.bottom - r.bottom);
+    return 'inset(' + top + 'px ' + right + 'px ' + bottom + 'px ' + left + 'px round ' + ROUND_CARD + 'px)';
+  }
+  var opener = null;
+  document.querySelectorAll('[data-dlg]').forEach(function (card) {
+    card.addEventListener('click', function () {
+      var dlg = document.getElementById(card.dataset.dlg);
+      opener = card;
+      dlg.showModal();
+      dlg.scrollTop = 0;
+      if (reduced) return;
+      dlg.animate([{ clipPath: insetFrom(card, dlg) }, { clipPath: 'inset(0px 0px 0px 0px round ' + ROUND_DLG + 'px)' }], { duration: 560, easing: 'cubic-bezier(0.32, 0.72, 0, 1)' });
+      dlg.querySelector('.dlg-in').animate([{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 420, delay: 140, easing: 'cubic-bezier(0.23, 1, 0.32, 1)', fill: 'backwards' });
+    });
+  });
+  function closeDlg(dlg) {
+    if (!dlg.open || dlg.dataset.closing) return;
+    if (reduced || !opener) { dlg.close(); return; }
+    dlg.dataset.closing = '1';
+    var a = dlg.animate([{ clipPath: 'inset(0px 0px 0px 0px round ' + ROUND_DLG + 'px)', opacity: 1 }, { clipPath: insetFrom(opener, dlg), opacity: 0 }], { duration: 300, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' });
+    a.onfinish = function () { delete dlg.dataset.closing; dlg.close(); };
+  }
+  document.querySelectorAll('dialog.dlg').forEach(function (dlg) {
+    dlg.querySelector('.dlg-close').addEventListener('click', function () { closeDlg(dlg); });
+    dlg.addEventListener('click', function (e) { if (e.target === dlg) closeDlg(dlg); });
+    dlg.addEventListener('cancel', function (e) { e.preventDefault(); closeDlg(dlg); });
+    dlg.addEventListener('close', function () { if (opener) opener.focus({ preventScroll: true }); });
+  });
+
+  /* ——— Кнопка внизу на телефоне ——— */
+  var dock = document.getElementById('dock');
+  var vis = { hero: true, price: false };
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) { vis[e.target.id === 'hero-cta' ? 'hero' : 'price'] = e.isIntersecting; });
+    var on = !vis.hero && !vis.price;
+    dock.classList.toggle('on', on);
+    dock.querySelector('a').tabIndex = on ? 0 : -1;
+  });
+  io.observe(document.getElementById('hero-cta'));
+  io.observe(document.getElementById('price'));
+})();
+</script>
+
+<script type="module">
+  // Фирменный знак — глобус из точек за окном продукта. Рендер ≤ 2× плотности, пауза вне экрана и во фоне,
+  // при «уменьшить движение» — один неподвижный кадр.
+  import createGlobe from 'https://cdn.jsdelivr.net/npm/cobe@0.6.3/+esm';
+  const canvas = document.getElementById('globe');
+  const wrap = canvas.parentElement;
+  const reduced = !document.documentElement.classList.contains('anim');
+  const small = matchMedia('(max-width: 899px)').matches;
+  const THEMES = {
+    dark: { dark: 1, diffuse: 1.2, mapBrightness: 5.5, mapBaseBrightness: 0, baseColor: [0.3, 0.31, 0.36], markerColor: [0.36, 0.81, 1], glowColor: [0.11, 0.12, 0.15], opacity: 0.9 },
+    light: { dark: 0, diffuse: 1.2, mapBrightness: 1.6, mapBaseBrightness: 0, baseColor: [1, 1, 1], markerColor: [0.23, 0.25, 0.69], glowColor: [1, 1, 1], opacity: 0.7 }
+  };
+  let theme = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+  let size = wrap.offsetWidth;
+  const dpr = Math.min(window.devicePixelRatio || 1, size > 1100 ? 1.25 : size > 700 ? 1.5 : 2);
+  let phi = 3.9, last = performance.now();
+  const markers = [
+    [55.75, 37.62], [43.24, 76.89], [41.31, 69.24], [41.72, 44.79], [40.18, 44.51], [53.9, 27.56],
+    [42.36, -71.06], [40.71, -74.0], [51.51, -0.13], [52.52, 13.4], [43.65, -79.38], [47.37, 8.54], [52.37, 4.9]
+  ].map((location) => ({ location, size: 0.028 }));
+  let pending = Object.assign({}, THEMES[theme]);
+  const globe = createGlobe(canvas, Object.assign({
+    devicePixelRatio: dpr, width: size * dpr, height: size * dpr,
+    phi, theta: 0.32, mapSamples: small ? 9000 : 16000, markers, scale: 1,
+    onRender(state) {
+      const now = performance.now();
+      if (!reduced) phi += Math.min(now - last, 50) * 0.00004;
+      last = now;
+      state.phi = phi;
+      state.width = size * dpr; state.height = size * dpr;
+      if (pending) { Object.assign(state, pending); pending = null; }
+    }
+  }, THEMES[theme]));
+  requestAnimationFrame(() => canvas.classList.add('on'));
+
+  let onScreen = true;
+  const run = () => globe.toggle(!reduced && onScreen && !document.hidden);
+  if (reduced) setTimeout(() => globe.toggle(false), 300);
+  new IntersectionObserver((es) => { onScreen = es[0].isIntersecting; last = performance.now(); run(); }).observe(wrap);
+  document.addEventListener('visibilitychange', () => { last = performance.now(); run(); });
+  window.addEventListener('resize', () => { size = wrap.offsetWidth; });
+  window.__globeTheme = (t) => {
+    pending = Object.assign({}, THEMES[t]);
+    if (reduced || !onScreen) { globe.toggle(true); setTimeout(run, 120); }
+  };
+</script>
+</body>
+</html>
