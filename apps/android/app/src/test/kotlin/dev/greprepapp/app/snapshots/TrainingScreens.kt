@@ -16,6 +16,7 @@ import dev.greprepapp.app.feature.training.BuilderForm
 import dev.greprepapp.app.feature.training.BuilderViewModel
 import dev.greprepapp.app.feature.training.ReportContent
 import dev.greprepapp.app.feature.training.ReportViewModel
+import dev.greprepapp.app.feature.training.Response
 import dev.greprepapp.app.feature.training.ReviewContent
 import dev.greprepapp.app.feature.training.ReviewItemContent
 import dev.greprepapp.app.feature.training.ReviewViewModel
@@ -25,6 +26,7 @@ import dev.greprepapp.app.feature.training.SessionViewModel
 import dev.greprepapp.app.feature.training.StoredTraining
 import dev.greprepapp.app.feature.training.TrainingProblem
 import dev.greprepapp.app.feature.training.TrainingRules
+import dev.greprepapp.app.feature.training.toRecordedAnswer
 import dev.greprepapp.app.testing.Fixtures
 import dev.greprepapp.app.testing.Fixtures.qc
 import dev.greprepapp.app.testing.Fixtures.se
@@ -51,7 +53,7 @@ object TrainingScreens {
     ) = StoredTraining(
         session = Fixtures.session(*questions, mode = mode),
         startedAtMillis = start,
-        answers = answers.associateBy { it.position },
+        answers = answers.map { it.toRecordedAnswer() }.associateBy { it.position },
         finish = finish,
     )
 
@@ -63,7 +65,9 @@ object TrainingScreens {
         overview: Boolean = false,
         english: Boolean? = null,
         whyNot: Boolean = false,
-    ) = SessionViewModel.UiState.Active(SessionViewModel.Screen(t, position, selection, remaining, overview, english, whyNot))
+    ) = SessionViewModel.UiState.Active(
+        SessionViewModel.Screen(t, position, Response.Options(selection), remaining, overview, english, whyNot),
+    )
 
     @Composable
     fun Session(state: SessionViewModel.UiState) = SessionContent(state, SessionViewModel.RepeatState(), SessionActions())
@@ -115,7 +119,7 @@ object TrainingScreens {
             SessionViewModel.Screen(
                 stored(tc1, se, tc3, answers = listOf(answer(0, "C"), answer(1, "A", "C"))),
                 0,
-                listOf("C"),
+                Response.Options(listOf("C")),
                 null,
                 false,
                 false,

@@ -65,7 +65,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import dev.greprepapp.api.models.GivenAnswer
 import dev.greprepapp.api.models.LocalizedText
 import dev.greprepapp.api.models.Question
 import dev.greprepapp.api.models.QuestionOption
@@ -286,6 +285,7 @@ fun PromptText(
     question: Question,
     selection: List<String>,
     modifier: Modifier = Modifier,
+    revealed: Boolean = false,
 ) {
     val colors = Gp.colors
     val selectionColor = colors.text
@@ -308,7 +308,30 @@ fun PromptText(
                         ?.options
                         ?.firstOrNull { it.id in selection }
                 if (chosen != null) {
-                    withStyle(SpanStyle(color = selectionColor, fontWeight = Gp.type.opt.fontWeight)) { append(chosen.text) }
+                    withStyle(
+                        SpanStyle(
+                            color =
+                                if (!revealed) {
+                                    selectionColor
+                                } else if (chosen.id in question.answer) {
+                                    colors.right
+                                } else {
+                                    colors.wrong
+                                },
+                            background =
+                                if (!revealed) {
+                                    androidx.compose.ui.graphics.Color.Transparent
+                                } else if (chosen.id in
+                                    question.answer
+                                ) {
+                                    colors.rightSoft
+                                } else {
+                                    colors.wrongSoft
+                                },
+                            textDecoration = if (revealed && chosen.id !in question.answer) TextDecoration.LineThrough else null,
+                            fontWeight = Gp.type.opt.fontWeight,
+                        ),
+                    ) { append(chosen.text) }
                 } else {
                     withStyle(SpanStyle(textDecoration = TextDecoration.Underline, color = colors.text2)) { append(BLANK_GAP) }
                 }
@@ -322,7 +345,23 @@ fun PromptText(
                     .getOrNull(i)
                     ?.options
                     ?.firstOrNull { it.id in selection }
-                    ?.text
+                    ?.let { option ->
+                        option.text +
+                            if (revealed) {
+                                ", " +
+                                    stringResource(
+                                        if (option.id in
+                                            question.answer
+                                        ) {
+                                            R.string.review_correct
+                                        } else {
+                                            R.string.review_wrong
+                                        },
+                                    )
+                            } else {
+                                ""
+                            }
+                    }
             acc + part + if (i < parts.lastIndex) " ${chosen ?: blank} " else ""
         }
     Text(
@@ -341,13 +380,13 @@ fun PromptText(
 @Composable
 fun ExplanationPanel(
     question: Question,
-    answer: GivenAnswer?,
+    answer: RecordedAnswer?,
     english: Boolean,
     whyNotOpen: Boolean,
     onLanguage: (Boolean) -> Unit,
     onToggleWhyNot: () -> Unit,
     modifier: Modifier = Modifier,
-    onTopic: () -> Unit = {},
+    onTopic: (() -> Unit)? = null,
     topicStarting: Boolean = false,
 ) {
     val colors = Gp.colors
@@ -394,23 +433,23 @@ fun ExplanationPanel(
                 }
             }
         }
-        LinkText(
-            stringResource(R.string.question_topic, question.topicTitle.pick(english)),
-            onTopic,
-            Modifier.testTag("question.topic"),
-            enabled = !topicStarting,
-        )
+        val topicText = stringResource(R.string.question_topic, question.topicTitle.pick(english))
+        if (onTopic == null) {
+            Text(topicText, style = Gp.type.action, modifier = Modifier.testTag("question.topic"))
+        } else {
+            LinkText(topicText, onTopic, Modifier.testTag("question.topic"), enabled = !topicStarting)
+        }
     }
 }
 
 @Composable
 fun AnswerVerdict(
     question: Question,
-    answer: GivenAnswer?,
+    answer: RecordedAnswer?,
     english: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val correct = answer?.optionIds?.let { TrainingRules.isCorrect(question, it) } == true
+    val correct = answer?.response?.let { it.isCorrect(question) } == true
     Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(GpSpace.s12), verticalAlignment = Alignment.CenterVertically) {
         if (answer?.dontKnow == true) {
             Icon(painterResource(R.drawable.ic_tab_words), null, tint = Gp.colors.text2)
@@ -422,7 +461,7 @@ fun AnswerVerdict(
                 if (answer?.dontKnow == true) {
                     buildAnnotatedString { append(stringResource(R.string.verdict_dont_know)) }
                 } else {
-                    verdict(question, correct, answer?.optionIds.isNullOrEmpty(), english)
+                    verdict(question, correct, answer?.response?.isEmpty != false, english)
                 },
             style = Gp.type.body,
             color = Gp.colors.text,

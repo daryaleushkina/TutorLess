@@ -179,11 +179,11 @@ class TrainingRepository
         fun recordAnswer(
             trainingId: String,
             position: Int,
-            optionIds: List<String>,
+            response: Response,
             dontKnow: Boolean = false,
             flagged: Boolean = false,
             elapsedMs: Int = 0,
-        ) = durable { answer(trainingId, position, optionIds, dontKnow, flagged, elapsedMs) }
+        ) = durable { answer(trainingId, position, response, dontKnow, flagged, elapsedMs) }
 
         fun recordPosition(
             trainingId: String,
@@ -204,15 +204,15 @@ class TrainingRepository
         suspend fun answer(
             trainingId: String,
             position: Int,
-            optionIds: List<String>,
+            response: Response,
             dontKnow: Boolean = false,
             flagged: Boolean = false,
             elapsedMs: Int = 0,
         ) {
             val given =
-                GivenAnswer(
+                RecordedAnswer(
                     position = position,
-                    optionIds = optionIds,
+                    response = response,
                     dontKnow = dontKnow,
                     flagged = flagged,
                     answeredAt = clock.instant().toString(),
@@ -374,7 +374,7 @@ class TrainingRepository
             id: Long,
         ): Sent {
             if (t.rejected || t.unsent.isEmpty()) return Sent.Done
-            val sent = t.unsent.sorted().mapNotNull { t.answers[it] }
+            val sent = t.unsent.sorted().mapNotNull { t.answers[it]?.toGivenAnswer() }
             return sendAnswerBatch(t.id, sent, id)
         }
 
@@ -413,7 +413,7 @@ class TrainingRepository
             }
             return settle(result, id, "answers") {
                 // Убрать из очереди только то, что не поменялось, пока ответ летел: новый ответ «Проверки» уйдёт следом.
-                edit(trainingId, id) { cur -> cur.copy(unsent = cur.unsent.filterNot { cur.answers[it] in sent }.toSet()) }
+                edit(trainingId, id) { cur -> cur.copy(unsent = cur.unsent.filterNot { cur.answers[it]?.toGivenAnswer() in sent }.toSet()) }
             }
         }
 
@@ -429,7 +429,7 @@ class TrainingRepository
 
         private suspend fun sendReports(id: Long) {
             for (pending in store.reports.value) {
-                val result = apiCallNoContent { api.reportQuestion(pending.questionId, pending.report) }
+                val result = apiCallNoContent { api.reportQuestion(pending.questionId, pending.report.copy(reportId = pending.reportId)) }
                 if (!session.isCurrent(id)) return
                 val sent =
                     settle(result, id, "report") {

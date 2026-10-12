@@ -1,6 +1,8 @@
 package dev.greprepapp.app.flow
 
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotSelected
@@ -168,7 +170,13 @@ class TrainingRedesignFlowTest {
         compose.onNodeWithTag("option.C").assertIsOn()
         compose.onNodeWithTag("option.F").assertIsOff()
         compose.onNodeWithTag("question").performScrollToNode(hasTestTag("question.instruction"))
-        compose.onNodeWithText("Выберите два слова.").assertIsDisplayed()
+        compose.onNodeWithText("Выбраны два слова. Снимите отметку, чтобы выбрать другое.").assertIsDisplayed()
+        compose.onNodeWithTag("question.instruction").assert(
+            androidx.compose.ui.test.SemanticsMatcher.expectValue(
+                androidx.compose.ui.semantics.SemanticsProperties.LiveRegion,
+                androidx.compose.ui.semantics.LiveRegionMode.Polite,
+            ),
+        )
         click("question.check")
         click("question.next")
         click("option.B")
@@ -233,6 +241,8 @@ class TrainingRedesignFlowTest {
         click("question.next")
         click("question.dontKnow")
         click("question.next")
+        compose.onNodeWithTag("summary.answer.0").assertContentDescriptionEquals("Вопрос 1, неверно")
+        compose.onNodeWithTag("summary.answer.1").assertContentDescriptionEquals("Вопрос 2, верно")
         click("summary.review")
         click("review.filter.mistakes")
         click("review.item.0")
@@ -282,20 +292,20 @@ class TrainingRedesignFlowTest {
         }
     }
 
-    @Test fun explanationTopicStartsPracticeAndShowsAnOfflineFailure() {
+    @Test fun practiceTopicIsTextAndDoesNotAbandonTheSession() {
         builder()
         click("builder.start")
         click("question.dontKnow")
-        server.down = true
-        compose.onNodeWithTag("question.topic").performScrollTo().performClick()
-        waitFor("topic.problem")
-        server.down = false
-        server.nextSession = Fixtures.session(Fixtures.tc1, id = "topic-practice")
-        compose.onNodeWithTag("question.topic").performScrollTo().performClick()
-        waitFor("question.check")
-        assertEquals(listOf("contrast-signals"), server.starts.last().topicIds)
-        assertEquals(10, server.starts.last().count)
-        assertEquals(TrainingMode.PRACTICE, server.starts.last().mode)
+        compose
+            .onNodeWithTag("question.topic")
+            .performScrollTo()
+            .assert(
+                androidx.compose.ui.test.SemanticsMatcher
+                    .keyNotDefined(androidx.compose.ui.semantics.SemanticsActions.OnClick),
+            )
+        assertEquals(1, server.starts.size)
+        click("question.next")
+        waitFor("question.prompt")
     }
 
     @Test fun summaryTopicAndReviewTopicStartPractice() {
@@ -319,5 +329,35 @@ class TrainingRedesignFlowTest {
         waitFor("question.check")
         compose.waitUntil(10_000) { server.starts.size == 3 }
         assertEquals(listOf("contrast-signals"), server.starts.last().topicIds)
+    }
+
+    @Test fun reportAndItsTextSurviveActivityRecreation() {
+        builder()
+        click("builder.start")
+        click("question.report")
+        click("report.kind.other")
+        compose.onNodeWithTag("report.text").performTextInput("Тестовая опечатка после поворота")
+        scenario!!.recreate()
+        waitFor("question.prompt")
+        assertEquals(1, compose.onAllNodes(hasTestTag("report.sheet")).fetchSemanticsNodes().size)
+        compose.onNodeWithTag("report.text").assertTextContains("Тестовая опечатка после поворота")
+        compose.onNodeWithTag("report.kind.other").assertIsSelected()
+    }
+
+    @Test fun typeSheetSurvivesActivityRecreation() {
+        builder()
+        click("builder.type")
+        waitFor("builder.types.sheet")
+        scenario!!.recreate()
+        waitFor("builder.type")
+        assertEquals(1, compose.onAllNodes(hasTestTag("builder.types.sheet")).fetchSemanticsNodes().size)
+    }
+
+    @Test fun shortCheckUsesTheAvailableCountInItsButtonAndHint() {
+        builder()
+        click("builder.section.quant")
+        click("builder.mode.check")
+        compose.onNodeWithTag("builder.start").assertTextContains("2 вопроса", substring = true)
+        compose.onNodeWithText("На время, как на экзамене", substring = true).assertTextContains("на 2 вопроса", substring = true)
     }
 }

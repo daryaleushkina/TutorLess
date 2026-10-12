@@ -42,6 +42,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -299,7 +300,7 @@ private fun CustomCard(
                     if (f.mode == TrainingMode.CHECK) {
                         val r = BuilderViewModel.requestOf(c)
                         val minutes = r?.let { BuilderViewModel.minutes(c.options, it) } ?: 0
-                        val count = BuilderViewModel.checkCount(c.options, f.section)
+                        val count = r?.count ?: 0
                         stringResource(
                             R.string.mode_check_section_hint,
                             pluralStringResource(R.plurals.training_minutes, minutes, minutes),
@@ -349,7 +350,7 @@ private fun TypeRow(
     c: Content.Ready,
     actions: BuilderActions,
 ) {
-    var open by remember { mutableStateOf(false) }
+    var open by rememberSaveable { mutableStateOf(false) }
     val types =
         c.options.types.filter {
             it.section == c.form.section &&

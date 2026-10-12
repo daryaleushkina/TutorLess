@@ -121,7 +121,7 @@ class ReportViewModel
 
         fun setKind(kind: QuestionReport.Kind) = mutableState.update { it.copy(kind = kind) }
 
-        fun setText(text: String) = mutableState.update { it.copy(text = text.takeCodePoints(MAX_TEXT)) }
+        fun setText(text: String) = mutableState.update { it.copy(text = text.takeCodePoints(QuestionReportLimits.TEXT_CODE_POINTS)) }
 
         fun send() {
             val s = mutableState.value
@@ -139,10 +139,5 @@ class ReportViewModel
 
         fun prepareNextReport() {
             if (mutableState.value.sent) mutableState.value = UiState()
-        }
-
-        private companion object {
-            /** Как в договоре (QuestionReport.text, maxLength — в символах Unicode, не в UTF-16). */
-            const val MAX_TEXT = 2000
         }
     }

@@ -71,7 +71,7 @@ class BuilderViewModelTest {
             assertEquals(0, vm.ready.preset)
             assertEquals(Section.QUANT, vm.ready.form.section)
             assertEquals(TrainingMode.CHECK, vm.ready.form.mode)
-            assertEquals(Fixtures.lastPreset.request.copy(count = 12), BuilderViewModel.requestOf(vm.ready))
+            assertEquals(Fixtures.lastPreset.request.copy(count = 2), BuilderViewModel.requestOf(vm.ready))
 
             val fromStep = builder(prefill = BuilderPrefill(Section.VERBAL), presets = listOf(Fixtures.lastPreset))
             assertNull(fromStep.ready.preset)
@@ -195,5 +195,21 @@ class BuilderViewModelTest {
             vm.load()
             advanceUntilIdle()
             assertTrue(vm.state.value.content is Content.Ready)
+        }
+
+    @Test fun checkPromisesOnlyAvailableQuestionsAndPracticeNeverStartsMixed() =
+        runTest(main.dispatcher) {
+            val vm = builder(presets = listOf(Fixtures.lastPreset))
+            assertEquals(BuilderViewModel.available(vm.ready.options, vm.ready.form), BuilderViewModel.requestOf(vm.ready)?.count)
+            val mixed =
+                Fixtures.lastPreset.copy(
+                    request =
+                        Fixtures.lastPreset.request.copy(
+                            mode = TrainingMode.PRACTICE,
+                            questionTypes = setOf(QuestionType.QUANTITATIVE_COMPARISON, QuestionType.MULTIPLE_CHOICE),
+                        ),
+                )
+            val practice = builder(presets = listOf(mixed))
+            assertEquals(false, practice.ready.form.mixed)
         }
 }

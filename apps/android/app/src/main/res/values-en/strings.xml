@@ -260,4 +260,5 @@
     </plurals>
     <string name="timer_less_minute_description">Less than a minute remaining, question %1$d of %2$d</string>
     <string name="review_slower">%1$s — slower than average</string>
+    <string name="question_selection_limit">Two words selected. Deselect one to choose another.</string>
 </resources>

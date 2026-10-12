@@ -19,7 +19,14 @@ class TrainingRulesConformanceTest {
     fun answersConform() {
         // Ошибку ввода проверяет сервер: клиент не собирает такие ответы, а isCorrect не валидирует ввод.
         cases.answers.filterNot { it.badAnswer }.forEach { c ->
-            assertEquals(c.name, c.correct, TrainingRules.isCorrect(c.question, c.answer.optionIds))
+            assertEquals(
+                c.name,
+                c.correct,
+                c.answer
+                    .toRecordedAnswer()
+                    .response
+                    .isCorrect(c.question),
+            )
         }
     }
 
@@ -42,17 +49,22 @@ class TrainingRulesConformanceTest {
     }
 
     @Test
-    fun togglesConform() {
+    fun genericOptionTogglesConform() {
+        // Общая арифметика вариантов — как у сервера; отказ SE от третьего слова проверяется отдельно.
         cases.toggles.forEach { c ->
-            assertEquals(c.name, c.expected, TrainingRules.toggle(c.question, c.selection, c.optionId))
+            assertEquals(
+                c.name,
+                c.expected,
+                (OptionsResponseComponent().toggle(c.question, Response.Options(c.selection), c.optionId).response as Response.Options).ids,
+            )
         }
     }
 
     @Test
     fun missingGroupsConform() {
         cases.missingGroups.forEach { c ->
-            assertEquals(c.name, c.expected, TrainingRules.missingGroups(c.question, c.selection))
-            assertEquals(c.name, c.complete, TrainingRules.isComplete(c.question, c.selection))
+            assertEquals(c.name, c.expected, Response.Options(c.selection).missingGroups(c.question))
+            assertEquals(c.name, c.complete, Response.Options(c.selection).isComplete(c.question))
         }
     }
 
@@ -86,7 +98,7 @@ class TrainingRulesConformanceTest {
     ) = StoredTraining(
         session = session,
         startedAtMillis = startedAtMillis,
-        answers = session.items.mapNotNull { it.answer }.associateBy { it.position },
+        answers = session.items.mapNotNull { it.answer?.toRecordedAnswer() }.associateBy { it.position },
         finish = finish,
     )
 

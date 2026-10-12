@@ -7,6 +7,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -22,6 +23,7 @@ import dev.greprepapp.app.feature.training.ActiveTrainingViewModel
 import dev.greprepapp.app.feature.training.BuilderScreen
 import dev.greprepapp.app.feature.training.ReportScreen
 import dev.greprepapp.app.feature.training.ReportTarget
+import dev.greprepapp.app.feature.training.ReportTargetSaver
 import dev.greprepapp.app.feature.training.ReviewItemScreen
 import dev.greprepapp.app.feature.training.ReviewScreen
 import dev.greprepapp.app.feature.training.SessionScreen
@@ -47,7 +49,7 @@ fun MainScreen(
     androidx.compose.runtime.LaunchedEffect(profile.exam) { picker = false }
     val active by trainings.active.collectAsStateWithLifecycle()
     val stack = rememberNavBackStack(MainRoute.Tabs)
-    var report by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<ReportTarget?>(null) }
+    var report by rememberSaveable(stateSaver = ReportTargetSaver) { androidx.compose.runtime.mutableStateOf<ReportTarget?>(null) }
     var thanks by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
     val reportThanks = stringResource(dev.greprepapp.app.R.string.report_thanks_short)
@@ -160,15 +162,6 @@ fun MainScreen(
                             onReport = { report = it },
                         )
                     }
-                    entry<MainRoute.Report> { route ->
-                        ReportScreen(
-                            questionId = route.questionId,
-                            trainingId = route.trainingId,
-                            position = route.position,
-                            typeLabel = route.questionType.label(),
-                            onBack = ::back,
-                        )
-                    }
                 },
         )
         SnackbarHost(
@@ -200,5 +193,3 @@ fun MainScreen(
         }
     }
 }
-
-private fun ReportTarget.route() = MainRoute.Report(trainingId, position, questionId, questionType)

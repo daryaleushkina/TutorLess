@@ -154,10 +154,10 @@ private fun outcome(
     training: StoredTraining,
     position: Int,
 ): Outcome {
-    val chosen = training.answer(position)?.optionIds.orEmpty()
+    val response = training.answer(position)?.response ?: emptyResponse(training.question(position))
     return when {
-        chosen.isEmpty() -> Outcome.Unanswered
-        TrainingRules.isCorrect(training.question(position), chosen) -> Outcome.Correct
+        response.isEmpty -> Outcome.Unanswered
+        response.isCorrect(training.question(position)) -> Outcome.Correct
         else -> Outcome.Wrong
     }
 }
@@ -598,7 +598,7 @@ fun ReviewItemContent(
                 val average = training.answers.values.sumOf { it.elapsedMs.toLong() } / training.total
                 Text(if (elapsed > average) stringResource(R.string.review_slower, time) else time, style = Gp.type.meta)
             }
-            QuestionContent(question, answer?.optionIds.orEmpty(), revealed = true)
+            QuestionContent(question, answer?.response ?: emptyResponse(question), revealed = true)
         }
         val explanation: @Composable () -> Unit = {
             ExplanationPanel(
@@ -664,24 +664,7 @@ private fun ReviewQuestion(
         }
         AnswerVerdict(question, answer, english)
         Text(question.typeLabel(), style = Gp.type.meta, color = section.ink(Gp.colors))
-        when (question.questionType) {
-            QuestionType.QUANTITATIVE_COMPARISON -> {
-                Quantities(question)
-            }
-
-            QuestionType.MULTIPLE_CHOICE -> {
-                Text(
-                    question.prompt,
-                    style = (if (Gp.isWide) Gp.type.qTextWide else Gp.type.qText).copy(localeList = English),
-                    color = Gp.colors.text,
-                )
-            }
-
-            else -> {
-                PromptText(question, question.answer)
-            }
-        }
-        RevealedOptions(question, answer?.optionIds.orEmpty())
+        QuestionContent(question, answer?.response ?: emptyResponse(question), revealed = true)
         ExplanationPanel(
             question = question,
             answer = answer,
@@ -814,7 +797,12 @@ fun ReportContent(
                         onValueChange = onText,
                         label = { Text(stringResource(R.string.report_text)) },
                         minLines = 3,
-                        supportingText = { Text("${state.text.codePointCount(0, state.text.length)} / 2000", style = Gp.type.caption) },
+                        supportingText = {
+                            Text(
+                                "${state.text.codePointCount(0, state.text.length)} / ${QuestionReportLimits.TEXT_CODE_POINTS}",
+                                style = Gp.type.caption,
+                            )
+                        },
                         keyboardOptions =
                             androidx.compose.foundation.text.KeyboardOptions(
                                 capitalization = androidx.compose.ui.text.input.KeyboardCapitalization.Sentences,

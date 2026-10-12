@@ -10,9 +10,7 @@ import dev.greprepapp.api.models.Question
 import dev.greprepapp.api.models.TrainingMode
 import dev.greprepapp.api.models.TrainingRequest
 import dev.greprepapp.app.core.Ticker
-import greprep.design.GpMotion
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -49,7 +47,7 @@ class SessionViewModel
             val training: StoredTraining,
             val position: Int,
             /** Выбор на экране. В «Проверке» он же сохранённый ответ, в «Практике» — до «Проверить». */
-            val selection: List<String>,
+            val response: Response,
             val remainingSeconds: Int?,
             /** Список вопросов «Проверки» — после последнего вопроса и по кнопке в шапке. */
             val overview: Boolean,
@@ -63,6 +61,8 @@ class SessionViewModel
             val pastExplanation: Boolean = false,
             val selectionLimitHit: Boolean = false,
         ) {
+            val selection: List<String> get() = (response as? Response.Options)?.ids.orEmpty()
+
             val browsingPast: Boolean get() = !training.isCheck && position < frontier
 
             fun flaggedAt(position: Int): Boolean = flags[position] ?: (training.answer(position)?.flagged == true)
@@ -73,8 +73,8 @@ class SessionViewModel
             /** «Практика»: ответ уже проверен — виден разбор. */
             val revealed: Boolean get() = !training.isCheck && training.answer(position) != null
             val flagged: Boolean get() = flaggedAt(position)
-            val canCheck: Boolean get() = TrainingRules.isComplete(question, selection)
-            val missing: List<Int> get() = TrainingRules.missingGroups(question, selection)
+            val canCheck: Boolean get() = response.isComplete(question)
+            val missing: List<Int> get() = response.missingGroups(question)
             val keyboardGroup: dev.greprepapp.api.models.OptionGroup?
                 get() =
                     if (question.groups.size ==
@@ -100,14 +100,15 @@ class SessionViewModel
 
         private data class Local(
             val position: Int? = null,
-            val selection: List<String> = emptyList(),
+            val response: Response = Response.Options(),
             val overview: Boolean = false,
             val english: Boolean? = null,
             val whyNotOpen: Boolean = false,
             val now: Long = 0,
             val flags: Map<Int, Boolean> = emptyMap(),
             val frontier: Int? = null,
-            val drafts: Map<Int, List<String>> = emptyMap(),
+            val drafts: Map<Int, Response> = emptyMap(),
+            val visits: Map<Int, Int> = emptyMap(),
             val pastExplanation: Boolean = false,
             val selectionLimitHit: Boolean = false,
         )
@@ -116,7 +117,6 @@ class SessionViewModel
         private var shownAt = clock.millis()
         private var visitBaseMs = 0
         private var timer: Job? = null
-        private var limitFeedback: Job? = null
 
         /** Повтор по «Что повторить» начался — экран переходит к нему (consumeRepeat). */
         private val repeatState = MutableStateFlow(RepeatState())
@@ -141,7 +141,7 @@ class SessionViewModel
             return Screen(
                 training = training,
                 position = position,
-                selection = if (l.position == null) initialSelection(training, position) else l.selection,
+                response = if (l.position == null) initialResponse(training, position) else l.response,
                 remainingSeconds = TrainingRules.remainingSeconds(training, l.now),
                 overview = l.overview,
                 english = l.english,
@@ -158,17 +158,17 @@ class SessionViewModel
                 // Экран встаёт на вопрос, где человек остановился; у «Проверки» включается таймер.
                 val training = repository.training(trainingId).filterNotNull().first()
                 val position = training.position.coerceIn(0, training.total - 1)
-                local.update { it.copy(position = position, selection = initialSelection(training, position)) }
+                local.update { it.copy(position = position, response = initialResponse(training, position)) }
                 shownAt = clock.millis()
-                visitBaseMs = training.answer(position)?.elapsedMs ?: 0
+                visitBaseMs = training.answer(position)?.elapsedMs ?: local.value.visits[position] ?: 0
                 if (training.isCheck && !training.isFinished) startTimer()
             }
         }
 
-        private fun initialSelection(
+        private fun initialResponse(
             training: StoredTraining,
             position: Int,
-        ): List<String> = training.answer(position)?.optionIds.orEmpty()
+        ): Response = training.answer(position)?.response ?: emptyResponse(training.question(position))
 
         private fun startTimer() {
             timer =
@@ -210,42 +210,45 @@ class SessionViewModel
 
         fun saveVisitTime() {
             val s = screen() ?: return
-            if (s.training.isCheck && !s.training.isFinished) save(s.position, s.selection, s.flagged)
+            if (s.training.isFinished) return
+            if (s.training.isCheck) {
+                save(s.position, s.response, s.flagged)
+            } else if (!s.revealed) {
+                local.update { it.copy(visits = it.visits + (s.position to elapsed())) }
+            }
         }
 
+        /** Сочетания клавиатуры для прежних вариантов; правило переключения принадлежит компоненту. */
         fun select(optionId: String) {
+            val question = screen()?.question ?: return
+            editResponse { it.toggle(question, optionId) }
+        }
+
+        fun editResponse(edit: ResponseEdit) {
             val s = screen() ?: return
             if (s.training.isFinished || s.revealed) return
-            if (s.question.selectCount > 1 && optionId !in s.selection && s.selection.size >= s.question.selectCount) {
-                local.update { it.copy(selectionLimitHit = true) }
-                limitFeedback?.cancel()
-                limitFeedback =
-                    viewModelScope.launch {
-                        delay(GpMotion.REVEAL.toLong())
-                        local.update { it.copy(selectionLimitHit = false) }
-                    }
-                return
-            }
-            val next = TrainingRules.toggle(s.question, s.selection, optionId)
-            local.update { it.copy(selection = next, selectionLimitHit = false) }
-            // «Проверка» сохраняет выбор сразу: закрыл приложение — ответ не потерялся.
-            if (s.training.isCheck) save(s.position, next, flagged = s.flagged)
+            val change = edit(s.response)
+            local.update { it.copy(response = change.response, selectionLimitHit = change.limitHit) }
+            if (s.training.isCheck && !change.limitHit) save(s.position, change.response, flagged = s.flagged)
         }
+
+        /** Новый ввод передаёт готовый ответ, переходы сессии не зависят от его вида. */
+        fun respond(response: Response) = editResponse { ResponseChange(response) }
 
         /** «Практика»: «Проверить» — ответ записан, виден разбор. */
         fun check() {
             val s = screen() ?: return
             if (s.training.isCheck || s.revealed || !s.canCheck) return
             local.update { it.copy(whyNotOpen = false) }
-            save(s.position, s.selection, flagged = false)
+            save(s.position, s.response, flagged = false)
         }
 
         /** «Практика»: «Не знаю» вместо пропуска — разбор сразу, а в «Что повторить» это ошибка. */
         fun dontKnow() {
             val s = screen() ?: return
             if (s.training.isCheck || s.revealed) return
-            local.update { it.copy(selection = emptyList(), whyNotOpen = false) }
-            repository.recordAnswer(trainingId, s.position, emptyList(), dontKnow = true, elapsedMs = elapsed())
+            local.update { it.copy(response = Response.Options(), whyNotOpen = false) }
+            repository.recordAnswer(trainingId, s.position, Response.Options(), dontKnow = true, elapsedMs = elapsed())
         }
 
         fun toggleFlag() {
@@ -253,15 +256,15 @@ class SessionViewModel
             if (!s.training.isCheck || s.training.isFinished) return
             val flagged = !s.flagged
             local.update { it.copy(flags = it.flags + (s.position to flagged)) }
-            save(s.position, s.selection, flagged = flagged)
+            save(s.position, s.response, flagged = flagged)
         }
 
         private fun save(
             position: Int,
-            selection: List<String>,
+            response: Response,
             flagged: Boolean,
         ) {
-            repository.recordAnswer(trainingId, position, selection, flagged = flagged, elapsedMs = elapsed())
+            repository.recordAnswer(trainingId, position, response, flagged = flagged, elapsedMs = elapsed())
         }
 
         /** «Дальше» и «Пропустить»: на последнем вопросе «Практика» заканчивается, «Проверка» — к списку. */
@@ -290,14 +293,14 @@ class SessionViewModel
             if (position !in 0 until training.total) return
             if (!training.isCheck && position > current.frontier && !current.revealed) return
             saveVisitTime()
-            val drafts = local.value.drafts + (current.position to current.selection)
+            val drafts = local.value.drafts + (current.position to current.response)
             val frontier = if (training.isCheck) position else maxOf(current.frontier, position)
             shownAt = clock.millis()
-            visitBaseMs = training.answer(position)?.elapsedMs ?: 0
+            visitBaseMs = training.answer(position)?.elapsedMs ?: local.value.visits[position] ?: 0
             local.update {
                 it.copy(
                     position = position,
-                    selection = training.answer(position)?.optionIds ?: drafts[position].orEmpty(),
+                    response = training.answer(position)?.response ?: drafts[position] ?: emptyResponse(training.question(position)),
                     frontier = frontier,
                     drafts = drafts,
                     pastExplanation = false,
@@ -344,6 +347,7 @@ class SessionViewModel
 
         fun repeatTopic(topicId: String) {
             val training = screen()?.training ?: return
+            if (!training.isFinished) return
             val request = topicPracticeRequest(training, topicId) ?: return
             if (!repeatState.value.starting) startRepeat(request)
         }

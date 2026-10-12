@@ -3,7 +3,6 @@ package dev.greprepapp.app.feature.shell
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.navigation3.runtime.NavKey
-import dev.greprepapp.api.models.QuestionType
 import dev.greprepapp.app.R
 import dev.greprepapp.app.core.session.SignOutReason
 import dev.greprepapp.app.feature.training.BuilderPrefill
@@ -52,14 +51,6 @@ sealed interface MainRoute : NavKey {
         val trainingId: String,
         val position: Int,
         val positions: List<Int> = emptyList(),
-    ) : MainRoute
-
-    @Serializable
-    data class Report(
-        val trainingId: String,
-        val position: Int,
-        val questionId: String,
-        val questionType: QuestionType,
     ) : MainRoute
 }
 

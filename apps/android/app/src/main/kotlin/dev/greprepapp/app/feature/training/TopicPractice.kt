@@ -21,7 +21,7 @@ internal fun topicPracticeRequest(
         exam = training.session.exam ?: Exam.GRE,
         section = question.section,
         questionTypes = setOf(question.questionType),
-        count = 10,
+        count = TrainingDefaults.PRACTICE_QUESTIONS,
         mode = TrainingMode.PRACTICE,
         topicIds = listOf(topicId),
     )

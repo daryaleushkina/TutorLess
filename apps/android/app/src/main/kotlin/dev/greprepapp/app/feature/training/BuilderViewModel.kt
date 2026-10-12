@@ -217,7 +217,7 @@ class BuilderViewModel
             const val PRESET_TIMED = "timed"
             val KNOWN_PRESETS = setOf(PRESET_LAST, PRESET_TIMED)
             val PRACTICE_COUNTS = listOf(5, 10, 15, 20)
-            private const val DEFAULT_COUNT = 10
+            private const val DEFAULT_COUNT = TrainingDefaults.PRACTICE_QUESTIONS
             private const val COUNT_DIGITS = 2
             private const val SECONDS_PER_MINUTE = 60.0
 
@@ -266,7 +266,14 @@ class BuilderViewModel
                         } else {
                             setOf(f.type)
                         },
-                    count = if (f.mode == TrainingMode.CHECK) checkCount(c.options, f.section) else questions,
+                    count =
+                        if (f.mode ==
+                            TrainingMode.CHECK
+                        ) {
+                            minOf(checkCount(c.options, f.section), available(c.options, f), c.options.maxQuestions)
+                        } else {
+                            questions
+                        },
                     mode = f.mode,
                     topicIds = f.topicIds?.toList(),
                     difficulty = f.difficulty,
@@ -281,7 +288,7 @@ class BuilderViewModel
                 options.presets
                     .firstOrNull { it.kind == PRESET_TIMED && it.request.section == section }
                     ?.request
-                    ?.count ?: 12
+                    ?.count ?: TrainingDefaults.GRE_SECTION_QUESTIONS
 
             /** «~12 мин» на кнопке: темп экзамена по разделу. */
             fun minutes(
@@ -331,7 +338,7 @@ class BuilderViewModel
                     mode = request.mode,
                     topicIds = request.topicIds?.takeIf { it.isNotEmpty() }?.toSet(),
                     difficulty = request.difficulty,
-                    mixed = request.questionTypes.size > 1,
+                    mixed = request.mode == TrainingMode.CHECK && request.questionTypes.size > 1,
                 )
             }
         }

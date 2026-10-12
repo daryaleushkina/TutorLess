@@ -88,6 +88,7 @@ private const val NBSP = '\u00A0'
 class SessionActions(
     val onClose: () -> Unit = {},
     val onSelect: (String) -> Unit = {},
+    val onEditResponse: (ResponseEdit) -> Unit = {},
     val onCheck: () -> Unit = {},
     val onDontKnow: () -> Unit = {},
     val onNext: () -> Unit = {},
@@ -140,6 +141,7 @@ fun SessionScreen(
                     onClose()
                 },
                 onSelect = viewModel::select,
+                onEditResponse = viewModel::editResponse,
                 onCheck = viewModel::check,
                 onDontKnow = viewModel::dontKnow,
                 onNext = viewModel::next,
@@ -203,6 +205,7 @@ fun SessionContent(
         SessionActions(
             onClose = ::close,
             onSelect = actions.onSelect,
+            onEditResponse = actions.onEditResponse,
             onCheck = actions.onCheck,
             onDontKnow = actions.onDontKnow,
             onNext = actions.onNext,
@@ -453,26 +456,6 @@ private fun QuestionPane(
             }
             if (s.revealed) AnswerVerdict(s.question, s.training.answer(s.position), s.explanationInEnglish())
             QuestionHeading(s.question, section, onReport = { actions.onReport(s.position) })
-            if (!s.revealed) {
-                Text(
-                    stringResource(
-                        if (s.question.selectCount >
-                            1
-                        ) {
-                            R.string.question_select_two
-                        } else if (s.question.groups.size >
-                            1
-                        ) {
-                            R.string.question_select_blanks
-                        } else {
-                            R.string.question_select_one
-                        },
-                    ),
-                    style = Gp.type.meta,
-                    color = if (s.selectionLimitHit) Gp.colors.wrong else Gp.colors.text2,
-                    modifier = Modifier.testTag("question.instruction"),
-                )
-            }
             QuestionBody(s, actions)
         }
 
@@ -485,7 +468,7 @@ private fun QuestionPane(
                     whyNotOpen = s.whyNotOpen,
                     onLanguage = actions.onLanguage,
                     onToggleWhyNot = actions.onToggleWhyNot,
-                    onTopic = { actions.onTopic(s.question.topicId) },
+                    onTopic = null,
                     topicStarting = repeat.starting,
                     modifier = Modifier.padding(top = GpSpace.s8),
                 )
@@ -558,16 +541,10 @@ private fun QuestionBody(
 ) {
     QuestionContent(
         s.question,
-        if (s.revealed) {
-            s.training
-                .answer(s.position)
-                ?.optionIds
-                .orEmpty()
-        } else {
-            s.selection
-        },
+        if (s.revealed) s.training.answer(s.position)?.response ?: emptyResponse(s.question) else s.response,
         revealed = s.revealed,
-        onSelect = actions.onSelect,
+        onEditResponse = actions.onEditResponse,
+        selectionLimitHit = s.selectionLimitHit,
     )
 }
 
@@ -1034,13 +1011,7 @@ private fun OverviewDetails(
     val answered =
         s.training.session.items
             .count {
-                TrainingRules.isComplete(
-                    it.question,
-                    s.training
-                        .answer(it.position)
-                        ?.optionIds
-                        .orEmpty(),
-                )
+                (s.training.answer(it.position)?.response ?: emptyResponse(it.question)).isComplete(it.question)
             }
     val flagged = (0 until s.training.total).count { s.flaggedAt(it) }
     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(GpSpace.s20)) {
@@ -1072,7 +1043,7 @@ private fun OverviewCell(
 ) {
     val colors = Gp.colors
     val answer = s.training.answer(position)
-    val isAnswered = TrainingRules.isComplete(s.training.question(position), answer?.optionIds.orEmpty())
+    val isAnswered = (answer?.response ?: emptyResponse(s.training.question(position))).isComplete(s.training.question(position))
     val isFlagged = s.flaggedAt(position)
     val state =
         listOfNotNull(
@@ -1194,12 +1165,17 @@ private fun SummaryPane(
                             val correct =
                                 s.training
                                     .answer(item.position)
-                                    ?.optionIds
-                                    ?.let { TrainingRules.isCorrect(item.question, it) } == true
+                                    ?.response
+                                    ?.let { it.isCorrect(item.question) } == true
+                            val summaryAnswerDescription =
+                                stringResource(R.string.review_question, item.position + 1) + ", " +
+                                    stringResource(if (correct) R.string.review_correct else R.string.review_wrong)
                             MarkDot(
                                 correct,
                                 if (correct) colors.right else colors.wrong,
-                                Modifier.semantics { contentDescription = "${item.position + 1}" },
+                                Modifier.semantics { contentDescription = summaryAnswerDescription }.testTag(
+                                    "summary.answer.${item.position}",
+                                ),
                             )
                         }
                     }
@@ -1333,13 +1309,7 @@ internal fun startProblemText(problem: StartProblem): String =
 
 private fun unansweredCount(s: Screen): Int =
     s.training.session.items.count {
-        !TrainingRules.isComplete(
-            it.question,
-            s.training
-                .answer(it.position)
-                ?.optionIds
-                .orEmpty(),
-        )
+        !(s.training.answer(it.position)?.response ?: emptyResponse(it.question)).isComplete(it.question)
     }
 
 @Composable

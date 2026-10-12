@@ -356,4 +356,31 @@ class SessionViewModelTest {
             advanceUntilIdle()
             assertEquals(UiState.Missing, vm.state.value)
         }
+
+    @Test fun practiceKeepsTimeAcrossAnUnansweredQuestionVisit() =
+        runTest(main.dispatcher) {
+            val vm = open()
+            vm.select("A")
+            vm.check()
+            advanceUntilIdle()
+            vm.next()
+            graph.clock.now = graph.clock.now.plusSeconds(20)
+            vm.previous()
+            advanceUntilIdle()
+            graph.clock.now = graph.clock.now.plusSeconds(10)
+            vm.next()
+            advanceUntilIdle()
+            vm.select("A")
+            vm.select("C")
+            graph.clock.now = graph.clock.now.plusSeconds(4)
+            vm.check()
+            advanceUntilIdle()
+            assertEquals(
+                24_000,
+                vm.screen.training
+                    .answer(1)
+                    ?.elapsedMs,
+            )
+            vm.viewModelScope.cancel()
+        }
 }
