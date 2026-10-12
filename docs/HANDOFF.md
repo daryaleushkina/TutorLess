@@ -351,12 +351,15 @@ sh ../../scripts/hooks/gate-apple     # всё, что проверит pre-push
 - **Токены дизайна** не копируются: проект берёт `design/tokens/generated/apple` как есть. Цвета — `Color(.text)`,
   размеры — `GPSpace`, `GPSize`, `GPLayout`, текст — `.gpText(\.body)` (Geologica, растёт с Dynamic Type),
   формулы — `.gpMath(\.opt)` (Source Serif 4), IPA — роль `.ipa` (IBM Plex Mono). Кнопка Google использует
-  вшитый Roboto Medium и `GPSignInGoogle`, Apple — системный `GPSignInApple`. Все четыре семейства вшиты,
+  вшитый Roboto Medium и `GPSignInGoogle`; подпись Apple рисует родной контрол, токен `GPSignInApple`
+  к нему не применяется. Все четыре семейства вшиты,
   OFL рядом в `Resources/Fonts`; метрики межстрочного из файлов шрифтов описаны в `Typography.swift`.
   Корневой `.gpDesignTokens()` выбирает `gpType` и `gpTheme` в окружении вместе с `colorScheme`;
   снимки используют тот же модификатор и явную схему.
   На iOS `drawHierarchyInKeyWindow: true` снимает настоящую иерархию, включая родные панели и вкладки.
   Рендер слоя для этих эталонов не подходит: он меняет материал, цвета и отступы нативных контролов.
+  Заголовки родной панели iOS используют ось `wght` Geologica из веса роли, `UIFontMetrics` её системного
+  стиля Dynamic Type и трекинг роли в `kern`; материал панели остаётся системным.
 - **Тема** по умолчанию тёмная, независимо от системы. Выбор хранится на устройстве в `UserDefaults`,
   ключ `GPColorTheme` (`light` / `dark`), читается через `@AppStorage`; неизвестное значение тоже даёт тёмную.
   `GrePrepApp` задаёт `preferredColorScheme` и окружение. На iOS мост `UIViewRepresentable` устанавливает
@@ -492,7 +495,8 @@ sh ../../scripts/hooks/gate-apple     # всё, что проверит pre-push
   проверяет команды и их отключение вне активного разбора.
   Тема осмотра задаётся `TEST_RUNNER_GP_REVIEW_THEME=light|dark`: сценарий передаёт `-GPColorTheme <тема>`
   приложению, и отладочный запуск сохраняет выбор в UserDefaults. Системное `simctl ui appearance` выбор
-  приложения не меняет; light системы используется для проверки первого тёмного запуска. После осмотра
+  приложения не меняет. Проверки сохранённой и начальной темы явно игнорируют тему осмотра; тест первого
+  запуска сам задаёт системе light через `XCUIDevice.appearance` и возвращает прежний вид. После осмотра
   вернуть `content_size large`, затем `run-sim.sh stop`. `-GPResetState` стирает и сохранённую тему.
 - **Снимки:** каждое устройство снимается на своём симуляторе («GrePrep iPhone», «GrePrep iPad» — создаёт
   `scripts/simulator.sh`, iPhone 18 Pro и iPad Pro 11 M5 на iOS 27.0), Mac — без окна, поэтому только широкие

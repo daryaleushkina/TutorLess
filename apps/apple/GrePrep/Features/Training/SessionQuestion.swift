@@ -303,7 +303,7 @@ struct SessionQuestion: View {
         VStack(alignment: .leading, spacing: GPSpace.s8) {
             if question.groups.count > 1 {
                 Text(verbatim: TrainingText.blankLabel(index)).gpText(\.meta).foregroundStyle(
-                    Color(.text2))
+                    Color(.text3))
             }
             ForEach(
                 group.options.filter { question.answer.contains($0.id) || screen.selection.contains($0.id) }, id: \.id

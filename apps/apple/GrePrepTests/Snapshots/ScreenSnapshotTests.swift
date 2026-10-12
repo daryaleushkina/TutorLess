@@ -312,6 +312,17 @@ struct ScreenSnapshotTests {
             named: "training-builder")
     }
 
+    @Test("конструктор: очищенное количество без обрезанной подсказки")
+    func trainingBuilderEmptyCount() throws {
+        let app = try signedInApp(cached: nil, today: .json(200, Fixture.todayJSON))
+        let model = BuilderModel(trainings: app.trainings, loadsOnInit: false)
+        model.use(TrainingFixture.options)
+        model.setCount("")
+        assertScreens(
+            NavigationStack { TrainingBuilderView(model: model) }.environment(app),
+            named: "training-builder-empty")
+    }
+
     @Test("темы и сложность")
     func trainingTopics() throws {
         let app = try signedInApp(cached: nil, today: .json(200, Fixture.todayJSON))
@@ -444,6 +455,22 @@ struct ScreenSnapshotTests {
         assertScreens(
             view.environment(\.textScale, GPType.textScaleLarge), named: name + "-larger", file: file,
             testName: testName, line: line)
+        #if os(iOS)
+            // Эти состояния должны проверить и широкую панель iPad: книжные 834 pt не пересекают breakpointWide.
+            if UIDevice.current.userInterfaceIdiom == .pad,
+                [
+                    "training-question-tc", "training-overview", "training-summary", "training-summary-perfect",
+                    "training-summary-timed-out",
+                ].contains(name)
+            {
+                for larger in [false, true] {
+                    assertScreens(
+                        view.environment(\.textScale, larger ? GPType.textScaleLarge : 1),
+                        named: name + (larger ? "-larger" : "") + "-landscape", devices: [.pad],
+                        padLandscape: true, file: file, testName: testName, line: line)
+                }
+            }
+        #endif
     }
 
     @Test("вопрос: четыре типа и один, два, три пропуска")
@@ -850,7 +877,7 @@ struct ScreenSnapshotTests {
     static let perceptual: Float = 0.98
 
     #if os(iOS)
-        /// iPhone 17 Pro: 402 × 874 pt, вырез сверху 62, полоса жестов 34.
+        /// iPhone 18 Pro / iOS 27: 402 × 874 pt, вырез сверху 62, полоса жестов 34.
         static let phone = ViewImageConfig(
             safeArea: UIEdgeInsets(top: 62, left: 0, bottom: 34, right: 0),
             size: CGSize(width: 402, height: 874),
@@ -892,6 +919,7 @@ struct ScreenSnapshotTests {
         devices: [Device] = [.phone, .pad],
         themes: [Theme] = [.light, .dark],
         precision: Float = ScreenSnapshotTests.precision,
+        padLandscape: Bool = false,
         fileID: StaticString = #fileID,
         file: StaticString = #filePath,
         testName: String = #function,
@@ -904,7 +932,7 @@ struct ScreenSnapshotTests {
         #if os(iOS)
             let current: Device = UIDevice.current.userInterfaceIdiom == .pad ? .pad : .phone
             for device in devices where device == current {
-                let config = device == .phone ? Self.phone : Self.pad
+                let config = device == .phone ? Self.phone : (padLandscape ? Self.padLandscape : Self.pad)
                 for style in themes.map({ $0 == .dark ? UIUserInterfaceStyle.dark : .light }) {
                     // Системное стекло панели получает тему от окна, а не только от traits контроллера.
                     // Своё окно на каждый кадр не наследует материал и переходы предыдущего снимка.
@@ -918,7 +946,11 @@ struct ScreenSnapshotTests {
                             return
                         }
                         let window = UIWindow(windowScene: scene)
-                        window.frame = host.frame
+                        if padLandscape, let size = config.size {
+                            window.frame = CGRect(origin: host.frame.origin, size: size)
+                        } else {
+                            window.frame = host.frame
+                        }
                         window.overrideUserInterfaceStyle = style
                         window.rootViewController = UIViewController()
                         window.makeKeyAndVisible()

@@ -11,6 +11,7 @@ private enum OfficialSpec {
 }
 
 /// «Вход с Apple» — родная кнопка Apple: чёрная в светлой теме, белая в тёмной.
+/// Подпись рисует Apple; применить к ней токен GPSignInApple нельзя.
 struct AppleSignInButton: View {
     let model: SignInModel
     @Environment(\.colorScheme) private var colorScheme
@@ -22,7 +23,6 @@ struct AppleSignInButton: View {
             MacAppleIDButton(model: model, style: colorScheme == .dark ? .white : .black)
                 .frame(maxWidth: .infinity, minHeight: GPSize.button, maxHeight: GPSize.button)
                 .accessibilityIdentifier("signin.apple")
-                .font(GPSignInApple.font)
         #else
             SignInWithAppleButton(.signIn) { request in
                 model.prepareAppleRequest(request)
@@ -31,7 +31,6 @@ struct AppleSignInButton: View {
             }
             .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
             .id(colorScheme)
-            .font(GPSignInApple.font)
             .frame(height: GPSize.button)
             .clipShape(Capsule())
             .accessibilityIdentifier("signin.apple")
@@ -78,7 +77,6 @@ struct AppleSignInButton: View {
                 let newButton = ASAuthorizationAppleIDButton(
                     authorizationButtonType: .signIn, authorizationButtonStyle: style)
                 newButton.cornerRadius = GPSize.button / 2
-                newButton.font = .systemFont(ofSize: GPSignInApple.fontSize, weight: .medium)
                 newButton.frame = bounds
                 newButton.autoresizingMask = [.width, .height]
                 addSubview(newButton)
@@ -166,7 +164,6 @@ struct GoogleSignInButton: View {
             .contentShape(Capsule())
         }
         .buttonStyle(PressScaleStyle())
-        .buttonBorderShape(.capsule)
         .accessibilityIdentifier("signin.google")
     }
 }

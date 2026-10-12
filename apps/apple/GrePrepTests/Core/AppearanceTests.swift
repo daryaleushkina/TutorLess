@@ -105,6 +105,83 @@ struct AppearanceTests {
             }
         }
 
+        @Test("навигация использует ось веса роли и её трекинг")
+        func navigationWeightAndTracking() throws {
+            Fonts.register()
+            let appearance = NativeAppearance.navigation()
+            for (attributes, role) in [
+                (appearance.titleTextAttributes, GPType.dark.h3),
+                (appearance.largeTitleTextAttributes, GPType.dark.h1),
+            ] {
+                let font = try #require(attributes[.font] as? UIFont)
+                let variations = CTFontCopyVariation(font as CTFont) as? [NSNumber: NSNumber]
+                // OpenType-тег wght; обе роли каталога имеют вес semibold (600).
+                #expect(variations?[NSNumber(value: 0x7767_6874)]?.doubleValue == 600)
+                let actualTracking: Double? = (attributes[.kern] as? NSNumber)?.doubleValue
+                let expectedTracking: Double = role.tracking * font.pointSize
+                #expect(actualTracking == expectedTracking)
+            }
+        }
+
+        @Test("шрифты обоих заголовков растут с системным крупным текстом")
+        func navigationDynamicType() throws {
+            // UIFontMetrics без compatibleWith берёт категорию приложения, не performAsCurrent.
+            let regular = NativeAppearance.navigation(
+                compatibleWith: UITraitCollection(preferredContentSizeCategory: .large))
+            let larger = NativeAppearance.navigation(
+                compatibleWith: UITraitCollection(preferredContentSizeCategory: .accessibilityExtraExtraExtraLarge))
+            for (normal, scaled) in [
+                (regular.titleTextAttributes, larger.titleTextAttributes),
+                (regular.largeTitleTextAttributes, larger.largeTitleTextAttributes),
+            ] {
+                let before = try #require(normal[.font] as? UIFont)
+                let after = try #require(scaled[.font] as? UIFont)
+                #expect(after.pointSize > before.pointSize)
+            }
+        }
+
+        @Test(
+            "нативный шрифт сохраняет веса ролей",
+            arguments: [
+                (Font.Weight.ultraLight, 100.0), (.thin, 200), (.light, 300), (.regular, 400), (.medium, 500),
+                (.semibold, 600), (.bold, 700), (.heavy, 800), (.black, 900),
+            ])
+        func nativeRoleWeights(weight: Font.Weight, expected: Double) throws {
+            let role = GPTextStyle(
+                size: 16, lineHeight: 20, weight: weight, tracking: -0.01,
+                relativeTo: .body, fontFamily: GPType.fontFamily)
+            let attributes = NativeAppearance.attributes(role)
+            let font = try #require(attributes[.font] as? UIFont)
+            let variations = CTFontCopyVariation(font as CTFont) as? [NSNumber: NSNumber]
+            // CoreText не хранит вариацию, равную default оси (у вшитой Geologica это 100).
+            let axes = try #require(CTFontCopyVariationAxes(font as CTFont) as? [[String: Any]])
+            let axis = try #require(
+                axes.first { ($0[kCTFontVariationAxisIdentifierKey as String] as? NSNumber)?.intValue == 0x7767_6874 })
+            let fallback = try #require(axis[kCTFontVariationAxisDefaultValueKey as String] as? NSNumber).doubleValue
+            let actual = variations?[NSNumber(value: 0x7767_6874)]?.doubleValue ?? fallback
+            #expect(actual == expected)
+        }
+
+        @Test(
+            "нативный шрифт масштабируется по системному стилю роли",
+            arguments: [
+                (Font.TextStyle.largeTitle, UIFont.TextStyle.largeTitle), (.title, .title1), (.title2, .title2),
+                (.title3, .title3),
+                (.headline, .headline), (.subheadline, .subheadline), (.body, .body), (.callout, .callout),
+                (.footnote, .footnote), (.caption, .caption1), (.caption2, .caption2),
+            ])
+        func nativeRoleMetrics(style: Font.TextStyle, expected: UIFont.TextStyle) throws {
+            let role = GPTextStyle(
+                size: 16, lineHeight: 20, weight: .medium, tracking: 0,
+                relativeTo: style, fontFamily: GPType.fontFamily)
+            let traits = UITraitCollection(preferredContentSizeCategory: .accessibilityExtraExtraExtraLarge)
+            let actual = (NativeAppearance.attributes(role, compatibleWith: traits)[.font] as? UIFont)?.pointSize
+            // scaledFont округляет размер шрифта иначе, чем scaledValue для произвольного размера.
+            let base = try #require(UIFont(name: role.fontFamily, size: role.size))
+            let target = UIFontMetrics(forTextStyle: expected).scaledFont(for: base, compatibleWith: traits).pointSize
+            #expect(actual == target)
+        }
+
         @Test("мост задаёт стиль окна до присоединения представления", arguments: [AppTheme.light, .dark])
         func windowTheme(theme: AppTheme) {
             let window = UIWindow()

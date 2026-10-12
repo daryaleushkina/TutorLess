@@ -93,14 +93,46 @@ struct InterfaceRegressionTests {
         _ = await start.value
     }
 
-    private func rendered(_ view: some View) throws -> CGImage {
+    @Test("действия одноколоночной сессии не выходят за contentMax", arguments: [false, true])
+    func sessionActionColumn(summary: Bool) async throws {
+        let stored = TrainingFixture.stored()
+        let store = temporaryTrainingStore()
+        try store.saveOwner("person")
+        try store.save(stored)
+        let server = StubServer()
+        let trainings = TrainingModel(store: store, report: { _, _ in }, unauthorized: {})
+        trainings.connect(
+            api: API(config: server.config(), session: server.session, tokens: MemoryTokenStore("t")), ownerID: "person"
+        )
+        await eventually { trainings.trainings[stored.id] != nil }
+        let model = SessionModel(id: stored.id, trainings: trainings)
+        if summary {
+            while let screen = model.screen, screen.result == nil {
+                for answer in screen.question.answer { model.select(answer) }
+                model.check()
+                model.next()
+            }
+        } else {
+            for answer in try #require(model.screen).question.answer { model.select(answer) }
+        }
+        let width: CGFloat = 1100
+        let image = try rendered(TrainingSessionView(model: model, keyboardAvailable: false), width: width)
+        let left = Int((width - GPLayout.contentMax) / 2)
+        let right = Int((width + GPLayout.contentMax) / 2)
+        #expect(try matchingPixels(image, color: .accent, bottom: 90) > 100)
+        #expect(try matchingPixels(image, color: .accent, bottom: 90, outside: left..<right) == 0)
+    }
+
+    private func rendered(_ view: some View, width: CGFloat = 720) throws -> CGImage {
         let renderer = ImageRenderer(
             content: view.gpDesignTokens().environment(\.colorScheme, .dark)
-                .frame(width: 720, height: 760).background(Color(.bg)))
+                .frame(width: width, height: 760).background(Color(.bg)))
         return try #require(renderer.cgImage)
     }
 
-    private func matchingPixels(_ image: CGImage, color: ColorResource, bottom: Int? = nil) throws -> Int {
+    private func matchingPixels(_ image: CGImage, color: ColorResource, bottom: Int? = nil, outside: Range<Int>? = nil)
+        throws -> Int
+    {
         #if os(iOS)
             let resolved = UIColor(resource: color).resolvedColor(with: UITraitCollection(userInterfaceStyle: .dark))
             var r: CGFloat = 0
@@ -132,6 +164,7 @@ struct InterfaceRegressionTests {
             var count = 0
             for y in (bottom.map { max(0, height - $0) } ?? 0)..<height {
                 for x in 0..<width {
+                    if outside?.contains(x) == true { continue }
                     let offset = (y * width + x) * 4
                     if abs(CGFloat(buffer[offset]) / 255 - r) < 0.04,
                         abs(CGFloat(buffer[offset + 1]) / 255 - g) < 0.04,

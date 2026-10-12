@@ -20,7 +20,8 @@ final class AppFlowTests: XCTestCase {
     }
 
     private func launch(
-        reset: Bool, server: String? = nil, largeText: Bool = false, language: String = "ru", theme: String? = nil
+        reset: Bool, server: String? = nil, largeText: Bool = false, language: String = "ru", theme: String? = nil,
+        useReviewTheme: Bool = true
     )
         -> XCUIApplication
     {
@@ -28,7 +29,7 @@ final class AppFlowTests: XCTestCase {
         app.launchArguments =
             ["-AppleLanguages", "(\(language))", "-AppleLocale", language == "ru" ? "ru_RU" : "en_US"]
             + (reset ? ["-GPResetState"] : [])
-        if let theme = theme ?? ProcessInfo.processInfo.environment["GP_REVIEW_THEME"] {
+        if let theme = theme ?? (useReviewTheme ? ProcessInfo.processInfo.environment["GP_REVIEW_THEME"] : nil) {
             guard ["light", "dark"].contains(theme) else {
                 XCTFail("Неизвестное значение GP_REVIEW_THEME: \(theme)")
                 return app
@@ -44,8 +45,11 @@ final class AppFlowTests: XCTestCase {
     }
 
     func testFirstLaunchOverridesLightSystemAndAppleIsWhite() throws {
-        // Перед прогоном симулятор получает системную light через simctl; выбора приложения ещё нет.
-        let app = launch(reset: true)
+        let previous = XCUIDevice.shared.appearance
+        defer { XCUIDevice.shared.appearance = previous }
+        XCUIDevice.shared.appearance = .light
+        XCTAssertEqual(XCUIDevice.shared.appearance, .light)
+        let app = launch(reset: true, useReviewTheme: false)
         let apple = app.buttons["signin.apple"]
         XCTAssertTrue(apple.waitForExistence(timeout: 10))
         let image = XCUIScreen.main.screenshot().image
@@ -73,17 +77,17 @@ final class AppFlowTests: XCTestCase {
     }
 
     func testStoredLightThemeSurvivesLaunchAndResetReturnsDark() throws {
-        var app = launch(reset: true, theme: "light")
+        var app = launch(reset: true, theme: "light", useReviewTheme: false)
         XCTAssertTrue(app.buttons["signin.apple"].waitForExistence(timeout: 10))
         var image = XCUIScreen.main.screenshot().image
         try expectPixel(image, at: CGPoint(x: 4, y: image.size.height / 2), rgb: (226, 227, 241))
         app.terminate()
-        app = launch(reset: false)
+        app = launch(reset: false, useReviewTheme: false)
         XCTAssertTrue(app.buttons["signin.apple"].waitForExistence(timeout: 10))
         image = XCUIScreen.main.screenshot().image
         try expectPixel(image, at: CGPoint(x: 4, y: image.size.height / 2), rgb: (226, 227, 241))
         app.terminate()
-        app = launch(reset: true)
+        app = launch(reset: true, useReviewTheme: false)
         XCTAssertTrue(app.buttons["signin.apple"].waitForExistence(timeout: 10))
         image = XCUIScreen.main.screenshot().image
         try expectPixel(image, at: CGPoint(x: 4, y: image.size.height / 2), rgb: (10, 15, 31))
@@ -106,6 +110,39 @@ final class AppFlowTests: XCTestCase {
                 mode.frame.maxY <= app.buttons["builder.start"].frame.minY && mode.isHittable
             }, object: nil)
         XCTAssertEqual(XCTWaiter.wait(for: [fits], timeout: 5), .completed)
+    }
+
+    func testBuilderEmptyCountHasNoClippedPlaceholder() throws {
+        let app = launch(reset: true)
+        signIn(app)
+        app.swipeUp()
+        app.buttons["today.newTraining"].tap()
+        let count = app.textFields["builder.count"]
+        XCTAssertTrue(count.waitForExistence(timeout: 10))
+        count.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        count.typeText(XCUIKeyboardKey.delete.rawValue + XCUIKeyboardKey.delete.rawValue)
+        // Пустой UITextField сообщает nil либо пустую строку; placeholder был непустым value.
+        let empty = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in (count.value as? String ?? "").isEmpty }, object: count)
+        XCTAssertEqual(
+            XCTWaiter.wait(for: [empty], timeout: 5), .completed, "Очищенное поле: \(String(describing: count.value))")
+        XCTAssertEqual(count.label, "Вопросов")
+        try capture("builder-empty")
+    }
+
+    func testTrainingStartsWhenCountKeyboardToolbarIsAbsent() {
+        let app = launch(reset: true)
+        startSession(
+            app,
+            beforeKeyboardDismissal: {
+                // Потеря фокуса убирает ту же панель, которой нет с аппаратной клавиатурой.
+                app.buttons["builder.topics"].tap()
+                XCTAssertTrue(app.buttons["builder.topics.done"].waitForExistence(timeout: 5))
+                app.buttons["builder.topics.done"].tap()
+                let absent = XCTNSPredicateExpectation(
+                    predicate: NSPredicate { _, _ in !app.buttons["builder.keyboardDone"].exists }, object: nil)
+                XCTAssertEqual(XCTWaiter.wait(for: [absent], timeout: 5), .completed)
+            })
     }
 
     private func expectPixel(
@@ -308,7 +345,9 @@ final class AppFlowTests: XCTestCase {
         XCTAssertEqual(entry.frame.midY, originalY, accuracy: 2)
     }
 
-    private func startSession(_ app: XCUIApplication, check: Bool = false, threeBlanks: Bool = false) {
+    private func startSession(
+        _ app: XCUIApplication, check: Bool = false, threeBlanks: Bool = false, beforeKeyboardDismissal: () -> Void = {}
+    ) {
         signIn(app)
         app.swipeUp()
         app.buttons["today.newTraining"].tap()
@@ -316,9 +355,9 @@ final class AppFlowTests: XCTestCase {
         let count = app.textFields["builder.count"]
         count.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
         count.typeText(XCUIKeyboardKey.delete.rawValue + XCUIKeyboardKey.delete.rawValue + (threeBlanks ? "1" : "3"))
+        beforeKeyboardDismissal()
         let done = app.buttons["builder.keyboardDone"]
-        XCTAssertTrue(done.waitForExistence(timeout: 5))
-        done.tap()
+        if done.waitForExistence(timeout: 2), done.isHittable { done.tap() }
         if check {
             let mode = app.segmentedControls["builder.mode"].buttons["Проверка"]
             XCTAssertTrue(mode.waitForExistence(timeout: 5))
@@ -326,6 +365,7 @@ final class AppFlowTests: XCTestCase {
             let selected = XCTNSPredicateExpectation(predicate: NSPredicate(format: "selected == true"), object: mode)
             XCTAssertEqual(XCTWaiter.wait(for: [selected], timeout: 5), .completed)
         }
+        // Без экранной панели (аппаратная клавиатура) этот шаг также снимает фокус с количества.
         app.buttons["builder.topics"].tap()
         XCTAssertTrue(app.buttons["builder.topics.done"].waitForExistence(timeout: 5))
         // Контраст: в открытом наборе все ответы — A, у двух пропусков — A и D.

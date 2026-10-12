@@ -299,11 +299,13 @@ struct TrainingBuilderView: View {
             field {
                 Text("Вопросов")
                 Spacer()
-                TextField("Вопросов", text: $countText)
+                // В каталоге подпись рядом; внутри очищенного числового поля подсказки нет.
+                TextField("", text: $countText)
                     .focused($countFocused)
                     .textFieldStyle(.plain).multilineTextAlignment(.center).monospacedDigit()
                     .frame(width: countSize * textScale, height: countSize * textScale)
                     .background(Color(.surface2), in: Capsule()).accessibilityIdentifier("builder.count")
+                    .accessibilityLabel("Вопросов")
                     #if os(iOS)
                         .keyboardType(.numberPad)
                     #endif

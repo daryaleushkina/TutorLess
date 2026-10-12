@@ -171,7 +171,9 @@ private struct TrainingSessionContent: View {
     }
 
     private func content(_ s: SessionModel.Screen, wide: Bool) -> some View {
-        VStack(spacing: 0) {
+        let twoColumns = wide && s.result == nil && (s.revealed || s.training.isCheck)
+        let columnWidth = twoColumns ? GPLayout.sessionMax : GPLayout.contentMax
+        return VStack(spacing: 0) {
             ScrollView {
                 Group {
                     if let result = s.result {
@@ -181,7 +183,7 @@ private struct TrainingSessionContent: View {
                                 .gpText(\.button).frame(minHeight: GPSize.tapTarget)
                                 .accessibilityIdentifier("summary.review")
                         }.frame(maxWidth: GPLayout.contentMax, alignment: .leading)
-                    } else if wide && (s.revealed || s.training.isCheck) {
+                    } else if twoColumns {
                         HStack(alignment: .top, spacing: GPSpace.s32) {
                             SessionQuestion(
                                 screen: s, onSelect: model.select, onReport: { reportPosition = s.position }
@@ -209,7 +211,7 @@ private struct TrainingSessionContent: View {
                 }.padding(GPLayout.gutter).frame(maxWidth: .infinity, alignment: .top)
             }.scrollBounceBehavior(.basedOnSize)
                 .accessibilityIdentifier("session.content")
-            actions(s).frame(maxWidth: wide ? GPLayout.sessionMax : GPLayout.contentMax).padding(
+            actions(s).frame(maxWidth: columnWidth).padding(
                 .horizontal, GPLayout.gutter
             )
             .padding(.vertical, GPSpace.s12).frame(maxWidth: .infinity).background(Color(.bg))
