@@ -217,7 +217,7 @@ initData, подмена Telegram — `apps/web/src/telegram/mockEnv.ts`) и
   основной репозиторий `tutorless/TutorLess` (на GitHub — `daryaleushkina/TutorLess`;
   в текстах бренд по-прежнему «Tutorless» — решение Даши 12.10.2026), деревья задач
   `tutorless/TutorLess-<задача>` (старые `greprepapp-*` доживают до удаления,
-  `tutorless/greprepapp` — ссылка на `TutorLess`), приватный контент `tutorless/greprepapp-content`,
+  `tutorless/greprepapp` — ссылка на `TutorLess`), приватный контент `tutorless/TutorLess-content` (GitHub `daryaleushkina/TutorLess-content`),
   задания Codex `tutorless/agent-tasks/<ГГГГ-ММ-ДД>-<кратко>/` (вместо общего
   `~/work/agent-tasks`), спецификации техлида — `tutorless/agent-tasks/specs/`,
   обзоры `codex-run review` — третьим аргументом в `tutorless/agent-tasks/reviews`.
