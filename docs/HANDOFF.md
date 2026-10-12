@@ -214,6 +214,16 @@ sh ../scripts/hooks/gate                          # всё, что провер�
   сервера. Ответы и конец одной тренировки идут под `FOR UPDATE`: ответ либо в итоге, либо отклонён
   (`training_finished`). Доступ — `canTrain` (бета — все вошедшие), туда же встанет подписка. Жалобы на
   задания — `question_reports`, очередь для админки (#24: правка задания — новой версией, не на месте).
+  Клиент передаёт необязательный `QuestionReport.reportId` (UUID устройства), сохраняя его в очереди
+  для всех повторных отправок. Уникальный индекс `(user_id, report_id)` и `INSERT ON CONFLICT DO NOTHING`
+  не дают записать дубль, в том числе при одновременных запросах. Повтор с теми же `questionId`, `kind`,
+  `text` и `trainingId` возвращает прежний `204` без тела; другое содержимое — `409 report_id_conflict`.
+  Отсутствие `text` и пустая строка различаются. Принятая жалоба подтверждается и после снятия задания
+  или закрытия жалобы в админке. Чужой ключ не раскрывает чужую запись: поиск ограничен пользователем.
+  Без `reportId` каждый запрос создаёт запись; `null` и неверный UUID дают `400 bad_request`.
+  Миграция `00005_question_report_id.sql` добавляет nullable-столбец и индекс, не меняя прежние записи
+  и INSERT старого кода; применить её до выкладки новой версии сервера. Подключение локального UUID
+  из очередей веба, Apple и Android к запросу выполняется в задачах клиентов.
 - **Тесты:** интеграционные поднимают тот же сервер, что в бою (`app.Handler`), против настоящего
   Postgres; у каждого теста своя база. Нет `TEST_DATABASE_URL` — тест падает, а не пропускается.
   Набор для разработки — `e.seed(t)` (`internal/app/trainings_test.go`).
@@ -608,6 +618,9 @@ sh ../../scripts/hooks/gate-apple     # всё, что проверит pre-push
   приложения не меняет. Проверки сохранённой и начальной темы явно игнорируют тему осмотра; тест первого
   запуска сам задаёт системе light через `XCUIDevice.appearance` и возвращает прежний вид. После осмотра
   вернуть `content_size large`, затем `run-sim.sh stop`. `-GPResetState` стирает и сохранённую тему.
+- **Свои симуляторы у заданий агентов:** с `GP_SIM_SET=agent` скрипты берут отдельные устройства («GrePrep iPhone ·
+  agent» и т. д.), а гейт — обычные. Иначе гейт и задание, идущие одновременно, ставят приложение на один
+  симулятор, и установка одного роняет UI-тесты другого («Critical process GrePrep crashed», 12.10.2026).
 - **Снимки:** каждое устройство снимается на своём симуляторе («GrePrep iPhone», «GrePrep iPad» — создаёт
   `scripts/simulator.sh`, iPhone 18 Pro и iPad Pro 11 M5 на iOS 27.0), Mac — без окна, поэтому только широкие
   экраны. Наши поверхности плоские;
@@ -667,7 +680,7 @@ Code эмулятор запускается только вне песочни�
 adb devices; xcrun simctl list devices booted               # включённых на Маке должно быть меньше пяти
 port=5570                                                   # первый чётный, где не слушают ни консоль, ни adb
 while nc -z 127.0.0.1 $port >/dev/null 2>&1 || nc -z 127.0.0.1 $((port + 1)) >/dev/null 2>&1; do port=$((port + 2)); done
-emulator -avd GrePrep_Pixel_9 -read-only -no-window -no-boot-anim -no-snapshot-save -port $port & pid=$!
+emulator -avd GrePrep_Pixel_9 -read-only -no-window -no-audio -no-boot-anim -no-snapshot-save -port $port & pid=$!
 export ANDROID_SERIAL=emulator-$port                        # дальше adb и gradlew говорят только с этой копией
 adb wait-for-device && kill -0 $pid                         # kill -0 упал — на порту чужое устройство, дальше не идти
 adb shell 'while [ "$(getprop sys.boot_completed)" != 1 ]; do sleep 1; done'

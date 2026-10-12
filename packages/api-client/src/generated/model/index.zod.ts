@@ -8,7 +8,7 @@
 import * as zod from 'zod';
 
 export const Error = zod.object({
-  "code": zod.string().describe('Машинный код: bad_request, unauthorized, forbidden, not_found, too_many_requests, invalid_init_data, invalid_id_token, no_questions, training_finished, internal. Клиент показывает текст по коду, а не message.'),
+  "code": zod.string().describe('Машинный код: bad_request, unauthorized, forbidden, not_found, too_many_requests, invalid_init_data, invalid_id_token, no_questions, training_finished, report_id_conflict, internal. Клиент показывает текст по коду, а не message.'),
   "message": zod.string().describe('Для журнала и разработчика, не для экрана'),
   "requestId": zod.string()
 })
@@ -1552,7 +1552,8 @@ export const questionReportTextMax = 2000;
 export const QuestionReport = zod.object({
   "kind": zod.enum(['question', 'answer', 'explanation', 'translation', 'other']).describe('Где ошибка — в задании, в ответе, в разборе, в переводе, другое (макет R17)'),
   "text": zod.string().max(questionReportTextMax).optional(),
-  "trainingId": zod.uuid().optional()
+  "trainingId": zod.uuid().optional(),
+  "reportId": zod.uuid().optional().describe('Необязательный UUID жалобы, созданный устройством и сохраняемый для всех повторных отправок. Уникален в пределах пользователя. null недопустим; отсутствие поля сохраняет прежнее поведение.')
 })
 
 export type QuestionReport = zod.input<typeof QuestionReport>;
@@ -1804,7 +1805,8 @@ export const reportQuestionBodyTextMax = 2000;
 export const ReportQuestionBody = zod.object({
   "kind": zod.enum(['question', 'answer', 'explanation', 'translation', 'other']).describe('Где ошибка — в задании, в ответе, в разборе, в переводе, другое (макет R17)'),
   "text": zod.string().max(reportQuestionBodyTextMax).optional(),
-  "trainingId": zod.uuid().optional()
+  "trainingId": zod.uuid().optional(),
+  "reportId": zod.uuid().optional().describe('Необязательный UUID жалобы, созданный устройством и сохраняемый для всех повторных отправок. Уникален в пределах пользователя. null недопустим; отсутствие поля сохраняет прежнее поведение.')
 })
 
 export type ReportQuestionBody = zod.input<typeof ReportQuestionBody>;

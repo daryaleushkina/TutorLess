@@ -34,6 +34,7 @@ import kotlinx.serialization.Contextual
  * @param kind Где ошибка — в задании, в ответе, в разборе, в переводе, другое (макет R17)
  * @param text 
  * @param trainingId 
+ * @param reportId Необязательный UUID жалобы, созданный устройством и сохраняемый для всех повторных отправок. Уникален в пределах пользователя. null недопустим; отсутствие поля сохраняет прежнее поведение.
  */
 @Serializable
 
@@ -47,7 +48,11 @@ data class QuestionReport (
     val text: kotlin.String? = null,
 
     @SerialName(value = "trainingId")
-    val trainingId: kotlin.String? = null
+    val trainingId: kotlin.String? = null,
+
+    /* Необязательный UUID жалобы, созданный устройством и сохраняемый для всех повторных отправок. Уникален в пределах пользователя. null недопустим; отсутствие поля сохраняет прежнее поведение. */
+    @SerialName(value = "reportId")
+    val reportId: kotlin.String? = null
 
 ) {
 

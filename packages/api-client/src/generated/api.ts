@@ -1717,6 +1717,7 @@ export const getReportQuestionUrl = (questionId: string,) => {
 }
 
 /**
+ * reportId — UUID жалобы, созданный устройством. Повтор с тем же reportId у того же пользователя и теми же questionId, kind, text и trainingId возвращает 204 без новой записи. Изменение содержимого с тем же reportId — 409 report_id_conflict. Ключи разных пользователей независимы. Без reportId каждый запрос создаёт новую жалобу, как у прежних клиентов.
  * @summary «Сообщить об ошибке» в задании — в очередь админки
  */
 export const reportQuestion = async (questionId: string,

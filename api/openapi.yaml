@@ -382,6 +382,11 @@ paths:
     post:
       operationId: reportQuestion
       summary: «Сообщить об ошибке» в задании — в очередь админки
+      description: >-
+        reportId — UUID жалобы, созданный устройством. Повтор с тем же reportId у того же пользователя
+        и теми же questionId, kind, text и trainingId возвращает 204 без новой записи.
+        Изменение содержимого с тем же reportId — 409 report_id_conflict. Ключи разных пользователей
+        независимы. Без reportId каждый запрос создаёт новую жалобу, как у прежних клиентов.
       tags: [trainings]
       parameters:
         - name: questionId
@@ -488,7 +493,7 @@ components:
           type: string
           description: >-
             Машинный код: bad_request, unauthorized, forbidden, not_found, too_many_requests,
-            invalid_init_data, invalid_id_token, no_questions, training_finished, internal. Клиент показывает текст по коду, а не message.
+            invalid_init_data, invalid_id_token, no_questions, training_finished, report_id_conflict, internal. Клиент показывает текст по коду, а не message.
           examples: [unauthorized]
         message:
           type: string
@@ -1234,6 +1239,12 @@ components:
           description: Где ошибка — в задании, в ответе, в разборе, в переводе, другое (макет R17)
         text: { type: string, maxLength: 2000 }
         trainingId: { type: string, format: uuid }
+        reportId:
+          type: string
+          format: uuid
+          description: >-
+            Необязательный UUID жалобы, созданный устройством и сохраняемый для всех повторных отправок.
+            Уникален в пределах пользователя. null недопустим; отсутствие поля сохраняет прежнее поведение.
 
     NumericEntry:
       type: object

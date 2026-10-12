@@ -55,3 +55,37 @@ func TestQuestionTypesMigrationPreservesOldWrites(t *testing.T) {
 		t.Fatalf("rollback discarded old data: %d %v", n, err)
 	}
 }
+
+func TestQuestionTypesRollbackRefusesToDropUsedMaterials(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	pool := testdb.New(t)
+	sqlDB := stdlib.OpenDBFromPool(pool)
+	t.Cleanup(func() {
+		if err := sqlDB.Close(); err != nil {
+			t.Error(err)
+		}
+	})
+	provider, err := goose.NewProvider(goose.DialectPostgres, sqlDB, migrations.FS())
+	if err != nil {
+		t.Fatal(err)
+	}
+	exec := func(query string) {
+		t.Helper()
+		if _, err := pool.Exec(ctx, query); err != nil {
+			t.Fatal(err)
+		}
+	}
+	// Старый тип задания может ссылаться на общий текст: ограничения прежних типов откат не остановят.
+	exec(`INSERT INTO topics(id,section,title_ru,title_en) VALUES('rc','verbal','Текст','Passage')`)
+	exec(`INSERT INTO question_passages(id,body) VALUES('p1','{"paragraphs":[]}')`)
+	exec(`INSERT INTO questions(id,question_type,topic_id,difficulty,body,answer,explanation,passage_id)
+ VALUES('00000000-0000-4000-8000-000000000003','multiple_choice','rc','easy','{}',ARRAY['A'],'{}','p1')`)
+	if _, err := provider.DownTo(ctx, 3); err == nil {
+		t.Fatal("rollback must refuse while questions use shared passages")
+	}
+	var n int
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM questions q JOIN question_passages p ON p.id = q.passage_id`).Scan(&n); err != nil || n != 1 {
+		t.Fatalf("refused rollback lost data: %d %v", n, err)
+	}
+}
