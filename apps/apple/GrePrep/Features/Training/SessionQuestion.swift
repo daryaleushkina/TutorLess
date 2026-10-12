@@ -118,6 +118,8 @@ struct SessionQuestion: View {
     let onSelect: (String) -> Void
     var onReport: (() -> Void)?
     @Environment(\.textScale) private var textScale
+    @Environment(\.gpType) private var type
+    @Environment(\.gpWideLayout) private var wide
     var section: StudySection { StudySection(screen.training.session.section) }
     var question: Question { screen.question }
 
@@ -130,16 +132,18 @@ struct SessionQuestion: View {
             if question.questionType == .quantitativeComparison {
                 quantities
             } else {
-                Text(prompt(scale: textScale)).gpText(GPType.prompt).fixedSize(horizontal: false, vertical: true)
-                    .accessibilityLabel(Text(verbatim: spokenPrompt)).accessibilityIdentifier("question.prompt")
+                Text(prompt(scale: textScale)).gpText(wide ? \.qTextWide : \.qText).fixedSize(
+                    horizontal: false, vertical: true
+                )
+                .accessibilityLabel(Text(verbatim: spokenPrompt)).accessibilityIdentifier("question.prompt")
             }
             ForEach(Array(question.groups.enumerated()), id: \.offset) { index, group in
                 if screen.revealed {
                     revealed(group, index: index)
                 } else if question.groups.count > 1 {
                     VStack(alignment: .leading, spacing: GPSpace.s8) {
-                        Text(verbatim: TrainingText.blankLabel(index)).gpText(GPType.footnote)
-                            .foregroundStyle(Color(.textSecondary)).accessibilityLabel("Пропуск \(index + 1)")
+                        Text(verbatim: TrainingText.blankLabel(index)).gpText(\.meta)
+                            .foregroundStyle(Color(.text3)).accessibilityLabel("Пропуск \(index + 1)")
                         ViewThatFits(in: .horizontal) {
                             HStack(spacing: GPSpace.s8) { chips(group, index: index) }
                             VStack(alignment: .leading, spacing: GPSpace.s8) { chips(group, index: index) }
@@ -167,11 +171,11 @@ struct SessionQuestion: View {
     }
 
     @ViewBuilder private var heading: some View {
-        Text(verbatim: TrainingText.typeLabel(question)).gpText(GPType.footnote)
-            .foregroundStyle(section.color).accessibilityAddTraits(.isHeader)
+        Text(verbatim: TrainingText.typeLabel(question)).gpText(\.meta)
+            .foregroundStyle(section.ink).accessibilityAddTraits(.isHeader)
         if let onReport {
-            Button("Сообщить об ошибке", action: onReport).gpText(GPType.footnote)
-                .buttonStyle(.plain).foregroundStyle(Color(.textSecondary))
+            Button("Сообщить об ошибке", action: onReport).gpText(\.caption)
+                .buttonStyle(.plain).foregroundStyle(Color(.text3))
                 .frame(minHeight: GPSize.tapTarget).accessibilityIdentifier("question.report")
         }
     }
@@ -187,15 +191,15 @@ struct SessionQuestion: View {
             let many = question.groups.count > 1
             if many {
                 var label = AttributedString(TrainingText.blankLabel(index) + " ")
-                label.foregroundColor = Color(.textSecondary)
-                label.font = .gp(GPType.key, scale: scale)
+                label.foregroundColor = Color(.text2)
+                label.font = .gp(type.caption, scale: scale)
                 text.append(label)
             }
             let option =
                 question.groups.indices.contains(index)
                 ? question.groups[index].options.first { chosen.contains($0.id) } : nil
             var blank = AttributedString(many ? option?.text ?? "_______" : "_______")
-            blank.foregroundColor = many && option != nil ? section.color : Color(.textSecondary)
+            blank.foregroundColor = many && option != nil ? Color(screen.revealed ? .right : .text) : Color(.text2)
             text.append(blank)
         }
         return text
@@ -215,7 +219,7 @@ struct SessionQuestion: View {
     private var quantities: some View {
         VStack(spacing: GPSpace.s16) {
             if let condition = question.condition {
-                Text(verbatim: condition).gpText(GPType.prompt).multilineTextAlignment(.center)
+                Text(verbatim: condition).gpText(wide ? \.qTextWide : \.qText).multilineTextAlignment(.center)
                     .accessibilityIdentifier("question.condition")
             }
             HStack(alignment: .top, spacing: GPSpace.s12) {
@@ -226,10 +230,10 @@ struct SessionQuestion: View {
     }
     private func quantity(_ label: LocalizedStringKey, value: String) -> some View {
         VStack(spacing: GPSpace.s8) {
-            Text(label).gpText(GPType.footnote).foregroundStyle(Color(.textSecondary))
-            Text(verbatim: value).gpText(GPType.headline).fixedSize(horizontal: false, vertical: true)
+            Text(label).gpText(\.meta).foregroundStyle(Color(.text3))
+            Text(verbatim: value).gpMath(\.opt).fixedSize(horizontal: false, vertical: true)
         }.multilineTextAlignment(.center).frame(maxWidth: .infinity).padding(GPSpace.s16)
-            .background(Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.xl))
+            .background(Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.l))
             .accessibilityElement(children: .combine)
     }
 
@@ -239,16 +243,16 @@ struct SessionQuestion: View {
             Button {
                 onSelect(option.id)
             } label: {
-                Text(verbatim: option.text).gpText(GPType.callout).fixedSize(horizontal: false, vertical: true)
+                Text(verbatim: option.text).gpText(\.opt).fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, GPSpace.s14).padding(.vertical, GPSpace.s8)
                     .frame(minHeight: GPSize.tapTarget)
                     .background(
-                        selected ? section.tint : Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.lg)
+                        selected ? Color(.surface2) : Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.m)
                     )
                     .overlay {
                         if selected {
-                            RoundedRectangle(cornerRadius: GPRadius.lg).stroke(
-                                section.color, lineWidth: GPSize.hairline)
+                            RoundedRectangle(cornerRadius: GPRadius.m).stroke(
+                                Color(.text), lineWidth: GPSize.hairline)
                         }
                     }
             }.buttonStyle(PressScaleStyle())
@@ -262,43 +266,44 @@ struct SessionQuestion: View {
     private enum Mark { case none, selected, correct, wrong }
     private func optionRow(_ option: Components.Schemas.QuestionOption, mark: Mark) -> some View {
         HStack(spacing: GPSpace.s12) {
-            Text(verbatim: option.id).gpText(GPType.footnote).fontWeight(.semibold)
-                .frame(minWidth: GPSize.stepNode, minHeight: GPSize.stepNode)
+            Text(verbatim: option.id).gpText(\.meta).fontWeight(.semibold)
+                .frame(minWidth: GPSize.icon, minHeight: GPSize.icon)
                 .foregroundStyle(
-                    mark == .selected ? Color(.surface) : mark == .correct ? section.color : Color(.textSecondary)
+                    mark == .selected ? Color(.bg) : mark == .correct ? Color(.right) : Color(.text2)
                 )
                 .background(
-                    mark == .selected ? section.color : mark == .correct ? Color(.surface) : Color(.fill), in: Capsule()
+                    mark == .selected ? Color(.text) : mark == .correct ? Color(.surface) : Color(.surface2),
+                    in: Capsule()
                 )
-            Text(verbatim: option.text).gpText(GPType.body).frame(maxWidth: .infinity, alignment: .leading)
+            Text(verbatim: option.text).gpText(\.opt).frame(maxWidth: .infinity, alignment: .leading)
                 .fixedSize(horizontal: false, vertical: true)
             if mark == .correct || mark == .wrong {
                 ViewThatFits(in: .horizontal) {
                     HStack(spacing: GPSpace.s8) { markLabel(mark) }
                     VStack(spacing: GPSpace.s4) { markLabel(mark) }
-                }.foregroundStyle(mark == .correct ? section.color : Color(.wrong))
+                }.foregroundStyle(mark == .correct ? Color(.right) : Color(.wrong))
             }
-        }.frame(minHeight: GPSize.row).padding(.horizontal, GPSpace.s12).padding(.vertical, GPSpace.s8)
+        }.frame(minHeight: GPSize.opt).padding(.horizontal, GPSpace.s12).padding(.vertical, GPSpace.s8)
             .background(
-                mark == .selected || mark == .correct ? section.tint : Color(.surface),
-                in: RoundedRectangle(cornerRadius: GPRadius.lg)
+                mark == .selected ? Color(.surface2) : mark == .correct ? Color(.rightSoft) : Color(.surface),
+                in: RoundedRectangle(cornerRadius: GPRadius.m)
             )
             .overlay {
                 if mark == .selected {
-                    RoundedRectangle(cornerRadius: GPRadius.lg).stroke(section.color, lineWidth: GPSize.hairline)
+                    RoundedRectangle(cornerRadius: GPRadius.m).stroke(Color(.text), lineWidth: GPSize.hairline)
                 }
             }
     }
     @ViewBuilder private func markLabel(_ mark: Mark) -> some View {
-        Text(mark == .correct ? "верный" : "ваш ответ").gpText(GPType.footnote)
+        Text(mark == .correct ? "верный" : "ваш ответ").gpText(\.meta)
         Image(systemName: mark == .correct ? "checkmark.circle.fill" : "xmark.circle.fill").accessibilityHidden(true)
     }
 
     private func revealed(_ group: Components.Schemas.OptionGroup, index: Int) -> some View {
         VStack(alignment: .leading, spacing: GPSpace.s8) {
             if question.groups.count > 1 {
-                Text(verbatim: TrainingText.blankLabel(index)).gpText(GPType.footnote).foregroundStyle(
-                    Color(.textSecondary))
+                Text(verbatim: TrainingText.blankLabel(index)).gpText(\.meta).foregroundStyle(
+                    Color(.text3))
             }
             ForEach(
                 group.options.filter { question.answer.contains($0.id) || screen.selection.contains($0.id) }, id: \.id
@@ -306,7 +311,7 @@ struct SessionQuestion: View {
                 VStack(alignment: .leading, spacing: GPSpace.s4) {
                     optionRow(option, mark: question.answer.contains(option.id) ? .correct : .wrong)
                     if question.answer.contains(option.id), screen.selection.contains(option.id) {
-                        Text("ваш ответ").gpText(GPType.footnote).foregroundStyle(section.color)
+                        Text("ваш ответ").gpText(\.meta).foregroundStyle(Color(.right))
                             .padding(.horizontal, GPSpace.s12)
                     }
                 }
@@ -322,7 +327,7 @@ struct SessionQuestion: View {
             let rest = group.options.filter { !question.answer.contains($0.id) && !screen.selection.contains($0.id) }
             if !rest.isEmpty {
                 Text(verbatim: rest.map { "\($0.id) \($0.text)" }.joined(separator: "   "))
-                    .gpText(GPType.subhead).foregroundStyle(Color(.textSecondary)).padding(.horizontal, GPSpace.s12)
+                    .gpText(\.meta).foregroundStyle(Color(.text3)).padding(.horizontal, GPSpace.s12)
                     .accessibilityLabel("Остальные варианты: \(rest.map(\.text).joined(separator: ", "))")
             }
         }
@@ -333,7 +338,7 @@ struct SessionExplanation: View {
     @Bindable var model: SessionModel
     let screen: SessionModel.Screen
     @Environment(\.locale) private var locale
-    @ScaledMetric(relativeTo: .title) private var nodeSize = GPSize.stepNode
+    @ScaledMetric(relativeTo: .title) private var nodeSize = GPSize.icon
     private var english: Bool { model.english ?? (locale.language.languageCode?.identifier == "en") }
 
     var body: some View {
@@ -343,14 +348,14 @@ struct SessionExplanation: View {
         let wrong = q.explanation.options.filter { chosen.contains($0.optionId) && !q.answer.contains($0.optionId) }
         HStack(alignment: .top, spacing: GPSpace.s14) {
             Image(systemName: correct ? "checkmark.circle.fill" : "xmark.circle.fill")
-                .gpText(GPType.title2).foregroundStyle(correct ? StudySection(q.section).color : Color(.wrong))
+                .gpText(\.h2).foregroundStyle(correct ? Color(.right) : Color(.wrong))
                 .frame(width: nodeSize, height: nodeSize)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: GPSpace.s12) {
-                Text(verbatim: TrainingText.verdict(q, chosen: chosen, english: english)).gpText(GPType.body)
+                Text(verbatim: TrainingText.verdict(q, chosen: chosen, english: english)).gpText(\.answer)
                     .fontWeight(.semibold).accessibilityAddTraits(.isHeader).accessibilityIdentifier(
                         "explanation.verdict")
-                rich(english ? q.explanation.solution.en : q.explanation.solution.ru).gpText(GPType.bodyLong)
+                rich(english ? q.explanation.solution.en : q.explanation.solution.ru).gpText(\.explainBody)
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityIdentifier("explanation.solution")
                 ViewThatFits(in: .horizontal) {
@@ -359,10 +364,10 @@ struct SessionExplanation: View {
                 }
                 if model.whyNotOpen {
                     ForEach(wrong, id: \.optionId) { explanation in
-                        rich(english ? explanation.text.en : explanation.text.ru).gpText(GPType.subhead)
+                        rich(english ? explanation.text.en : explanation.text.ru).gpText(\.explainBody)
                             .fixedSize(horizontal: false, vertical: true)
                             .frame(maxWidth: .infinity, alignment: .leading).padding(GPSpace.s16)
-                            .background(Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.xl))
+                            .background(Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.l))
                             .accessibilityIdentifier("explanation.whyNot")
                     }
                 }
@@ -371,7 +376,7 @@ struct SessionExplanation: View {
             // Нить продолжает узел до конца разбора; фон получает его готовую высоту и не растягивает текст.
             VStack(spacing: GPSpace.s4) {
                 Color.clear.frame(height: nodeSize)
-                Rectangle().fill(Color(.line)).frame(width: GPSize.stepLine)
+                Rectangle().fill(Color(.line)).frame(width: GPSize.hairline)
             }.frame(width: nodeSize).accessibilityHidden(true)
         }.foregroundStyle(Color(.text)).accessibilityElement(children: .contain).accessibilityIdentifier("explanation")
     }
@@ -385,10 +390,10 @@ struct SessionExplanation: View {
                 model.whyNotOpen.toggle()
             } label: {
                 HStack(spacing: GPSpace.s6) {
-                    Text(verbatim: english ? "Why not \(words)?" : "Почему не \(words)?").gpText(GPType.subhead)
+                    Text(verbatim: english ? "Why not \(words)?" : "Почему не \(words)?").gpText(\.action)
                     Image(systemName: model.whyNotOpen ? "chevron.up" : "chevron.down").accessibilityHidden(true)
                 }.padding(.horizontal, GPSpace.s16).frame(minHeight: GPSize.tapTarget)
-                    .background(Color(.fill), in: Capsule())
+                    .background(Color(.surface2), in: Capsule())
             }.buttonStyle(PressScaleStyle())
                 .accessibilityValue(model.whyNotOpen ? Text("Развёрнуто") : Text("Свёрнуто"))
                 .accessibilityIdentifier("explanation.whyNotToggle")

@@ -1,8 +1,8 @@
 import AuthenticationServices
 import SwiftUI
 
-/// Экран входа вне Telegram (макет T4-SignIn): знак, имя, одна фраза о продукте и три равноценных способа
-/// входа — Telegram первым (решение Даши 06.10.2026). Дисклеймер ETS — на стартовом экране каждого
+/// Экран входа (макет T4-SignIn): знак, имя, одна фраза о продукте и два равноценных способа
+/// входа — Apple и Google (решение Даши 10.10.2026). Дисклеймер ETS — на стартовом экране каждого
 /// приложения (PRODUCT.md, «Brand Commitments»).
 struct SignInView: View {
     let reason: AppModel.SignOutReason?
@@ -23,7 +23,7 @@ struct SignInView: View {
 
     var body: some View {
         SignInContent(model: model, reason: reason, showsDevelopmentSignIn: showsDevelopmentSignIn)
-            .background { SectionGlow(section: .verbal) }
+            .background(Color(.bg).ignoresSafeArea())
     }
 }
 
@@ -42,8 +42,8 @@ private struct SignInContent: View {
                     Spacer(minLength: GPSpace.s40)
                     if reason == .sessionExpired {
                         Text("Вход закончился — войдите снова.")
-                            .gpText(GPType.subhead)
-                            .foregroundStyle(Color(.textSecondary))
+                            .gpText(\.meta)
+                            .foregroundStyle(Color(.text2))
                             .padding(.bottom, GPSpace.s16)
                             .accessibilityIdentifier("signin.expired")
                     }
@@ -73,22 +73,24 @@ private struct SignInContent: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: GPSpace.s20) {
             BrandMark()
-                .frame(width: GPSize.brandGlyph, height: GPSize.brandGlyph)
+                // временно: роли нет, вопрос техлиду (11.10.2026)
+                .frame(width: GPSpace.s32, height: GPSpace.s32)
                 .foregroundStyle(Color(.verbal))
-                .frame(width: GPSize.brandMark, height: GPSize.brandMark)
-                .glassSurface(in: RoundedRectangle(cornerRadius: GPRadius.xl, style: .continuous))
+                // временно: роли нет, вопрос техлиду (11.10.2026)
+                .frame(width: GPSize.sectionRow, height: GPSize.sectionRow)
+                .background(Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.l, style: .continuous))
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: GPSpace.s10) {
                 Text(
                     verbatim: Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "GrePrepApp"
                 )
-                .gpText(GPType.title1)
+                .gpText(\.h1)
                 .foregroundStyle(Color(.text))
                 .accessibilityAddTraits(.isHeader)
                 Text("Подготовка к GRE® с разбором каждой ошибки — по-русски и по-английски.")
-                    .gpText(GPType.bodyLong)
-                    .foregroundStyle(Color(.textSecondary))
-                    .frame(maxWidth: GPLayout.taglineMax, alignment: .leading)
+                    .gpText(\.lead)
+                    .foregroundStyle(Color(.text2))
+                    .frame(maxWidth: GPLayout.textMax, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -96,9 +98,6 @@ private struct SignInContent: View {
 
     private var buttons: some View {
         VStack(spacing: GPSpace.s10) {
-            TelegramSignInButton(isBusy: model.busy == .telegram) {
-                Task { await model.signInWithWeb(.telegram, authenticate: authenticate) }
-            }
             AppleSignInButton(model: model)
             GoogleSignInButton(isBusy: model.busy == .google) {
                 Task { await model.signInWithWeb(.google, authenticate: authenticate) }
@@ -113,8 +112,8 @@ private struct SignInContent: View {
             Text(verbatim: GREBrand.disclaimer)
                 .environment(\.locale, Locale(identifier: "en"))
         }
-        .gpText(GPType.caption)
-        .foregroundStyle(Color(.textSecondary))
+        .gpText(\.caption)
+        .foregroundStyle(Color(.text3))
         .multilineTextAlignment(.center)
         .frame(maxWidth: .infinity)
         .fixedSize(horizontal: false, vertical: true)
@@ -133,9 +132,9 @@ private struct SignInMessageText: View {
 
     var body: some View {
         text
-            .gpText(GPType.subhead)
+            .gpText(\.meta)
             // «Ещё не подключён» — сведение, а не сбой: без цвета ошибки.
-            .foregroundStyle(isFailure ? Color(.wrong) : Color(.textSecondary))
+            .foregroundStyle(isFailure ? Color(.wrong) : Color(.text2))
             .frame(maxWidth: .infinity, alignment: .leading)
             .fixedSize(horizontal: false, vertical: true)
             .accessibilityIdentifier("signin.message")
@@ -148,7 +147,6 @@ private struct SignInMessageText: View {
 
     private var text: Text {
         switch message {
-        case .notConnectedYet(.telegram): Text("Вход через Telegram ещё не подключён — он появится до беты.")
         case .notConnectedYet(.google): Text("Вход через Google ещё не подключён — он появится до беты.")
         case .notConnectedYet(.apple): Text("Вход с Apple ещё не подключён — он появится до беты.")
         case .notConnectedYet: Text("Этот способ входа ещё не подключён.")
@@ -168,8 +166,8 @@ private struct SignInMessageText: View {
         var body: some View {
             VStack(alignment: .leading, spacing: GPSpace.s8) {
                 Text("Для разработки — вход подменой")
-                    .gpText(GPType.footnote)
-                    .foregroundStyle(Color(.textSecondary))
+                    .gpText(\.meta)
+                    .foregroundStyle(Color(.text2))
                 HStack(spacing: GPSpace.s8) {
                     TextField(text: $name) { Text("Имя тестового пользователя") }
                         .textFieldStyle(.roundedBorder)
@@ -192,7 +190,7 @@ private struct SignInMessageText: View {
                 }
             }
             .padding(GPSpace.s12)
-            .background(Color(.fill), in: RoundedRectangle(cornerRadius: GPRadius.md, style: .continuous))
+            .background(Color(.surface2), in: RoundedRectangle(cornerRadius: GPRadius.m, style: .continuous))
         }
 
         private func submit() {

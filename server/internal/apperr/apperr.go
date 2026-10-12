@@ -24,6 +24,8 @@ const (
 	NoQuestions Code = "no_questions"
 	// TrainingFinished — тренировка закончена, ответы больше не принимаются.
 	TrainingFinished Code = "training_finished"
+	// ReportIDConflict — ключ жалобы уже принят с другим содержимым.
+	ReportIDConflict Code = "report_id_conflict"
 	Internal         Code = "internal"
 )
 

@@ -24,7 +24,7 @@ import dev.greprepapp.app.core.session.KeystoreTokenStore
 import dev.greprepapp.app.core.session.TokenStore
 import dev.greprepapp.app.core.theme.DataStoreThemeStore
 import dev.greprepapp.app.core.theme.ThemeStore
-import dev.greprepapp.app.feature.today.TodayCache
+import dev.greprepapp.app.feature.shell.ShellCache
 import dev.greprepapp.app.feature.training.TrainingStore
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -93,10 +93,10 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun todayCache(
+    fun shellCache(
         @ApplicationContext context: Context,
         reporter: ClientErrorReporter,
-    ): TodayCache = TodayCache(context.noBackupFilesDir, reporter)
+    ): ShellCache = ShellCache(context.noBackupFilesDir, reporter)
 
     @Provides
     @Singleton

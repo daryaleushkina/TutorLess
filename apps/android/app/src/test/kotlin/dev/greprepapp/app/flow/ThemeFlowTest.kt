@@ -202,9 +202,9 @@ class ThemeFlowTest {
         server.issue("saved")
         tokens.token = "saved"
         scenario = ActivityScenario.launch(MainActivity::class.java)
-        compose.waitUntilAtLeastOneExists(hasTestTag("today.plan"), TIMEOUT)
+        compose.waitUntilAtLeastOneExists(hasTestTag("training.home"), TIMEOUT)
         compose.onNodeWithTag("tab.progress").performClick()
-        compose.onNodeWithTag("progress.settings").performClick()
+        compose.onNodeWithTag("shell.profile").performClick()
         compose.onNodeWithTag("settings.signOut").assertIsDisplayed()
         lateinit var original: MainActivity
         lateinit var content: android.view.View

@@ -27,6 +27,16 @@ ALTER TABLE training_items ADD COLUMN sentence_id text;
 
 -- +goose Down
 -- Откат после появления нового контента требует сначала убрать его ссылки; данные молча не удаляются.
+-- Ограничения прежних типов этого не гарантируют: задание multiple_choice может ссылаться на текст или рисунок.
+-- +goose StatementBegin
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM questions WHERE passage_id IS NOT NULL OR figure_id IS NOT NULL OR numeric_answer IS NOT NULL)
+     OR EXISTS (SELECT 1 FROM training_items WHERE numeric_answer IS NOT NULL OR sentence_id IS NOT NULL) THEN
+    RAISE EXCEPTION 'question types rollback: questions or answers still use passages, figures or new answers; remove them first';
+  END IF;
+END $$;
+-- +goose StatementEnd
 ALTER TABLE training_items DROP COLUMN sentence_id;
 ALTER TABLE training_items DROP COLUMN numeric_answer;
 ALTER TABLE training_items DROP CONSTRAINT training_items_option_ids_check;

@@ -48,25 +48,28 @@ private struct TrainingReviewContent: View {
                         Group {
                             if wide {
                                 HStack(alignment: .top, spacing: GPSpace.s32) {
-                                    list(t, wide: true).frame(maxWidth: GPLayout.contentMax / 2)
+                                    list(t, wide: true)
+                                        // временно: роли нет, вопрос техлиду (11.10.2026)
+                                        .frame(maxWidth: GPLayout.contentMax / 2)
                                     if let p = model.selectedPosition, let screen = model.screen(p) {
                                         ReviewQuestionView(
                                             screen: screen, trainings: model.trainings, onReport: { reportPosition = p }
                                         )
                                         .id(p).frame(maxWidth: GPLayout.contentMax)
                                     }
-                                }.frame(maxWidth: GPLayout.contentMax * 1.5, alignment: .leading)
+                                }.frame(maxWidth: GPLayout.sessionMax, alignment: .leading)
                             } else {
                                 list(t, wide: false).frame(maxWidth: GPLayout.contentMax)
                             }
                         }.padding(GPLayout.gutter).frame(maxWidth: .infinity, alignment: .top)
                     }.scrollBounceBehavior(.basedOnSize)
-                        .background { SectionGlow(section: StudySection(t.session.section)) }
+                        .background(Color(.bg).ignoresSafeArea())
                         .navigationTitle(t.isCheck ? Text("Разбор проверки") : Text("Разбор тренировки"))
                 } else {
                     ContentUnavailableView("Тренировки нет на устройстве", systemImage: "tray")
                 }
             }
+            .environment(\.gpWideLayout, wide)
             .navigationDestination(isPresented: Binding(get: { opened != nil }, set: { if !$0 { opened = nil } })) {
                 if let p = opened, let screen = model.screen(p) {
                     TrainingReviewItemView(screen: screen, trainings: model.trainings, onReport: { reportPosition = p })
@@ -123,14 +126,14 @@ private struct TrainingReviewContent: View {
     private func list(_ t: StoredTraining, wide: Bool) -> some View {
         VStack(alignment: .leading, spacing: GPSpace.s16) {
             let selectedPosition = model.selectedPosition
-            Text("\(model.correctCount) \(TrainingCopy.correctOf(t.total))").gpText(GPType.subhead)
-                .foregroundStyle(Color(.textSecondary))
+            Text("\(model.correctCount) \(TrainingCopy.correctOf(t.total))").gpText(\.meta)
+                .foregroundStyle(Color(.text2))
             Picker("Показать", selection: $model.onlyMistakes) {
                 Text("Все · \(t.total)").tag(false).accessibilityIdentifier("review.filter.all")
                 Text("Ошибки · \(model.mistakes.count)").tag(true).accessibilityIdentifier("review.filter.mistakes")
             }.pickerStyle(.segmented).labelsHidden().accessibilityIdentifier("review.filter")
             if model.positions.isEmpty {
-                Text("Ошибок нет.").gpText(GPType.body).accessibilityIdentifier("review.noMistakes")
+                Text("Ошибок нет.").gpText(\.body).accessibilityIdentifier("review.noMistakes")
             }
             LazyVStack(spacing: GPSpace.s4) {
                 ForEach(model.positions, id: \.self) { p in
@@ -141,23 +144,27 @@ private struct TrainingReviewContent: View {
                         if !wide { opened = p }
                     } label: {
                         HStack(spacing: GPSpace.s14) {
-                            Text(p + 1, format: .number).gpText(GPType.footnote).monospacedDigit()
-                                .frame(minWidth: GPSize.stepNode, minHeight: GPSize.stepNode)
+                            Text(p + 1, format: .number).gpText(\.meta).monospacedDigit()
+                                .frame(minWidth: GPSize.icon, minHeight: GPSize.icon)
                                 .background(
-                                    outcome == .wrong ? Color(.wrongTint) : StudySection(q.section).tint, in: Circle())
+                                    outcome == .wrong
+                                        ? Color(.wrongSoft)
+                                        : outcome == .correct ? Color(.rightSoft) : Color(.surface2), in: Circle())
                             VStack(alignment: .leading, spacing: GPSpace.s4) {
-                                Text(verbatim: TrainingText.typeLabel(q)).gpText(GPType.body)
-                                Text(verbatim: q.topicTitle.localized).gpText(GPType.subhead).foregroundStyle(
-                                    Color(.textSecondary))
-                                Text(outcome.label).gpText(GPType.footnote)
-                                    .foregroundStyle(outcome == .wrong ? Color(.wrong) : Color(.textSecondary))
+                                Text(verbatim: TrainingText.typeLabel(q)).gpText(\.body)
+                                Text(verbatim: q.topicTitle.localized).gpText(\.meta).foregroundStyle(
+                                    Color(.text2))
+                                Text(outcome.label).gpText(\.meta)
+                                    .foregroundStyle(
+                                        outcome == .wrong
+                                            ? Color(.wrong) : outcome == .correct ? Color(.right) : Color(.text2))
                             }.frame(maxWidth: .infinity, alignment: .leading)
                             Image(systemName: "chevron.right").accessibilityHidden(true)
-                        }.foregroundStyle(Color(.text)).padding(GPSpace.s12).frame(minHeight: GPSize.rowTall)
+                        }.foregroundStyle(Color(.text)).padding(GPSpace.s12).frame(minHeight: GPSize.tapTarget)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .background(
-                                wide && selectedPosition == p ? Color(.fill) : Color.clear,
-                                in: RoundedRectangle(cornerRadius: GPRadius.lg))
+                                wide && selectedPosition == p ? Color(.surface2) : Color.clear,
+                                in: RoundedRectangle(cornerRadius: GPRadius.m))
                     }.buttonStyle(PressScaleStyle()).accessibilityElement(children: .combine)
                         .accessibilityLabel(
                             "Вопрос \(p + 1), \(String(localized: outcome.label)), \(TrainingText.typeLabel(q)), \(q.topicTitle.localized)"
@@ -240,7 +247,7 @@ struct TrainingReviewItemView: View {
             ReviewQuestionView(screen: screen, trainings: trainings, onReport: onReport)
                 .frame(maxWidth: GPLayout.contentMax).padding(GPLayout.gutter).frame(maxWidth: .infinity)
         }.scrollBounceBehavior(.basedOnSize)
-            .background { SectionGlow(section: StudySection(screen.training.session.section)) }
+            .background(Color(.bg).ignoresSafeArea())
             .navigationTitle(Text("Вопрос \(screen.position + 1)"))
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
@@ -260,9 +267,9 @@ struct ReviewQuestionView: View {
     }
     var body: some View {
         VStack(alignment: .leading, spacing: GPSpace.s24) {
-            Text("Вопрос \(screen.position + 1)").gpText(GPType.title3).accessibilityAddTraits(.isHeader)
+            Text("Вопрос \(screen.position + 1)").gpText(\.h2).accessibilityAddTraits(.isHeader)
             if screen.selection.isEmpty {
-                Text("без ответа").gpText(GPType.subhead).foregroundStyle(Color(.textSecondary))
+                Text("без ответа").gpText(\.meta).foregroundStyle(Color(.text2))
             }
             SessionQuestion(screen: screen, onSelect: { _ in }, onReport: onReport)
             SessionExplanation(model: explanation.value, screen: screen)
@@ -273,70 +280,72 @@ struct ReviewQuestionView: View {
 struct QuestionReportView: View {
     @State var model: QuestionReportModel
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.textScale) private var textScale
-    @ScaledMetric(relativeTo: .callout) private var kindWidth = GPSize.rowTall * 2
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: GPSpace.s16) {
                     if model.sent {
-                        Text("Спасибо!").gpText(GPType.title3).accessibilityIdentifier("report.sent")
-                        Text("Проверим вручную и поправим задание.").gpText(GPType.body)
+                        Text("Спасибо!").gpText(\.h2).accessibilityIdentifier("report.sent")
+                        Text("Проверим вручную и поправим задание.").gpText(\.body)
                     } else if let q = model.question {
-                        Text("Вопрос \(model.position + 1) · \(TrainingText.typeLabel(q))").gpText(GPType.subhead)
-                            .foregroundStyle(Color(.textSecondary))
-                        Text("Где ошибка").gpText(GPType.headline).accessibilityAddTraits(.isHeader)
-                        LazyVGrid(
-                            columns: [GridItem(.adaptive(minimum: kindWidth * textScale), spacing: GPSpace.s8)],
-                            spacing: GPSpace.s8
-                        ) {
+                        Text("Вопрос \(model.position + 1) · \(TrainingText.typeLabel(q))").gpText(\.meta)
+                            .foregroundStyle(Color(.text2))
+                        Text("Где ошибка").gpText(\.h3).accessibilityAddTraits(.isHeader)
+                        FlowLayout {
                             ForEach(ReportKind.allCases, id: \.self) { kind in
                                 Button {
                                     model.setKind(kind)
                                 } label: {
-                                    Text(kind.label).gpText(GPType.callout).fixedSize(horizontal: false, vertical: true)
+                                    Text(kind.label).gpText(\.button).fixedSize(horizontal: false, vertical: true)
                                         .padding(.horizontal, GPSpace.s12).padding(.vertical, GPSpace.s8)
                                         .frame(maxWidth: .infinity, minHeight: GPSize.tapTarget)
-                                        .foregroundStyle(model.draft.kind == kind ? Color(.onAccent) : Color(.text))
+                                        .foregroundStyle(Color(.text))
                                         .background(
-                                            model.draft.kind == kind ? Color(.accent) : Color(.surface), in: Capsule())
+                                            model.draft.kind == kind ? Color(.surface2) : Color(.surface),
+                                            in: Capsule()
+                                        )
+                                        .overlay {
+                                            if model.draft.kind == kind {
+                                                Capsule().strokeBorder(Color(.text), lineWidth: GPSize.hairline)
+                                            }
+                                        }
                                 }.buttonStyle(PressScaleStyle()).accessibilityAddTraits(
                                     model.draft.kind == kind ? .isSelected : []
                                 )
                                 .accessibilityIdentifier("report.kind.\(kind.rawValue)")
                             }
                         }
-                        Text("Что не так").gpText(GPType.headline)
+                        Text("Что не так").gpText(\.h3)
                         TextField(
                             "Что не так", text: Binding(get: { model.draft.text }, set: model.setText),
-                            prompt: Text("Что не так").foregroundStyle(Color(.textSecondary)), axis: .vertical
+                            prompt: Text("Что не так").foregroundStyle(Color(.text2)), axis: .vertical
                         )
-                        .lineLimit(4...8).gpText(GPType.body).textFieldStyle(.plain)
-                        .padding(GPSpace.s14).frame(minHeight: GPSize.rowTall * 2, alignment: .topLeading)
-                        .background(Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.xl))
+                        .lineLimit(4...8).gpText(\.body).textFieldStyle(.plain)
+                        .padding(GPSpace.s14).frame(maxWidth: .infinity, alignment: .topLeading)
+                        .background(Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.l))
                         .overlay {
-                            RoundedRectangle(cornerRadius: GPRadius.xl).stroke(Color(.line), lineWidth: GPSize.hairline)
+                            RoundedRectangle(cornerRadius: GPRadius.l).stroke(Color(.line), lineWidth: GPSize.hairline)
                         }
                         .accessibilityIdentifier("report.text")
-                        Text("\(model.draft.length) / \(QuestionReportDraft.maxLength)").gpText(GPType.footnote)
+                        Text("\(model.draft.length) / \(QuestionReportDraft.maxLength)").gpText(\.meta)
                             .monospacedDigit()
                             .foregroundStyle(
                                 model.draft.length > QuestionReportDraft.maxLength
-                                    ? Color(.wrong) : Color(.textSecondary)
+                                    ? Color(.wrong) : Color(.text2)
                             )
                             .accessibilityLabel("\(model.draft.length) из \(QuestionReportDraft.maxLength) символов")
                             .accessibilityIdentifier("report.length")
                         if model.draft.length > QuestionReportDraft.maxLength {
                             Text("Сократите текст до \(QuestionReportDraft.maxLength) символов.").gpText(
-                                GPType.footnote
+                                \.meta
                             ).foregroundStyle(
                                 Color(.wrong))
                         }
-                        Text("Проверим вручную и поправим задание.").gpText(GPType.footnote).foregroundStyle(
-                            Color(.textSecondary))
+                        Text("Проверим вручную и поправим задание.").gpText(\.meta).foregroundStyle(
+                            Color(.text2))
                     }
                     if model.problem {
-                        Text("Не получилось сохранить жалобу. Попробуйте ещё раз.").gpText(GPType.subhead)
+                        Text("Не получилось сохранить жалобу. Попробуйте ещё раз.").gpText(\.meta)
                             .foregroundStyle(Color(.wrong)).accessibilityIdentifier("report.problem")
                     }
                 }.frame(maxWidth: GPLayout.contentMax, alignment: .leading).padding(GPLayout.gutter).frame(
@@ -357,9 +366,9 @@ struct QuestionReportView: View {
                     } else {
                         Button(action: model.send) {
                             Text("Отправить").opacity(model.saving ? 0 : 1).overlay {
-                                if model.saving { ProgressView() }
+                                if model.saving { BusyIndicator() }
                             }
-                        }.buttonStyle(PrimaryCapsuleStyle()).disabled(!model.canSend)
+                        }.buttonStyle(PrimaryCapsuleStyle(isBusy: model.saving)).disabled(!model.canSend)
                             .accessibilityIdentifier("report.send").frame(maxWidth: GPLayout.contentMax).padding(
                                 GPLayout.gutter
                             )
@@ -378,7 +387,7 @@ struct QuestionReportView: View {
                 #if os(iOS)
                     .navigationBarTitleDisplayMode(.inline)
                 #endif
-        }.tint(Color(.accent))
+        }.tint(Color(.text))
             .interactiveDismissDisabled(model.saving)
             #if os(macOS)
                 // Системный Escape иначе закрывает лист мимо «Отмены» и оставляет черновик.
@@ -388,7 +397,8 @@ struct QuestionReportView: View {
                     guard !model.saving, !model.sent else { return }
                     model.cancel { dismiss() }
                 }
-                .frame(minWidth: GPLayout.contentMax, minHeight: GPSize.rowTall * 9)
+                // временно: роли нет, вопрос техлиду (11.10.2026)
+                .frame(minWidth: GPLayout.contentMax, minHeight: GPSize.opt * 9)
             #endif
     }
 }

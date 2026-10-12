@@ -719,8 +719,8 @@ func (s *DifficultyCounts) SetHard(val int) {
 // Ref: #/components/schemas/Error
 type Error struct {
 	// Машинный код: bad_request, unauthorized, forbidden, not_found, too_many_requests,
-	// invalid_init_data, invalid_id_token, no_questions, training_finished, internal. Клиент
-	// показывает текст по коду, а не message.
+	// invalid_init_data, invalid_id_token, no_questions, training_finished, report_id_conflict, internal.
+	// Клиент показывает текст по коду, а не message.
 	Code string `json:"code"`
 	// Для журнала и разработчика, не для экрана.
 	Message   string `json:"message"`
@@ -2757,6 +2757,11 @@ type QuestionReport struct {
 	Kind       QuestionReportKind `json:"kind"`
 	Text       OptString          `json:"text"`
 	TrainingId OptUUID            `json:"trainingId"`
+	// Необязательный UUID жалобы, созданный устройством и
+	// сохраняемый для всех повторных отправок. Уникален в
+	// пределах пользователя. null недопустим; отсутствие поля
+	// сохраняет прежнее поведение.
+	ReportId OptUUID `json:"reportId"`
 }
 
 // GetKind returns the value of Kind.
@@ -2774,6 +2779,11 @@ func (s *QuestionReport) GetTrainingId() OptUUID {
 	return s.TrainingId
 }
 
+// GetReportId returns the value of ReportId.
+func (s *QuestionReport) GetReportId() OptUUID {
+	return s.ReportId
+}
+
 // SetKind sets the value of Kind.
 func (s *QuestionReport) SetKind(val QuestionReportKind) {
 	s.Kind = val
@@ -2787,6 +2797,11 @@ func (s *QuestionReport) SetText(val OptString) {
 // SetTrainingId sets the value of TrainingId.
 func (s *QuestionReport) SetTrainingId(val OptUUID) {
 	s.TrainingId = val
+}
+
+// SetReportId sets the value of ReportId.
+func (s *QuestionReport) SetReportId(val OptUUID) {
+	s.ReportId = val
 }
 
 // Где ошибка — в задании, в ответе, в разборе, в переводе,

@@ -8,6 +8,9 @@ struct MainView: View {
     var refreshesOnAppear = true
     @State private var selection: AppTab = .today
     @State private var trainingEntry: TrainingEntry?
+    #if os(iOS)
+        @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
 
     enum AppTab: Hashable {
         case today, words, exam, progress
@@ -41,6 +44,8 @@ struct MainView: View {
                 } icon: {
                     Image(systemName: "list.bullet.indent")
                 }
+                .gpText(navRole)
+                .foregroundStyle(selection == .today ? Color(.text) : Color(.text3))
             }
             Tab(value: AppTab.words) {
                 SectionPlaceholderView(
@@ -53,6 +58,8 @@ struct MainView: View {
                 } icon: {
                     Image(systemName: "rectangle.on.rectangle")
                 }
+                .gpText(navRole)
+                .foregroundStyle(selection == .words ? Color(.text) : Color(.text3))
             }
             Tab(value: AppTab.exam) {
                 SectionPlaceholderView(
@@ -65,6 +72,8 @@ struct MainView: View {
                 } icon: {
                     Image(systemName: "stopwatch")
                 }
+                .gpText(navRole)
+                .foregroundStyle(selection == .exam ? Color(.text) : Color(.text3))
             }
             Tab(value: AppTab.progress) {
                 ProgressTabView()
@@ -74,11 +83,21 @@ struct MainView: View {
                 } icon: {
                     Image(systemName: "chart.bar")
                 }
+                .gpText(navRole)
+                .foregroundStyle(selection == .progress ? Color(.text) : Color(.text3))
             }
         }
         .tabViewStyle(.sidebarAdaptable)
-        // Выбранная вкладка — цветом текста, а не системным синим: один акцент на всё приложение.
-        .tint(Color(.accent))
+        // Выбранная вкладка — цветом текста, по токенам навигации (DESIGN.md, «Navigation»).
+        .tint(Color(.text))
+    }
+
+    private var navRole: KeyPath<GPType, GPTextStyle> {
+        #if os(iOS)
+            sizeClass == .regular ? \.navLabelWide : \.navLabel
+        #else
+            \.navLabelWide
+        #endif
     }
 }
 
@@ -91,12 +110,12 @@ struct SectionPlaceholderView: View {
         NavigationStack {
             ContentUnavailableView {
                 Text("Скоро")
-                    .gpText(GPType.title3)
+                    .gpText(\.h2)
             } description: {
                 Text(message)
             }
             .navigationTitle(Text(title))
-            .background { SectionGlow(section: nil) }
+            .background(Color(.bg).ignoresSafeArea())
         }
     }
 }
@@ -108,11 +127,11 @@ struct StepPlaceholderView: View {
     var body: some View {
         ContentUnavailableView {
             Text(step.title)
-                .gpText(GPType.title3)
+                .gpText(\.h2)
         } description: {
             Text("Здесь начнётся шаг. Тренировки и слова появятся в следующих частях.")
         }
-        .background { SectionGlow(section: step.section) }
+        .background(Color(.bg).ignoresSafeArea())
         .navigationTitle(Text(step.section.label))
         #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)

@@ -6,44 +6,12 @@ import SwiftUI
 
 /// Размеры из правил самих компаний, а не из нашей системы: они меняются вместе с правилами, не с токенами.
 private enum OfficialSpec {
-    /// Новая кнопка входа Telegram: логотип 22, текст 16 полужирный (как в макете T4-SignIn).
-    static let telegramLogo: CGFloat = 22
-    static let telegramText: CGFloat = 16
     /// Google Identity: «G» 18, текст 14 Medium с трекингом 0,25.
     static let googleLogo: CGFloat = 18
-    static let googleText: CGFloat = 14
-    static let googleTracking: CGFloat = 0.25
-}
-
-/// Новая кнопка Telegram: синяя капсула, логотип и системный шрифт.
-struct TelegramSignInButton: View {
-    let isBusy: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: GPSpace.s4) {
-                if isBusy {
-                    ProgressView().tint(Color(.signInTelegramText))
-                } else {
-                    TelegramLogoShape()
-                        .frame(width: OfficialSpec.telegramLogo, height: OfficialSpec.telegramLogo)
-                        .accessibilityHidden(true)
-                }
-                Text("Войти через Telegram")
-                    .font(.system(size: OfficialSpec.telegramText, weight: .semibold))
-            }
-            .foregroundStyle(Color(.signInTelegramText))
-            .frame(maxWidth: .infinity, minHeight: GPSize.buttonCompact)
-            .background(Color(.signInTelegramBg), in: Capsule())
-            .contentShape(Capsule())
-        }
-        .buttonStyle(PressScaleStyle())
-        .accessibilityIdentifier("signin.telegram")
-    }
 }
 
 /// «Вход с Apple» — родная кнопка Apple: чёрная в светлой теме, белая в тёмной.
+/// Подпись рисует Apple; применить к ней токен GPSignInApple нельзя.
 struct AppleSignInButton: View {
     let model: SignInModel
     @Environment(\.colorScheme) private var colorScheme
@@ -53,7 +21,7 @@ struct AppleSignInButton: View {
             // На Mac обёртка SwiftUI держит свой размер и не растягивается до соседних кнопок, поэтому — сама
             // кнопка Apple (ASAuthorizationAppleIDButton) с высотой и скруглением как у остальных.
             MacAppleIDButton(model: model, style: colorScheme == .dark ? .white : .black)
-                .frame(maxWidth: .infinity, minHeight: GPSize.buttonCompact, maxHeight: GPSize.buttonCompact)
+                .frame(maxWidth: .infinity, minHeight: GPSize.button, maxHeight: GPSize.button)
                 .accessibilityIdentifier("signin.apple")
         #else
             SignInWithAppleButton(.signIn) { request in
@@ -62,7 +30,8 @@ struct AppleSignInButton: View {
                 Task { await model.completeApple(result) }
             }
             .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
-            .frame(height: GPSize.buttonCompact)
+            .id(colorScheme)
+            .frame(height: GPSize.button)
             .clipShape(Capsule())
             .accessibilityIdentifier("signin.apple")
         #endif
@@ -78,25 +47,46 @@ struct AppleSignInButton: View {
 
         func makeCoordinator() -> AppleAuthorization { AppleAuthorization(model: model) }
 
-        func makeNSView(context: Context) -> ASAuthorizationAppleIDButton {
-            let button = ASAuthorizationAppleIDButton(authorizationButtonType: .signIn, authorizationButtonStyle: style)
-            button.cornerRadius = GPSize.buttonCompact / 2
-            button.target = context.coordinator
-            button.action = #selector(AppleAuthorization.start)
-            return button
+        func makeNSView(context: Context) -> AppleButtonContainer {
+            let container = AppleButtonContainer()
+            container.update(style: style, enabled: context.environment.isEnabled, authorization: context.coordinator)
+            return container
         }
 
-        func updateNSView(_ button: ASAuthorizationAppleIDButton, context: Context) {
+        func updateNSView(_ container: AppleButtonContainer, context: Context) {
             context.coordinator.model = model
-            // Кнопка AppKit не видит .disabled из SwiftUI — передать руками, иначе она жмётся во время другого входа.
-            button.isEnabled = context.environment.isEnabled
+            container.update(style: style, enabled: context.environment.isEnabled, authorization: context.coordinator)
         }
 
         /// Своего размера кнопка не навязывает: берёт ширину колонки и высоту соседних кнопок входа.
-        func sizeThatFits(_ proposal: ProposedViewSize, nsView: ASAuthorizationAppleIDButton, context: Context)
+        func sizeThatFits(_ proposal: ProposedViewSize, nsView: AppleButtonContainer, context: Context)
             -> CGSize?
         {
-            CGSize(width: proposal.width ?? GPLayout.authColumnMax, height: GPSize.buttonCompact)
+            CGSize(width: proposal.width ?? GPLayout.authColumnMax, height: GPSize.button)
+        }
+    }
+
+    private final class AppleButtonContainer: NSView {
+        private var style: ASAuthorizationAppleIDButton.Style?
+        private var button: ASAuthorizationAppleIDButton?
+
+        func update(style: ASAuthorizationAppleIDButton.Style, enabled: Bool, authorization: AppleAuthorization) {
+            // AppKit фиксирует стиль при создании; заменить только нативный контрол внутри той же обёртки.
+            if self.style != style {
+                button?.removeFromSuperview()
+                let newButton = ASAuthorizationAppleIDButton(
+                    authorizationButtonType: .signIn, authorizationButtonStyle: style)
+                newButton.cornerRadius = GPSize.button / 2
+                newButton.frame = bounds
+                newButton.autoresizingMask = [.width, .height]
+                addSubview(newButton)
+                button = newButton
+                self.style = style
+            }
+            button?.target = authorization
+            button?.action = #selector(AppleAuthorization.start)
+            // Нативный контрол не видит SwiftUI .disabled.
+            button?.isEnabled = enabled
         }
     }
 
@@ -162,11 +152,12 @@ struct GoogleSignInButton: View {
                         .accessibilityHidden(true)
                 }
                 Text("Войти с аккаунтом Google")
-                    .font(.system(size: OfficialSpec.googleText, weight: .medium))
-                    .tracking(OfficialSpec.googleTracking)
+                    .font(.googleSignIn)
+                    .tracking(GPSignInGoogle.tracking)
+                    .frame(minHeight: GPSignInGoogle.lineHeight)
             }
             .foregroundStyle(Color(.signInGoogleText))
-            .frame(maxWidth: .infinity, minHeight: GPSize.buttonCompact)
+            .frame(maxWidth: .infinity, minHeight: GPSize.button)
             .padding(.horizontal, GPSpace.s12)
             .background(Color(.signInGoogleBg), in: Capsule())
             .overlay(Capsule().strokeBorder(Color(.signInGoogleStroke), lineWidth: GPSize.hairline))

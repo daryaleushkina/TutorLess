@@ -239,13 +239,41 @@ class ThemeStoreTest {
             )
         }
 
+    @Test fun textSizeRestoresAndWritesThroughDataStore() =
+        runTest(main.dispatcher) {
+            val graph = graph()
+            assertEquals(false, graph.store(flowOf(emptyPreferences())).loadLargeText())
+            assertEquals(true, graph.store(flowOf(preferencesOf(DataStoreThemeStore.LargeText to true))).loadLargeText())
+            val data = StubDataStore(flowOf(emptyPreferences()))
+            DataStoreThemeStore(data, graph.reporter).saveLargeText(true)
+            assertEquals(true, data.latest[DataStoreThemeStore.LargeText])
+        }
+
+    @Test fun textSizeReportsReadAndWriteFailures() =
+        runTest(main.dispatcher) {
+            val graph = graph()
+            assertEquals(false, graph.store(kotlinx.coroutines.flow.flow { throw IOException("read") }).loadLargeText())
+            for (failure in listOf(IOException("write"), SecurityException("denied"))) {
+                org.junit.Assert.assertThrows(failure.javaClass) {
+                    kotlinx.coroutines.runBlocking {
+                        DataStoreThemeStore(StubDataStore(flowOf(emptyPreferences()), failure), graph.reporter).saveLargeText(true)
+                    }
+                }
+            }
+            graph.settle()
+            assertTrue(graph.publicApi.reports.isNotEmpty())
+        }
+
     private class StubDataStore(
         override val data: Flow<Preferences>,
         private val failure: Exception? = null,
     ) : DataStore<Preferences> {
+        var latest: Preferences = emptyPreferences()
+
         override suspend fun updateData(transform: suspend (t: Preferences) -> Preferences): Preferences {
             failure?.let { throw it }
-            return transform(emptyPreferences())
+            latest = transform(emptyPreferences())
+            return latest
         }
     }
 }

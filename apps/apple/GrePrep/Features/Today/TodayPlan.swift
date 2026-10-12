@@ -37,7 +37,7 @@ struct TodayPlan: Equatable, Sendable {
 
     var totalMinutes: Int { steps.reduce(0) { $0 + $1.minutes } }
     var isComplete: Bool { !steps.isEmpty && steps.allSatisfy { $0.state == .done } }
-    /// Шаг в фокусе: освещён на экране и задаёт цвет света сверху.
+    /// Шаг в фокусе: выделен карточкой на экране.
     var current: Step? { steps.first { $0.state == .current } }
 }
 

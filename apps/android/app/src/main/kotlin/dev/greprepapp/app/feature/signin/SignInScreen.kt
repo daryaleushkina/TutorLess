@@ -89,8 +89,8 @@ fun SignInContent(
         // кадр не сразу, и снимки экрана ловили пустоту.
         Box(
             modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing),
-            contentAlignment = Alignment.TopCenter,
-            propagateMinConstraints = true,
+            contentAlignment = if (Gp.isWide) Alignment.Center else Alignment.TopCenter,
+            propagateMinConstraints = !Gp.isWide,
         ) {
             Column(
                 modifier =
@@ -102,9 +102,11 @@ fun SignInContent(
                         .padding(horizontal = GpLayout.gutter)
                         .padding(bottom = GpSpace.s28),
             ) {
-                Spacer(Modifier.heightIn(min = GpSpace.s48).weight(1f))
+                dev.greprepapp.app.feature.shell
+                    .Brand()
+                Spacer(if (Gp.isWide) Modifier.heightIn(min = GpSpace.s28) else Modifier.heightIn(min = GpSpace.s48).weight(1f))
                 Header()
-                Spacer(Modifier.heightIn(min = GpSpace.s40).weight(1f))
+                Spacer(if (Gp.isWide) Modifier.heightIn(min = GpSpace.s28) else Modifier.heightIn(min = GpSpace.s40).weight(1f))
                 if (reason == SignOutReason.SessionExpired) {
                     Text(
                         text = stringResource(R.string.signin_expired),
@@ -143,30 +145,16 @@ fun SignInContent(
 @Composable
 private fun Header() {
     Column(verticalArrangement = Arrangement.spacedBy(GpSpace.s20)) {
-        Surface(
-            color = Gp.colors.surface2,
-            shape = RoundedCornerShape(GpRadius.l),
-            modifier = Modifier.size(GpSize.sideCard),
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    painter = painterResource(DesignR.drawable.ic_brand_mark),
-                    contentDescription = null,
-                    tint = Gp.colors.text,
-                    modifier = Modifier.size(GpSize.iconButton),
-                )
-            }
-        }
         Column(verticalArrangement = Arrangement.spacedBy(GpSpace.s10)) {
             Text(
-                text = stringResource(R.string.app_name),
+                text = stringResource(R.string.signin_headline),
                 style = if (Gp.isWide) Gp.type.h1Wide else Gp.type.h1,
                 color = Gp.colors.text,
                 modifier = Modifier.semantics { heading() },
             )
             Text(
                 text = stringResource(R.string.signin_tagline),
-                style = if (Gp.isWide) Gp.type.lead else Gp.type.body,
+                style = Gp.type.lead,
                 color = Gp.colors.text2,
                 modifier = Modifier.widthIn(max = GpLayout.textMax),
             )
@@ -217,14 +205,14 @@ private fun Legal(modifier: Modifier = Modifier) {
             text = stringResource(R.string.signin_legal),
             style = Gp.type.caption,
             color = if (Gp.isWide) Gp.colors.text2 else Gp.colors.text3,
-            textAlign = TextAlign.Center,
+            textAlign = TextAlign.Start,
             modifier = Modifier.fillMaxWidth(),
         )
         Text(
             text = stringResource(R.string.signin_disclaimer),
             style = Gp.type.caption.copy(localeList = LocaleList("en")),
             color = if (Gp.isWide) Gp.colors.text2 else Gp.colors.text3,
-            textAlign = TextAlign.Center,
+            textAlign = TextAlign.Start,
             modifier = Modifier.fillMaxWidth(),
         )
     }

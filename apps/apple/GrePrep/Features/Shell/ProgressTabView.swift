@@ -7,11 +7,11 @@ struct ProgressTabView: View {
         NavigationStack {
             ContentUnavailableView {
                 Text("Тренировок ещё не было")
-                    .gpText(GPType.title3)
+                    .gpText(\.h2)
             } description: {
                 Text("Здесь появятся темы, где больше всего ошибок, — по порядку, с чего начать.")
             }
-            .background { SectionGlow(section: nil) }
+            .background(Color(.bg).ignoresSafeArea())
             .navigationTitle(Text("Прогресс"))
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
@@ -45,20 +45,37 @@ struct SettingsView: View {
                     Text("Выйти")
                 }
                 .accessibilityIdentifier("settings.signOut")
+                #if os(macOS)
+                    // GroupedFormStyle на Mac рисует собственную серую подложку и не принимает
+                    // listRowBackground. Контрол остаётся системным, подложку строки рисуем токеном.
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(GPSpace.s12)
+                    .background(Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.l))
+                #endif
             } footer: {
                 VStack(alignment: .leading, spacing: GPSpace.s12) {
                     Text("Версия \(app.config.appVersion)")
                         .monospacedDigit()
                     Text(verbatim: GREBrand.disclaimer)
-                        .gpText(GPType.caption)
-                        .foregroundStyle(Color(.textSecondary))
+                        .gpText(\.caption)
+                        .foregroundStyle(Color(.text2))
                         .fixedSize(horizontal: false, vertical: true)
                         .environment(\.locale, Locale(identifier: "en"))
                         .accessibilityIdentifier("settings.etsDisclaimer")
                 }
             }
+            .listRowBackground(Color(.surface))
         }
-        .formStyle(.grouped)
+        #if os(macOS)
+            .formStyle(.columns)
+            .frame(maxWidth: GPLayout.contentMax)
+            .padding(GPSpace.s20)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        #else
+            .formStyle(.grouped)
+        #endif
+        .scrollContentBackground(.hidden)
+        .background(Color(.bg).ignoresSafeArea())
         .navigationTitle(Text("Настройки"))
     }
 }
