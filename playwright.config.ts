@@ -116,6 +116,8 @@ export default defineConfig<TgOptions>({
     miniapp('tg-android-dark', { ...android, tgTheme: 'dark' }),
     site('site-desktop-light', { ...devices['Desktop Chrome'], ...desktop, colorScheme: 'light' }),
     site('site-desktop-safari-dark', { ...devices['Desktop Safari'], ...desktop, colorScheme: 'dark' }),
+    site('site-medium-dark', { ...devices['Desktop Chrome'], viewport: { width: 760, height: 900 }, colorScheme: 'dark' }),
+    site('site-phone-dark', { ...devices['iPhone 15'], colorScheme: 'dark' }),
     site('site-medium', { ...devices['Desktop Chrome'], viewport: { width: 760, height: 900 }, colorScheme: 'light' }),
     site('site-phone', { ...devices['iPhone 15'], colorScheme: 'light' }),
   ],

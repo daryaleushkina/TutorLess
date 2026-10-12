@@ -1,8 +1,8 @@
 import { page } from 'vitest/browser';
 import { describe, expect, it } from 'vitest';
-import { fakeServer, json, renderApp, STARTER, user } from '../test/app';
+import { fakeServer, json, renderApp, OPTIONS, user } from '../test/app';
 
-const signedIn = { 'GET /api/me': () => json(user()), 'GET /api/today': () => json(STARTER) };
+const signedIn = { 'GET /api/me': () => json(user()), 'GET /api/trainings/options': () => json(OPTIONS) };
 
 describe('разделы', () => {
   it.each([
@@ -25,20 +25,20 @@ describe('разделы', () => {
     expect(router.state.location.pathname).toBe('/settings');
   });
 
-  it('телефон: капсула вкладок ведёт по разделам; настройки — из «Прогресса», с «Назад» и без капсулы', async () => {
+  it('телефон: панель вкладок ведёт по разделам; профиль — из шапки, с «Назад» и без капсулы', async () => {
     fakeServer(signedIn);
     const { screen, router } = await renderApp({ path: '/' });
     const tabs = screen.getByRole('navigation', { name: 'Разделы' }).last();
     await tabs.getByRole('link', { name: 'Слова' }).click();
-    await expect.element(screen.getByText('Здесь будет словарь: слова на сегодня, повторение и поиск.')).toBeVisible();
+    await expect.element(screen.getByText('Здесь будут слова: учить, повторять и искать.')).toBeVisible();
     await expect.element(tabs.getByRole('link', { name: 'Слова' })).toHaveAttribute('aria-current', 'page');
     await tabs.getByRole('link', { name: 'Экзамен' }).click();
-    await expect.element(screen.getByText('Здесь будут пробный экзамен как настоящий GRE и эссе с оценкой.')).toBeVisible();
+    await expect.element(screen.getByText('Здесь будут пробные экзамены GRE и эссе с оценкой.')).toBeVisible();
     await tabs.getByRole('link', { name: 'Прогресс' }).click();
-    await expect.element(screen.getByText('Тренировок ещё не было')).toBeVisible();
-    await screen.getByRole('link', { name: 'Настройки' }).last().click();
+    await expect.element(screen.getByText('Здесь будет точность по разделам, история тренировок и примерный балл.')).toBeVisible();
+    await screen.getByRole('link', { name: 'Профиль' }).last().click();
     await expect.poll(() => router.state.location.pathname).toBe('/settings');
-    // Скрытая капсула выпадает из дерева доступности — её больше не найти по роли.
+    // Скрытая панель выпадает из дерева доступности — её больше не найти по роли.
     await expect.poll(() => screen.getByRole('navigation', { name: 'Разделы' }).elements().length).toBe(0);
     await screen.getByRole('link', { name: 'Назад' }).click();
     await expect.poll(() => router.state.location.pathname).toBe('/progress');
@@ -49,50 +49,28 @@ describe('разделы', () => {
     fakeServer(signedIn);
     const { screen } = await renderApp({ path: '/' });
     const side = screen.getByRole('navigation', { name: 'Разделы' }).first();
-    await expect.element(side.getByRole('link', { name: 'Настройки' })).toBeVisible();
+    await expect.element(side.getByRole('link', { name: /Профиль/ })).toBeVisible();
     // Капсулы нет (скрытое не в дереве доступности): навигация одна — панель.
     expect(screen.getByRole('navigation', { name: 'Разделы' }).elements()).toHaveLength(1);
-    await side.getByRole('link', { name: 'Настройки' }).click();
-    await expect.element(screen.getByRole('heading', { name: 'Настройки' })).toBeVisible();
+    await side.getByRole('link', { name: /Профиль/ }).click();
+    await expect.element(screen.getByRole('heading', { name: 'Профиль' })).toBeInTheDocument();
+    expect(side.element().querySelectorAll('[aria-current="page"]')).toHaveLength(1);
     // Шире 600 px «Назад» у настроек не нужен — есть панель.
     expect(screen.getByRole('link', { name: 'Назад' }).elements()).toHaveLength(0);
     await page.viewport(390, 844);
   });
 
-  it('шаг открывается в режиме фокуса и возвращается на «Сегодня»', async () => {
-    fakeServer(signedIn);
-    const { screen, router } = await renderApp({ path: '/step/verbal' });
-    await expect.element(screen.getByText('Шаг verbal')).toBeVisible();
-    expect(screen.getByRole('navigation', { name: 'Разделы' }).elements()).toHaveLength(0);
-    await screen.getByRole('link', { name: 'Назад' }).click();
-    await expect.poll(() => router.state.location.pathname).toBe('/');
-  });
+
 });
 
 describe('вкладка горит по пути', () => {
-  it('мини-апп: «Сегодня» текущая и с параметрами запуска Telegram в адресе', async () => {
-    fakeServer({ 'POST /api/auth/telegram-mini-app': () => json({ token: 't', expiresAt: '2026-11-05T10:00:00Z', user: user() }), 'GET /api/today': () => json(STARTER) });
+  it('мини-апп: «Тренировка» текущая и с параметрами запуска Telegram в адресе', async () => {
+    fakeServer({ 'POST /api/auth/telegram-mini-app': () => json({ token: 't', expiresAt: '2026-11-05T10:00:00Z', user: user() }), 'GET /api/trainings/options': () => json(OPTIONS) });
     const { screen } = await renderApp({
       path: '/tg/?tgTheme=dark&tgPlatform=ios',
       shell: 'telegram',
       launch: { initDataRaw: 'hash=x', languageCode: 'ru' },
     });
-    await expect.element(screen.getByRole('link', { name: 'Сегодня' })).toHaveAttribute('aria-current', 'page');
-  });
-});
-
-describe('сессия кончилась на экране шага', () => {
-  it('сразу на вход с «Вход закончился», без повторов отказа сервера', async () => {
-    let todayCalls = 0;
-    fakeServer({
-      'GET /api/me': () => json(user()),
-      'GET /api/today': () => {
-        todayCalls++;
-        return new Response(JSON.stringify({ code: 'unauthorized', message: 'x', requestId: 'r' }), { status: 401 });
-      },
-    });
-    const { screen } = await renderApp({ path: '/step/verbal' });
-    await expect.element(screen.getByText('Вход закончился — войдите снова.')).toBeVisible();
-    expect(todayCalls).toBe(1);
+    await expect.element(screen.getByRole('link', { name: 'Тренировка' })).toHaveAttribute('aria-current', 'page');
   });
 });

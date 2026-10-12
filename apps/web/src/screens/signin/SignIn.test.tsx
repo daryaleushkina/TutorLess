@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { apiError, fakeServer, json, renderApp, STARTER, user } from '../../test/app';
+import { apiError, fakeServer, json, renderApp, OPTIONS, user } from '../../test/app';
 
 const leaveTo = vi.hoisted(() => vi.fn((_url: string) => {}));
 vi.mock('../../leave', () => ({ leaveTo }));
@@ -22,15 +22,15 @@ describe('вход на сайте', () => {
     fakeServer({
       ...signedOut,
       'POST /api/auth/dev': () => json({ expiresAt: '2026-11-05T10:00:00Z', user: user() }),
-      'GET /api/today': () => json(STARTER),
+      'GET /api/trainings/options': () => json(OPTIONS),
     });
-    const { screen, router } = await renderApp({ path: '/step/words?source=plan#details' });
+    const { screen, router } = await renderApp({ path: '/words?source=plan#details' });
     await expect.element(screen.getByPlaceholder('Имя тестового пользователя')).toBeVisible();
-    expect(router.state.location.search).toMatchObject({ returnTo: '/step/words?source=plan#details' });
+    expect(router.state.location.search).toMatchObject({ returnTo: '/words?source=plan#details' });
     await screen.getByPlaceholder('Имя тестового пользователя').fill('Тест');
     await screen.getByRole('button', { name: 'Войти', exact: true }).click();
-    await expect.element(screen.getByText('Шаг words')).toBeVisible();
-    expect(router.state.location.href).toBe('/step/words?source=plan#details');
+    await expect.element(screen.getByRole('heading', { name: 'Слова', exact: true })).toBeVisible();
+    expect(router.state.location.href).toBe('/words?source=plan#details');
   });
 
   it('без сессии — на вход: две официальные кнопки, условия и дисклеймер ETS', async () => {
@@ -42,7 +42,7 @@ describe('вход на сайте', () => {
     expect(telegramRuntime()).toBeNull();
     await expect.element(screen.getByRole('button', { name: 'Вход с Apple' })).toBeVisible();
     await expect.element(screen.getByRole('button', { name: 'Войти с аккаунтом Google' })).toBeVisible();
-    await expect.element(screen.getByText(/registered trademark of Educational Testing Service/)).toBeVisible();
+    await expect.element(screen.getByText(/registered trademarks of Educational Testing Service/)).toBeVisible();
   });
 
   it.each([
@@ -55,16 +55,16 @@ describe('вход на сайте', () => {
     await expect.element(screen.getByRole('alert')).toHaveTextContent(message);
   });
 
-  it('вход подменой: кука от сервера, язык устройства — в запросе, дальше «Сегодня»', async () => {
+  it('вход подменой: кука от сервера, язык устройства — в запросе, дальше «Тренировка»', async () => {
     const { requests } = fakeServer({
       ...signedOut,
       'POST /api/auth/dev': () => json({ expiresAt: '2026-11-05T10:00:00Z', user: user({ name: 'Тест' }) }),
-      'GET /api/today': () => json(STARTER),
+      'GET /api/trainings/options': () => json(OPTIONS),
     });
     const { screen, router } = await renderApp({ path: '/signin' });
     await screen.getByPlaceholder('Имя тестового пользователя').fill('Тест');
     await screen.getByRole('button', { name: 'Войти', exact: true }).click();
-    await expect.element(screen.getByText('Три шага · около 25 минут')).toBeVisible();
+    await expect.element(screen.getByText('После каждого ответа — разбор на вашем языке: почему верно и где ловушка в остальных вариантах.')).toBeVisible();
     expect(router.state.location.pathname).toBe('/');
     const body: unknown = await requests.find((r) => r.url.endsWith('/api/auth/dev'))?.json();
     expect(body).toEqual({ name: 'Тест', transport: 'cookie', clientKind: 'web', locale: 'ru' });
@@ -96,17 +96,17 @@ describe('вход на сайте', () => {
     expect(screen.getByRole('alert').elements()).toHaveLength(0);
   });
 
-  it('уже вошёл — с экрана входа сразу на «Сегодня»', async () => {
-    fakeServer({ 'GET /api/me': () => json(user()), 'GET /api/today': () => json(STARTER) });
+  it('уже вошёл — с экрана входа сразу на «Тренировка»', async () => {
+    fakeServer({ 'GET /api/me': () => json(user()), 'GET /api/trainings/options': () => json(OPTIONS) });
     const { screen, router } = await renderApp({ path: '/signin' });
-    await expect.element(screen.getByText('Три шага · около 25 минут')).toBeVisible();
+    await expect.element(screen.getByText('После каждого ответа — разбор на вашем языке: почему верно и где ловушка в остальных вариантах.')).toBeVisible();
     expect(router.state.location.pathname).toBe('/');
   });
 
   it('язык аккаунта запоминается: после выхода вход — на нём, а не на языке браузера', async () => {
     fakeServer({
       'GET /api/me': () => json(user({ locale: 'en' })),
-      'GET /api/today': () => json(STARTER),
+      'GET /api/trainings/options': () => json(OPTIONS),
       'POST /api/auth/logout': () => new Response(null, { status: 204 }),
     });
     const { screen } = await renderApp({ path: '/settings' });

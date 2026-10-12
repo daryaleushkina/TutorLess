@@ -1,288 +1,65 @@
-/*
- * Раскладка экранов после входа. Ширины: телефон и мини-апп — капсула вкладок снизу; сайт 600–899 px — строка
- * разделов сверху; сайт шире 900 px — боковая панель (решение Даши 06.10.2026).
- * Широкая граница — layout.breakpoint-wide; средняя ширина сохраняется до части 2. var() в @media не работает.
- */
-
+/* Панель снизу до layout.breakpoint-wide; широкий сайт — боковая панель. */
 .frame {
   --focus-column-max: var(--layout-content-max);
-  position: relative;
-  height: var(--app-height);
-  display: flex;
-  flex-direction: column;
-  background: var(--color-bg);
+  position: relative; height: var(--app-height); display: flex; flex-direction: column; background: var(--color-bg);
 }
-
-/* Единственный контейнер прокрутки (styles/base.css). */
 .main {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior-y: contain;
-  padding: calc(var(--app-inset-top) + var(--space-20)) calc(var(--app-inset-right) + var(--layout-gutter)) 0
-    calc(var(--app-inset-left) + var(--layout-gutter));
+  flex: 1; min-height: 0; min-width: 0; overflow-y: auto; overscroll-behavior-y: contain;
+  padding: calc(var(--app-inset-top) + var(--space-20)) calc(var(--app-inset-right) + var(--layout-gutter)) 0 calc(var(--app-inset-left) + var(--layout-gutter));
 }
-
-/*
- * Место под капсулой вкладок — псевдоэлементом, а не padding-bottom: WKWebView на iPhone не учитывает нижний
- * отступ контейнера прокрутки (docs/HANDOFF.md, «Telegram»), и последнее пряталось бы под капсулой.
- */
-.main::after {
-  content: '';
-  display: block;
-  height: calc(var(--layout-main-bottom-nav) + var(--app-inset-bottom) + var(--space-24));
-}
-
-.frame[data-nested] .main::after {
-  height: calc(var(--app-inset-bottom) + var(--space-32));
-}
-
-.column {
-  width: 100%;
-  max-width: var(--layout-content-max);
-  margin: 0 auto;
-}
-
-/* ── капсула вкладок ── */
+/* WKWebView не учитывает нижний padding при прокрутке: место под панелью создаёт настоящий блок. */
+.main::after { content: ''; display: block; height: calc(var(--layout-main-bottom-nav) + var(--app-inset-bottom) + var(--space-24)); }
+.frame[data-nested] .main::after { height: calc(var(--app-inset-bottom) + var(--space-32)); }
+.column { width: 100%; max-width: var(--layout-content-max); margin: 0 auto; }
+.frame[data-tabs] .main { padding-top: calc(var(--app-inset-top) + var(--layout-main-top)); }
 
 .tabBar {
-  background: var(--color-nav-bg);
-  position: absolute;
-  z-index: 5;
-  left: 50%;
-  bottom: calc(var(--layout-nav-bottom) + var(--app-inset-bottom));
-  transform: translateX(-50%);
-  width: min(var(--layout-content-max), calc(100% - 2 * var(--layout-gutter)));
-  height: var(--size-section-row);
-  padding: var(--space-4);
-  border-radius: var(--radius-full);
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  position: absolute; z-index: 5; left: 0; right: 0; bottom: 0;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: var(--space-6) calc(var(--space-8) + var(--app-inset-right)) calc(var(--layout-nav-bottom) + var(--app-inset-bottom)) calc(var(--space-8) + var(--app-inset-left));
+  background: var(--color-nav-bg); border-top: var(--size-hairline) solid var(--color-line);
 }
-
 .tab {
-  min-width: 0;
-  border-radius: var(--radius-full);
-  color: var(--color-text-2);
-  text-decoration: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  font: var(--font-nav-label);
-  letter-spacing: var(--tracking-nav-label);
+  min-width: 0; min-height: var(--size-tap-target); padding: var(--space-6) var(--space-6) var(--space-4);
+  color: var(--color-text-3); text-decoration: none; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: var(--space-4); border-radius: var(--radius-s);
+  font: var(--font-nav-label); letter-spacing: var(--tracking-nav-label);
 }
-
-.tab svg {
-  width: var(--space-24);
-  height: var(--space-24);
+.tab svg { width: var(--space-24); height: var(--space-24); }
+.tab[aria-current='page'] { color: var(--color-text); }
+.frame[data-nested] .tabBar { display: none; }
+.sideWrap { display: none; }
+.sectionHeader { display: flex; align-items: center; gap: var(--space-8); min-height: var(--space-56); padding-top: var(--space-10); margin-bottom: var(--space-28); }
+.examSwitch {
+  display: inline-flex; align-items: center; gap: var(--space-8); min-height: var(--size-exam-switch);
+  padding: var(--space-6) var(--space-12) var(--space-6) var(--space-14); border: 0; border-radius: var(--radius-full);
+  background: var(--color-surface); border: var(--size-hairline) solid var(--color-line); color: var(--color-text); font: var(--font-exam-switch); letter-spacing: var(--tracking-exam-switch);
 }
-
-.tab[aria-current='page'] {
-  background: var(--color-surface-2);
-  color: var(--color-text);
-  font-weight: var(--font-weight-semibold);
-}
-
-/* Край прокрутки: содержимое мягко уходит под капсулу. */
-.fade {
-  position: absolute;
-  z-index: 4;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: calc(var(--layout-main-bottom-nav) + var(--app-inset-bottom) + var(--space-24));
-  /* Плотный фон у края капсулы отделяет прокрутку от подписей вкладок. */
-  background: linear-gradient(transparent, var(--color-bg) var(--space-24));
-  pointer-events: none;
-}
-
-.frame[data-nested] .tabBar,
-.frame[data-nested] .fade {
-  display: none;
-}
-
-/* ── сайт: строка сверху и боковая панель ── */
-
-.sideWrap {
-  display: none;
-}
-
-.side {
-  display: flex;
-  gap: var(--space-4);
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: var(--space-10);
-  min-height: var(--size-tap-target);
-  color: var(--color-text);
-  text-decoration: none;
-  font: var(--font-body);
-  letter-spacing: var(--tracking-body);
-  font-weight: var(--font-weight-semibold);
-}
-
-.brandTile {
-  flex: none;
-  width: var(--space-32);
-  height: var(--space-32);
-  border-radius: var(--radius-s);
-  background: var(--color-verbal);
-  color: var(--color-surface);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.brandTile svg {
-  width: var(--space-20);
-  height: var(--space-20);
-}
-
-.navItem {
-  min-height: var(--size-tap-target);
-  padding: 0 var(--space-12);
-  border-radius: var(--radius-full);
-  color: var(--color-text-2);
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: var(--space-12);
-  font: var(--font-nav-label);
-  letter-spacing: var(--tracking-nav-label);
-  white-space: nowrap;
-}
-
-.navItem svg {
-  flex: none;
-  width: var(--space-20);
-  height: var(--space-20);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .navItem:hover {
-    background: var(--color-surface-2);
-  }
-}
-
-.navItem[aria-current='page'] {
-  background: var(--color-surface-2);
-  color: var(--color-text);
-  font-weight: var(--font-weight-semibold);
-}
-
-.spacer {
-  flex: 1;
-}
-
-@media (min-width: 600px) {
-  .frame[data-shell='site'] .tabBar,
-  .frame[data-shell='site'] .fade {
-    display: none;
-  }
-
-  .frame[data-shell='site'] .main::after {
-    height: var(--space-48);
-  }
-
-  .frame[data-shell='site'] .sideWrap {
-    display: flex;
-    /* Край полосы — по полю содержимого: один левый край у панели и у ленты. */
-    padding: var(--space-12) calc(var(--app-inset-right) + var(--layout-gutter)) 0 calc(var(--app-inset-left) + var(--layout-gutter));
-  }
-
-  .frame[data-shell='site'] .side {
-    flex: 1;
-    flex-wrap: wrap;
-    align-items: center;
-    padding: var(--space-8);
-    border-radius: var(--radius-l);
-  }
-
-  .frame[data-shell='site'] .brand {
-    padding: 0 var(--space-8);
-  }
-
-  /* Строка сверху — плотнее панели: пять пунктов и знак в одну строку. */
-  .frame[data-shell='site'] .navItem {
-    padding: 0 var(--space-10);
-    gap: var(--space-8);
-  }
-
-  .frame[data-shell='site'] .spacer {
-    display: none;
-  }
-
-  .frame[data-shell='site'] .settingsItem {
-    margin-left: auto;
-  }
-
-  /* В строке сверху места на подпись «Настройки» нет — остаётся шестерёнка, подпись слышна диктору. */
-  .frame[data-shell='site'] .settingsLabel {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
-
-}
+.examSwitch svg { width: var(--space-16); height: var(--space-16); color: var(--color-text-3); }
+.avatar { display: inline-grid; place-items: center; flex: none; width: var(--space-40); height: var(--space-40); border-radius: var(--radius-full);
+  background: var(--color-exam-sat); color: var(--color-on-accent); font: var(--font-exam-name); }
+.topAvatar { margin-left: auto; display: inline-grid; place-items: center; min-width: var(--size-tap-target); min-height: var(--size-tap-target); border-radius: var(--radius-full); }
 
 @media (min-width: 900px) {
-  .frame[data-shell='site'] {
-    flex-direction: row;
-  }
-
-  .frame[data-shell='site'] .main {
-    padding: var(--space-64) clamp(var(--space-16), 4vw, var(--space-48)) 0;
-  }
-
-  .frame[data-shell='site'] .main::after {
-    height: var(--space-64);
-  }
-
-  .frame[data-shell='site'] .sideWrap {
-    flex: 0 0 var(--layout-sidebar-width);
-    max-width: var(--layout-sidebar-width);
-    padding: var(--space-16) 0 var(--space-16) var(--space-16);
-  }
-
-  .frame[data-shell='site'] .side {
-    flex-direction: column;
-    flex-wrap: nowrap;
-    align-items: stretch;
-    padding: var(--space-20) var(--space-12);
-  }
-
-  .frame[data-shell='site'] .brand {
-    padding: 0 var(--space-12) var(--space-20);
-  }
-
-  .frame[data-shell='site'] .spacer {
-    display: block;
-  }
-
-  .frame[data-shell='site'] .settingsItem {
-    margin-left: 0;
-  }
-
-  .frame[data-shell='site'] .navItem {
-    padding: 0 var(--space-12);
-    gap: var(--space-12);
-  }
-
-  .frame[data-shell='site'] .settingsLabel {
-    position: static;
-    width: auto;
-    height: auto;
-    overflow: visible;
-    clip: auto;
-  }
+  .frame[data-shell='site'] { flex-direction: row; }
+  .frame[data-shell='site'] .main { padding: var(--space-64) clamp(var(--space-16), 4vw, var(--space-48)) 0; }
+  .frame[data-shell='site'] .main::after { height: var(--space-64); }
+  .frame[data-shell='site'][data-tabs] .main { padding: var(--layout-main-top-wide) var(--layout-gutter-wide) 0; }
+  .frame[data-shell='site'][data-tabs] .column { margin-left: 0; }
+  .frame[data-shell='site'] .sideWrap { display: flex; flex: 0 0 var(--layout-sidebar-width); width: var(--layout-sidebar-width); }
+  .side { display: flex; flex-direction: column; align-items: stretch; width: 100%; padding: var(--space-28) var(--space-16); gap: var(--space-6); background: var(--color-nav-bg); border-right: var(--size-hairline) solid var(--color-line); }
+  .side .examSwitch { align-self: flex-start; margin: 0 var(--space-4) var(--space-24); }
+  .navItem { display: flex; align-items: center; gap: var(--space-12); min-height: var(--size-tap-target); padding: 0 var(--space-14); border-radius: var(--radius-s);
+    color: var(--color-text-2); text-decoration: none; font: var(--font-nav-label-wide); letter-spacing: var(--tracking-nav-label-wide); }
+  .navItem svg { width: var(--space-24); height: var(--space-24); flex: none; }
+  .navItem[aria-current='page'] { background: var(--color-surface); color: var(--color-text); border: var(--size-hairline) solid var(--color-line); }
+  .profile { display: flex; align-items: center; gap: var(--space-10); margin-top: auto; padding: var(--space-10) var(--space-12); min-height: var(--size-button);
+    border-radius: var(--radius-s); color: var(--color-text); text-decoration: none; }
+  .profile[aria-current='page'] { background: var(--color-surface); border: var(--size-hairline) solid var(--color-line); }
+  .profileText { display: flex; flex-direction: column; min-width: 0; font: var(--font-meta); letter-spacing: var(--tracking-meta); }
+  .profileText b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: var(--font-weight-semibold); }
+  .profileText small { color: var(--color-text-3); font: var(--font-caption); letter-spacing: var(--tracking-caption); }
+  .frame[data-shell='site'] .tabBar, .frame[data-shell='site'] .sectionHeader { display: none; }
 }
 
 /* ── «назад» на сайте ── */
@@ -307,20 +84,8 @@
   height: var(--space-20);
 }
 
-/* Узкая строка (600–759 px): имя рядом со знаком не помещается — остаётся знак, имя слышно диктору. */
-@media (min-width: 600px) and (max-width: 759px) {
-  .frame[data-shell='site'] .brandName {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
-}
-
-/* Настройки на сайте шире 600 px — пункт панели, «назад» там не нужен. */
-@media (min-width: 600px) {
+/* Настройки на сайте шире 900 px — пункт панели, «назад» там не нужен. */
+@media (min-width: 900px) {
   .narrowOnly {
     display: none;
   }
@@ -346,3 +111,16 @@
   .frame[data-session][data-shell='site'] .main { padding-top: var(--space-20); }
   .frame[data-session][data-shell='site'] .main::after { height: var(--space-32); }
 }
+
+.examChip { width: var(--space-12); height: var(--space-12); border-radius: var(--space-4); background: var(--color-exam-gre); }
+.examChip[data-exam="toefl"] { background: var(--color-exam-toefl); }
+
+.frame[data-tabs]:has(.footerHost > footer) { display: flex; flex-direction: column; }
+.frame[data-tabs] .footerHost:has(> footer) { padding-bottom: calc(var(--layout-main-bottom-nav) - var(--space-24) + var(--app-inset-bottom)); }
+@media (min-width: 900px) { .frame[data-tabs][data-shell='site']:has(.footerHost > footer) { display: grid; grid-template-columns: var(--layout-sidebar-width) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; } .frame[data-tabs] .sideWrap { grid-row: 1 / 3; } .frame[data-tabs][data-shell='site'] .footerHost:has(> footer) { padding-bottom: 0; grid-column: 2; } }
+
+.brand { display: flex; align-items: center; gap: var(--space-10); padding: 0 var(--space-10) var(--space-20); font: var(--font-h2); letter-spacing: var(--tracking-h1); }
+.tabBar { padding-top: var(--space-8); }
+.tab { padding-top: var(--space-4); }
+.tab svg { width: var(--size-icon); height: var(--size-icon); }
+@media (min-width: 900px) { .frame[data-tabs] .column:has([data-extras]) { max-width: none; } }

@@ -24,33 +24,11 @@ function Icon({ size = '1em', children, strokeWidth = 2, ...rest }: IconProps & 
   );
 }
 
-export const TodayIcon = (p: IconProps) => (
-  <Icon {...p}>
-    <circle cx="6" cy="6" r="2" />
-    <circle cx="6" cy="18" r="2" />
-    <path d="M6 8v8M11 6h8M11 18h8M11 12h5" />
-  </Icon>
-);
-
-export const WordsIcon = (p: IconProps) => (
-  <Icon {...p}>
-    <rect x="3.5" y="7.5" width="12" height="13" rx="2.5" />
-    <path d="M8.5 4.5h9a2.5 2.5 0 0 1 2.5 2.5v10" />
-  </Icon>
-);
-
-export const ExamIcon = (p: IconProps) => (
-  <Icon {...p}>
-    <circle cx="12" cy="13" r="7.5" />
-    <path d="M12 9.5V13l2.5 1.5M9.5 3h5" />
-  </Icon>
-);
-
-export const ProgressIcon = (p: IconProps) => (
-  <Icon {...p}>
-    <path d="M4 19.5h16M7 16v-5M12 16V7M17 16v-3" />
-  </Icon>
-);
+export const TrainIcon = (p: IconProps) => <Icon {...p}><path d="M4 19V9M10 19V5M16 19v-7M22 19H2" /></Icon>;
+export const WordsIcon = (p: IconProps) => <Icon {...p}><path d="M4 5.5A1.5 1.5 0 015.5 4H11v16H5.5A1.5 1.5 0 014 18.5v-13zM20 5.5A1.5 1.5 0 0018.5 4H13v16h5.5a1.5 1.5 0 001.5-1.5v-13z" /></Icon>;
+export const ExamIcon = (p: IconProps) => <Icon {...p}><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 2.5M9.5 2.5h5" /></Icon>;
+export const ProgressIcon = (p: IconProps) => <Icon {...p}><path d="M3 17l5.5-5.5 4 4L21 7M15 7h6v6" /></Icon>;
+export const SlidersIcon = (p: IconProps) => <Icon {...p}><path d="M4 7h10M18 7h2M4 17h4M12 17h8" /><circle cx="16" cy="7" r="2" /><circle cx="10" cy="17" r="2" /></Icon>;
 
 /** Шестерёнка — как на холсте; контур — Feather Icons (MIT, © Cole Bemis). */
 export const SettingsIcon = (p: IconProps) => (
@@ -109,3 +87,13 @@ export const ChevronRightIcon = (p: IconProps) => (
     <path d="M9.5 6l6 6-6 6" />
   </Icon>
 );
+
+export const ChevronDownIcon = (p: IconProps) => <Icon {...p}><path d="M6 9l6 6 6-6" /></Icon>;
+
+export const AlertIcon = (p: IconProps) => <Icon {...p}><circle cx="12" cy="12" r="9" /><path d="M12 7v6M12 17h.01" /></Icon>;
+export const RepeatIcon = (p: IconProps) => <Icon {...p}><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-1l2 2M18 17a7 7 0 0 1-12 1l-2-2" /></Icon>;
+export const TargetIcon = (p: IconProps) => <Icon {...p}><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><circle cx="12" cy="12" r="1" /></Icon>;
+export const ResumeIcon = (p: IconProps) => <Icon {...p}><path d="M6 4h4v16H6zM14 4l7 8-7 8z" /></Icon>;
+export const CardIcon = (p: IconProps) => <Icon {...p}><rect x="3" y="5" width="18" height="14" rx="3" /><path d="M3 10h18M7 15h4" /></Icon>;
+export const KeyIcon = (p: IconProps) => <Icon {...p}><circle cx="8" cy="16" r="4" /><path d="M11 13l9-9M16 8l3 3M18 6l3 3" /></Icon>;
+export const MailIcon = (p: IconProps) => <Icon {...p}><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 6l9 7 9-7" /></Icon>;

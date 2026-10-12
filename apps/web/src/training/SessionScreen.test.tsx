@@ -1,17 +1,17 @@
 import { userEvent } from 'vitest/browser';
 import { onlineManager } from '@tanstack/react-query';
 import { expect, test, vi } from 'vitest';
-import { apiError, fakeServer, json, renderApp, STARTER, user, type Handler } from '../test/app';
+import { apiError, fakeServer, json, renderApp, OPTIONS, user, type Handler } from '../test/app';
 import { givenAnswer, questionFixture, trainingSession } from '../test/training';
 import { storedTraining, type StoredTraining } from './model';
 import { trainingRepository } from './repository';
 import { TrainingRules } from './rules';
 
 async function boot(training: StoredTraining = storedTraining(trainingSession(), Date.now()), handlers: Record<string, Handler> = {}, locale: 'ru' | 'en' = 'ru', shell: 'site' | 'telegram' = 'site') {
-  fakeServer({ 'GET /api/me': () => json(user({ locale })), 'GET /api/today': () => json(STARTER), ...handlers });
+  fakeServer({ 'GET /api/me': () => json(user({ locale })), 'GET /api/trainings/options': () => json(OPTIONS), ...handlers });
   vi.spyOn(trainingRepository, 'requestSync').mockImplementation(() => {});
   const app = await renderApp({ path: '/', shell });
-  await expect.element(app.screen.getByRole('heading', { name: 'Сегодня' })).toBeVisible();
+  await expect.element(app.screen.getByRole('heading', { name: 'Тренировка' })).toBeVisible();
   const owner = await trainingRepository.store.currentOwner();
   if (!owner) throw new Error('fixture owner missing');
   await trainingRepository.store.put(owner, training);
@@ -23,7 +23,7 @@ async function boot(training: StoredTraining = storedTraining(trainingSession(),
 test('сайт: область прокрутки заканчивается над панелью действий, включая дополнительные строки', async () => {
   const { screen } = await boot(storedTraining(trainingSession({ mode: 'check', timeLimitSeconds: 270 }), Date.now()));
   const main = screen.getByRole('main').element();
-  // Панель ищем по смыслу, а не по месту в разметке: тест должен падать на симптоме, а не на селекторе.
+  // Панель стала соседней строкой раскладки: в main остаётся только прокручиваемое содержимое.
   const footer = document.querySelector('footer');
   if (!footer) throw new Error('Нет панели действий');
   await document.fonts.ready;
@@ -289,7 +289,7 @@ for (const [type, blanks] of [['text_completion', 1], ['text_completion', 2], ['
   await screen.getByRole('button', { name: 'Итог', exact: true }).click();
   await expect.element(screen.getByText('Без ошибок — повторять нечего.')).toBeVisible();
   await screen.getByRole('button', { name: 'Готово', exact: true }).click();
-  await expect.element(screen.getByRole('heading', { name: 'Сегодня' })).toBeVisible();
+  await expect.element(screen.getByRole('heading', { name: 'Тренировка' })).toBeVisible();
 });
 
 test('два верных ключа и неверный SE: второй уровень, английский интерфейс и переключение обратно', async () => {
@@ -495,4 +495,16 @@ test('итог TOEFL подписан Reading по-английски', async ()
   const training = { ...storedTraining(trainingSession({ exam: 'toefl', section: 'reading' }), Date.now() - 62000), finish: { finishedAt: new Date().toISOString(), timedOut: false } };
   const { screen } = await boot(training);
   await expect.element(screen.getByText('Reading', { exact: true })).toHaveAttribute('lang', 'en');
+});
+
+test('T6: без сети на вопросе тихая строка, «Проверить» работает, сеть вернулась — строка исчезла', async () => {
+  const { screen } = await boot();
+  onlineManager.setOnline(false);
+  await expect.element(screen.getByText('Нет сети — ответы сохранятся и уйдут сами.')).toBeVisible();
+  await screen.getByRole('radio').first().click();
+  await expect.element(screen.getByRole('button', { name: 'Проверить', exact: true })).toBeEnabled();
+  await screen.getByRole('button', { name: 'Проверить', exact: true }).click();
+  await expect.element(screen.getByTestId('explanation')).toBeVisible();
+  onlineManager.setOnline(true);
+  await expect.element(screen.getByText('Нет сети — ответы сохранятся и уйдут сами.')).not.toBeInTheDocument();
 });

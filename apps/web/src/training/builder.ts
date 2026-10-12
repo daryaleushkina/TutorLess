@@ -1,12 +1,11 @@
-import { CURRENT_EXAM } from './exam';
-import type { Difficulty, QuestionType, TrainingMode, TrainingOptions, TrainingRequest } from '@greprep/api-client';
+import type { Exam, Section, Difficulty, QuestionType, TrainingMode, TrainingOptions, TrainingRequest } from '@greprep/api-client';
 
 export const TYPE_LABELS: Record<QuestionType, string> = {
   text_completion: 'Text Completion', sentence_equivalence: 'Sentence Equivalence',
   quantitative_comparison: 'Quantitative Comparison', multiple_choice: 'Multiple Choice',
 };
 export interface BuilderForm {
-  section: 'verbal' | 'quant'; type: QuestionType; countText: string; mode: TrainingMode;
+  section: Section; type: QuestionType; countText: string; mode: TrainingMode;
   topicIds: string[] | undefined; difficulty: Difficulty | undefined;
 }
 export interface BuilderState { options: TrainingOptions; form: BuilderForm; preset: number | undefined }
@@ -18,13 +17,13 @@ export function defaultForm(options: TrainingOptions, section: BuilderForm['sect
     countText: '10', mode: 'practice', topicIds: undefined, difficulty: undefined };
 }
 export function formOf(request: TrainingRequest, options: TrainingOptions): BuilderForm {
-  return { ...defaultForm(options, request.section === 'quant' ? 'quant' : 'verbal', request.questionTypes[0]),
+  return { ...defaultForm(options, request.section, request.questionTypes[0]),
     countText: String(request.count), mode: request.mode, topicIds: request.topicIds?.length ? request.topicIds : undefined, difficulty: request.difficulty };
 }
 export function initialBuilder(options: TrainingOptions, section?: BuilderForm['section'], type?: QuestionType): BuilderState {
   const preset = section ? -1 : presetsOf(options).findIndex((p) => p.kind === 'last');
   const last = presetsOf(options)[preset];
-  return { options, form: last ? formOf(last.request, options) : defaultForm(options, section ?? 'verbal', type), preset: preset < 0 ? undefined : preset };
+  return { options, form: last ? formOf(last.request, options) : defaultForm(options, section ?? options.types[0]?.section ?? 'verbal', type), preset: preset < 0 ? undefined : preset };
 }
 /** Каталог обновляется независимо от формы: убираем только выбор, которого больше нет. */
 export function updateOptions(state: BuilderState, options: TrainingOptions): BuilderState {
@@ -46,13 +45,13 @@ export function available(state: BuilderState): number {
   return topicsOf(state).filter((t) => form.topicIds === undefined || form.topicIds.includes(t.id))
     .reduce((sum, t) => sum + (form.difficulty ? t.available[form.difficulty] : t.available.easy + t.available.medium + t.available.hard), 0);
 }
-export function requestOf(state: BuilderState): TrainingRequest | undefined {
+export function requestOf(state: BuilderState, exam: Exam): TrainingRequest | undefined {
   if (state.preset !== undefined) return presetsOf(state.options)[state.preset]?.request;
   const { form, options } = state;
   const count = /^\d+$/.test(form.countText) ? Number(form.countText) : 0;
   const questions = Math.min(count, available(state), options.maxQuestions);
   if (questions < 1) return undefined;
-  return { exam: CURRENT_EXAM, section: form.section, questionTypes: [form.type], count: questions, mode: form.mode,
+  return { exam, section: form.section, questionTypes: [form.type], count: questions, mode: form.mode,
     ...(form.topicIds && { topicIds: form.topicIds.filter((id) => topicsOf(state).some((topic) => topic.id === id)) }), ...(form.difficulty && { difficulty: form.difficulty }) };
 }
 export function minutes(options: TrainingOptions, request: TrainingRequest): number {

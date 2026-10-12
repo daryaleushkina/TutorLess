@@ -12,6 +12,7 @@ export interface TelegramLaunch {
   initDataRaw: string;
   /** Язык Telegram — для экрана загрузки до входа; после входа — язык аккаунта. */
   languageCode: string | undefined;
+  startParam?: string;
 }
 
 export type TelegramStart =
@@ -74,7 +75,7 @@ export async function startTelegram(): Promise<TelegramStart> {
 
   const raw = initData.raw();
   if (!raw) return { kind: 'failed', error: new Error('Telegram launched the mini app without initData') };
-  return { kind: 'ok', launch: { initDataRaw: raw, languageCode: initData.user()?.language_code } };
+  return { kind: 'ok', launch: { initDataRaw: raw, languageCode: initData.user()?.language_code, startParam: new URLSearchParams(raw).get('start_param') ?? undefined } };
 }
 
 /**

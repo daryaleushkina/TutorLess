@@ -6,6 +6,8 @@ import { BackIcon, ChevronRightIcon } from '../components/icons';
 import { StatusScreen } from '../components/StatusScreen';
 import { useI18n } from '../i18n/i18n';
 import { FocusFooter, FocusLayout } from '../layout/AppLayout';
+import { useTabDraft } from '../layout/TabsContext';
+import { useActiveExam } from './exam';
 import { useShell } from '../shellContext';
 import { useSession } from '../session/session';
 import { useBackButton } from '../telegram/hooks';
@@ -21,9 +23,10 @@ import styles from './Training.module.css';
 
 export function BuilderScreen() {
   const { session } = useSession();
+  const exam = useActiveExam();
   const online = useOnline();
-  const options = useQuery({ queryKey: ['training-options', session.status === 'signedIn' ? session.user.id : null],
-    queryFn: ({ signal }) => trainingRepository.options(signal), enabled: session.status === 'signedIn',
+  const options = useQuery({ queryKey: ['training-options', session.status === 'signedIn' ? session.user.id : null, exam],
+    queryFn: ({ signal }) => trainingRepository.options(exam, signal), enabled: session.status === 'signedIn',
     // Последняя сборка меняется после старта: новый вход получает свежий каталог, редактирование его не перезагружает.
     staleTime: 0, gcTime: 0, refetchOnMount: 'always', refetchOnWindowFocus: false, refetchOnReconnect: false });
   const offline = !online || options.fetchStatus === 'paused' || (isApiError(options.error) && options.error.kind === 'network');
@@ -37,7 +40,7 @@ function BuilderStatus({ offline, unavailable, retry }: { offline: boolean; unav
   const { shell } = useShell();
   const navigate = useNavigate();
   useBackButton(shell === 'telegram' ? () => void navigate({ to: '/' }) : null);
-  return <FocusLayout><div className={styles.screen}>
+  return <FocusLayout tabs><div className={styles.screen}>
     {shell === 'site' && <Link to="/" className={styles.back}><BackIcon />{t.back}</Link>}
     <h1 className={styles.title}>{t.training.training_new}</h1>
     {unavailable || offline ? <StatusScreen heading="h2" live title={offline ? t.training.training_offline_title : t.training.training_failed_title}
@@ -52,10 +55,11 @@ function ReadyBuilder({ options }: { options: TrainingOptions }) {
   const { shell } = useShell();
   const navigate = useNavigate();
   const search = useSearch({ from: '/app/training/new' });
-  const [savedState, setState] = useState(() => initialBuilder(options, search.section, search.type));
+  const [savedState, setState, discardForm] = useTabDraft('builder-form', () => initialBuilder(options, search.section, search.type));
   const state = updateOptions(savedState, options);
   if (state !== savedState) setState(state);
-  const [topics, setTopics] = useState(false);
+  const [topics, setTopics, discardTopics] = useTabDraft('builder-topics', () => false);
+  const exam = useActiveExam();
   const [busy, setBusy] = useState(false);
   const starting = useRef(false);
   const [problem, setProblem] = useState<'offline' | 'failed' | 'noQuestions' | null>(null);
@@ -66,13 +70,13 @@ function ReadyBuilder({ options }: { options: TrainingOptions }) {
   const preset = presets[state.preset ?? -1];
   const multipleTypes = (preset?.request.questionTypes.length ?? 0) > 1;
   const selectedTopics = topicsOf(state);
-  const request = requestOf(state);
+  const request = requestOf(state, exam);
   const countLabel = text.questionsCount(request?.count ?? available(state));
   const edit = (change: (form: BuilderForm) => BuilderForm) => {
     setState((previous) => ({ ...previous, form: change(previous.form), preset: undefined }));
     setProblem(null);
   };
-  const back = () => topics ? setTopics(false) : void navigate({ to: '/' });
+  const back = () => { if (topics) { setTopics(false); return; } discardForm(); discardTopics(); void navigate({ to: '/' }); };
   useBackButton(shell === 'telegram' ? back : null);
 
   const start = async () => {
@@ -83,13 +87,14 @@ function ReadyBuilder({ options }: { options: TrainingOptions }) {
     setBusy(true); setProblem(null);
     try {
       const trainingId = await trainingRepository.start(request);
+      discardForm(); discardTopics();
       await navigate({ to: '/training/$trainingId', params: { trainingId } });
     } catch (error) {
       setProblem(isApiError(error) && error.kind === 'network' ? 'offline' : isApiError(error) && error.code === 'no_questions' ? 'noQuestions' : 'failed');
     } finally { starting.current = false; setBusy(false); }
   };
 
-  return <FocusLayout training wide={!topics}><div className={styles.screen} data-shell={shell}>
+  return <FocusLayout tabs training wide={!topics}><div className={styles.screen} data-shell={shell}>
     {shell === 'site' && <button type="button" className={styles.back} onClick={back}><BackIcon />{t.back}</button>}
     <h1 className={styles.title}>{topics ? text.builder_topics : text.training_new}</h1>
     {topics ? <>
@@ -123,7 +128,7 @@ function ReadyBuilder({ options }: { options: TrainingOptions }) {
         </div>}
         <div className={`${styles.group} ${styles.solid}`}>
           <div className={styles.row}><span>{text.builder_section}</span><div role="group" aria-label={text.builder_section} className={`${styles.segments} ${glass.glass}`}>
-            {(['verbal', 'quant'] as const).map((section) => <button type="button" key={section} aria-pressed={form.section === section} disabled={busy}
+            {[...new Set(options.types.map((type) => type.section))].map((section) => <button type="button" key={section} aria-pressed={form.section === section} disabled={busy}
               onClick={() => edit((f) => f.section === section ? f : { ...defaultForm(options, section), countText: f.countText, mode: f.mode })}>{t.sections[section]}</button>)}
           </div></div>
           <label className={`${styles.row} ${styles.typeRow}`}><span>{text.builder_type}</span><select lang="en" value={multipleTypes ? 'preset' : form.type} disabled={busy} onChange={(e) => {

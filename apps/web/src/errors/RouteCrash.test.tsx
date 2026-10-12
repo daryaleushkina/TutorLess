@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { fakeServer, json, renderApp, STARTER, user } from '../test/app';
+import { fakeServer, json, renderApp, OPTIONS, user } from '../test/app';
 
 // Экран, который падает при отрисовке, — внутри маршрутизатора (у него свой перехват ошибок).
 vi.mock('../screens/progress/ProgressScreen', () => ({
@@ -13,7 +13,7 @@ describe('падение экрана внутри маршрутов', () => {
     const quiet = vi.spyOn(console, 'error').mockImplementation(() => {});
     const { requests } = fakeServer({
       'GET /api/me': () => json(user()),
-      'GET /api/today': () => json(STARTER),
+      'GET /api/trainings/options': () => json(OPTIONS),
       'POST /api/client-errors': () => new Response(null, { status: 204 }),
     });
     const { screen } = await renderApp({ path: '/progress' });

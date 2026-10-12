@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { dictionaries, type Dict } from './dict';
 
-const ru = dictionaries.ru.today;
-const en = dictionaries.en.today;
+const ru = dictionaries.ru.home;
+const en = dictionaries.en.home;
 
 it('количество вопросов остаётся неразрывной группой', () => {
   expect(dictionaries.ru.training.questionsCount(10)).toBe('10\u00a0вопросов');
@@ -21,40 +21,13 @@ it('тексты тренировки с параметрами — функци
   }
 });
 
-describe('русские формы', () => {
-  it.each([
-    [1, 'около 1 минуты', '1 минута'],
-    [2, 'около 2 минут', '2 минуты'],
-    [5, 'около 5 минут', '5 минут'],
-    [11, 'около 11 минут', '11 минут'],
-    [21, 'около 21 минуты', '21 минута'],
-    [22, 'около 22 минут', '22 минуты'],
-    [25, 'около 25 минут', '25 минут'],
-    [1.5, 'около 1.5 минуты', '1.5 минуты'],
-  ])('%d', (n, about, plain) => {
-    expect(ru.aboutMinutes(n)).toBe(about);
+describe('формы минут', () => {
+  it.each([[1, '1 минута'], [2, '2 минуты'], [5, '5 минут'], [11, '11 минут'], [21, '21 минута'], [22, '22 минуты'], [25, '25 минут'], [1.5, '1.5 минуты']])('%d', (n, plain) => {
     expect(ru.minutes(n)).toBe(plain);
   });
-
-  it('шаги — словом до восьми, дальше числом', () => {
-    expect(ru.steps(1)).toBe('Один шаг');
-    expect(ru.steps(3)).toBe('Три шага');
-    expect(ru.steps(8)).toBe('Восемь шагов');
-    expect(ru.steps(9)).toBe('9 шагов');
-    expect(ru.steps(22)).toBe('22 шага');
-    expect(ru.steps(21)).toBe('21 шаг');
-    expect(ru.steps(1.5)).toBe('1.5 шага');
-  });
-});
-
-describe('английские формы', () => {
-  it('минуты и шаги', () => {
-    expect(en.aboutMinutes(1)).toBe('about 1 minute');
-    expect(en.aboutMinutes(25)).toBe('about 25 minutes');
+  it('английский', () => {
     expect(en.minutes(1)).toBe('1 minute');
     expect(en.minutes(2)).toBe('2 minutes');
-    expect(en.steps(3)).toBe('Three steps');
-    expect(en.steps(9)).toBe('9 steps');
   });
 });
 
@@ -109,12 +82,10 @@ describe('все строки-функции отвечают текстом н�
     'training.builder_start': t.training.builder_start(t.training.questionsCount(3), 5),
     'training.topics_done': t.training.topics_done(t.training.questionsCount(3)),
     'training.questionsCount': t.training.questionsCount(3),
-    'today.steps': t.today.steps(3),
-    'today.aboutMinutes': t.today.aboutMinutes(3),
-    'today.minutes': t.today.minutes(3),
-    'today.approxShort': t.today.approxShort(3),
-    'today.short': t.today.short(3),
-    'today.now': t.today.now('X'),
+    'home.minutes': t.home.minutes(3), 'home.duration': t.home.duration(130),
+    'home.mistakeCount': t.home.mistakeCount(3), 'home.days': t.home.days(3), 'home.answers': t.home.answers(3),
+    'home.approxShort': t.home.approxShort(3),
+    'navigation.examSwitch': t.navigation.examSwitch('GRE'),
     'settings.version': t.settings.version('X'),
   });
   for (const locale of ['ru', 'en'] as const) it(locale, () => {
@@ -123,3 +94,5 @@ describe('все строки-функции отвечают текстом н�
     for (const [name, text] of Object.entries(out)) expect(text, name).not.toMatch(/undefined|NaN|#|^\s*$/);
   });
 });
+
+it('длительность недели — часы и минуты без потери времени', () => { expect(dictionaries.ru.home.duration(18)).toBe('18 мин'); expect(dictionaries.ru.home.duration(130)).toBe('2 ч 10 мин'); expect(dictionaries.en.home.duration(18)).toBe('18 min'); expect(dictionaries.en.home.duration(130)).toBe('2 hr 10 min'); });

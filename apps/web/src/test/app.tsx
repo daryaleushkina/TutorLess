@@ -1,6 +1,6 @@
 // Приложение целиком для тестов компонентов: настоящие маршруты, сессия, кэш и клиент API, а сервер подменён
 // (fetch по таблице «метод путь → ответ»). Ответы — по договору: их проверяет та же схема Zod, что в бою.
-import type { Today, TodayStep, User } from '@greprep/api-client';
+import type { Home, ExamList, User } from '@greprep/api-client';
 import { createMemoryHistory } from '@tanstack/react-router';
 import { vi } from 'vitest';
 import { render } from 'vitest-browser-react';
@@ -21,22 +21,14 @@ export const user = (over: Partial<User> = {}): User => ({
   name: 'Даша',
   role: 'user',
   locale: 'ru',
-  activeExam: null,
+  activeExam: 'gre',
   identities: [{ provider: 'telegram', linkedAt: '2026-10-06T10:00:00Z' }],
   ...over,
 });
 
-export const step = (id: string, state: TodayStep['state'], section: TodayStep['section'], minutes = 10): TodayStep => ({
-  id,
-  section,
-  title: `Шаг ${id}`,
-  minutes,
-  state,
-});
-
-export const plan = (steps: TodayStep[]): Today => ({ date: '2026-10-06', steps });
-
-export const STARTER = plan([step('words', 'current', 'words', 5), step('verbal', 'next', 'verbal'), step('quant', 'next', 'quant')]);
+export { OPTIONS } from './options';
+export const EXAMS: ExamList = { exams: [{ id: 'gre', sections: ['verbal', 'quant', 'essay'] }, { id: 'toefl', sections: ['reading', 'listening', 'writing', 'speaking'] }] };
+export const HOME: Home = { lastTraining: null, sections: [], mistakes: 0, weakSpot: null, week: { days: 0, answers: 0, minutes: 0 } };
 
 /** Подменный сервер: запросы, которые пришли, и ответы по таблице; чего нет в таблице — 404 из договора. */
 export function fakeServer(handlers: Record<string, Handler>) {
@@ -44,7 +36,9 @@ export function fakeServer(handlers: Record<string, Handler>) {
   const fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const req = new Request(new URL(String(input), location.origin), init);
     requests.push(req.clone());
-    const handler = handlers[`${req.method} ${new URL(req.url).pathname}`];
+    const defaults: Record<string, Handler> = { 'GET /api/exams': () => json(EXAMS), 'GET /api/home': () => json(HOME) };
+    const key = `${req.method} ${new URL(req.url).pathname}`;
+    const handler = handlers[key] ?? defaults[key];
     return handler ? handler(req) : apiError(404, 'not_found');
   });
   vi.stubGlobal('fetch', fetch);

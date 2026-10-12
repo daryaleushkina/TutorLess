@@ -22,12 +22,8 @@ function en(one: string, other: string): Plural {
   return (n) => (enRules.select(n) === 'one' ? one : other).replace('#', String(n));
 }
 
-/** Число шагов — словом: при трёх-четырёх шагах слово читается быстрее цифры (шагов не больше восьми, договор). */
-const ruSteps = ['', 'Один шаг', 'Два шага', 'Три шага', 'Четыре шага', 'Пять шагов', 'Шесть шагов', 'Семь шагов', 'Восемь шагов'];
-const enSteps = ['', 'One step', 'Two steps', 'Three steps', 'Four steps', 'Five steps', 'Six steps', 'Seven steps', 'Eight steps'];
-
-
 const trainingRu = {
+  question_offline: 'Нет сети — ответы сохранятся и уйдут сами.',
   question_report: 'Сообщить об ошибке', summary_all_answers: 'Все ответы и разборы',
   review_title_practice: 'Разбор тренировки', review_title_check: 'Разбор проверки',
   review_all: (count: number) => `Все · ${count}`, review_mistakes: (count: number) => `Ошибки · ${count}`,
@@ -86,7 +82,7 @@ const trainingRu = {
   training_failed_message: "Мы уже знаем об ошибке. Попробуйте ещё раз чуть позже.",
   training_retry: "Повторить",
   training_missing_title: "Тренировки нет на устройстве",
-  training_missing_message: "Она могла устареть. Начните новую с экрана «Сегодня».",
+  training_missing_message: "Она могла устареть. Начните новую с экрана «Тренировка».",
   question_close: "Закрыть тренировку",
   builder_preset_last: "Как в прошлый раз",
   builder_preset_timed: "Проверка на время",
@@ -116,6 +112,7 @@ const trainingRu = {
   topics_done: (count: string) => `Готово · ${count}`,
 };
 const trainingEn = {
+  question_offline: 'No connection — answers will be saved and sent automatically.',
   question_report: 'Report a mistake', summary_all_answers: 'All answers and explanations',
   review_title_practice: 'Practice review', review_title_check: 'Check review',
   review_all: (count: number) => `All · ${count}`, review_mistakes: (count: number) => `Mistakes · ${count}`,
@@ -173,7 +170,7 @@ const trainingEn = {
   training_failed_message: "We already know about it. Please try again a little later.",
   training_retry: "Try again",
   training_missing_title: "This practice isn’t on the device",
-  training_missing_message: "It may have expired. Start a new one from Today.",
+  training_missing_message: "It may have expired. Start a new one from Practice.",
   question_close: "Close practice",
   builder_preset_last: "Same as last time",
   builder_preset_timed: "Timed check",
@@ -207,37 +204,21 @@ type TrainingDict = typeof trainingRu & { questionsCount: Plural };
 export interface Dict {
   training: TrainingDict;
   back: string;
-  tabs: { today: string; words: string; exam: string; progress: string; settings: string; sections: string };
+  tabs: { train: string; words: string; exam: string; progress: string; settings: string; sections: string };
   sections: Record<Section, string>;
-  today: {
-    title: string;
-    plan: string;
-    loading: string;
-    steps: Plural;
-    aboutMinutes: Plural;
-    minutes: Plural;
-    approxShort: (n: number) => string;
-    short: (n: number) => string;
-    noSteps: string;
-    start: string;
-    now: (title: string) => string;
-    allDoneLine: string;
-    allDoneTitle: string;
-    tomorrow: string;
-    offlineTitle: string;
-    offlineText: string;
-    failedTitle: string;
-    failedText: string;
-    retry: string;
-    staleOffline: string;
-    staleFailed: string;
-    needNetwork: string;
+  navigation: { exam: string; chooseExam: string; examSwitch: (name: string) => string; profile: string };
+  home: {
+    loading: string; first: string; firstNote: string; chooseSection: string; configure: string; empty: string;
+    start: string; starting: string; minutes: Plural; duration: (n: number) => string; approxShort: (n: number) => string;
+    offlineTitle: string; offlineText: string; failedTitle: string; failedText: string; retry: string;
+    staleOffline: string; staleFailed: string; needNetwork: string; mistakes: string; mistakeCount: Plural; weakSpot: string; correct: string; week: string; days: Plural; answers: Plural; toeflEmpty: string;
   };
-  placeholder: { soon: string; words: string; exam: string; step: string };
-  progress: { emptyTitle: string; emptyText: string };
-  settings: { signOut: string; signOutFailed: string; signOutOffline: string; version: (v: string) => string };
+  placeholder: { words: string; exam: string; toefl: string };
+  progress: { emptyTitle: string; emptyText: string; first: string };
+  settings: { signOut: string; signOutFailed: string; signOutOffline: string; version: (v: string) => string; language: string; theme: string; textSize: string; light: string; dark: string; normal: string; large: string; subscription: string; identities: string; contact: string; saveFailed: string; localeFailed: string; telegram: string };
+  exams: { title: string; lead: string; gre: string; toefl: string; chooseFailed: string; changeFailed: string; offline: string; note: string };
   signIn: {
-    tagline: string;
+    tagline: string; title: string;
     apple: string;
     google: string;
     legal: string;
@@ -261,50 +242,44 @@ export interface Dict {
 const dictRu: Dict = {
   training: { ...trainingRu, questionsCount: ru({ one: "#\u00a0вопрос", few: "#\u00a0вопроса", many: "#\u00a0вопросов", other: "#\u00a0вопроса" }) },
   back: 'Назад',
-  tabs: { today: 'Сегодня', words: 'Слова', exam: 'Экзамен', progress: 'Прогресс', settings: 'Настройки', sections: 'Разделы' },
+  tabs: { train: 'Тренировка', words: 'Слова', exam: 'Экзамен', progress: 'Прогресс', settings: 'Профиль', sections: 'Разделы' },
   sections: { reading: 'Reading', listening: 'Listening', writing: 'Writing', speaking: 'Speaking', verbal: 'Verbal', quant: 'Quant', words: 'Слова', essay: 'Эссе' },
-  today: {
-    title: 'Сегодня',
-    plan: 'План на сегодня',
-    loading: 'Загружаем план на сегодня',
-    steps: (n) => ruSteps[n] ?? ru({ one: '# шаг', few: '# шага', many: '# шагов', other: '# шага' })(n),
-    aboutMinutes: ru({ one: 'около # минуты', few: 'около # минут', many: 'около # минут', other: 'около # минуты' }),
+  navigation: { exam: 'Экзамен', chooseExam: 'Выбрать экзамен', examSwitch: (name) => `Экзамен: ${name}, сменить`, profile: 'Профиль' },
+  home: {
+    loading: 'Загружаем тренировку', first: 'Первая тренировка',
+    firstNote: 'После каждого ответа — разбор на вашем языке: почему верно и где ловушка в остальных вариантах.',
+    chooseSection: 'Разделы', configure: 'Настроить тренировку', empty: 'Пока нет доступных заданий',
+    start: 'Начать', starting: 'Начинаем…',
     minutes: ru({ one: '# минута', few: '# минуты', many: '# минут', other: '# минуты' }),
-    approxShort: (n) => `~${n} мин`,
-    short: (n) => `${n} мин`,
-    noSteps: 'На сегодня шагов нет',
-    start: 'Начать',
-    now: (title) => `Сейчас: ${title}`,
-    allDoneLine: 'На сегодня всё.',
-    allDoneTitle: 'На сегодня всё',
-    tomorrow: 'Завтра здесь будет новый план.',
-    offlineTitle: 'Нет сети',
-    offlineText: 'План на сегодня загрузится, когда появится сеть.',
-    failedTitle: 'Не получилось загрузить план',
-    failedText: 'Мы уже знаем об ошибке. Попробуйте ещё раз чуть позже.',
-    retry: 'Повторить',
-    staleOffline: 'Нет сети — план обновится сам, когда она появится.',
-    staleFailed: 'Не получилось обновить план — покажем свежий, как только сервер ответит.',
-    needNetwork: 'Чтобы начать, нужна сеть. Когда она появится, всё заработает.',
+    duration: (n) => n < 60 ? `${n} мин` : `${Math.floor(n / 60)} ч ${n % 60} мин`,
+    approxShort: (n) => `~${n}\u00a0мин`,
+    offlineTitle: 'Нет сети', offlineText: 'Тренировка загрузится, когда сеть вернётся.',
+    failedTitle: 'Не получилось загрузить тренировку', failedText: 'Мы уже знаем об ошибке. Попробуйте ещё раз чуть позже.',
+    retry: 'Попробовать снова', staleOffline: 'Нет сети — обновим, когда она появится.',
+    staleFailed: 'Не получилось обновить — покажем свежее, как только сервер ответит.',
+    needNetwork: 'Чтобы начать, нужна сеть: задания скачаются целиком, и дальше можно без неё.',
+    mistakes: 'Повторить мои ошибки', mistakeCount: ru({ one: '# задание из прошлых тренировок', few: '# задания из прошлых тренировок', many: '# заданий из прошлых тренировок', other: '# задания из прошлых тренировок' }),
+    weakSpot: 'Слабое место', correct: 'верно', week: 'Эта неделя', days: ru({ one: '# день', few: '# дня', many: '# дней', other: '# дня' }), answers: ru({ one: '# задание', few: '# задания', many: '# заданий', other: '# задания' }), toeflEmpty: 'Здесь будут тренировки по четырём частям TOEFL.',
   },
   placeholder: {
-    soon: 'Скоро',
-    words: 'Здесь будет словарь: слова на сегодня, повторение и поиск.',
-    exam: 'Здесь будут пробный экзамен как настоящий GRE и эссе с оценкой.',
-    step: 'Здесь начнётся шаг. Тренировки и слова появятся в следующих частях.',
+    words: 'Здесь будут слова: учить, повторять и искать.',
+    exam: 'Здесь будут пробные экзамены GRE и эссе с оценкой.', toefl: 'Здесь будут пробные экзамены TOEFL с оценкой Writing и Speaking.',
   },
   progress: {
-    emptyTitle: 'Тренировок ещё не было',
-    emptyText: 'Здесь появятся темы, где больше всего ошибок, — по порядку, с чего начать.',
+    emptyTitle: 'Здесь появится ваш прогресс',
+    emptyText: 'Здесь будет точность по разделам, история тренировок и примерный балл.',
+    first: 'Первая тренировка',
   },
   settings: {
     signOut: 'Выйти',
     signOutFailed: 'Не получилось выйти. Попробуйте ещё раз.',
     signOutOffline: 'Нет сети — выйти получится, когда она появится.',
-    version: (v) => `Версия ${v}`,
+    version: (v) => `Версия ${v}`, language: 'Язык', theme: 'Тема', textSize: 'Размер текста', light: 'Светлая', dark: 'Тёмная', normal: 'Обычный', large: 'Крупнее', subscription: 'Подписка', identities: 'Способы входа', contact: 'Написать нам', saveFailed: 'Не получилось сохранить настройку на устройстве. Попробуйте ещё раз.', localeFailed: 'Не получилось сохранить язык. Попробуйте ещё раз.', telegram: 'Вход через Telegram',
   },
+  exams: { title: 'К какому экзамену готовитесь?', lead: 'От него зависят задания, слова и пробный экзамен. Сменить можно в любой момент.', gre: 'Магистратура и PhD', toefl: 'Английский для учёбы', chooseFailed: 'Не получилось сохранить выбор. Попробуйте ещё раз.', changeFailed: 'Не получилось сменить экзамен. Попробуйте ещё раз.', offline: 'Нет сети — выбрать экзамен получится, когда она вернётся.', note: 'У каждого экзамена свой прогресс, при смене он не теряется.' },
   signIn: {
-    tagline: 'Подготовка к GRE® с разбором каждой ошибки — по-русски и по-английски.',
+    title: 'GRE® и TOEFL® без репетитора',
+    tagline: 'Вопросы как на настоящем экзамене и разбор каждой ошибки на вашем языке.',
     apple: 'Вход с Apple',
     google: 'Войти с аккаунтом Google',
     legal: 'Продолжая, вы принимаете условия и политику конфиденциальности.',
@@ -337,50 +312,41 @@ const dictRu: Dict = {
 const dictEn: Dict = {
   training: { ...trainingEn, questionsCount: en("#\u00a0question", "#\u00a0questions") },
   back: 'Back',
-  tabs: { today: 'Today', words: 'Words', exam: 'Exam', progress: 'Progress', settings: 'Settings', sections: 'Sections' },
+  tabs: { train: 'Practice', words: 'Words', exam: 'Exam', progress: 'Progress', settings: 'Profile', sections: 'Sections' },
   sections: { reading: 'Reading', listening: 'Listening', writing: 'Writing', speaking: 'Speaking', verbal: 'Verbal', quant: 'Quant', words: 'Words', essay: 'Essay' },
-  today: {
-    title: 'Today',
-    plan: 'Today’s plan',
-    loading: 'Loading today’s plan',
-    steps: (n) => enSteps[n] ?? en('# step', '# steps')(n),
-    aboutMinutes: en('about # minute', 'about # minutes'),
-    minutes: en('# minute', '# minutes'),
-    approxShort: (n) => `~${n} min`,
-    short: (n) => `${n} min`,
-    noSteps: 'No steps for today',
-    start: 'Start',
-    now: (title) => `Now: ${title}`,
-    allDoneLine: 'That’s all for today.',
-    allDoneTitle: 'That’s all for today',
-    tomorrow: 'Tomorrow there will be a new plan here.',
-    offlineTitle: 'No connection',
-    offlineText: 'Today’s plan will load once you’re back online.',
-    failedTitle: 'Couldn’t load the plan',
-    failedText: 'We already know about the error. Please try again a bit later.',
-    retry: 'Try again',
-    staleOffline: 'No connection — the plan will update by itself once it’s back.',
-    staleFailed: 'Couldn’t update the plan — we’ll show a fresh one as soon as the server responds.',
-    needNetwork: 'You need a connection to start. Once it’s back, everything will work.',
+  navigation: { exam: 'Exam', chooseExam: 'Choose an exam', examSwitch: (name) => `Exam: ${name}, change`, profile: 'Profile' },
+  home: {
+    loading: 'Loading practice', first: 'First practice',
+    firstNote: 'After each answer, get an explanation in your language: why it’s correct and where the other options mislead.',
+    chooseSection: 'Sections', configure: 'Customize practice', empty: 'No questions available yet',
+    start: 'Start', starting: 'Starting…',
+    minutes: en('# minute', '# minutes'), duration: (n) => n < 60 ? `${n} min` : `${Math.floor(n / 60)} hr ${n % 60} min`, approxShort: (n) => `~${n}\u00a0min`,
+    offlineTitle: 'No connection', offlineText: 'Practice will load once you’re back online.',
+    failedTitle: 'Couldn’t load practice', failedText: 'We already know about the error. Please try again a bit later.',
+    retry: 'Try again', staleOffline: 'No connection — practice will update by itself once it’s back.',
+    staleFailed: 'Couldn’t update practice — we’ll show fresh data as soon as the server responds.',
+    needNetwork: 'You need a connection to download the questions. After that, you can practice offline.',
+    mistakes: 'Review my mistakes', mistakeCount: en('# question from previous practice', '# questions from previous practice'), weakSpot: 'Weak spot', correct: 'correct', week: 'This week', days: en('# day', '# days'), answers: en('# question', '# questions'), toeflEmpty: 'Practice the four TOEFL sections here.',
   },
   placeholder: {
-    soon: 'Coming soon',
-    words: 'The dictionary will live here: today’s words, review and search.',
-    exam: 'Practice tests just like the real GRE and scored essays will live here.',
-    step: 'The step will start here. Practice and words arrive in the next parts.',
+    words: 'Learn, review and look up words here.',
+    exam: 'GRE practice tests and scored essays will be here.', toefl: 'TOEFL practice tests and Writing and Speaking feedback will be here.',
   },
   progress: {
-    emptyTitle: 'No practice yet',
-    emptyText: 'Topics with the most mistakes will appear here — in order, starting with the first to work on.',
+    emptyTitle: 'Your progress will appear here',
+    emptyText: 'See what you do well and what needs more practice here.',
+    first: 'First practice',
   },
   settings: {
     signOut: 'Sign out',
     signOutFailed: 'Couldn’t sign out. Please try again.',
     signOutOffline: 'No connection — you can sign out once it’s back.',
-    version: (v) => `Version ${v}`,
+    version: (v) => `Version ${v}`, language: 'Language', theme: 'Theme', textSize: 'Text size', light: 'Light', dark: 'Dark', normal: 'Normal', large: 'Larger', subscription: 'Subscription', identities: 'Sign-in methods', contact: 'Contact us', saveFailed: 'Couldn’t save this setting on your device. Please try again.', localeFailed: 'Couldn’t save your language. Please try again.', telegram: 'Signed in with Telegram',
   },
+  exams: { title: 'Which exam are you preparing for?', lead: 'Your questions, words and practice tests depend on it. You can change it anytime.', gre: 'Graduate school and PhD', toefl: 'English for study', chooseFailed: 'Couldn’t save your choice. Please try again.', changeFailed: 'Couldn’t change the exam. Please try again.', offline: 'You need a connection to choose an exam.', note: 'Each exam keeps its own progress when you switch.' },
   signIn: {
-    tagline: 'GRE® prep that explains every mistake — in Russian and in English.',
+    title: 'GRE® and TOEFL® without a tutor',
+    tagline: 'Exam-style questions with explanations for every mistake in your language.',
     apple: 'Sign in with Apple',
     google: 'Sign in with Google',
     legal: 'By continuing, you accept the terms and the privacy policy.',
@@ -414,4 +380,4 @@ export const dictionaries: Readonly<Record<Locale, Dict>> = { ru: dictRu, en: di
 
 /** Дисклеймер ETS — всегда по-английски (PRODUCT.md, «Brand Commitments»). */
 export const GRE_DISCLAIMER =
-  'GRE® is a registered trademark of Educational Testing Service (ETS). This product is not endorsed or approved by ETS.';
+  'GRE® and TOEFL® are registered trademarks of Educational Testing Service (ETS). This product is not endorsed or approved by ETS.';

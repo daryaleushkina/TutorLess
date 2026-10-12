@@ -17,8 +17,8 @@ test('вход без нарушений', async ({ page, watch }) => {
   expect(await violations(page)).toEqual([]);
 });
 
-test('«Сегодня» без нарушений', async ({ site: page }) => {
-  await expect(page.getByText('Три шага · около 25 минут')).toBeVisible();
+test('«Тренировка» без нарушений', async ({ site: page }) => {
+  await expect(page.getByText('После каждого ответа — разбор на вашем языке: почему верно и где ловушка в остальных вариантах.')).toBeVisible();
   expect(await violations(page)).toEqual([]);
 });
 

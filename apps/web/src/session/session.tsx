@@ -121,6 +121,13 @@ export function useSession(): SessionApi {
   return api;
 }
 
+/** Только внутри AppGate: загрузку и отсутствие аккаунта уже обработала оболочка. */
+export function useAccount(): User {
+  const { session } = useSession();
+  if (session.status !== 'signedIn') throw new Error('account screen outside signed-in AppGate');
+  return session.user;
+}
+
 /**
  * Сессия кончилась посреди работы (сервер ответил 401 на запрос данных). Сайт — на вход с «Вход закончился»;
  * мини-апп — входит заново по initData (её срок — сутки; дальше Telegram даст свежую при следующем запуске).

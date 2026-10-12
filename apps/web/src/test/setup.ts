@@ -9,7 +9,7 @@ import { setTelegramRuntime } from '../telegram/runtime';
 import { trainingRepository } from '../training/repository';
 import { resetReauthForTests } from '../session/session';
 
-beforeEach(() => applyTheme(readTheme()));
+beforeEach(() => { applyTheme(readTheme()); delete document.documentElement.dataset.textSize; });
 
 afterEach(async () => {
   await trainingRepository.signOut();

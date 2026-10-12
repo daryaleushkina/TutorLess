@@ -56,7 +56,7 @@ import { reportDraftAndLimit } from '../training';
 test('черновик жалобы после перезагрузки, лимит вставки и отмена', async ({ miniApp: page }) => { await reportDraftAndLimit(page); });
 
 import { continuousReportSwipes } from '../training';
-test('вопрос ↔ жалоба: свайп не включается до возврата на «Сегодня»', async ({ miniApp: page }) => { await continuousReportSwipes(page); });
+test('вопрос ↔ жалоба: свайп не включается до возврата на «Тренировка»', async ({ miniApp: page }) => { await continuousReportSwipes(page); });
 
 import { reportBackStorageFailure } from '../training';
 test('«Назад» уходит при сбое стирания черновика без текста в отчёте', async ({ miniApp: page }) => { await reportBackStorageFailure(page); });

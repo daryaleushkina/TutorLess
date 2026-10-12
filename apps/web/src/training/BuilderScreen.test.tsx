@@ -1,20 +1,19 @@
 import { onlineManager } from '@tanstack/react-query';
 import { expect, test, vi } from 'vitest';
-import { apiError, fakeServer, json, renderApp, STARTER, user } from '../test/app';
+import { apiError, fakeServer, json, renderApp, OPTIONS, HOME, user } from '../test/app';
 import { givenAnswer, trainingOptions, trainingSession } from '../test/training';
 import { trainingRepository } from './repository';
 
 const boot = async (path = '/training/new', options = trainingOptions()) => {
-  const server = fakeServer({ 'GET /api/me': () => json(user()), 'GET /api/today': () => json(STARTER),
-    'GET /api/trainings/options': () => json(options), 'POST /api/trainings': () => json(trainingSession()) });
+  const server = fakeServer({ 'GET /api/me': () => json(user()), 'GET /api/trainings/options': () => json(options), 'POST /api/trainings': () => json(trainingSession()) });
   const app = await renderApp({ path });
   await expect.element(app.screen.getByRole('textbox', { name: 'Вопросов' })).toBeVisible();
   return { ...app, server };
 };
-test('с «Сегодня» можно открыть конструктор со всеми полями', async () => {
-  fakeServer({ 'GET /api/me': () => json(user()), 'GET /api/today': () => json(STARTER), 'GET /api/trainings/options': () => json(trainingOptions()) });
+test('с «Тренировка» можно открыть конструктор со всеми полями', async () => {
+  fakeServer({ 'GET /api/me': () => json(user()), 'GET /api/trainings/options': () => json(trainingOptions()) });
   const { screen } = await renderApp({ path: '/' });
-  await screen.getByRole('link', { name: 'Своя тренировка' }).click();
+  await screen.getByRole('link', { name: 'Настроить тренировку' }).click();
   await expect.element(screen.getByRole('heading', { name: 'Новая тренировка' })).toBeVisible();
   await expect.element(screen.getByRole('textbox', { name: 'Вопросов' })).toHaveValue('10');
 });
@@ -94,7 +93,7 @@ test('прошлый набор выбирается сразу, один тип
   await screen.getByRole('button', { name: 'Quant', exact: true }).click();
   await screen.getByRole('combobox', { name: 'Тип' }).selectOptions('multiple_choice');
   await screen.getByRole('button', { name: 'Практика', exact: true }).click();
-  await screen.getByRole('button', { name: 'Назад' }).click(); await expect.element(screen.getByRole('heading', { name: 'Сегодня' })).toBeVisible();
+  await screen.getByRole('button', { name: 'Назад' }).click(); await expect.element(screen.getByRole('heading', { name: 'Тренировка' })).toBeVisible();
 });
 test('нет заданий — начать нельзя, незаполненное число тоже блокирует', async () => {
   const options = trainingOptions({ presets: [] }); options.types[0]!.topics = [];
@@ -145,7 +144,7 @@ test('загрузка тем объявлена, затем открывает�
   await expect.element(screen.getByRole('textbox', { name: 'Вопросов' })).toBeVisible();
 });
 test('нет локальной тренировки — объяснение; позиция сохранилась без сети', async () => {
-  fakeServer({ 'GET /api/me': () => json(user()), 'GET /api/today': () => json(STARTER) });
+  fakeServer({ 'GET /api/me': () => json(user()), 'GET /api/trainings/options': () => json(OPTIONS) });
   const { screen, router } = await renderApp({ path: `/training/${trainingSession().id}` });
   await expect.element(screen.getByText('Тренировки нет на устройстве')).toBeVisible();
   vi.spyOn(trainingRepository, 'requestSync').mockImplementation(() => {});
@@ -153,7 +152,7 @@ test('нет локальной тренировки — объяснение; �
   await trainingRepository.store.put(owner, storedTraining(trainingSession(), Date.now()));
   await trainingRepository.moveTo(trainingSession().id, 2); await trainingRepository.answer(trainingSession().id, givenAnswer());
   await router.navigate({ to: '/' });
-  await expect.element(screen.getByRole('link', { name: /вопрос 3 из 3/ })).toBeVisible();
+  await expect.element(screen.getByRole('link', { name: /Вопрос 3 из 3/ })).toBeVisible();
   window.dispatchEvent(new Event('online')); document.dispatchEvent(new Event('visibilitychange'));
   await expect.poll(() => trainingRepository.requestSync).toHaveBeenCalled();
 });
@@ -161,15 +160,14 @@ test('нет локальной тренировки — объяснение; �
 test('при повторном входе в конструктор сразу выбирается новая сборка «Как в прошлый раз»', async () => {
   const { schemas } = await import('@greprep/api-client');
   let last: ReturnType<typeof schemas.TrainingRequest.parse> | undefined;
-  fakeServer({ 'GET /api/me': () => json(user()), 'GET /api/today': () => json(STARTER),
-    'GET /api/trainings/options': () => json(trainingOptions({ presets: [...(last ? [{ kind: 'last', request: last }] : []), ...trainingOptions().presets] })),
+  fakeServer({ 'GET /api/home': () => json({ ...HOME, lastTraining: last ? { request: last, size: 3 } : null }), 'GET /api/me': () => json(user()), 'GET /api/trainings/options': () => json(trainingOptions({ presets: [...(last ? [{ kind: 'last', request: last }] : []), ...trainingOptions().presets] })),
     'POST /api/trainings': async (req) => { last = schemas.TrainingRequest.parse(await req.json()); return json(trainingSession()); } });
   const { screen } = await renderApp({ path: '/training/new' });
   await screen.getByRole('textbox', { name: 'Вопросов' }).fill('3');
   await screen.getByRole('button', { name: /Начать ·/ }).click();
   await expect.element(screen.getByRole('heading', { name: 'Text Completion' })).toBeVisible();
   await screen.getByRole('link', { name: 'Закрыть тренировку' }).click();
-  await screen.getByRole('link', { name: 'Своя тренировка' }).click();
+  await screen.getByRole('link', { name: 'Настроить тренировку' }).click();
   await expect.element(screen.getByRole('radio', { name: 'Как в прошлый раз' })).toBeChecked();
   await expect.element(screen.getByRole('textbox', { name: 'Вопросов' })).toHaveValue('3');
 });

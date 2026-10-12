@@ -62,9 +62,9 @@ type Fixtures = TgOptions & {
   tgUser: TelegramUser;
   /** Человек, вошедший через miniApp или site: me.api(...) — запросы от его имени. */
   me: Me;
-  /** Мини-апп, открытый под tgUser: вход по initData прошёл, «Сегодня» на экране. */
+  /** Мини-апп, открытый под tgUser: вход по initData прошёл, «Тренировка» на экране. */
   miniApp: Page;
-  /** Сайт, вошли подменой под своим именем: «Сегодня» на экране. */
+  /** Сайт, вошли подменой под своим именем: «Тренировка» на экране. */
   site: Page;
   /** Ошибки страницы и ответы сервера 5xx роняют тест — собираются для каждой страницы. */
   watch: (page: Page) => void;
@@ -84,8 +84,7 @@ export const test = base.extend<Fixtures>({
   }, { option: true }],
   themeSetup: [async ({ context, savedTheme }, use) => {
     await context.addInitScript(({ key, theme }) => {
-      if (theme === null) localStorage.removeItem(key);
-      else if (localStorage.getItem(key) === null) localStorage.setItem(key, theme);
+      if (theme !== null && localStorage.getItem(key) === null) localStorage.setItem(key, theme);
     }, { key: THEME_STORAGE_KEY, theme: savedTheme });
     await use();
   }, { auto: true }],
@@ -142,8 +141,9 @@ export const test = base.extend<Fixtures>({
     expect(problems, 'ошибки страницы и сервера').toEqual([]);
   },
 
-  miniApp: async ({ page, tgUser, tgTheme, tgPlatform, tgInsets, watch }, use) => {
+  miniApp: async ({ page, tgUser, tgTheme, tgPlatform, tgInsets, watch, me }, use) => {
     watch(page);
+    await me.api('PUT', '/me/exam', { exam: 'gre' });
     await page.goto(miniAppUrl(tgUser, { tgTheme, tgPlatform, tgInsets }));
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 30_000 });
     // Отступы выреза приходят от Telegram после первой отрисовки — ждём их, иначе снимки «до» и «после» разные.
@@ -151,11 +151,11 @@ export const test = base.extend<Fixtures>({
     const inset = (name: string) => page.evaluate((n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim(), name);
     await expect.poll(() => inset('--tg-viewport-safe-area-inset-top')).toBe(`${safeTop}px`);
     await expect.poll(() => inset('--tg-viewport-content-safe-area-inset-top')).toBe(`${contentTop}px`);
-    // Заголовок появляется ещё на скелете: перед первым действием ждём план и шрифт.
+    // Заголовок появляется ещё на скелете: перед первым действием ждём карточку и шрифт.
     // В первом сценарии холодного WebKit клик по «Слова» раньше ждал stable дольше восьми секунд (#28).
-    const summary = telegramLocale(tgUser.language_code) === 'ru'
-      ? 'Три шага · около 25 минут' : 'Three steps · about 25 minutes';
-    await expect(page.getByText(summary)).toBeVisible({ timeout: 30_000 });
+    const first = telegramLocale(tgUser.language_code) === 'ru'
+      ? 'После каждого ответа — разбор на вашем языке: почему верно и где ловушка в остальных вариантах.' : 'After each answer, get an explanation in your language: why it’s correct and where the other options mislead.';
+    await expect(page.getByText(first, { exact: true })).toBeVisible({ timeout: 30_000 });
     await page.evaluate(() => document.fonts.ready.then(() => undefined));
     await use(page);
   },
@@ -167,10 +167,12 @@ export const test = base.extend<Fixtures>({
       data: { name: `site-${testInfo.testId}-${randomInt(1e9)}`, transport: 'cookie', clientKind: 'web', locale: 'ru' },
     });
     expect(res.status(), await res.text()).toBe(200);
-    siteUsers.set(page.context(), schemas.Session.parse(await res.json()).user);
+    const selected = await page.request.put('/api/me/exam', { data: { exam: 'gre' } });
+    expect(selected.status(), await selected.text()).toBe(200);
+    siteUsers.set(page.context(), schemas.User.parse(await selected.json()));
     await page.goto('/');
-    await expect(page.getByRole('heading', { level: 1, name: 'Сегодня' })).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByText('Три шага · около 25 минут')).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole('heading', { level: 1, name: 'Тренировка' })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText('После каждого ответа — разбор на вашем языке: почему верно и где ловушка в остальных вариантах.', { exact: true })).toBeVisible({ timeout: 30_000 });
     await page.evaluate(() => document.fonts.ready.then(() => undefined));
     await use(page);
     siteUsers.delete(page.context());
@@ -178,7 +180,7 @@ export const test = base.extend<Fixtures>({
 });
 export { expect };
 
-/** Вкладка капсулы (телефон, мини-апп) или пункт панели (сайт шире 600 px). */
+/** Вкладка капсулы (телефон, мини-апп) или пункт панели (сайт шире 900 px). */
 export function navLink(page: Page, name: string): Locator {
   return page.getByRole('navigation', { name: 'Разделы' }).getByRole('link', { name, exact: true });
 }
@@ -207,7 +209,7 @@ export async function checkScreen(page: Page, name: string, opts: { mask?: Locat
       main.scrollTop = main.scrollHeight;
       if (main.scrollTop === 0) out.push('содержимое выше экрана, но не листается');
     }
-    const footer = main.parentElement?.querySelector<HTMLElement>('footer[data-shell]');
+    const footer = main.parentElement?.querySelector<HTMLElement>(':scope > footer[data-shell="site"]');
     if (footer) {
       const f = footer.getBoundingClientRect();
       if (Math.abs(main.getBoundingClientRect().bottom - f.top) > 1) out.push('main не заканчивается у панели действий');
@@ -226,15 +228,13 @@ export async function checkScreen(page: Page, name: string, opts: { mask?: Locat
       }
     }
     const bar = document.querySelector<HTMLElement>('.tabbar');
-    if (bar && bar.getClientRects().length > 0 && getComputedStyle(bar).display !== 'none') {
+    if (bar && !document.querySelector('dialog[open]') && bar.getClientRects().length > 0 && getComputedStyle(bar).display !== 'none') {
       const b = bar.getBoundingClientRect();
-      if (b.bottom > innerHeight + 1) out.push(`капсула вкладок ниже края экрана: ${Math.round(b.bottom)} > ${innerHeight}`);
+      if (b.bottom > innerHeight + 1) out.push(`панель вкладок ниже края экрана: ${Math.round(b.bottom)} > ${innerHeight}`);
       const over = new Set<string>();
-      // Капсула скруглена на всю высоту: проверяем её прямоугольную середину, а не углы вне скругления.
-      const r = b.height / 2;
       for (let y = 0; y <= main.scrollHeight; y += 60) {
         main.scrollTop = y;
-        for (let x = b.left + r; x <= b.right - r; x += 20) {
+        for (let x = b.left + 4; x <= b.right - 4; x += 20) {
           for (let yy = b.top + 4; yy < b.bottom - 4; yy += 12) {
             const el = document.elementFromPoint(x, yy);
             if (el && !el.closest('.tabbar')) over.add(label(el));

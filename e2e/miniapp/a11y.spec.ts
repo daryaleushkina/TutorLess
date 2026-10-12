@@ -5,11 +5,11 @@ import { expect, navLink, test } from '../fixtures';
 
 const axe = (page: Page) => new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']);
 
-test('«Сегодня» и настройки без нарушений', async ({ miniApp: page }) => {
-  await expect(page.getByText('Три шага · около 25 минут')).toBeVisible();
+test('«Тренировка» и настройки без нарушений', async ({ miniApp: page }) => {
+  await expect(page.getByText('После каждого ответа — разбор на вашем языке: почему верно и где ловушка в остальных вариантах.')).toBeVisible();
   expect((await axe(page).analyze()).violations).toEqual([]);
   await navLink(page, 'Прогресс').click();
-  await expect(page.getByText('Тренировок ещё не было')).toBeVisible();
+  await expect(page.getByText('Здесь будет точность по разделам, история тренировок и примерный балл.')).toBeVisible();
   expect((await axe(page).analyze()).violations).toEqual([]);
 });
 

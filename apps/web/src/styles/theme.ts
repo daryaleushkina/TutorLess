@@ -1,4 +1,5 @@
 export type Theme = 'light' | 'dark';
+let appliedThemeRevision = 0;
 export const THEME_STORAGE_KEY = 'greprep.theme';
 
 /** DeviceStorage передаётся только из оболочки мини-аппа: сайт не загружает SDK. */
@@ -21,6 +22,7 @@ export function readTheme(): Theme {
 }
 
 export function applyTheme(theme: Theme): void {
+  appliedThemeRevision++;
   const html = document.documentElement;
   html.dataset.theme = theme;
   html.style.colorScheme = theme;
@@ -39,8 +41,11 @@ function copyTheme(theme: Theme): void {
 export async function restoreTheme(device?: DeviceThemeStorage): Promise<void> {
   // Скрипт в head — единственный источник темы до кадра; здесь только уточнение от клиента.
   if (!device) return;
+  const revision = appliedThemeRevision;
   try {
     const saved = await device.getItem(THEME_STORAGE_KEY);
+    // Человек мог успеть выбрать тему в профиле, пока клиент отвечал на фоновое чтение.
+    if (revision !== appliedThemeRevision) return;
     // На старом клиенте выбор мог сохраниться только локально; отсутствие ключа его не отменяет.
     if (saved === null) return;
     // Битое значение — это «выбора нет», то есть тёмная (решение Даши 10.10.2026), но не молча.

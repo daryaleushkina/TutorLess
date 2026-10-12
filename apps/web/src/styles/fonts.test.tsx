@@ -8,10 +8,10 @@ it('экран рисуется Onest: кириллица, латиница и �
   await document.fonts.ready;
   expect(getComputedStyle(screen.getByRole('heading', { level: 1 }).element()).fontFamily.split(',')[0]).toBe('Onest');
   for (const weight of [400, 500, 650, 700, 800]) {
-    const faces = await document.fonts.load(`${weight} 16px Onest`, 'Сегодня GRE');
+    const faces = await document.fonts.load(`${weight} 16px Onest`, 'Тренировка GRE');
     expect(faces.length).toBeGreaterThanOrEqual(2);
     expect(faces.every((face) => face.family === 'Onest' && face.status === 'loaded')).toBe(true);
-    expect(document.fonts.check(`${weight} 16px Onest`, 'Сегодня GRE')).toBe(true);
+    expect(document.fonts.check(`${weight} 16px Onest`, 'Тренировка GRE')).toBe(true);
   }
 });
 

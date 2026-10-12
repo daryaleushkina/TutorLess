@@ -117,7 +117,7 @@ test('чтение недоступного устройства сообщае�
   const m = make(); await seed(m);
   vi.spyOn(m.store, 'list').mockRejectedValueOnce(new DOMException('private', 'SecurityError'));
   expect(await m.repo.list()).toEqual([]); expect(m.repo.storageStatus()).toBe('unavailable');
-  expect(await m.repo.options()).toEqual(trainingOptions());
+  expect(await m.repo.options('gre')).toEqual(trainingOptions());
   await m.repo.signedIn('a'); vi.spyOn(m.store, 'get').mockRejectedValueOnce(new DOMException('private', 'QuotaExceededError'));
   expect(await m.repo.get(trainingSession().id)).toBeUndefined(); expect(m.repo.storageStatus()).toBe('unavailable');
   expect(m.report).not.toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringContaining('private') }));
@@ -164,7 +164,7 @@ test('новый вход того же человека ждёт очистки
 });
 
 test('опции запрашиваются с четырьмя типами; старт скачивает всё и сохраняет до открытия', async () => {
-  const m = make(); await m.repo.signedIn('a'); expect(await m.repo.options()).toEqual(trainingOptions());
+  const m = make(); await m.repo.signedIn('a'); expect(await m.repo.options('gre')).toEqual(trainingOptions());
   expect(m.api.options).toHaveBeenCalledWith({ exam: 'gre', types: ['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice'] }, { signal: undefined });
   const id = await m.repo.start({ ...request, questionTypes: [...request.questionTypes] });
   expect(await m.repo.get(id)).toEqual(savedTraining(id, NOW));
@@ -256,7 +256,7 @@ test('выход во время старта и поздний 401 не зат�
   await expect(starting).rejects.toThrow('session changed'); expect(await m.repo.list()).toEqual([]);
   await m.repo.signedIn('a'); const heldError = deferred(); const unauthorized = vi.fn(); m.repo.setUnauthorizedHandler(unauthorized);
   m.api.options.mockImplementationOnce(async () => { await heldError.promise; throw fail(401); });
-  const options = m.repo.options(); await m.repo.signedIn('b'); heldError.resolve(); await expect(options).rejects.toMatchObject({ status: 401 }); expect(unauthorized).not.toHaveBeenCalled();
+  const options = m.repo.options('gre'); await m.repo.signedIn('b'); heldError.resolve(); await expect(options).rejects.toMatchObject({ status: 401 }); expect(unauthorized).not.toHaveBeenCalled();
 });
 test('смена владельца другой вкладкой во время запроса останавливает старую очередь', async () => {
   const m = make(); const { owner, t } = await seed(m); await m.store.put(owner, { ...t, session: { ...t.session, id: '00000000-0000-4000-8000-000000000101' } });
@@ -280,11 +280,11 @@ test('неизвестный сбой и ответ не по договору �
   const m = make(); await seed(m); m.api.answers.mockRejectedValueOnce(new Error('private')); await m.repo.sync();
   m.api.answers.mockRejectedValueOnce(fail(200, 'contract')); await m.repo.sync();
   expect((await m.repo.get(trainingSession().id))?.unsent).toEqual([0]);
-  m.api.options.mockRejectedValueOnce(new DOMException('cancelled', 'AbortError')); await expect(m.repo.options()).rejects.toThrow('cancelled');
+  m.api.options.mockRejectedValueOnce(new DOMException('cancelled', 'AbortError')); await expect(m.repo.options('gre')).rejects.toThrow('cancelled');
 });
 test('401 опций и отказ старта доходят до обработчика сессии', async () => {
   const m = make(); await m.repo.signedIn('a'); const unauthorized = vi.fn(); m.repo.setUnauthorizedHandler(unauthorized);
-  m.api.options.mockRejectedValueOnce(fail(401)); await expect(m.repo.options()).rejects.toMatchObject({ status: 401 }); expect(unauthorized).toHaveBeenCalledTimes(1);
+  m.api.options.mockRejectedValueOnce(fail(401)); await expect(m.repo.options('gre')).rejects.toMatchObject({ status: 401 }); expect(unauthorized).toHaveBeenCalledTimes(1);
   await m.repo.signedIn('a'); m.api.start.mockRejectedValueOnce(fail(500)); await expect(m.repo.start({ ...request, questionTypes: [...request.questionTypes] })).rejects.toMatchObject({ status: 500 });
 });
 

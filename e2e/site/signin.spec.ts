@@ -1,7 +1,8 @@
-import { e2eSlot } from '../../tools/dev/e2e-slot';
 // Сайт: вход через Apple и Google с подменным провайдером (server/cmd/e2estack) — весь путь OIDC с PKCE, обмен
 // кода на сервере, кука сессии; выход; отказы.
 import type { Page } from '@playwright/test';
+import { pickInitialExam } from '../shellFlows';
+import { e2eSlot } from '../../tools/dev/e2e-slot';
 import { expect, test } from '../fixtures';
 
 const PROVIDERS = [
@@ -29,27 +30,28 @@ test('без входа — экран входа: две официальные
   for (const [name] of PROVIDERS) await expect(page.getByRole('button', { name })).toBeVisible();
   await expect(page.locator('[data-official-button="telegram"]')).toHaveCount(0);
   await expect(page.getByText('Продолжая, вы принимаете условия и политику конфиденциальности.')).toBeVisible();
-  await expect(page.getByText(/is a registered trademark of Educational Testing Service/)).toBeVisible();
+  await expect(page.getByText(/are registered trademarks of Educational Testing Service/)).toBeVisible();
 });
 
 for (const [button, provider] of PROVIDERS) {
-  test(`вход «${button}» → «Сегодня»; после перезагрузки — всё ещё вошли; «Выйти» — снова вход`, async ({ page }, testInfo) => {
+  test(`вход «${button}» → «Тренировка»; после перезагрузки — всё ещё вошли; «Выйти» — снова вход`, async ({ page }, testInfo) => {
     await loginAs(page, `${provider}-${testInfo.testId}`);
     await page.goto('/signin');
     // Нажатие только запускает уход. Всю цепочку перенаправлений ждём как навигацию до конечного адреса.
     await page.getByRole('button', { name: button }).click({ noWaitAfter: true });
     await page.waitForURL((url) => url.pathname === '/');
-    await expect(page.getByRole('heading', { level: 1, name: 'Сегодня' })).toBeVisible();
+    await pickInitialExam(page);
+    await expect(page.getByRole('heading', { level: 1, name: 'Тренировка' })).toBeVisible();
     await expect(page).toHaveURL(/\/$/);
     await page.reload();
-    await expect(page.getByText('Три шага · около 25 минут')).toBeVisible();
+    await expect(page.getByText('После каждого ответа — разбор на вашем языке: почему верно и где ловушка в остальных вариантах.')).toBeVisible();
 
-    const narrow = (page.viewportSize()?.width ?? 0) < 600;
+    const narrow = (page.viewportSize()?.width ?? 0) < 900;
     if (narrow) {
       await page.getByRole('navigation', { name: 'Разделы' }).getByRole('link', { name: 'Прогресс' }).click();
-      await page.getByRole('link', { name: 'Настройки' }).click();
+      await page.getByRole('link', { name: 'Профиль' }).click();
     } else {
-      await page.getByRole('navigation', { name: 'Разделы' }).getByRole('link', { name: 'Настройки' }).click();
+      await page.getByRole('navigation', { name: 'Разделы' }).getByRole('link', { name: 'Профиль' }).click();
     }
     await page.getByRole('button', { name: 'Выйти' }).click();
     await expect(page.getByRole('button', { name: button })).toBeVisible();
@@ -80,18 +82,20 @@ test('вход подменой — для разработки и стенда'
   await page.goto('/signin');
   await page.getByPlaceholder('Имя тестового пользователя').fill(`dev-${testInfo.testId}`);
   await page.getByRole('button', { name: 'Войти', exact: true }).click();
-  await expect(page.getByText('Три шага · около 25 минут')).toBeVisible();
+  await pickInitialExam(page);
+  await expect(page.getByText('После каждого ответа — разбор на вашем языке: почему верно и где ловушка в остальных вариантах.')).toBeVisible();
 });
 
 test('глубокая ссылка → вход подменой → тот же экран с параметрами и якорем', async ({ page }, info) => {
-  await page.goto('/step/words?source=link#details');
+  await page.goto('/words?source=link#details');
   await page.waitForURL((url) => url.pathname === '/signin');
-  expect(new URL(page.url()).searchParams.get('returnTo')).toBe('/step/words?source=link#details');
+  expect(new URL(page.url()).searchParams.get('returnTo')).toBe('/words?source=link#details');
   await page.getByPlaceholder('Имя тестового пользователя').fill(`deep-${info.testId}`);
   await page.getByRole('button', { name: 'Войти', exact: true }).click();
-  await page.waitForURL((url) => url.pathname === '/step/words');
-  await expect(page.getByRole('heading', { name: 'Повторение', exact: true })).toBeVisible();
-  await expect(page).toHaveURL(/\/step\/words\?source=link#details$/);
+  await page.waitForURL((url) => url.pathname === '/words');
+  await pickInitialExam(page);
+  await expect(page.getByRole('heading', { name: 'Слова', exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/\/words\?source=link#details$/);
 });
 
 test('глубокая ссылка → отмена у провайдера → повторный вход → настройки', async ({ page }, info) => {
@@ -105,31 +109,34 @@ test('глубокая ссылка → отмена у провайдера →
   await loginAs(page, `google-deep-${info.testId}`);
   await page.getByRole('button', { name: 'Войти с аккаунтом Google' }).click({ noWaitAfter: true });
   await page.waitForURL((url) => url.pathname === '/settings');
-  await expect(page.getByRole('heading', { level: 1, name: 'Настройки' })).toBeVisible();
+  await pickInitialExam(page);
+  await expect(page.getByRole('heading', { level: 1, name: 'Профиль' })).toBeAttached();
 });
 
-test('чужой адрес возврата → вход → «Сегодня»', async ({ page }, info) => {
+test('чужой адрес возврата → вход → «Тренировка»', async ({ page }, info) => {
   await page.goto(`/signin?returnTo=${encodeURIComponent('//evil.example/path')}`);
   await page.getByPlaceholder('Имя тестового пользователя').fill(`unsafe-${info.testId}`);
   await page.getByRole('button', { name: 'Войти', exact: true }).click();
   await page.waitForURL((url) => url.pathname === '/');
-  await expect(page.getByRole('heading', { level: 1, name: 'Сегодня' })).toBeVisible();
+    await pickInitialExam(page);
+  await expect(page.getByRole('heading', { level: 1, name: 'Тренировка' })).toBeVisible();
 });
 
-test('401 на шаге → повторный вход → тот же шаг', async ({ page, site }, info) => {
-  await page.route('**/api/today', (route) => route.fulfill({ status: 401, json: { code: 'unauthorized', message: 'e2e', requestId: 'expired' } }));
-  await site.goto('/step/words?source=expired#details');
+test('401 на конструкторе → повторный вход → тот же экран', async ({ page, site }, info) => {
+  await page.route('**/api/trainings/options?**', (route) => route.fulfill({ status: 401, json: { code: 'unauthorized', message: 'e2e', requestId: 'expired' } }));
+  await site.goto('/training/new?source=expired#details');
   await page.waitForURL((url) => url.pathname === '/signin' && url.searchParams.get('reason') === 'expired');
-  expect(new URL(page.url()).searchParams.get('returnTo')).toBe('/step/words?source=expired#details');
+  expect(new URL(page.url()).searchParams.get('returnTo')).toBe('/training/new?source=expired#details');
   await expect(page.getByRole('alert')).toHaveText('Вход закончился — войдите снова.');
-  await page.unroute('**/api/today');
+  await page.unroute('**/api/trainings/options?**');
   await page.getByPlaceholder('Имя тестового пользователя').fill(`expired-${info.testId}`);
   await page.getByRole('button', { name: 'Войти', exact: true }).click();
-  await page.waitForURL((url) => url.pathname === '/step/words');
-  await expect(page.getByRole('heading', { name: 'Повторение', exact: true })).toBeVisible();
+  await page.waitForURL((url) => url.pathname === '/training/new');
+  await pickInitialExam(page);
+  await expect(page.getByRole('heading', { name: 'Новая тренировка', exact: true })).toBeVisible();
 });
 
-test('намеренный выход из настроек → новый человек → «Сегодня»', async ({ page, site }, info) => {
+test('намеренный выход из настроек → новый человек → «Тренировка»', async ({ page, site }, info) => {
   await site.goto('/settings');
   await page.getByRole('button', { name: 'Выйти', exact: true }).click();
   await page.waitForURL((url) => url.pathname === '/signin');
@@ -137,7 +144,8 @@ test('намеренный выход из настроек → новый че�
   await page.getByPlaceholder('Имя тестового пользователя').fill(`next-${info.testId}`);
   await page.getByRole('button', { name: 'Войти', exact: true }).click();
   await page.waitForURL((url) => url.pathname === '/');
-  await expect(page.getByRole('heading', { level: 1, name: 'Сегодня' })).toBeVisible();
+    await pickInitialExam(page);
+  await expect(page.getByRole('heading', { level: 1, name: 'Тренировка' })).toBeVisible();
 });
 
 for (const failure of ['expired', 'missing-code'] as const) {
@@ -155,7 +163,8 @@ for (const failure of ['expired', 'missing-code'] as const) {
     await loginAs(page, `retry-${failure}-${info.testId}`);
     await page.getByRole('button', { name: 'Войти с аккаунтом Google' }).click({ noWaitAfter: true });
     await page.waitForURL((url) => url.pathname === '/settings');
-    await expect(page.getByRole('heading', { level: 1, name: 'Настройки' })).toBeVisible();
+  await pickInitialExam(page);
+    await expect(page.getByRole('heading', { level: 1, name: 'Профиль' })).toBeAttached();
   });
 }
 
@@ -165,10 +174,11 @@ test.describe('английский браузер', () => {
   test('вход и новый аккаунт — по-английски', async ({ page }, testInfo) => {
     await loginAs(page, `google-en-${testInfo.testId}`);
     await page.goto('/signin');
-    await expect(page.getByText('GRE® prep that explains every mistake — in Russian and in English.')).toBeVisible();
+    await expect(page.getByText('Exam-style questions with explanations for every mistake in your language.')).toBeVisible();
     await page.getByRole('button', { name: 'Sign in with Google' }).click({ noWaitAfter: true });
     await page.waitForURL((url) => url.pathname === '/');
-    await expect(page.getByRole('heading', { level: 1, name: 'Today' })).toBeVisible();
-    await expect(page.getByText('Review', { exact: true })).toBeVisible();
+    await pickInitialExam(page);
+    await expect(page.getByRole('heading', { level: 1, name: 'Practice' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Text Completion' })).toBeVisible();
   });
 });

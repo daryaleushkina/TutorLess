@@ -14,6 +14,7 @@
         } catch {
           // Запрет хранилища сохраняет тёмное умолчание.
         }
+        try { if (localStorage.getItem('greprep.textSize') === 'large') document.documentElement.dataset.textSize = 'large'; } catch { /* Размер по умолчанию. */ }
         document.documentElement.dataset.theme = theme;
         document.documentElement.style.colorScheme = theme;
         document.querySelector('meta[name="color-scheme"]').setAttribute('content', theme);
@@ -25,7 +26,7 @@
     <meta name="robots" content="noindex" />
     <!-- Знак — лента шагов (components/BrandMark.tsx) на Verbal «Лаванды»: --color-verbal светлой темы (#5A3FD6) -->
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <title>GrePrepApp</title>
+    <title>Tutorless</title>
   </head>
   <body>
     <div id="root"></div>
