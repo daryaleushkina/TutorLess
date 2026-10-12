@@ -21,12 +21,38 @@ const weakSpotWindow = 30 * 24 * time.Hour
 // пауза дольше — человек отошёл
 const maxHomeAnswerGap = 5 * time.Minute
 
+// firstLocalDateInstant принимает календарную дату в UTC. Ищем по интервалам постоянного
+// смещения: time.Date для отсутствующей или повторной полуночи выбирает произвольную сторону перехода.
+// Если пропущена целая дата, границей служит начало следующей существующей даты.
+func firstLocalDateInstant(date time.Time, zone *time.Location) time.Time {
+	// Смещения IANA меньше суток: предыдущая дата UTC заведомо предшествует нужной местной.
+	cursor := date.AddDate(0, 0, -1).In(zone)
+	for {
+		_, offset := cursor.Zone()
+		midnight := date.Add(-time.Duration(offset) * time.Second).In(zone)
+		if midnight.Before(cursor) {
+			// Переход перескочил полночь; новый интервал начинается с первого существующего момента даты.
+			midnight = cursor
+		}
+		_, next := cursor.ZoneBounds()
+		if next.IsZero() || midnight.Before(next) {
+			return midnight
+		}
+		cursor = next
+	}
+}
+
 // weekBounds считает календарные даты, а не 168 часов: неделя с переводом часов имеет другую длину.
-func weekBounds(now time.Time, zone *time.Location) (time.Time, time.Time) {
+func weekBounds(now time.Time, zone *time.Location) (start, end time.Time, dayStarts []time.Time) {
 	local := now.In(zone)
-	start := time.Date(local.Year(), local.Month(), local.Day(), 0, 0, 0, 0, zone)
-	start = start.AddDate(0, 0, -(int(local.Weekday())+6)%7)
-	return start, start.AddDate(0, 0, 7)
+	// Дату понедельника вычисляем без зоны, чтобы отсутствующая полночь не сместила её назад.
+	date := time.Date(local.Year(), local.Month(), local.Day(), 0, 0, 0, 0, time.UTC)
+	monday := date.AddDate(0, 0, -(int(local.Weekday())+6)%7)
+	dayStarts = make([]time.Time, 7)
+	for i := range dayStarts {
+		dayStarts[i] = firstLocalDateInstant(monday.AddDate(0, 0, i), zone)
+	}
+	return dayStarts[0], firstLocalDateInstant(monday.AddDate(0, 0, 7), zone), dayStarts
 }
 
 func (s *Service) GetHome(ctx context.Context, params api.GetHomeParams) (*api.Home, error) {
@@ -43,13 +69,9 @@ func (s *Service) GetHome(ctx context.Context, params api.GetHomeParams) (*api.H
 		return nil, apperr.Invalid("unknown time zone", err)
 	}
 	now := s.now()
-	start, end := weekBounds(now, zone)
+	start, end, dayStarts := weekBounds(now, zone)
 	// SQL получает границы суток из той же базы IANA. Его пакет зон может не знать старые имена
 	// (например, Asia/Saigon) или содержать другие правила перевода часов.
-	dayStarts := make([]time.Time, 7)
-	for i := range dayStarts {
-		dayStarts[i] = start.AddDate(0, 0, i)
-	}
 	qctx, cancel := context.WithTimeout(ctx, dbTimeout)
 	defer cancel()
 	var result api.Home

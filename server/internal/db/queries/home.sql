@@ -64,10 +64,11 @@ WITH intervals AS (
   ), 0) AS spent_before
   FROM activity
 )
+-- active_seconds - week_seconds — расход текущего интервала до недели; он тоже уменьшает остаток лимита.
 SELECT count(DISTINCT width_bucket(answered_at, sqlc.arg(day_starts)::timestamptz[]))::integer AS days,
        count(*)::integer AS answers,
        floor(coalesce(sum(greatest(0, least(week_seconds,
-         coalesce(time_limit_seconds - spent_before, week_seconds)
+         coalesce(time_limit_seconds - spent_before - (active_seconds - week_seconds), week_seconds)
        ))), 0) / 60)::integer AS minutes
 FROM consumption
 WHERE answered_at >= sqlc.arg(week_start)::timestamptz;
