@@ -35,7 +35,7 @@ final class TrainingStore: @unchecked Sendable {
         self.onTrainingWrite = onTrainingWrite
     }
 
-    static func live(beside cache: TodayCache = .live()) -> TrainingStore {
+    static func live(beside cache: ShellCache = .live()) -> TrainingStore {
         TrainingStore(directory: cache.fileURL.deletingLastPathComponent().appending(path: "trainings"))
     }
     private var ownerURL: URL { directory.appending(path: "owner.json") }

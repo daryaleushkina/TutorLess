@@ -27,182 +27,37 @@ import Vision
 struct ScreenSnapshotTests {
     let server = StubServer()
 
-    /// Приложение, где человек уже вошёл, а сервер отвечает заданным.
-    func signedInApp(cached: TodayDTO?, today reply: StubServer.Reply) throws -> AppModel {
-        server.on("GET /api/today", reply)
+    init() {
+        // Хост снимков не входит в аккаунт: копия языка от прошлого UI-прогона не должна менять форматирование.
+        UserDefaults.standard.set("ru", forKey: InterfaceLocale.storageKey)
+    }
+
+    func signedInApp() throws -> AppModel {
+        ShellFixture.stub(server)
         let cache = temporaryCache()
-        if let cached { try cache.save(cached) }
+        try cache.save(ShellFixture.snapshot)
         return AppModel(
             config: server.config(), tokens: MemoryTokenStore("t"), cache: cache, network: NetworkMonitor(),
             session: server.session)
     }
 
-    static let completeDTO: TodayDTO = try! JSONDecoder().decode(
-        TodayDTO.self,
-        from: Data(
-            #"""
-            {"date":"2026-10-06","steps":[
-              {"id":"verbal","section":"verbal","title":"Тренировка","minutes":12,"state":"done"},
-              {"id":"quant","section":"quant","title":"Повторение: проценты и доли","minutes":9,"state":"done"},
-              {"id":"words","section":"words","title":"Слова","minutes":4,"state":"done"}
-            ]}
-            """#.utf8))
-
     @Test("вход")
-    func signIn() {
+    func signIn() async {
         let app = AppModel(
             config: server.config(), tokens: MemoryTokenStore(), cache: temporaryCache(), network: NetworkMonitor(),
             session: server.session)
         let view = SignInView(app: app, reason: nil, showsDevelopmentSignIn: false).environment(app)
-        assertScreens(view, named: "signin")
+        await assertScreens(view, named: "signin")
     }
 
     @Test("вход закончился", .enabled { await ScreenSnapshotTests.isPhone() })
-    func signInExpired() {
+    func signInExpired() async {
         let app = AppModel(
             config: server.config(), tokens: MemoryTokenStore(), cache: temporaryCache(), network: NetworkMonitor(),
             session: server.session)
         let view = SignInView(app: app, reason: .sessionExpired, showsDevelopmentSignIn: false).environment(app)
-        assertScreens(view, named: "signin-expired", devices: [.phone])
+        await assertScreens(view, named: "signin-expired", devices: [.phone])
     }
-
-    @Test("«Сегодня» — план")
-    func today() async throws {
-        let app = try signedInApp(cached: nil, today: .json(200, Fixture.todayJSON))
-        let model = try #require(app.today)
-        await model.refresh()
-        assertScreens(
-            MainView(today: model, refreshesOnAppear: false).environment(app), named: "today",
-            // Панель вкладок — системное стекло, каждый кадр чуть другой; ленту строго проверяют снимки TodayView.
-            precision: 0.995)
-    }
-
-    @Test("«Сегодня» — всё сделано", .enabled { await ScreenSnapshotTests.isPhone() })
-    func todayComplete() async throws {
-        let json = String(data: try JSONEncoder().encode(Self.completeDTO), encoding: .utf8)!
-        let app = try signedInApp(cached: nil, today: .json(200, json))
-        let model = try #require(app.today)
-        await model.refresh()
-        assertScreens(
-            TodayView(model: model, refreshesOnAppear: false).environment(app), named: "today-complete",
-            devices: [.phone])
-    }
-
-    @Test("«Сегодня» — сеть пропала без запроса, прошлый план")
-    func todayOfflineStale() async throws {
-        let app = try signedInApp(cached: nil, today: .json(200, Fixture.todayJSON))
-        let model = try #require(app.today)
-        await model.refresh()
-        app.network.set(online: false)
-        #expect(model.staleReason == .offline)
-        #expect(server.requests("GET /api/today").count == 1)
-        assertScreens(
-            TodayView(model: model, refreshesOnAppear: false).environment(app), named: "today-offline-stale")
-    }
-
-    @Test("«Сегодня» — нет сети и плана нет", .enabled { await ScreenSnapshotTests.isPhone() })
-    func todayOfflineEmpty() async throws {
-        let app = try signedInApp(cached: nil, today: .failure(.notConnectedToInternet))
-        let model = try #require(app.today)
-        await model.refresh()
-        assertScreens(
-            TodayView(model: model, refreshesOnAppear: false).environment(app), named: "today-offline-empty",
-            devices: [.phone])
-    }
-
-    @Test("«Сегодня» — загрузка", .enabled { await ScreenSnapshotTests.isPhone() })
-    func todayLoading() throws {
-        let app = try signedInApp(cached: nil, today: .json(200, Fixture.todayJSON))
-        let model = try #require(app.today)
-        assertScreens(
-            TodayView(model: model, refreshesOnAppear: false).environment(app), named: "today-loading",
-            devices: [.phone],
-            // Крутилка крутится: кадр каждый раз чуть другой — допуск шире, проверяется раскладка.
-            precision: 0.995)
-    }
-
-    #if os(iOS)
-        @Test("«Сегодня» — крупный текст: ничего не обрезано", .enabled { await ScreenSnapshotTests.isPhone() })
-        func todayLargeText() async throws {
-            let app = try signedInApp(cached: nil, today: .json(200, Fixture.todayJSON))
-            let model = try #require(app.today)
-            await model.refresh()
-            let view = TodayView(model: model, refreshesOnAppear: false).environment(app)
-            // Тема явная: снимок не зависит от того, какой оставил просмотрщик на симуляторе.
-            let traits = UITraitCollection { traits in
-                traits.userInterfaceStyle = .light
-                traits.preferredContentSizeCategory = .accessibilityLarge
-            }
-            assertSnapshot(
-                of: view.gpDesignTokens().environment(\.colorScheme, .light),
-                as: .image(
-                    drawHierarchyInKeyWindow: true, precision: Self.precision, perceptualPrecision: Self.perceptual,
-                    layout: .device(config: Self.phone), traits: traits
-                ),
-                named: "today-large-text"
-            )
-        }
-    #endif
-
-    @Test("«Сегодня» — не получилось обновить, прошлый план", .enabled { await ScreenSnapshotTests.isPhone() })
-    func todayFailedStale() async throws {
-        let app = try signedInApp(cached: Fixture.todayDTO, today: .json(500, Fixture.error("internal")))
-        let model = try #require(app.today)
-        await model.refresh()
-        assertScreens(
-            TodayView(model: model, refreshesOnAppear: false).environment(app), named: "today-failed-stale",
-            devices: [.phone], themes: [.light])
-    }
-
-    @Test("«Сегодня» — не получилось загрузить", .enabled { await ScreenSnapshotTests.isPhone() })
-    func todayFailedEmpty() async throws {
-        let app = try signedInApp(cached: nil, today: .json(500, Fixture.error("internal")))
-        let model = try #require(app.today)
-        await model.refresh()
-        assertScreens(
-            TodayView(model: model, refreshesOnAppear: false).environment(app), named: "today-failed-empty",
-            devices: [.phone], themes: [.light])
-    }
-
-    @Test("«Сегодня» — без сети шаг не начать: объяснение у шага", .enabled { await ScreenSnapshotTests.isPhone() })
-    func todayNeedsNetwork() async throws {
-        let app = try signedInApp(cached: Fixture.todayDTO, today: .failure(.notConnectedToInternet))
-        let model = try #require(app.today)
-        await model.refresh()
-        assertScreens(
-            TodayView(model: model, refreshesOnAppear: false, blockedStepID: "words").environment(app),
-            named: "today-needs-network", devices: [.phone])
-    }
-
-    #if os(iOS)
-        @Test(
-            "«Сегодня» — восемь шагов (предел договора) крупным текстом",
-            .enabled { await ScreenSnapshotTests.isPhone() })
-        func todayEightStepsLargeText() async throws {
-            let sections = ["verbal", "quant", "words", "essay", "verbal", "quant", "words", "essay"]
-            let steps = sections.enumerated().map { i, section in
-                #"{"id":"s\#(i)","section":"\#(section)","title":"Шаг \#(i + 1): длинное название шага","minutes":\#(5 + i),"state":"\#(i == 0 ? "current" : "next")"}"#
-            }
-            let json = #"{"date":"2026-10-06","steps":["# + steps.joined(separator: ",") + "]}"
-            let app = try signedInApp(cached: nil, today: .json(200, json))
-            let model = try #require(app.today)
-            await model.refresh()
-            let view = TodayView(model: model, refreshesOnAppear: false).environment(app)
-
-            assertSnapshot(
-                of: view.gpDesignTokens().environment(\.colorScheme, .light),
-                as: .image(
-                    drawHierarchyInKeyWindow: true, precision: Self.precision, perceptualPrecision: Self.perceptual,
-                    layout: .device(config: Self.phone),
-                    traits: UITraitCollection { traits in
-                        traits.userInterfaceStyle = .light
-                        traits.preferredContentSizeCategory = .accessibilityLarge
-                    }
-                ),
-                named: "today-eight-steps-large-text"
-            )
-        }
-    #endif
 
     @Test("вход — сообщение под кнопками", .enabled { await ScreenSnapshotTests.isPhone() })
     func signInMessage() async {
@@ -211,34 +66,26 @@ struct ScreenSnapshotTests {
             session: server.session)
         let model = SignInModel(app: app)
         await model.signInWithWeb(.google) { url, _ in url }
-        assertScreens(
+        await assertScreens(
             SignInView(model: model, reason: nil, showsDevelopmentSignIn: false).environment(app),
             named: "signin-message", devices: [.phone], themes: [.light])
     }
 
-    @Test("«Прогресс» — пока тренировок нет", .enabled { await ScreenSnapshotTests.isPhone() })
-    func progress() {
-        let app = AppModel(
-            config: server.config(), tokens: MemoryTokenStore("t"), cache: temporaryCache(), network: NetworkMonitor(),
-            session: server.session)
-        assertScreens(ProgressTabView().environment(app), named: "progress", devices: [.phone])
-    }
-
     @Test("настройки: дисклеймер ETS по-английски в русском интерфейсе")
-    func settings() {
+    func settings() async {
         let app = AppModel(
             config: server.config(), tokens: MemoryTokenStore("t"), cache: temporaryCache(), network: NetworkMonitor(),
             session: server.session)
-        assertScreens(
+        await assertScreens(
             NavigationStack { SettingsView() }.environment(app), named: "settings")
     }
 
     @Test("настройки: дисклеймер ETS в английском интерфейсе")
-    func settingsEnglish() {
+    func settingsEnglish() async {
         let app = AppModel(
             config: server.config(), tokens: MemoryTokenStore("t"), cache: temporaryCache(), network: NetworkMonitor(),
             session: server.session)
-        assertScreens(
+        await assertScreens(
             NavigationStack { SettingsView() }.environment(app).environment(\.locale, Locale(identifier: "en")),
             named: "settings-en")
     }
@@ -268,10 +115,12 @@ struct ScreenSnapshotTests {
                 surface = NSColor(resource: .surface).usingColorSpace(.sRGB)
             }
             try expectPixel(
-                cgImage, x: cgImage.width / 2, y: cgImage.height * 3 / 4,
+                cgImage, x: Int(GPSpace.s4 * CGFloat(cgImage.width) / size.width), y: cgImage.height / 2,
                 color: try #require(background), role: "bg")
+            // Первая строка теперь под аватаром: берём свободное место между подписью и переключателем.
+            let rowCenter = GPLayout.gutter + GPSize.tapTarget + GPSpace.s24 + GPSize.sectionRow / 2
             try expectPixel(
-                cgImage, x: cgImage.width * 3 / 4, y: Int(GPSpace.s40 * CGFloat(cgImage.width) / size.width),
+                cgImage, x: cgImage.width / 2, y: Int(rowCenter * CGFloat(cgImage.width) / size.width),
                 color: try #require(surface), role: "surface")
         }
 
@@ -292,49 +141,40 @@ struct ScreenSnapshotTests {
         }
     #endif
 
-    @Test("раздел, которого ещё нет", .enabled { await ScreenSnapshotTests.isPhone() })
-    func sectionPlaceholder() {
-        assertScreens(
-            SectionPlaceholderView(
-                title: "Слова", message: "Здесь будет словарь: слова на сегодня, повторение и поиск."),
-            named: "placeholder", devices: [.phone], themes: [.light])
-    }
-
-    // MARK: - Устройства
-
     @Test("конструктор тренировки")
-    func trainingBuilder() throws {
-        let app = try signedInApp(cached: nil, today: .json(200, Fixture.todayJSON))
+    func trainingBuilder() async throws {
+        let app = try signedInApp()
         let model = BuilderModel(trainings: app.trainings, loadsOnInit: false)
         model.use(TrainingFixture.options)
-        assertScreens(
+        await assertScreens(
             NavigationStack { TrainingBuilderView(model: model) }.environment(app),
             named: "training-builder")
     }
 
     @Test("конструктор: очищенное количество без обрезанной подсказки")
-    func trainingBuilderEmptyCount() throws {
-        let app = try signedInApp(cached: nil, today: .json(200, Fixture.todayJSON))
+    func trainingBuilderEmptyCount() async throws {
+        let app = try signedInApp()
         let model = BuilderModel(trainings: app.trainings, loadsOnInit: false)
         model.use(TrainingFixture.options)
         model.setCount("")
-        assertScreens(
+        await assertScreens(
             NavigationStack { TrainingBuilderView(model: model) }.environment(app),
             named: "training-builder-empty")
     }
 
     @Test("темы и сложность")
-    func trainingTopics() throws {
-        let app = try signedInApp(cached: nil, today: .json(200, Fixture.todayJSON))
+    func trainingTopics() async throws {
+        let app = try signedInApp()
         let model = BuilderModel(trainings: app.trainings, loadsOnInit: false)
         model.use(TrainingFixture.options)
         model.toggleTopic("contrast")
-        assertScreens(NavigationStack { TrainingTopicsView(model: model) }.environment(app), named: "training-topics")
+        await assertScreens(
+            NavigationStack { TrainingTopicsView(model: model) }.environment(app), named: "training-topics")
     }
 
     @Test("ожидание старта: акцентная кнопка и индикатор")
     func trainingBusyStart() async throws {
-        let app = try signedInApp(cached: nil, today: .json(200, Fixture.todayJSON))
+        let app = try signedInApp()
         try app.didSignIn(.init(token: "t", user: Fixture.user))
         let model = BuilderModel(trainings: app.trainings, loadsOnInit: false)
         model.use(TrainingFixture.options)
@@ -343,44 +183,44 @@ struct ScreenSnapshotTests {
         let start = Task { await model.start() }
         await eventually { model.starting }
         defer { gate.open() }
-        assertScreens(
+        await assertScreens(
             NavigationStack { TrainingBuilderView(model: model) }.environment(app), named: "training-start-busy")
         gate.open()
         _ = await start.value
     }
 
-    @Test("«Сегодня» — продолжить тренировку")
-    func todayWithTraining() async throws {
-        let app = try signedInApp(cached: nil, today: .json(200, Fixture.todayJSON))
+    @Test("Главная — продолжить тренировку")
+    func homeWithTraining() async throws {
+        let app = try signedInApp()
         try app.didSignIn(.init(token: "t", user: Fixture.user))
         server.on("POST /api/trainings", .json(201, TrainingFixture.json(TrainingFixture.session)))
         let id = try await app.trainings.start(TrainingFixture.options.presets[0].request)
         app.trainings.recordPosition(id, position: 2)
         await eventually { app.trainings.active?.position == 2 }
-        let model = try #require(app.today)
+        let model = try #require(app.shell)
         await model.refresh()
-        assertScreens(TodayView(model: model, refreshesOnAppear: false).environment(app), named: "today-with-training")
+        await assertScreens(TrainingHomeView(model: model).environment(app), named: "home-with-training")
     }
 
     @Test("конструктор — нет сети и сбой")
     func trainingUnavailable() async throws {
-        let app = try signedInApp(cached: nil, today: .json(200, Fixture.todayJSON))
+        let app = try signedInApp()
         let model = BuilderModel(trainings: app.trainings, loadsOnInit: false)
         server.on("GET /api/trainings/options", .failure(.notConnectedToInternet))
         await model.load()
-        assertScreens(
+        await assertScreens(
             NavigationStack { TrainingBuilderView(model: model) }.environment(app),
             named: "training-offline")
         server.on("GET /api/trainings/options", .json(500, Fixture.error("internal")))
         await model.load()
-        assertScreens(
+        await assertScreens(
             NavigationStack { TrainingBuilderView(model: model) }.environment(app),
             named: "training-failed")
     }
 
     @Test("конструктор — ошибка старта")
     func trainingStartProblems() async throws {
-        let app = try signedInApp(cached: nil, today: .json(200, Fixture.todayJSON))
+        let app = try signedInApp()
         try app.didSignIn(.init(token: "t", user: Fixture.user))
         let model = BuilderModel(trainings: app.trainings, loadsOnInit: false)
         model.use(TrainingFixture.options)
@@ -391,33 +231,49 @@ struct ScreenSnapshotTests {
         ] {
             server.on("POST /api/trainings", reply)
             _ = await model.start()
-            assertScreens(
+            await assertScreens(
                 NavigationStack { TrainingBuilderView(model: model) }.environment(app),
                 named: name)
         }
         model.setType(.sentenceEquivalence)
-        assertScreens(
+        await assertScreens(
             NavigationStack { TrainingBuilderView(model: model) }.environment(app),
             named: "training-empty")
     }
 
     @Test("вопрос начатой тренировки и отсутствие данных")
     func trainingSession() async throws {
-        let app = try signedInApp(cached: nil, today: .json(200, Fixture.todayJSON))
+        let app = try signedInApp()
         try app.didSignIn(.init(token: "t", user: Fixture.user))
         server.on("POST /api/trainings", .json(201, TrainingFixture.json(TrainingFixture.session)))
         let id = try await app.trainings.start(TrainingFixture.options.presets[0].request)
-        assertScreens(
+        await assertScreens(
             NavigationStack {
                 TrainingSessionView(id: id, trainings: app.trainings, keyboardAvailable: Self.snapshotHasKeyboard)
             }.environment(app),
             named: "training-session")
-        assertScreens(
+        await assertScreens(
             NavigationStack {
                 TrainingSessionView(
                     id: "missing", trainings: app.trainings, keyboardAvailable: Self.snapshotHasKeyboard)
             }.environment(app),
             named: "training-missing")
+    }
+
+    @Test("T6: тихая строка без сети, обе темы и размеры")
+    func trainingOfflineBanner() async throws {
+        let model = try await sessionModel(TrainingFixture.sample(.textCompletion))
+        model.select("A")
+        let view = NavigationStack {
+            TrainingSessionView(model: model, keyboardAvailable: Self.snapshotHasKeyboard)
+        }.environment(\.gpTrainingOffline, true)
+        await assertScreens(view, named: "training-offline-banner")
+        await assertScreens(
+            view.environment(\.textScale, GPType.textScaleLarge), named: "training-offline-banner-larger")
+        #if os(iOS)
+            await assertScreens(
+                view, named: "training-offline-banner-wide", devices: [.pad], padLandscape: true)
+        #endif
     }
 
     private func sessionModel(
@@ -449,13 +305,26 @@ struct ScreenSnapshotTests {
     private func assertSession(
         _ model: SessionModel, name: String, file: StaticString = #filePath, testName: String = #function,
         line: UInt = #line
-    ) {
+    ) async {
         let view = NavigationStack { TrainingSessionView(model: model, keyboardAvailable: Self.snapshotHasKeyboard) }
-        assertScreens(view, named: name, file: file, testName: testName, line: line)
-        assertScreens(
+        await assertScreens(view, named: name, file: file, testName: testName, line: line)
+        await assertScreens(
             view.environment(\.textScale, GPType.textScaleLarge), named: name + "-larger", file: file,
             testName: testName, line: line)
         #if os(iOS)
+            // Полноэкранная тренировка после перехода из оболочки должна сохранять широкую раскладку.
+            // Та же проверка выполняется в regular-окне хоста, а на iPad — на настоящем устройстве.
+            if UIDevice.current.userInterfaceIdiom == .phone,
+                [
+                    "training-question-tc", "training-overview", "training-summary", "training-summary-perfect",
+                    "training-summary-timed-out",
+                ].contains(name)
+            {
+                await assertScreens(
+                    NavigationStack { TrainingSessionView(model: model, keyboardAvailable: true) },
+                    named: name + "-regular", devices: [.phone], regularWidth: true,
+                    file: file, testName: testName, line: line)
+            }
             // Эти состояния должны проверить и широкую панель iPad: книжные 834 pt не пересекают breakpointWide.
             if UIDevice.current.userInterfaceIdiom == .pad,
                 [
@@ -464,7 +333,7 @@ struct ScreenSnapshotTests {
                 ].contains(name)
             {
                 for larger in [false, true] {
-                    assertScreens(
+                    await assertScreens(
                         view.environment(\.textScale, larger ? GPType.textScaleLarge : 1),
                         named: name + (larger ? "-larger" : "") + "-landscape", devices: [.pad],
                         padLandscape: true, file: file, testName: testName, line: line)
@@ -483,7 +352,7 @@ struct ScreenSnapshotTests {
             let q = TrainingFixture.sample(type, blanks: blanks)
             let model = try await sessionModel(q)
             model.select(q.groups[0].options[0].id)
-            assertSession(model, name: "training-question-" + name)
+            await assertSession(model, name: "training-question-" + name)
         }
     }
 
@@ -493,18 +362,18 @@ struct ScreenSnapshotTests {
         let model = try await sessionModel(q)
         model.select("C")
         model.check()
-        assertSession(model, name: "training-explanation")
+        await assertSession(model, name: "training-explanation")
         model.whyNotOpen = true
-        assertSession(model, name: "training-explanation-open")
+        await assertSession(model, name: "training-explanation-open")
         model.english = true
-        assertSession(model, name: "training-explanation-en")
+        await assertSession(model, name: "training-explanation-en")
         let correct = try await sessionModel(TrainingFixture.sample(.sentenceEquivalence))
         for option in correct.screen!.question.answer { correct.select(option) }
         correct.check()
-        assertSession(correct, name: "training-correct")
+        await assertSession(correct, name: "training-correct")
         let unknown = try await sessionModel(q)
         unknown.dontKnow()
-        assertSession(unknown, name: "training-dont-know")
+        await assertSession(unknown, name: "training-dont-know")
     }
 
     @Test("Проверка: таймер и список вопросов")
@@ -513,9 +382,9 @@ struct ScreenSnapshotTests {
         model.toggleFlag()
         model.next()
         model.select("A")
-        assertSession(model, name: "training-check")
+        await assertSession(model, name: "training-check")
         model.openOverview()
-        assertSession(model, name: "training-overview")
+        await assertSession(model, name: "training-overview")
         #if os(iOS)
             if UIDevice.current.userInterfaceIdiom == .pad {
                 let q = TrainingFixture.sample(.textCompletion, blanks: 3)
@@ -558,20 +427,20 @@ struct ScreenSnapshotTests {
         model.next()
         model.dontKnow()
         model.next()
-        assertSession(model, name: "training-summary")
+        await assertSession(model, name: "training-summary")
         let perfect = try await sessionModel(q)
         for _ in 0..<3 {
             perfect.select("A")
             perfect.check()
             perfect.next()
         }
-        assertSession(perfect, name: "training-summary-perfect")
+        await assertSession(perfect, name: "training-summary-perfect")
         let clock = TrainingTestClock()
         let timed = try await sessionModel(q, check: true, clock: clock)
         timed.select("C")
         clock.advance(300)
         timed.tick()
-        assertSession(timed, name: "training-summary-timed-out")
+        await assertSession(timed, name: "training-summary-timed-out")
     }
 
     #if os(iOS)
@@ -607,12 +476,12 @@ struct ScreenSnapshotTests {
         @Test("вопрос и разбор с крупным системным шрифтом", .enabled { await ScreenSnapshotTests.isPhone() })
         func trainingDynamicType() async throws {
             let model = try await sessionModel(TrainingFixture.sample(.textCompletion, blanks: 3))
-            assertScreens(
+            await assertScreens(
                 NavigationStack { TrainingSessionView(model: model, keyboardAvailable: Self.snapshotHasKeyboard) }
                     .environment(\.dynamicTypeSize, .accessibility3),
                 named: "training-dynamic-type", devices: [.phone])
             model.dontKnow()
-            assertScreens(
+            await assertScreens(
                 NavigationStack { TrainingSessionView(model: model, keyboardAvailable: Self.snapshotHasKeyboard) }
                     .environment(\.dynamicTypeSize, .accessibility3),
                 named: "training-dynamic-explanation",
@@ -630,15 +499,23 @@ struct ScreenSnapshotTests {
         await eventually { session.trainings.trainings[session.id]?.isFinished == true }
         let review = ReviewModel(id: session.id, trainings: session.trainings)
         let view = NavigationStack { TrainingReviewView(model: review, keyboardAvailable: Self.snapshotHasKeyboard) }
-        assertScreens(view, named: "training-review")
-        assertScreens(view.environment(\.textScale, GPType.textScaleLarge), named: "training-review-larger")
+        await assertScreens(view, named: "training-review")
+        await assertScreens(view.environment(\.textScale, GPType.textScaleLarge), named: "training-review-larger")
+        #if os(iOS)
+            if UIDevice.current.userInterfaceIdiom == .phone {
+                await assertScreens(
+                    NavigationStack { TrainingReviewView(model: review, keyboardAvailable: true) },
+                    named: "training-review-regular", devices: [.phone], regularWidth: true)
+            }
+        #endif
         review.onlyMistakes = true
-        assertScreens(view, named: "training-review-mistakes")
+        await assertScreens(view, named: "training-review-mistakes")
         let screen = try #require(review.screen(1))
         let item = NavigationStack { TrainingReviewItemView(screen: screen, trainings: session.trainings) }
-        assertScreens(item, named: "training-review-question")
-        assertScreens(item.environment(\.textScale, GPType.textScaleLarge), named: "training-review-question-larger")
-        assertScreens(
+        await assertScreens(item, named: "training-review-question")
+        await assertScreens(
+            item.environment(\.textScale, GPType.textScaleLarge), named: "training-review-question-larger")
+        await assertScreens(
             item.environment(\.dynamicTypeSize, .accessibility3), named: "training-review-dynamic", devices: [.phone])
         let perfect = try await sessionModel(TrainingFixture.sample(.textCompletion))
         for _ in 0..<3 {
@@ -649,7 +526,7 @@ struct ScreenSnapshotTests {
         await eventually { perfect.trainings.trainings[perfect.id]?.isFinished == true }
         let noMistakes = ReviewModel(id: perfect.id, trainings: perfect.trainings)
         noMistakes.onlyMistakes = true
-        assertScreens(
+        await assertScreens(
             NavigationStack { TrainingReviewView(model: noMistakes, keyboardAvailable: Self.snapshotHasKeyboard) },
             named: "training-review-perfect")
     }
@@ -659,17 +536,17 @@ struct ScreenSnapshotTests {
         let store = temporaryTrainingStore()
         let session = try await sessionModel(TrainingFixture.sample(.textCompletion), store: store)
         let model = QuestionReportModel(id: session.id, position: 0, trainings: session.trainings)
-        assertScreens(QuestionReportView(model: model), named: "training-report-empty")
+        await assertScreens(QuestionReportView(model: model), named: "training-report-empty")
         model.setKind(.explanation)
-        assertScreens(QuestionReportView(model: model), named: "training-report")
-        assertScreens(
+        await assertScreens(QuestionReportView(model: model), named: "training-report")
+        await assertScreens(
             QuestionReportView(model: model).environment(\.textScale, GPType.textScaleLarge),
             named: "training-report-larger")
-        assertScreens(
+        await assertScreens(
             QuestionReportView(model: model).environment(\.dynamicTypeSize, .accessibility3),
             named: "training-report-dynamic", devices: [.phone])
         model.setText(String(repeating: "x", count: 2001))
-        assertScreens(QuestionReportView(model: model), named: "training-report-over-limit")
+        await assertScreens(QuestionReportView(model: model), named: "training-report-over-limit")
         model.setText("")
         await eventually { session.trainings.reportDraft(session.id, position: 0).text == "" }
         let backup = store.directory.appendingPathExtension("backup")
@@ -677,12 +554,12 @@ struct ScreenSnapshotTests {
         try Data().write(to: store.directory)
         model.send()
         await eventually { model.problem && !model.saving }
-        assertScreens(QuestionReportView(model: model), named: "training-report-failed")
+        await assertScreens(QuestionReportView(model: model), named: "training-report-failed")
         try FileManager.default.removeItem(at: store.directory)
         try FileManager.default.moveItem(at: backup, to: store.directory)
         model.send()
         await eventually { model.sent }
-        assertScreens(QuestionReportView(model: model), named: "training-report-sent")
+        await assertScreens(QuestionReportView(model: model), named: "training-report-sent")
     }
 
     #if os(macOS)
@@ -843,7 +720,7 @@ struct ScreenSnapshotTests {
             await eventually { model.screen?.revealed == true }
             try key(String(UnicodeScalar(NSRightArrowFunctionKey)!), code: 124)
             await eventually { model.screen?.position == 1 }
-            assertScreens(
+            await assertScreens(
                 NavigationStack { TrainingSessionView(model: model, keyboardAvailable: Self.snapshotHasKeyboard) },
                 named: "training-mac-keyboard")
         }
@@ -860,6 +737,7 @@ struct ScreenSnapshotTests {
     }
 
     enum Device { case phone, pad }
+    enum Presentation { case root, profile, examPicker }
     enum Theme { case light, dark }
 
     /// Тесты только для телефона на iPad и Mac пропускаются явно (в отчёте — «пропущен», а не пустой «прошёл»).
@@ -920,20 +798,92 @@ struct ScreenSnapshotTests {
         themes: [Theme] = [.light, .dark],
         precision: Float = ScreenSnapshotTests.precision,
         padLandscape: Bool = false,
+        regularWidth: Bool = false,
+        largerText: Bool = false,
+        presentation: Presentation = .root,
         fileID: StaticString = #fileID,
         file: StaticString = #filePath,
         testName: String = #function,
         line: UInt = #line,
         column: UInt = #column
-    ) {
+    ) async {
         // Эталон фиксирует неподвижное состояние: символ загрузки не меняет фазу между кадрами.
         // Нативные панели всё равно снимаются настоящей иерархией, их материал не подменяется.
-        let view = screen.gpDesignTokens().symbolEffectsRemoved()
+        let view = screen.gpDesignTokens().symbolEffectsRemoved().transaction { $0.disablesAnimations = true }
         #if os(iOS)
             let current: Device = UIDevice.current.userInterfaceIdiom == .pad ? .pad : .phone
             for device in devices where device == current {
-                let config = device == .phone ? Self.phone : (padLandscape ? Self.padLandscape : Self.pad)
+                let config =
+                    regularWidth
+                    ? Self.padLandscape : device == .phone ? Self.phone : (padLandscape ? Self.padLandscape : Self.pad)
                 for style in themes.map({ $0 == .dark ? UIUserInterfaceStyle.dark : .light }) {
+                    let preferences = UserDefaults(suiteName: "snapshot-\(UUID().uuidString)")!
+                    preferences.set(style == .dark ? "dark" : "light", forKey: AppTheme.storageKey)
+                    preferences.set(largerText, forKey: TextSizePreference.storageKey)
+                    if presentation != .root {
+                        guard
+                            let host = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene })
+                                .flatMap(\.windows).first(where: \.isKeyWindow), let scene = host.windowScene
+                        else {
+                            Issue.record("Нет окна приложения для снимка")
+                            continue
+                        }
+                        let window = UIWindow(windowScene: scene)
+                        window.frame = CGRect(origin: host.frame.origin, size: config.size ?? host.frame.size)
+                        window.overrideUserInterfaceStyle = style
+                        let controller = UIHostingController(
+                            rootView: view.defaultAppStorage(preferences)
+                                .environment(\.colorScheme, style == .dark ? .dark : .light))
+                        if regularWidth { controller.traitOverrides.horizontalSizeClass = .regular }
+                        window.rootViewController = controller
+                        let previousAnimations = UIView.areAnimationsEnabled
+                        UIView.setAnimationsEnabled(false)
+                        window.makeKeyAndVisible()
+                        defer {
+                            controller.dismiss(animated: false)
+                            window.isHidden = true
+                            window.rootViewController = nil
+                            host.makeKeyAndVisible()
+                            UIView.setAnimationsEnabled(previousAnimations)
+                        }
+                        controller.view.layoutIfNeeded()
+                        await eventually {
+                            controller.view.layoutIfNeeded()
+                            let controllers = Self.controllers(controller)
+                            if presentation == .examPicker {
+                                return controllers.contains {
+                                    $0.presentedViewController?.view.window != nil
+                                        && $0.presentedViewController?.isBeingPresented == false
+                                }
+                            }
+                            let tabs = controllers.compactMap { $0 as? UITabBarController }
+                            if device == .pad || regularWidth {
+                                return controllers.compactMap { $0 as? UINavigationController }.contains {
+                                    $0.viewControllers.count > 1 && $0.visibleViewController?.view.window != nil
+                                }
+                            }
+                            guard !tabs.isEmpty else { return false }
+                            return tabs.allSatisfy {
+                                let bar = $0.tabBar
+                                return bar.isHidden || bar.alpha == 0
+                                    || !bar.convert(bar.bounds, to: window).intersects(window.bounds)
+                            }
+                        }
+                        window.layoutIfNeeded()
+                        let format = UIGraphicsImageRendererFormat()
+                        format.scale = device == .phone ? 3 : 2
+                        let image = UIGraphicsImageRenderer(bounds: window.bounds, format: format).image { _ in
+                            window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
+                        }
+                        assertSnapshot(
+                            of: image,
+                            as: .image(precision: precision, perceptualPrecision: Self.perceptual)
+                                .comparingPersistedImage(),
+                            named:
+                                "\(name)-\(device == .phone ? "iphone" : "ipad")-\(style == .dark ? "dark" : "light")",
+                            fileID: fileID, file: file, testName: testName, line: line, column: column)
+                        continue
+                    }
                     // Системное стекло панели получает тему от окна, а не только от traits контроллера.
                     // Своё окно на каждый кадр не наследует материал и переходы предыдущего снимка.
                     UIView.performWithoutAnimation {
@@ -946,7 +896,7 @@ struct ScreenSnapshotTests {
                             return
                         }
                         let window = UIWindow(windowScene: scene)
-                        if padLandscape, let size = config.size {
+                        if padLandscape || regularWidth, let size = config.size {
                             window.frame = CGRect(origin: host.frame.origin, size: size)
                         } else {
                             window.frame = host.frame
@@ -960,7 +910,8 @@ struct ScreenSnapshotTests {
                             host.makeKeyAndVisible()
                         }
                         assertSnapshot(
-                            of: view.environment(\.colorScheme, style == .dark ? .dark : .light),
+                            of: view.defaultAppStorage(preferences).environment(
+                                \.colorScheme, style == .dark ? .dark : .light),
                             as: .image(
                                 drawHierarchyInKeyWindow: true,
                                 precision: precision, perceptualPrecision: Self.perceptual,
@@ -975,16 +926,61 @@ struct ScreenSnapshotTests {
                 }
             }
         #elseif os(macOS)
-            // Mac снимается без окна (боковую панель и заголовок рисует окно), поэтому — только экраны, где
-            // важна широкая раскладка, те же, что на iPad.
+            // List создаёт строки только после присоединения к окну; снимок пустой боковой панели был бы ложным эталоном.
             guard devices.contains(.pad) else { return }
             for dark in themes.map({ $0 == .dark }) {
-                let controller = NSHostingController(rootView: view.environment(\.colorScheme, dark ? .dark : .light))
+                let preferences = UserDefaults(suiteName: "snapshot-\(UUID().uuidString)")!
+                preferences.set(dark ? "dark" : "light", forKey: AppTheme.storageKey)
+                preferences.set(largerText, forKey: TextSizePreference.storageKey)
+                let controller = NSHostingController(
+                    rootView: view.defaultAppStorage(preferences).environment(\.colorScheme, dark ? .dark : .light))
                 controller.view.frame = CGRect(x: 0, y: 0, width: 1100, height: 760)
                 controller.view.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
+                let window = NSWindow(
+                    contentRect: controller.view.frame, styleMask: [.borderless], backing: .buffered, defer: false)
+                window.contentViewController = controller
+                window.appearance = controller.view.appearance
+                window.orderFront(nil)
+                defer {
+                    window.orderOut(nil)
+                    window.contentViewController = nil
+                }
                 // AppKit откладывает высоту многострочного поля до раскладки. Иначе после очистки длинного
                 // текста cacheDisplay может снять ещё прежнюю высоту и сдвинуть сообщение об ошибке.
                 controller.view.layoutSubtreeIfNeeded()
+                if presentation == .examPicker {
+                    await eventually { window.childWindows?.contains { $0.isVisible && $0.contentView != nil } == true }
+                    controller.view.layoutSubtreeIfNeeded()
+                    let rendered = NSImage(size: controller.view.bounds.size)
+                    rendered.lockFocus()
+                    if let bitmap = controller.view.bitmapImageRepForCachingDisplay(in: controller.view.bounds) {
+                        controller.view.cacheDisplay(in: controller.view.bounds, to: bitmap)
+                        bitmap.draw(in: controller.view.bounds)
+                    } else {
+                        Issue.record("Не удалось снять окно Mac")
+                    }
+                    for popup in window.childWindows ?? [] where popup.isVisible {
+                        guard let content = popup.contentView?.superview ?? popup.contentView,
+                            let bitmap = content.bitmapImageRepForCachingDisplay(in: content.bounds)
+                        else {
+                            Issue.record("Не удалось снять popover Mac")
+                            continue
+                        }
+                        content.layoutSubtreeIfNeeded()
+                        content.cacheDisplay(in: content.bounds, to: bitmap)
+                        let frame = content.convert(content.bounds, to: nil)
+                        let screenFrame = popup.convertToScreen(frame)
+                        let target = window.convertFromScreen(screenFrame)
+                        bitmap.draw(in: target)
+                    }
+                    rendered.unlockFocus()
+                    assertSnapshot(
+                        of: rendered,
+                        as: .image(precision: Self.precision, perceptualPrecision: Self.perceptual),
+                        named: "\(name)-mac-\(dark ? "dark" : "light")",
+                        fileID: fileID, file: file, testName: testName, line: line, column: column)
+                    continue
+                }
                 assertSnapshot(
                     of: controller,
                     as: .image(
@@ -996,4 +992,10 @@ struct ScreenSnapshotTests {
             }
         #endif
     }
+
+    #if os(iOS)
+        private static func controllers(_ root: UIViewController) -> [UIViewController] {
+            [root] + root.children.flatMap(controllers)
+        }
+    #endif
 }

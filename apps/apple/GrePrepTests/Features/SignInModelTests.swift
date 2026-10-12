@@ -22,7 +22,7 @@ struct SignInModelTests {
         return (SignInModel(app: app, discoverySession: server.session, locale: locale), app, tokens)
     }
 
-    @Test("вход подменой: токен в Keychain, человек на «Сегодня»")
+    @Test("вход подменой: токен в Keychain, человек в оболочке")
     func development() async throws {
         server.on("POST /api/auth/dev", .json(200, Fixture.session(token: "t-1")))
         let (model, app, tokens) = setUp()
@@ -155,7 +155,7 @@ struct SignInModelTests {
             .json(200, #"{"authorization_endpoint":"https://oauth.example/auth"}"#))
         let (model, _, _) = setUp(webProviders: [.google: googleConfig()])
         await model.signInWithWeb(.google) { _, _ in throw ASWebAuthenticationSessionError(.canceledLogin) }
-        #expect(model.message == nil)
+        #expect(model.message == .cancelled)
         #expect(model.busy == nil)
     }
 
@@ -188,7 +188,7 @@ struct SignInModelTests {
         server.on("POST /api/client-errors", .status(204))
         let (model, _, _) = setUp(appleSignInEnabled: true)
         await model.completeApple(.failure(ASAuthorizationError(.canceled)))
-        #expect(model.message == nil)
+        #expect(model.message == .cancelled)
         await model.completeApple(.failure(ASAuthorizationError(.failed)))
         #expect(model.message == .failed)
         await eventually { !server.requests("POST /api/client-errors").isEmpty }

@@ -35,23 +35,21 @@ private struct SignInContent: View {
 
     var body: some View {
         GeometryReader { proxy in
+            let wide = proxy.size.width >= GPLayout.contentMax + 2 * GPLayout.gutter
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
+                    TutorlessWordmark()
                     Spacer(minLength: GPSpace.s48)
                     header
-                    Spacer(minLength: GPSpace.s40)
+                    Spacer(minLength: GPSpace.s72)
                     if reason == .sessionExpired {
-                        Text("Вход закончился — войдите снова.")
-                            .gpText(\.meta)
-                            .foregroundStyle(Color(.text2))
-                            .padding(.bottom, GPSpace.s16)
-                            .accessibilityIdentifier("signin.expired")
+                        ShellNotice(symbol: "exclamationmark.circle", message: "Вход закончился — войдите снова.")
+                            .padding(.bottom, GPSpace.s16).accessibilityIdentifier("signin.expired")
+                    }
+                    if let message = model.message {
+                        SignInMessageText(message: message).padding(.bottom, GPSpace.s16)
                     }
                     buttons
-                    if let message = model.message {
-                        SignInMessageText(message: message)
-                            .padding(.top, GPSpace.s12)
-                    }
                     legal
                         .padding(.top, GPSpace.s20)
                     #if DEBUG
@@ -63,7 +61,10 @@ private struct SignInContent: View {
                 }
                 .frame(maxWidth: GPLayout.authColumnMax)
                 .padding(.horizontal, GPSpace.s24)
+                .padding(.top, GPSpace.s24)
                 .padding(.bottom, GPSpace.s28)
+                .fixedSize(horizontal: false, vertical: wide)
+                .background(wide ? Color(.surface) : Color.clear, in: RoundedRectangle(cornerRadius: GPRadius.l))
                 .frame(maxWidth: .infinity, minHeight: proxy.size.height)
             }
             .scrollBounceBehavior(.basedOnSize)
@@ -71,28 +72,12 @@ private struct SignInContent: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: GPSpace.s20) {
-            BrandMark()
-                // временно: роли нет, вопрос техлиду (11.10.2026)
-                .frame(width: GPSpace.s32, height: GPSpace.s32)
-                .foregroundStyle(Color(.verbal))
-                // временно: роли нет, вопрос техлиду (11.10.2026)
-                .frame(width: GPSize.sectionRow, height: GPSize.sectionRow)
-                .background(Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.l, style: .continuous))
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: GPSpace.s10) {
-                Text(
-                    verbatim: Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "GrePrepApp"
-                )
-                .gpText(\.h1)
-                .foregroundStyle(Color(.text))
-                .accessibilityAddTraits(.isHeader)
-                Text("Подготовка к GRE® с разбором каждой ошибки — по-русски и по-английски.")
-                    .gpText(\.lead)
-                    .foregroundStyle(Color(.text2))
-                    .frame(maxWidth: GPLayout.textMax, alignment: .leading)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+        VStack(alignment: .leading, spacing: GPSpace.s16) {
+            Text("GRE® и TOEFL® без репетитора").gpText(\.h1)
+                .foregroundStyle(Color(.text)).accessibilityAddTraits(.isHeader)
+            Text("Вопросы как на настоящем экзамене и разбор каждой ошибки на вашем языке.")
+                .gpText(\.lead).foregroundStyle(Color(.text2))
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -131,13 +116,17 @@ private struct SignInMessageText: View {
     let message: SignInModel.Message
 
     var body: some View {
-        text
-            .gpText(\.meta)
-            // «Ещё не подключён» — сведение, а не сбой: без цвета ошибки.
-            .foregroundStyle(isFailure ? Color(.wrong) : Color(.text2))
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .fixedSize(horizontal: false, vertical: true)
-            .accessibilityIdentifier("signin.message")
+        HStack(alignment: .top, spacing: GPSpace.s8) {
+            Image(systemName: message == .offline ? "wifi.slash" : "exclamationmark.circle")
+                .foregroundStyle(isFailure ? Color(.wrong) : Color(.text3))
+            text
+        }
+        .gpText(\.meta)
+        // «Ещё не подключён» — сведение, а не сбой: без цвета ошибки.
+        .foregroundStyle(Color(.text2))
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .fixedSize(horizontal: false, vertical: true)
+        .accessibilityIdentifier("signin.message")
     }
 
     private var isFailure: Bool {
@@ -150,7 +139,8 @@ private struct SignInMessageText: View {
         case .notConnectedYet(.google): Text("Вход через Google ещё не подключён — он появится до беты.")
         case .notConnectedYet(.apple): Text("Вход с Apple ещё не подключён — он появится до беты.")
         case .notConnectedYet: Text("Этот способ входа ещё не подключён.")
-        case .offline: Text("Нет сети — войти получится, когда она появится.")
+        case .offline: Text("Нет сети — войти получится, когда она вернётся.")
+        case .cancelled: Text("Вход отменён — можно попробовать снова.")
         case .tooManyAttempts: Text("Слишком много попыток подряд — подождите минуту.")
         case .failed: Text("Не получилось войти. Попробуйте ещё раз.")
         }

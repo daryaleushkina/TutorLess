@@ -5,6 +5,7 @@ struct GrePrepApp: App {
     /// nil — приложение запущено хостом юнит-тестов: тогда оно не трогает ни Keychain, ни сеть.
     @State private var app: AppModel?
     @AppStorage(AppTheme.storageKey) private var storedTheme = AppTheme.dark.rawValue
+    @AppStorage(TextSizePreference.storageKey) private var largerText = false
     #if os(macOS)
         @NSApplicationDelegateAdaptor(AppearanceApplicationDelegate.self) private var appearanceDelegate
     #endif
@@ -41,6 +42,7 @@ struct GrePrepApp: App {
                 }
             }
             .gpDesignTokens()
+            .environment(\.textScale, largerText ? GPType.textScaleLarge : 1)
             .environment(\.colorScheme, theme.colorScheme)
             .preferredColorScheme(theme.colorScheme)
             #if os(iOS)

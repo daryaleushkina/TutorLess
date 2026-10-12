@@ -63,6 +63,7 @@ private struct TrainingSessionContent: View {
     @Environment(\.scenePhase) private var scenePhase
     @FocusState private var keyboardFocus: Bool
     @Environment(\.hasHardwareKeyboard) private var hasKeyboard
+    @Environment(\.gpTrainingOffline) private var offline
     @State private var wideWindow = false
     @State private var review = false
     @State private var reportPosition: Int?
@@ -101,7 +102,7 @@ private struct TrainingSessionContent: View {
                 } else {
                     ContentUnavailableView(
                         "Тренировки нет на устройстве", systemImage: "tray",
-                        description: Text("Она могла устареть. Начните новую с экрана «Сегодня».")
+                        description: Text("Она могла устареть. Начните новую с экрана «Тренировка».")
                     )
                     .background(Color(.bg))
                 }
@@ -174,6 +175,13 @@ private struct TrainingSessionContent: View {
         let twoColumns = wide && s.result == nil && (s.revealed || s.training.isCheck)
         let columnWidth = twoColumns ? GPLayout.sessionMax : GPLayout.contentMax
         return VStack(spacing: 0) {
+            if offline && s.result == nil {
+                ShellNotice(symbol: "wifi.slash", message: "Нет сети — ответы сохранятся и уйдут сами.")
+                    .frame(maxWidth: columnWidth, alignment: .leading)
+                    .padding(.horizontal, GPLayout.gutter).padding(.vertical, GPSpace.s12)
+                    .frame(maxWidth: .infinity)
+                    .accessibilityIdentifier("session.offline")
+            }
             ScrollView {
                 Group {
                     if let result = s.result {
@@ -388,8 +396,8 @@ struct SessionOverview: View {
                         .accessibilityValue(
                             Text(
                                 verbatim: [
-                                    answered ? String(localized: "отвечен") : String(localized: "без ответа"),
-                                    flagged ? String(localized: "отмечен") : "",
+                                    answered ? String(interface: "отвечен") : String(interface: "без ответа"),
+                                    flagged ? String(interface: "отмечен") : "",
                                 ].filter { !$0.isEmpty }.joined(separator: ", "))
                         )
                         .accessibilityIdentifier("overview.question.\(index)")
@@ -440,7 +448,7 @@ struct SessionSummary: View {
                             let places = TrainingCopy.positions(topic.positions)
                             let location =
                                 topic.positions.count == 1
-                                ? String(localized: "вопрос \(places)") : String(localized: "вопросы \(places)")
+                                ? String(interface: "вопрос \(places)") : String(interface: "вопросы \(places)")
                             Text("\(TrainingCopy.mistakes(topic.mistakes)) · \(location)")
                                 .gpText(\.meta).foregroundStyle(Color(.text2))
                         }
@@ -454,11 +462,11 @@ struct SessionSummary: View {
         let t = screen.training
         let time = TrainingRules.summaryMinutes(
             result.durationSeconds, limit: t.isCheck ? t.session.timeLimitSeconds : nil)
-        let duration = String(localized: "\(time.minutes) минут").replacingOccurrences(of: " ", with: "\u{00A0}")
+        let duration = String(interface: "\(time.minutes) минут").replacingOccurrences(of: " ", with: "\u{00A0}")
         let section = TrainingText.sectionLabel(t.session.section)
         if let limit = time.limit {
-            return String(localized: "Проверка") + " · " + section + " · "
-                + String(localized: "\(duration) из \(limit)")
+            return String(interface: "Проверка") + " · " + section + " · "
+                + String(interface: "\(duration) из \(limit)")
         }
         return ([section] + t.session.questionTypes.map(\.label) + [duration]).joined(separator: " · ")
     }

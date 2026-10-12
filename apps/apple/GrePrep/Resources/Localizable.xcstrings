@@ -21,6 +21,38 @@
         }
       }
     },
+    "%@ · %lld вопросов · ~%lld мин": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %lld вопросов · ~%lld мин"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %lld questions · ~%lld min"
+          }
+        }
+      }
+    },
+    "%@ · %lld%% верно": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %lld%% верно"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %lld%% correct"
+          }
+        }
+      }
+    },
     "%@ из %lld": {
       "localizations": {
         "en": {
@@ -158,6 +190,58 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "%lld questions"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld заданий из прошлых тренировок": {
+      "localizations": {
+        "ru": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld задание из прошлых тренировок"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld задания из прошлых тренировок"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld заданий из прошлых тренировок"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld заданий из прошлых тренировок"
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld question from past practice"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld questions from past practice"
                 }
               }
             }
@@ -309,54 +393,18 @@
         }
       }
     },
-    "%lld шагов": {
+    "%lld%%": {
       "localizations": {
         "ru": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld шаг"
-                }
-              },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld шага"
-                }
-              },
-              "many": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld шагов"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld шага"
-                }
-              }
-            }
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%%"
           }
         },
         "en": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld step"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld steps"
-                }
-              }
-            }
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%%"
           }
         }
       }
@@ -401,11 +449,91 @@
         }
       }
     },
+    "GRE® и TOEFL® без репетитора": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GRE® и TOEFL® без репетитора"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GRE® and TOEFL® without a tutor"
+          }
+        }
+      }
+    },
+    "Listening": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listening"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listening"
+          }
+        }
+      }
+    },
     "Quant": {
       "shouldTranslate": false
     },
+    "Reading": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading"
+          }
+        }
+      }
+    },
+    "Speaking": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speaking"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speaking"
+          }
+        }
+      }
+    },
     "Verbal": {
       "shouldTranslate": false
+    },
+    "Writing": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Writing"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Writing"
+          }
+        }
+      }
     },
     "~%lld мин": {
       "localizations": {
@@ -413,6 +541,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "~%lld min"
+          }
+        }
+      }
+    },
+    "Английский для учёбы": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Английский для учёбы"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "English for studying abroad"
           }
         }
       }
@@ -557,6 +701,22 @@
         }
       }
     },
+    "Вопрос %lld из %lld · %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вопрос %lld из %lld · %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Question %lld of %lld · %@"
+          }
+        }
+      }
+    },
     "Вопрос %lld, %@, %@, %@": {
       "localizations": {
         "en": {
@@ -577,12 +737,18 @@
         }
       }
     },
-    "Восемь шагов": {
+    "Вопросы как на настоящем экзамене и разбор каждой ошибки на вашем языке.": {
       "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вопросы как на настоящем экзамене и разбор каждой ошибки на вашем языке."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Eight steps"
+            "value": "Exam-style questions and an explanation of every mistake in your language."
           }
         }
       }
@@ -637,6 +803,38 @@
         }
       }
     },
+    "Вход отменён — можно попробовать снова.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вход отменён — можно попробовать снова."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign-in cancelled. You can try again."
+          }
+        }
+      }
+    },
+    "Вход с Apple": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вход с Apple"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in with Apple"
+          }
+        }
+      }
+    },
     "Вход с Apple ещё не подключён — он появится до беты.": {
       "localizations": {
         "en": {
@@ -647,12 +845,44 @@
         }
       }
     },
+    "Вход через Google": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вход через Google"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signed in with Google"
+          }
+        }
+      }
+    },
     "Вход через Google ещё не подключён — он появится до беты.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Sign-in with Google isn’t connected yet — it will be before the beta."
+          }
+        }
+      }
+    },
+    "Вход через Telegram": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вход через Telegram"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signed in with Telegram"
           }
         }
       }
@@ -727,16 +957,6 @@
         }
       }
     },
-    "Два шага": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Two steps"
-          }
-        }
-      }
-    },
     "Для разработки — вход подменой": {
       "localizations": {
         "en": {
@@ -787,6 +1007,22 @@
         }
       }
     },
+    "Загружаем тренировку": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Загружаем тренировку"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading practice"
+          }
+        }
+      }
+    },
     "Загрузка": {
       "localizations": {
         "en": {
@@ -827,6 +1063,54 @@
         }
       }
     },
+    "Здесь будет точность по разделам, история тренировок и примерный балл.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Здесь будет точность по разделам, история тренировок и примерный балл."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your accuracy by section, practice history and estimated score will appear here."
+          }
+        }
+      }
+    },
+    "Здесь будут пробные экзамены GRE и эссе с оценкой.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Здесь будут пробные экзамены GRE и эссе с оценкой."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GRE practice tests and essay scoring will appear here."
+          }
+        }
+      }
+    },
+    "Здесь будут пробные экзамены TOEFL с оценкой Writing и Speaking.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Здесь будут пробные экзамены TOEFL с оценкой Writing и Speaking."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TOEFL practice tests with Writing and Speaking scores will appear here."
+          }
+        }
+      }
+    },
     "Здесь будут пробный экзамен как настоящий GRE и эссе с оценкой.": {
       "localizations": {
         "en": {
@@ -837,12 +1121,34 @@
         }
       }
     },
-    "Здесь начнётся шаг. Тренировки и слова появятся в следующих частях.": {
+    "Здесь будут слова: учить, повторять и искать.": {
       "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Здесь будут слова: учить, повторять и искать."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The step will start here. Practice and words arrive in the next parts."
+            "value": "Vocabulary to learn, review and search will appear here."
+          }
+        }
+      }
+    },
+    "Здесь будут тренировки по четырём частям TOEFL.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Здесь будут тренировки по четырём частям TOEFL."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Practice for all four TOEFL sections will appear here."
           }
         }
       }
@@ -887,6 +1193,22 @@
         }
       }
     },
+    "К какому экзамену готовитесь?": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "К какому экзамену готовитесь?"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Which exam are you preparing for?"
+          }
+        }
+      }
+    },
     "К списку вопросов": {
       "localizations": {
         "en": {
@@ -907,6 +1229,22 @@
         }
       }
     },
+    "Крупнее": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Крупнее"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Larger"
+          }
+        }
+      }
+    },
     "Любая": {
       "localizations": {
         "en": {
@@ -923,6 +1261,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Easy"
+          }
+        }
+      }
+    },
+    "Магистратура и PhD": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Магистратура и PhD"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Master’s and PhD programs"
           }
         }
       }
@@ -957,12 +1311,34 @@
         }
       }
     },
-    "На сегодня шагов нет": {
+    "Написать нам": {
       "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Написать нам"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "No steps for today"
+            "value": "Contact us"
+          }
+        }
+      }
+    },
+    "Настроить тренировку": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Настроить тренировку"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Customize practice"
           }
         }
       }
@@ -997,12 +1373,18 @@
         }
       }
     },
-    "Начать шаг": {
+    "Начинаем…": {
       "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Начинаем…"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Start the step"
+            "value": "Starting…"
           }
         }
       }
@@ -1037,6 +1419,22 @@
         }
       }
     },
+    "Не получилось выйти. Попробуйте ещё раз.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не получилось выйти. Попробуйте ещё раз."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t sign out. Try again."
+          }
+        }
+      }
+    },
     "Не получилось загрузить план": {
       "localizations": {
         "en": {
@@ -1057,6 +1455,38 @@
         }
       }
     },
+    "Не получилось загрузить тренировку": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не получилось загрузить тренировку"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t load practice"
+          }
+        }
+      }
+    },
+    "Не получилось изменить язык. Попробуйте ещё раз.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не получилось изменить язык. Попробуйте ещё раз."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t change the language. Try again."
+          }
+        }
+      }
+    },
     "Не получилось начать тренировку. Попробуйте ещё раз.": {
       "localizations": {
         "en": {
@@ -1073,6 +1503,54 @@
           "stringUnit": {
             "state": "translated",
             "value": "Couldn’t update the plan — we’ll show a fresh one as soon as the server responds."
+          }
+        }
+      }
+    },
+    "Не получилось обновить — покажем свежее, как только сервер ответит.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не получилось обновить — покажем свежее, как только сервер ответит."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t refresh. We’ll update when the server responds."
+          }
+        }
+      }
+    },
+    "Не получилось сменить экзамен. Попробуйте ещё раз.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не получилось сменить экзамен. Попробуйте ещё раз."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t change the exam. Try again."
+          }
+        }
+      }
+    },
+    "Не получилось сохранить выбор. Попробуйте ещё раз.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не получилось сохранить выбор. Попробуйте ещё раз."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t save your choice. Try again."
           }
         }
       }
@@ -1107,12 +1585,92 @@
         }
       }
     },
+    "Нет сети — войти получится, когда она вернётся.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет сети — войти получится, когда она вернётся."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You’re offline. Sign in when your connection returns."
+          }
+        }
+      }
+    },
     "Нет сети — войти получится, когда она появится.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "No connection — you can sign in once it’s back."
+          }
+        }
+      }
+    },
+    "Нет сети — выбрать экзамен получится, когда она вернётся.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет сети — выбрать экзамен получится, когда она вернётся."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You’re offline. Choose an exam when your connection returns."
+          }
+        }
+      }
+    },
+    "Нет сети — выйти получится, когда она вернётся.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет сети — выйти получится, когда она вернётся."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You’re offline. Sign out when your connection returns."
+          }
+        }
+      }
+    },
+    "Нет сети — изменить язык получится, когда она вернётся.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет сети — изменить язык получится, когда она вернётся."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You’re offline. Change the language when your connection returns."
+          }
+        }
+      }
+    },
+    "Нет сети — обновим, когда она появится.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет сети — обновим, когда она появится."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You’re offline. We’ll update when your connection returns."
           }
         }
       }
@@ -1147,22 +1705,34 @@
         }
       }
     },
-    "Один шаг": {
+    "Обычный": {
       "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обычный"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "One step"
+            "value": "Standard"
           }
         }
       }
     },
-    "Она могла устареть. Начните новую с экрана «Сегодня».": {
+    "Она могла устареть. Начните новую с экрана «Тренировка».": {
       "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Она могла устареть. Начните новую с экрана «Тренировка»."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "It may have expired. Start a new one from Today."
+            "value": "It may be outdated. Start a new session from Practice."
           }
         }
       }
@@ -1321,6 +1891,22 @@
         }
       }
     },
+    "От него зависят задания, слова и пробный экзамен. Сменить можно в любой момент.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "От него зависят задания, слова и пробный экзамен. Сменить можно в любой момент."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your questions, vocabulary and practice tests depend on it. You can change it at any time."
+          }
+        }
+      }
+    },
     "Отвечено %lld из %lld · отмечено %lld": {
       "localizations": {
         "en": {
@@ -1431,6 +2017,22 @@
         }
       }
     },
+    "Повторить мои ошибки": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Повторить мои ошибки"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Review my mistakes"
+          }
+        }
+      }
+    },
     "Под этот выбор заданий пока нет — попробуйте другие темы или сложность.": {
       "localizations": {
         "en": {
@@ -1451,12 +2053,60 @@
         }
       }
     },
+    "Подписка": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подписка"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subscription"
+          }
+        }
+      }
+    },
     "Показать": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Show"
+          }
+        }
+      }
+    },
+    "Попробовать снова": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Попробовать снова"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try again"
+          }
+        }
+      }
+    },
+    "После каждого ответа — разбор на вашем языке: почему верно и где ловушка в остальных вариантах.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "После каждого ответа — разбор на вашем языке: почему верно и где ловушка в остальных вариантах."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "After each answer, get an explanation in your language: why it’s correct and what makes the other options wrong."
           }
         }
       }
@@ -1571,12 +2221,18 @@
         }
       }
     },
-    "Пять шагов": {
+    "Профиль": {
       "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Профиль"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Five steps"
+            "value": "Profile"
           }
         }
       }
@@ -1641,12 +2297,76 @@
         }
       }
     },
+    "Разделы": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разделы"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sections"
+          }
+        }
+      }
+    },
+    "Размер текста": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Размер текста"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Text size"
+          }
+        }
+      }
+    },
     "Режим": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Mode"
+          }
+        }
+      }
+    },
+    "Русский": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Русский"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Русский"
+          }
+        }
+      }
+    },
+    "Светлая": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Светлая"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Light"
           }
         }
       }
@@ -1671,16 +2391,6 @@
         }
       }
     },
-    "Сегодня": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Today"
-          }
-        }
-      }
-    },
     "Сейчас: %@": {
       "localizations": {
         "en": {
@@ -1691,22 +2401,28 @@
         }
       }
     },
-    "Семь шагов": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Seven steps"
-          }
-        }
-      }
-    },
     "Скоро": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Coming soon"
+          }
+        }
+      }
+    },
+    "Слабое место: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Слабое место: %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Needs practice: %@"
           }
         }
       }
@@ -1737,6 +2453,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Difficulty"
+          }
+        }
+      }
+    },
+    "Сменить экзамен": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сменить экзамен"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change exam"
           }
         }
       }
@@ -1781,6 +2513,22 @@
         }
       }
     },
+    "Способы входа": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Способы входа"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign-in methods"
+          }
+        }
+      }
+    },
     "Средняя": {
       "localizations": {
         "en": {
@@ -1797,6 +2545,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Exam-pace timer, explanations at the end"
+          }
+        }
+      }
+    },
+    "Тема": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Тема"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Theme"
           }
         }
       }
@@ -1821,6 +2585,38 @@
         }
       }
     },
+    "Тренировка": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Тренировка"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Practice"
+          }
+        }
+      }
+    },
+    "Тренировка загрузится, когда сеть вернётся.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Тренировка загрузится, когда сеть вернётся."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Practice will load when your connection returns."
+          }
+        }
+      }
+    },
     "Тренировки нет на устройстве": {
       "localizations": {
         "en": {
@@ -1841,16 +2637,6 @@
         }
       }
     },
-    "Три шага": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Three steps"
-          }
-        }
-      }
-    },
     "Трудная": {
       "localizations": {
         "en": {
@@ -1861,12 +2647,34 @@
         }
       }
     },
-    "Четыре шага": {
+    "Тёмная": {
       "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Тёмная"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Four steps"
+            "value": "Dark"
+          }
+        }
+      }
+    },
+    "У каждого экзамена свой прогресс, при смене он не теряется.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "У каждого экзамена свой прогресс, при смене он не теряется."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each exam has its own progress. Changing exams keeps it."
           }
         }
       }
@@ -1901,6 +2709,22 @@
         }
       }
     },
+    "Чтобы начать, нужна сеть.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Чтобы начать, нужна сеть."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect to start."
+          }
+        }
+      }
+    },
     "Чтобы начать, нужна сеть. Когда она появится, всё заработает.": {
       "localizations": {
         "en": {
@@ -1911,12 +2735,18 @@
         }
       }
     },
-    "Шесть шагов": {
+    "Чтобы начать, нужна сеть: задания скачаются целиком, и дальше можно без неё.": {
       "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Чтобы начать, нужна сеть: задания скачаются целиком, и дальше можно без неё."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Six steps"
+            "value": "Connect to start: all questions will download, so you can then continue offline."
           }
         }
       }
@@ -1941,12 +2771,54 @@
         }
       }
     },
+    "Эта неделя": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Эта неделя"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This week"
+          }
+        }
+      }
+    },
+    "Эта тренировка больше не хранится на устройстве.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This training is no longer stored on this device."
+          }
+        }
+      }
+    },
     "Этот способ входа ещё не подключён.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "This sign-in method isn’t connected yet."
+          }
+        }
+      }
+    },
+    "Язык": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Язык"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Language"
           }
         }
       }
@@ -1971,22 +2843,22 @@
         }
       }
     },
-    "верно": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "correct"
-          }
-        }
-      }
-    },
     "ваш ответ": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "your answer"
+          }
+        }
+      }
+    },
+    "верно": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "correct"
           }
         }
       }
@@ -2051,6 +2923,22 @@
         }
       }
     },
+    "дней": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "дней"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "days"
+          }
+        }
+      }
+    },
     "и": {
       "localizations": {
         "en": {
@@ -2071,6 +2959,38 @@
         }
       }
     },
+    "мин": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "мин"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "min"
+          }
+        }
+      }
+    },
+    "минут": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "минут"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "minutes"
+          }
+        }
+      }
+    },
     "неверно": {
       "localizations": {
         "en": {
@@ -2081,54 +3001,18 @@
         }
       }
     },
-    "около %lld минут": {
+    "ответов": {
       "localizations": {
         "ru": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "около %lld минуты"
-                }
-              },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "около %lld минут"
-                }
-              },
-              "many": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "около %lld минут"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "около %lld минуты"
-                }
-              }
-            }
+          "stringUnit": {
+            "state": "translated",
+            "value": "ответов"
           }
         },
         "en": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "about %lld minute"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "about %lld minutes"
-                }
-              }
-            }
+          "stringUnit": {
+            "state": "translated",
+            "value": "answers"
           }
         }
       }
@@ -2163,12 +3047,18 @@
         }
       }
     },
-    "Эта тренировка больше не хранится на устройстве.": {
+    "Нет сети — ответы сохранятся и уйдут сами.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This training is no longer stored on this device."
+            "value": "Offline — your answers will be saved and sent automatically."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет сети — ответы сохранятся и уйдут сами."
           }
         }
       }

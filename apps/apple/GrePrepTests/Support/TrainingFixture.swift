@@ -16,6 +16,8 @@ enum TrainingFixture {
     }
     private struct Summary: Decodable { let session: TrainingSession }
     private struct Seed: Decodable {
+        enum CodingKeys: String, CodingKey { case questions, topics }
+        enum ItemKeys: String, CodingKey { case type }
         struct Item: Decodable {
             struct Body: Decodable {
                 let prompt: String
@@ -39,6 +41,23 @@ enum TrainingFixture {
             let title: Components.Schemas.LocalizedText
         }
         let topics: [Topic]
+
+        init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            var source = try container.nestedUnkeyedContainer(forKey: .questions)
+            var supported: [Item] = []
+            while !source.isAtEnd {
+                let item = try source.superDecoder()
+                let header = try item.container(keyedBy: ItemKeys.self)
+                let type = try header.decode(String.self, forKey: .type)
+                // Общий seed уже содержит формы части 3; Apple проверяет только объявленные возможности.
+                if API.trainingTypes.contains(where: { $0.rawValue == type }) {
+                    supported.append(try Item(from: item))
+                }
+            }
+            questions = supported
+            topics = try container.decode([Topic].self, forKey: .topics)
+        }
     }
     static func sample(_ type: Components.Schemas.QuestionType, blanks: Int = 1) -> Question {
         let url = Bundle(for: ResourceBundle.self).url(forResource: "questions", withExtension: "json")!
@@ -97,11 +116,11 @@ enum TrainingFixture {
             .init(
                 kind: "last",
                 request: .init(
-                    exam: currentExam, section: .verbal, questionTypes: [.textCompletion], count: 10, mode: .practice)),
+                    exam: .gre, section: .verbal, questionTypes: [.textCompletion], count: 10, mode: .practice)),
             .init(
                 kind: "timed",
                 request: .init(
-                    exam: currentExam, section: .verbal, questionTypes: [.textCompletion, .sentenceEquivalence],
+                    exam: .gre, section: .verbal, questionTypes: [.textCompletion, .sentenceEquivalence],
                     count: 12, mode: .check)),
         ],
         maxQuestions: 30)

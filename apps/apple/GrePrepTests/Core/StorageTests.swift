@@ -47,12 +47,12 @@ struct StorageTests {
         }
     #endif
 
-    @Test("кэш плана: сохранить, прочитать, стереть")
+    @Test("кэш оболочки: сохранить, прочитать, стереть")
     func cacheRoundTrip() throws {
         let cache = temporaryCache()
         #expect(cache.load() == nil)
-        try cache.save(Fixture.todayDTO)
-        #expect(cache.load() == Fixture.todayDTO)
+        try cache.save(ShellFixture.snapshot)
+        #expect(cache.load() == ShellFixture.snapshot)
         try cache.clear()
         #expect(cache.load() == nil)
     }

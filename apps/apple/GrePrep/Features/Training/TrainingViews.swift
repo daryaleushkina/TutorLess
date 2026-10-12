@@ -32,7 +32,7 @@ extension Components.Schemas.Difficulty {
     }
 }
 extension Components.Schemas.LocalizedText {
-    var localized: String { Locale.current.language.languageCode?.identifier == "en" ? en : ru }
+    var localized: String { InterfaceLocale.current.language.languageCode?.identifier == "en" ? en : ru }
 }
 
 enum TrainingEntry: Hashable, Identifiable {
@@ -41,7 +41,7 @@ enum TrainingEntry: Hashable, Identifiable {
     var id: Self { self }
 }
 
-/// Тренировки поверх вкладок: системный стек ведёт внутрь задачи, «Сегодня» возвращает к сохранённым разделам.
+/// Тренировки поверх вкладок: системный стек ведёт внутрь задачи и возвращает к сохранённым разделам.
 struct TrainingFlow: View {
     let trainings: TrainingModel
     let onClose: () -> Void
@@ -82,7 +82,7 @@ struct TrainingFlow: View {
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(action: onClose) { Label("Сегодня", systemImage: "chevron.backward") }
+                    Button(action: onClose) { Label("Тренировка", systemImage: "chevron.backward") }
                         .accessibilityIdentifier("training.close")
                 }
             }
@@ -266,7 +266,7 @@ struct TrainingBuilderView: View {
                     "\(section) · \(TrainingCopy.questions(r.count)) · \(model.minutes(r)) мин, как секция экзамена")
         }
         return
-            "\(section) · \(r.questionTypes.map(\.label).joined(separator: ", ")) · \(r.count) · \(String(localized: r.mode.label))"
+            "\(section) · \(r.questionTypes.map(\.label).joined(separator: ", ")) · \(r.count) · \(String(interface: r.mode.label))"
     }
 
     private var custom: some View {
@@ -287,7 +287,7 @@ struct TrainingBuilderView: View {
                     ForEach(model.types, id: \.questionType) { type in
                         Text(
                             verbatim: type.questionType.label
-                                + (type.topics.isEmpty ? " · " + String(localized: "скоро") : "")
+                                + (type.topics.isEmpty ? " · " + String(interface: "скоро") : "")
                         )
                         .tag(type.questionType)
                         .disabled(type.topics.isEmpty)
@@ -353,9 +353,9 @@ struct TrainingBuilderView: View {
     }
     private var topicSummary: String {
         let topics =
-            model.form.topicIDs.map { String(localized: "\($0.count) из \(model.topics.count)") }
-            ?? String(localized: "все")
-        return model.form.difficulty.map { "\(topics) · \(String(localized: $0.label))" } ?? topics
+            model.form.topicIDs.map { String(interface: "\($0.count) из \(model.topics.count)") }
+            ?? String(interface: "все")
+        return model.form.difficulty.map { "\(topics) · \(String(interface: $0.label))" } ?? topics
     }
     private var line: some View { Divider().overlay(Color(.line)).padding(.horizontal, GPSpace.s16) }
     private func field(@ViewBuilder content: () -> some View) -> some View {
@@ -475,13 +475,13 @@ enum TrainingCopy {
         let and = String(localized: LocalizedStringResource("и", locale: locale))
         return numbers.dropLast().joined(separator: ", ") + " \(and) " + last
     }
-    static func questions(_ count: Int) -> String { String(localized: "\(count) вопросов") }
-    static func tasks(_ count: Int) -> String { String(localized: "\(count) заданий") }
-    static func mistakes(_ count: Int) -> String { String(localized: "\(count) ошибок") }
+    static func questions(_ count: Int) -> String { String(interface: "\(count) вопросов") }
+    static func tasks(_ count: Int) -> String { String(interface: "\(count) заданий") }
+    static func mistakes(_ count: Int) -> String { String(interface: "\(count) ошибок") }
     static func continuation(_ training: StoredTraining) -> String {
         let section = TrainingText.sectionLabel(training.session.section)
         let types = training.session.questionTypes.map(\.label).joined(separator: " · ")
-        let position = String(localized: "вопрос \(training.position + 1) из \(training.total)")
+        let position = String(interface: "вопрос \(training.position + 1) из \(training.total)")
             .replacingOccurrences(of: " ", with: "\u{00A0}")
         return "\(section) · \(types) · \(position)"
     }
