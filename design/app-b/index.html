@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <!-- Roboto 500 — только для кнопки входа Google: её шрифт задают правила Google (DESIGN.md, «Правило официальных кнопок»). -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400..800&amp;family=Roboto:wght@500&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400..800&amp;family=Roboto:wght@500&amp;family=Source+Serif+4:ital@0;1&amp;display=swap">
 <style>
 /* ================= Обвязка каталога — нейтральная, чтобы не спорить с экранами ================= */
 :root {
@@ -572,6 +572,189 @@ button.set-row { width: 100%; text-align: left; }
 .device-desktop .main.auth { padding: 48px; align-items: center; justify-content: center; }
 .device-desktop .auth-col { flex: none; max-width: calc(var(--layout-auth-column-max) + 80px); padding: 40px 40px 32px; border-radius: var(--r-l); background: var(--surface); box-shadow: var(--edge), var(--lift); }
 .device-desktop .auth-hero { flex: none; justify-content: flex-start; padding: 40px 0 32px; }
+/* ================= Часть 3 · тренировка R1–R20 ================= */
+/* Формулы — Source Serif 4 (токен font.family.math), переменные — курсивом, как в печатном задании. */
+.frame { --font-math: 'Source Serif 4', Georgia, serif; }
+.math { font-family: var(--font-math); font-size: 1.08em; letter-spacing: 0; }
+.math i { font-style: italic; }
+.btn:disabled { opacity: var(--opacity-disabled); }
+.btn:disabled:active { transform: none; }
+
+/* Вложенный экран вне сессии (конструктор, темы, теория). «Назад» — на сайте; в мини-аппе — родная кнопка Telegram. */
+.back-head { display: flex; align-items: center; padding: 8px 10px 0; }
+.b-wrap { padding-top: 6px; gap: 18px; }
+.b-wrap > .h1 { margin-bottom: 4px; }
+.seg.lg button { min-height: 40px; padding: 0 14px; font-size: 14.5px; }
+.set-row .seg.lg { margin: -2px 0; }
+.set-row.stack { flex-direction: column; align-items: stretch; gap: 10px; padding: 14px 16px; }
+.set-row.stack .seg { align-self: stretch; }
+.set-row.stack .seg button { flex: 1; }
+.set-row .hint { font-size: 14px; color: var(--ink-3); line-height: 1.4; }
+a.set-row .val, a.set-row .chev { flex: none; }
+.b-actions { display: none; }
+.lead-meta { color: var(--ink-3); font-size: 15px; margin-top: -10px; }
+.list-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 0 4px; }
+.list-head .h3 { font-size: 15px; }
+.text-btn { font-weight: 650; font-size: 14.5px; color: var(--ink-2); min-height: 44px; padding: 0 4px; }
+
+/* Квадрат «несколько ответов» (рядом с овалом «один ответ», PRODUCT.md, «Тренировки»). */
+.box { width: 20px; height: 20px; border-radius: 6px; border: 2px solid var(--ink-3); flex: none; display: grid; place-items: center; color: var(--bg); transition: background-color 160ms ease, border-color 160ms ease; }
+.box .ic-sm { width: 14px; height: 14px; opacity: 0; transform: scale(0.6); transition: transform 200ms var(--ease-out), opacity 140ms ease; }
+[aria-checked="true"] > .box { background: var(--ink); border-color: var(--ink); }
+[aria-checked="true"] > .box .ic-sm { opacity: 1; transform: none; }
+button.set-row.pick { gap: 14px; }
+.cnt { color: var(--ink-3); font-size: 14px; font-variant-numeric: tabular-nums; flex: none; }
+
+/* После проверки: варианты не меняются; верный — рамка right, выбранный неверный — рамка wrong,
+   верный, но не выбранный (несколько ответов) — пунктир right. Подпись справа — словом, не только цветом. */
+.opt[disabled] { cursor: default; }
+.opt.is-ok { box-shadow: inset 0 0 0 2px var(--right); }
+.opt.is-no { box-shadow: inset 0 0 0 2px var(--wrong); }
+.opt.is-missed { box-shadow: none; outline: 2px dashed var(--right); outline-offset: -2px; }
+.opt.is-ok .oval, .opt.is-missed .oval { border-color: var(--right); }
+.opt.is-ok .oval::after { background: var(--right); }
+.opt.is-no .oval { border-color: var(--wrong); }
+.opt.is-no .oval::after { background: var(--wrong); }
+.opt.is-ok > .box { background: var(--right); border-color: var(--right); }
+.opt.is-no > .box { background: var(--wrong); border-color: var(--wrong); }
+.opt.is-missed > .box { border-color: var(--right); }
+.opt-tag { margin-left: auto; padding-left: 8px; font-size: 13px; font-weight: 650; white-space: nowrap; }
+.is-ok .opt-tag, .is-missed .opt-tag { color: var(--right); }
+.is-no .opt-tag { color: var(--wrong); }
+.opt.math-opt { font-family: var(--font-math); font-size: 19px; font-weight: 400; }
+.opt-list { display: flex; flex-direction: column; gap: 8px; }
+.verdict-dk .verdict-ic { background: var(--surface-2); color: var(--ink-2); }
+
+/* Quantitative Comparison: условие по центру, величины A и B — двумя карточками рядом. */
+.q-cond { text-align: center; font-size: 19px; margin-bottom: 14px; }
+.qc { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.qc-cell { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 12px 18px; border-radius: var(--r-m); background: var(--surface); box-shadow: var(--edge); }
+.qc-cell small { font-size: 13px; font-weight: 650; color: var(--ink-3); }
+.qc-cell .math { font-size: 23px; }
+
+/* Инструменты вопроса Quant в шапке сессии: калькулятор — 40 px, крупнее стрелок. */
+.pager .icon-btn.tool { width: 40px; height: 40px; color: var(--ink-2); margin-right: 4px; }
+.pager .icon-btn.tool[aria-expanded="true"] { background: var(--surface-2); color: var(--ink); }
+
+/* Ввод числа (R11) и дроби (R11b). Поле — наше, клавиатура — системная, inputmode="decimal". */
+.num-entry { display: flex; align-items: center; gap: 12px; }
+.num-field { display: flex; align-items: center; min-width: 0; width: 200px; min-height: 58px; padding: 0 18px; border-radius: 16px; background: var(--surface); box-shadow: inset 0 0 0 2px var(--line-2); font-size: 23px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.num-field.focus { box-shadow: inset 0 0 0 2px var(--ink); }
+.num-field.is-bad { box-shadow: inset 0 0 0 2px var(--wrong); }
+.num-field .ph { color: var(--ink-3); font-weight: 500; font-size: 17px; }
+.caret { display: inline-block; width: 2px; height: 1.1em; margin-left: 2px; background: var(--ink); animation: caret 1s steps(1) infinite; }
+@keyframes caret { 50% { opacity: 0; } }
+.unit { font-size: 18px; color: var(--ink-2); }
+.field-err { display: flex; align-items: flex-start; gap: 6px; margin-top: 10px; font-size: 14px; line-height: 1.4; color: var(--wrong); }
+.frac { display: inline-grid; gap: 8px; width: 150px; }
+.frac .num-field { width: 100%; justify-content: center; }
+.frac-line { height: 2px; border-radius: 1px; background: var(--ink); }
+.frac-wrap { display: flex; align-items: center; gap: 14px; }
+.frac-wrap small { font-size: 13px; color: var(--ink-3); line-height: 1.35; max-width: 120px; }
+/* Системная клавиатура — только чтобы показать, где оказывается нижняя панель: её рисует ОС. */
+.kbd { flex: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 8px 6px 30px; background: var(--surface-3); }
+.kbd span { display: grid; place-items: center; height: 46px; border-radius: 8px; background: var(--surface); font-size: 22px; font-weight: 500; color: var(--ink); }
+.kbd + .bottom-bar, .bottom-bar.over-kbd { padding-bottom: 12px; }
+
+/* Данные на графике (R12): рисунок рисует клиент из данных, в цветах темы. Столбцы — цвет раздела рядом с подписями. */
+.fig { display: flex; flex-direction: column; gap: 8px; padding: 16px 14px 10px; border-radius: var(--r-m); background: var(--surface); box-shadow: var(--edge); }
+.fig-title { font-size: 14.5px; font-weight: 600; color: var(--ink-2); line-height: 1.35; }
+.fig svg { width: 100%; height: auto; display: block; }
+.fig .grid line { stroke: var(--line); }
+.fig .bar-v { fill: var(--c-quant); }
+.fig .val { fill: var(--ink-2); font: 600 12px var(--font); text-anchor: middle; }
+.fig .ax { fill: var(--ink-3); font: 500 11.5px var(--font); }
+.fig .ax.y { text-anchor: end; }
+.fig .ax.x { text-anchor: middle; }
+
+/* Калькулятор (R13), как у ETS. Телефон — шторка без затемнения: вопрос остаётся виден сверху. */
+.calc { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; display: flex; flex-direction: column; gap: 10px; padding: 10px 16px 30px; border-radius: 26px 26px 0 0; background: var(--surface); box-shadow: 0 -10px 40px -10px rgb(0 0 0 / 0.3), var(--edge); }
+.calc-head { display: flex; align-items: center; justify-content: space-between; }
+.calc-head b { font-weight: 700; font-size: 15px; }
+.calc-disp { display: flex; flex-direction: column; align-items: flex-end; padding: 8px 14px; border-radius: var(--r-s); background: var(--bg); }
+.calc-disp small { font-size: 12.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; min-height: 1.2em; }
+.calc-disp b { font-size: 32px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.calc-keys { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; }
+.key { min-height: 46px; border-radius: 14px; background: var(--surface-2); font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; transition: transform 140ms var(--ease-out); }
+.key:active { transform: scale(0.95); }
+.key.fn { background: var(--surface-3); font-size: 14.5px; font-weight: 650; }
+.key.eq { background: var(--ink); color: var(--bg); }
+.key.op { font-size: 20px; font-weight: 500; }
+.calc-win { display: none; }
+.device-desktop .calc { display: none; }
+.device-desktop .calc-win { display: flex; position: absolute; top: 132px; right: 72px; z-index: 6; width: 330px; flex-direction: column; gap: 10px; padding: 8px 14px 16px; border-radius: var(--r-l); background: var(--surface); box-shadow: 0 20px 50px -12px rgb(0 0 0 / 0.35), var(--edge); }
+.calc-win .calc-head { cursor: grab; padding: 4px 0 0 4px; }
+.calc-win .calc-head small { color: var(--ink-3); font-size: 12.5px; margin-left: 8px; font-weight: 500; }
+
+/* Reading Comprehension: текст. На телефоне «Текст · Вопрос» — переключатель под шапкой, у каждого вида своя прокрутка. */
+.rc-switch { padding: 12px 20px 0; }
+.rc-switch .seg { display: flex; }
+.rc-switch .seg button { flex: 1; min-height: 40px; font-size: 14.5px; }
+.passage { display: flex; flex-direction: column; gap: 14px; font-size: 17.5px; line-height: 1.66; text-wrap: pretty; }
+.passage .p-num { display: block; font-size: 12px; font-weight: 650; color: var(--ink-3); margin-bottom: 2px; letter-spacing: 0.02em; }
+.q-ask { font-size: 19px; line-height: 1.5; font-weight: 500; text-wrap: pretty; }
+/* R8: каждое предложение — кнопка; выбранное — маркером и рамкой (не только цветом). */
+.sent { display: inline; padding: 2px 0; border-radius: 6px; text-align: left; font: inherit; line-height: inherit; text-decoration: underline dotted var(--line-2); text-decoration-thickness: 1.5px; text-underline-offset: 5px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.sent[aria-pressed="true"] { background: var(--hl); text-decoration: none; box-shadow: 0 0 0 2px var(--ink); }
+.passage.tap { font-size: 17px; }
+
+/* Проверка на время (R14). Таймер всегда виден; за минуту до конца — цвет wrong, без мигания. */
+.timer { display: inline-flex; align-items: center; gap: 5px; margin-right: 10px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink); }
+.timer.low { color: var(--wrong); }
+.q-tools { display: flex; justify-content: space-between; gap: 10px; margin: -6px 0 -8px; }
+.tool-chip { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 14px 0 11px; border-radius: 999px; background: var(--surface-2); font-size: 14.5px; font-weight: 650; color: var(--ink-2); }
+.tool-chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.icon-ghost { flex: 0 0 54px; padding: 0; }
+.q-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.q-cell { position: relative; display: grid; place-items: center; height: 48px; border-radius: 14px; font-weight: 700; font-variant-numeric: tabular-nums; background: var(--surface-3); color: var(--ink); }
+.q-cell.skip { background: none; box-shadow: inset 0 0 0 1.5px var(--line-2); color: var(--ink-3); }
+.q-cell[aria-current="true"] { box-shadow: inset 0 0 0 2px var(--ink); background: var(--surface); }
+.q-cell .mk { position: absolute; top: -3px; right: 5px; width: 10px; height: 14px; color: var(--ink); }
+.q-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--ink-3); }
+.q-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.q-legend i { display: inline-block; width: 14px; height: 14px; border-radius: 4px; background: var(--surface-3); }
+.q-legend i.skip { background: none; box-shadow: inset 0 0 0 1.5px var(--line-2); }
+
+/* Ответы и разборы (R16): строка на вопрос — номер, тип, итог словом и знаком, время. */
+.qn { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--surface-2); font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; flex: none; }
+.res { display: inline-flex; align-items: center; gap: 4px; font-weight: 650; font-size: 13.5px; flex: none; }
+.res.ok { color: var(--right); } .res.no { color: var(--wrong); } .res.skip { color: var(--ink-3); }
+.row .t { font-size: 13px; color: var(--ink-3); font-variant-numeric: tabular-nums; flex: none; min-width: 34px; text-align: right; }
+.sum-line { display: flex; align-items: baseline; gap: 10px; }
+.sum-line b { font-weight: 800; font-size: 44px; letter-spacing: -0.045em; line-height: 1; }
+.sum-line span { color: var(--ink-2); font-size: 15px; }
+.mini-sum { display: flex; flex-direction: column; gap: 6px; padding: 18px 20px; }
+
+/* Сообщить об ошибке (R17): шторка поверх разбора. */
+.chips.pick .chip { min-height: 40px; padding: 0 14px; display: inline-flex; align-items: center; }
+.chips.pick .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.textarea { min-height: 112px; padding: 12px 14px; border-radius: 16px; background: var(--bg); box-shadow: inset 0 0 0 1.5px var(--line-2); font-size: 16px; color: var(--ink-3); line-height: 1.45; }
+.field-head { display: flex; justify-content: space-between; font-size: 13.5px; font-weight: 600; color: var(--ink-3); margin-bottom: 8px; }
+
+/* Теория (R18). Таблица сигналов: слово слева, смысл для пропуска справа. */
+.kicker { font-size: 13.5px; font-weight: 650; color: var(--ink-3); display: inline-flex; align-items: center; gap: 8px; }
+.sig { display: flex; flex-direction: column; }
+.sig > div { display: grid; grid-template-columns: 116px 1fr; gap: 12px; padding: 13px 16px; position: relative; }
+.sig > div + div::before { content: ''; position: absolute; top: 0; left: 16px; right: 0; height: 1px; background: var(--line); }
+.sig dt { font-weight: 650; font-size: 15.5px; }
+.sig dd { color: var(--ink-2); font-size: 15px; line-height: 1.4; }
+.example-card { padding: 16px 18px; border-radius: var(--r-m); background: var(--surface-2); display: flex; flex-direction: column; gap: 8px; font-size: 15.5px; line-height: 1.55; }
+.example-card small { font-size: 13px; color: var(--ink-3); font-weight: 600; }
+
+/* Компьютер: вопрос — колонкой по центру; текст и вопрос RC, график и вопрос — двумя колонками. */
+.device-desktop .q-wrap { padding: 36px 48px 24px; }
+.device-desktop .q-wrap > * { max-width: 720px; width: 100%; margin-inline: auto; }
+.device-desktop .q-wrap > .rc-cols, .device-desktop .q-wrap > .two { max-width: 1084px; }
+.rc-cols, .two { display: flex; flex-direction: column; gap: 22px; }
+.device-desktop .rc-cols, .device-desktop .two { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 56px; align-items: start; }
+.device-desktop .rc-cols > :first-child { padding-right: 8px; }
+.device-desktop .rc-switch { display: none; }
+.device-desktop .b-actions { display: flex; margin-top: 8px; }
+.device-desktop .b-actions .btn { min-width: 260px; }
+.device-desktop .b-wrap { max-width: 720px; }
+.device-desktop .b-wrap .list-head, .device-desktop .b-wrap .list { width: 100%; }
+.device-desktop .back-head { display: none; }
+.device-desktop .sum16 { max-width: 720px; width: 100%; margin: 0 auto; padding: 36px 48px; }
 </style>
 </head>
 <body>
@@ -581,6 +764,7 @@ button.set-row { width: 100%; text-align: left; }
     <h1>Tutorless · приложение в стиле B</h1>
     <p>Рабочая версия стиля «Живой разбор и стикеры». От лендинга — шрифт Onest 800 с плотным трекингом, палитра и томатная главная кнопка. Наклеек и наклонов в приложении нет: итог тренировки (R15) и балл пробника (X7) — ровные карточки с крупной цифрой в цвете раздела. Пример — GRE; варианты ответа нажимаются, RU/EN в разборе и тема в профиле переключаются.</p>
     <p>Часть 2 — оболочка (12.10.2026): главная без статистики (T2 и её состояния), выбор экзамена (T3), вход (T4), загрузка и «нет сети» (T5, T6), смена экзамена (T7), TOEFL без заданий (L1), пустые вкладки (W1, X1, G6) и профиль (G2). Под каждым экраном — поведение и состояния, которые не видны на картинке; метка — где экран живёт: мини-апп, сайт или оба.</p>
+    <p>Часть 3 — тренировка (12.10.2026): конструктор и темы (R1, R2), все типы заданий GRE — три пропуска, пара слов, текст и выбор предложения, сравнение величин, несколько ответов, ввод числа и дроби, график, калькулятор (R5–R13), «Не знаю», «Проверка» на время со списком вопросов и концом времени (R14), все ответы и разборы (R16), жалоба (R17), теория (R18), разбор назад и вперёд (R19, R20).</p>
   </div>
   <div class="cat-controls" role="group" aria-label="Что показать">
     <fieldset class="cat-seg" id="f-theme">
@@ -614,6 +798,11 @@ button.set-row { width: 100%; text-align: left; }
   <symbol id="i-progress" viewBox="0 0 24 24"><path d="M3 17l5.5-5.5 4 4L21 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 7h6v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0113.7-5.6L20 8.5M20 4v4.5h-4.5M20 12a8 8 0 01-13.7 5.6L4 15.5M4 20v-4.5h4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h11l-2 4 2 4H5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-calc" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.5 7.5h7M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 16h.01M12 16h.01M15.5 16h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-mark" viewBox="0 0 24 24"><path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 9v4l2.5 2M10 2h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M6 12h12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
   <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="7" r="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10" cy="17" r="2" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
   <symbol id="i-book" viewBox="0 0 24 24"><path d="M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3V4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M5 17a3 3 0 013-3h11" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
   <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
@@ -772,6 +961,7 @@ add({ id: 'R15', group: 'R', name: 'Итог тренировки', html: `
       <h1 class="sum-score"><span class="sum-num">7</span><span class="sum-of">из 10<br>верно</span></h1>
       <ol class="marks" aria-label="Ответы по порядку">${marks}</ol>
     </section>
+    <a href="#" class="link-row">${ic('i-grid', 'ic-sm')}<span>Все ответы и разборы</span>${ic('i-chevron-right', 'ic-sm')}</a>
     <section class="repeat">
       <h2 class="h2">Что повторить</h2>
       <ul class="list" role="list">
@@ -1184,6 +1374,514 @@ add({ id: 'G2', group: 'G', name: 'Профиль — мини-апп', tag: 'м
   note: 'Вкладок нет, «Назад» — родная кнопка Telegram (внутри страницы не рисуется). Тема, язык и размер текста применяются сразу; тема хранится на устройстве. «Подписка», «Способы входа», «Написать нам» — неактивные: кнопки disabled, содержимое с opacity.disabled, без шеврона и значения. «Выйти» в мини-аппе нет: вход здесь — сам Telegram.' });
 add({ id: 'G2-site', group: 'G', name: 'Профиль — сайт', tag: 'сайт', desktop: true, html: g2(true),
   note: 'Сайт: на телефоне «Назад» в шапке и вкладок нет; под именем — способ входа (Apple или Google). «Выйти» — отдельной строкой; пока выходим — строка неактивна; не получилось — под ней строка со значком i-alert: «Не получилось выйти. Попробуйте ещё раз.» или «Нет сети — выйти получится, когда она вернётся». Компьютер: заголовок «Профиль», колонка layout.content-max, в боковой панели выделен профиль.' });
+
+// ================= Часть 3 · тренировка R1–R20 (12.10.2026) =================
+// Устройство экранов — каталог night-studio (r1.js, r2.js, nav.js), вид — правила B выше. Тексты заданий — свои.
+const box = (t, on = false, cls = '', tag = '') => `<button type="button" class="opt ${cls}" role="checkbox" aria-checked="${on}"${cls ? ' disabled' : ''}><span class="box">${ic('i-check', 'ic-sm')}</span><span lang="en">${t}</span>${tag ? `<span class="opt-tag">${tag}</span>` : ''}</button>`;
+// Вариант после проверки: is-ok — верный, is-no — выбранный неверный, is-missed — верный, но не выбран.
+const radioR = (t, cls = '', tag = '', on = false, math = false) => `<button type="button" class="opt ${cls}${math ? ' math-opt' : ''}" role="radio" aria-checked="${on}"${cls ? ' disabled' : ''}><span class="oval"></span><span lang="en">${t}</span>${tag ? `<span class="opt-tag">${tag}</span>` : ''}</button>`;
+const calcBtn = (open = false) => `<button type="button" class="icon-btn tool" aria-label="Калькулятор"${open ? ' aria-expanded="true"' : ''}>${ic('i-calc', 'ic-sm')}</button>`;
+const prevBtn = `<button type="button" class="icon-btn" aria-label="Предыдущий вопрос">${ic('i-back', 'ic-sm')}</button>`;
+const backHead = `<header class="back-head"><button type="button" class="icon-btn" aria-label="Назад">${ic('i-back')}</button></header>`;
+const bar2 = (ghost, primary, disabled = false) => `<footer class="bottom-bar"><button type="button" class="btn btn-ghost">${ghost}</button><button type="button" class="btn btn-primary"${disabled ? ' disabled' : ''}>${primary}</button></footer>`;
+const bar1 = (primary) => `<footer class="bottom-bar"><button type="button" class="btn btn-primary btn-wide">${primary}</button></footer>`;
+
+// ---------- R1 · конструктор ----------
+const builderList = `
+    <ul class="list" role="list">
+      <li class="set-row"><span class="label">Раздел</span><span class="seg lg" role="group" aria-label="Раздел"><button type="button" aria-pressed="true">Verbal</button><button type="button" aria-pressed="false">Quant</button></span></li>
+      <li><a href="#" class="set-row"><span class="label">Тип</span><span class="val" lang="en">Text Completion</span>${ic('i-chevron-right', 'ic-sm chev')}</a></li>
+      <li class="set-row"><span class="label">Вопросов</span><span class="seg lg" role="group" aria-label="Вопросов"><button type="button" aria-pressed="false">5</button><button type="button" aria-pressed="true">10</button><button type="button" aria-pressed="false">15</button><button type="button" aria-pressed="false">20</button></span></li>
+      <li class="set-row stack"><span class="label">Режим</span><span class="seg lg" role="group" aria-label="Режим"><button type="button" aria-pressed="true">Практика</button><button type="button" aria-pressed="false">Проверка</button></span><span class="hint">Разбор сразу после каждого ответа, без таймера.</span></li>
+      <li><a href="#" class="set-row"><span class="label">Темы и сложность</span><span class="val">все · любая</span>${ic('i-chevron-right', 'ic-sm chev')}</a></li>
+    </ul>`;
+const START_LABEL = 'Начать · 10&nbsp;вопросов · ~12&nbsp;мин';
+add({ id: 'R1', group: 'R', name: 'Новая тренировка — конструктор', tag: 'мини-апп и сайт', desktop: true,
+  html: `
+<div class="app">
+  ${backHead}
+  <div class="main b-wrap">
+    <h1 class="h1">Новая тренировка</h1>
+    ${builderList}
+  </div>
+  ${bar1(START_LABEL)}
+</div>`,
+  desktopHtml: `
+<div class="app has-nav">
+  ${nav('train')}
+  <div class="main b-wrap">
+    <h1 class="h1 page-title">Новая тренировка</h1>
+    ${builderList}
+    <div class="b-actions"><button type="button" class="btn btn-primary">${START_LABEL}</button></div>
+  </div>
+</div>`,
+  note: 'Открывается кнопкой настроек на главной (T1/T2) и строкой раздела. Всё уже выбрано — как в прошлый раз или по умолчанию (Verbal, первый тип, 10, «Практика»), «Начать» видно сразу; подпись кнопки считает вопросы и время. Раздел — только разделы с заданиями. «Тип» открывает шторку со списком типов раздела (овалы, один выбор) и строкой «Все типы вперемешку» — только для «Проверки» (TrainingRequest.questionTypes, R16). «Режим» — подпись под переключателем меняется: «Практика» — «Разбор сразу после каждого ответа, без таймера.», «Проверка» — «На время, как на экзамене: 18 минут на 12 вопросов, разбор — в конце.» Вопросов — 5/10/15/20; у «Проверки» число и время — как у секции экзамена, переключатель количества скрыт. Нажатая «Начать» — «Начинаем…» и неактивна; не получилось — строка notice над кнопкой. Компьютер: в боковой панели выделена «Тренировка», «Начать» — под списком, а не внизу экрана.' });
+
+// ---------- R2 · темы и сложность ----------
+const topic = (t, en2, n, on) => `<li><button type="button" class="set-row pick" role="checkbox" aria-checked="${on}"><span class="box">${ic('i-check', 'ic-sm')}</span><span class="row-body"><b>${t}</b>${en2 ? `<small lang="en">${en2}</small>` : ''}</span><span class="cnt">${n}</span></button></li>`;
+add({ id: 'R2', group: 'R', name: 'Темы и сложность', tag: 'мини-апп и сайт', html: `
+<div class="app">
+  ${backHead}
+  <div class="main b-wrap">
+    <h1 class="h1">Темы и сложность</h1>
+    <p class="lead-meta">${en('Verbal · Text Completion')} · подходит 96 заданий</p>
+    <div class="list-head"><h2 class="h3">Темы</h2><button type="button" class="text-btn">Снять все</button></div>
+    <ul class="list" role="list">
+      ${topic('Контраст и уступка', 'although, yet, despite', 24, true)}
+      ${topic('Причина и следствие', 'because, thus, hence', 19, true)}
+      ${topic('Продолжение мысли', 'moreover, indeed', 17, true)}
+      ${topic('Тон и отношение автора', '', 17, false)}
+      ${topic('Двойное отрицание', 'not un-, hardly', 12, true)}
+      ${topic('Значение по контексту', '', 22, true)}
+      ${topic('Сравнение и аналогия', '', 14, false)}
+      ${topic('Оценочная лексика', '', 24, true)}
+    </ul>
+    <div class="list-head"><h2 class="h3">Сложность</h2></div>
+    <span class="seg lg" role="group" aria-label="Сложность" style="display:flex"><button type="button" aria-pressed="true" style="flex:1">Любая</button><button type="button" aria-pressed="false" style="flex:1">Лёгкая</button><button type="button" aria-pressed="false" style="flex:1">Средняя</button><button type="button" aria-pressed="false" style="flex:1">Трудная</button></span>
+  </div>
+  ${bar1('Готово · 6&nbsp;тем из&nbsp;8')}
+</div>`,
+  note: 'Вложенный экран конструктора. Темы — квадраты (несколько), число справа — сколько заданий темы подходит под тип и сложность; под заголовком — сколько всего подходит. «Снять все» ↔ «Выбрать все». Сняты все темы — «Готово» неактивна, подпись «Выберите хотя бы одну тему». Подходит меньше вопросов, чем выбрано в конструкторе, — подпись под заголовком: «Подходит 7 заданий — тренировка будет из 7 вопросов». «Готово» возвращает в R1, где строка показывает «6 тем · любая».' });
+
+// ---------- R5 · Text Completion, три пропуска ----------
+add({ id: 'R5', group: 'R', name: 'Text Completion — три пропуска', tag: 'мини-апп и сайт', html: `
+<div class="app">
+  ${sessionTop('verbal', 'Verbal · Text Completion', 4, 10)}
+  <div class="main q-wrap">
+    <section>
+      <p class="q-instr">Выберите по одному слову для каждого пропуска.</p>
+      <p class="q-text" lang="en">The historian’s account of the treaty was far from <span class="blank filled">exhaustive</span>: it rested on a handful of <span class="blank">(ii)</span> letters, and its conclusions, though confidently stated, were at best <span class="blank">(iii)</span>.</p>
+    </section>
+    <section class="answers">
+      <fieldset class="opt-group"><legend>Пропуск (i)</legend>${radio('exhaustive', true)}${radio('partisan')}${radio('lucid')}</fieldset>
+      <fieldset class="opt-group"><legend>Пропуск (ii)</legend>${radio('apocryphal')}${radio('voluminous')}${radio('celebrated')}</fieldset>
+      <fieldset class="opt-group"><legend>Пропуск (iii)</legend>${radio('tentative')}${radio('incontrovertible')}${radio('derivative')}</fieldset>
+    </section>
+  </div>
+  ${bar2('Не знаю', 'Проверить', true)}
+</div>`,
+  note: 'Выбранное слово сразу встаёт в пропуск текста (как «exhaustive» здесь) — видно предложение целиком. «Проверить» неактивна, пока не выбрано по слову в каждом пропуске. «Не знаю» — сразу разбор без ответа (R4-dk). Засчитывается только всё предложение целиком.' });
+
+// ---------- R6 · Sentence Equivalence, верно ----------
+add({ id: 'R6', group: 'R', name: 'Sentence Equivalence — верно', tag: 'мини-апп и сайт', html: `
+<div class="app" data-lang="ru">
+  ${sessionTop('verbal', 'Verbal · Sentence Equivalence', 5, 10, prevBtn)}
+  <div class="main r-wrap">
+    <div class="r-cols">
+      <section class="r-q">
+        <div class="verdict verdict-right" role="status">
+          <span class="verdict-ic">${ic('i-check', 'ic-sm')}</span>
+          <span class="verdict-text"><b>Верно</b>Оба слова значат «упрямый»</span>
+        </div>
+        <p class="q-text sm" lang="en">Far from being <span class="blank filled ok">obstinate</span>, the new manager proved willing to revise her plans whenever the data pointed to a better course.</p>
+        <div class="opt-list">
+          ${box('obstinate', true, 'is-ok', 'верный')}${box('flexible', false, 'is-done')}${box('intransigent', true, 'is-ok', 'верный')}${box('diffident', false, 'is-done')}${box('capricious', false, 'is-done')}${box('pliant', false, 'is-done')}
+        </div>
+      </section>
+      <section class="explain">
+        <div class="explain-head">
+          <h2 class="h2"><span lang="en">Far from</span> — «совсем не»</h2>
+          <div class="seg" role="group" aria-label="Язык разбора"><button type="button" aria-pressed="true">RU</button><button type="button" aria-pressed="false">EN</button></div>
+        </div>
+        <div class="explain-body" data-lang-block="ru">
+          <p><span lang="en">Far from</span> требует противоположности тому, что сказано дальше: менеджер охотно меняла планы, значит, пропуск — <mark>«упрямый»</mark>.</p>
+          <p class="trap"><b>Почему <span lang="en">pliant</span> кажется верным</b>Это слово про гибкость — то, что во второй половине предложения. Но <span lang="en">far from</span> переворачивает смысл.</p>
+        </div>
+        <a href="#" class="quiet">${ic('i-flag', 'ic-sm')}Сообщить об ошибке</a>
+      </section>
+    </div>
+  </div>
+  ${bar1('Дальше')}
+</div>`,
+  note: 'Два слова — квадраты (несколько ответов, PRODUCT.md). Пока выбрано меньше двух — «Проверить» неактивна. Третье слово не отмечается: при нажатии на него коротко подсвечивается строка задания «Выберите два слова». Засчитывается только пара целиком. После проверки варианты не меняются: верные — рамка right и слово «верный», выбранный неверный — рамка wrong и «ваш», верный, но не выбранный — пунктир right. Последний вопрос — кнопка «К итогу» вместо «Дальше».' });
+
+// ---------- R4-dk · «Не знаю» ----------
+add({ id: 'R4-dk', group: 'R', name: '«Не знаю» — верный ответ и разбор', tag: 'мини-апп и сайт', html: `
+<div class="app" data-lang="ru">
+  ${sessionTop('verbal', 'Verbal · Text Completion', 6, 10, prevBtn)}
+  <div class="main r-wrap">
+    <div class="r-cols">
+      <section class="r-q">
+        <div class="verdict verdict-dk" role="status">
+          <span class="verdict-ic">${ic('i-book', 'ic-sm')}</span>
+          <span class="verdict-text"><b>Разберём</b>Задание попадёт в «Повторить мои ошибки»</span>
+        </div>
+        <p class="q-text sm" lang="en">Critics who expected the sequel to be <span class="blank filled ok">formulaic</span> were surprised: it was the most daring film of the director’s career.</p>
+        <dl class="ans-table"><div class="ans-row"><dt>Верный ответ</dt><dd><span class="ans ans-ok">${ic('i-check', 'ic-sm')}<span lang="en">formulaic</span></span></dd></div></dl>
+      </section>
+      <section class="explain">
+        <div class="explain-head">
+          <h2 class="h2"><span lang="en">Formulaic</span> — «по шаблону»</h2>
+          <div class="seg" role="group" aria-label="Язык разбора"><button type="button" aria-pressed="true">RU</button><button type="button" aria-pressed="false">EN</button></div>
+        </div>
+        <div class="explain-body" data-lang-block="ru">
+          <p>Критики <span lang="en">«were surprised»</span>: ждали одного, получили противоположное — <span lang="en">«the most daring film»</span>. Значит, ждали <mark>предсказуемого</mark> фильма.</p>
+          <p class="trap"><b>Почему <span lang="en">audacious</span> кажется верным</b>Оно рядом по смыслу с <span lang="en">daring</span>, но тогда удивляться было бы нечему.</p>
+        </div>
+        <a href="#" class="quiet">${ic('i-flag', 'ic-sm')}Сообщить об ошибке</a>
+      </section>
+    </div>
+  </div>
+  ${bar1('Дальше')}
+</div>`,
+  note: '«Не знаю» в «Практике» — не пропуск: сразу верный ответ и разбор, без красного «Неверно» (человек честно сказал, что не знает), но для «Что повторить» это ошибка (GivenAnswer.dontKnow). Значок — книга, слово — «Разберём», цвет нейтральный.' });
+
+// ---------- R7 · Reading Comprehension, вопрос к тексту ----------
+const PASSAGE = [
+  'For decades, ecologists assumed that the deep ocean floor was nearly static, receiving only a slow drizzle of organic debris from the surface.',
+  'Long-term camera studies have complicated that picture.',
+  'At one site off California, researchers recorded sudden pulses of sinking material—so-called marine snow—that arrived within weeks of surface plankton blooms.',
+  'During these pulses, populations of sea cucumbers and other deposit feeders shifted noticeably, suggesting that the seafloor community responds to events far above it with surprising speed.',
+  'The findings do not mean that the abyss is as dynamic as a coastal reef; most of the time, change there remains slow.',
+  'But they imply that models treating the deep sea as a buffered, unchanging system may underestimate how quickly it reacts to warming at the surface.',
+];
+const PARAS = [[0, 1, 2], [3, 4, 5]];
+const passageHtml = (tap = -1) => `<div class="passage${tap >= 0 ? ' tap' : ''}" lang="en">${PARAS.map((p, pi) => `<p><span class="p-num" lang="ru">Абзац ${pi + 1}</span>${p.map(i => tap >= 0 ? `<button type="button" class="sent" aria-pressed="${i === tap}">${PASSAGE[i]}</button>` : PASSAGE[i]).join(' ')}</p>`).join('')}</div>`;
+const rcOpts = `<div class="opt-list" role="radiogroup">${radio('that marine snow reaches the seafloor only in winter')}${radio('that the deep seafloor changes little over short periods', true)}${radio('that deposit feeders depend on nearby coastal reefs')}${radio('that plankton blooms are rare at the surface')}${radio('that warming affects only the upper ocean')}</div>`;
+const rcSwitch = (q) => `<div class="rc-switch"><span class="seg" role="tablist" aria-label="Текст или вопрос"><button type="button" role="tab" aria-pressed="${!q}" aria-selected="${!q}">Текст</button><button type="button" role="tab" aria-pressed="${q}" aria-selected="${q}">Вопрос</button></span></div>`;
+add({ id: 'R7', group: 'R', name: 'Reading Comprehension — вопрос к тексту', tag: 'мини-апп и сайт', desktop: true,
+  html: `
+<div class="app">
+  ${sessionTop('verbal', 'Verbal · Reading Comprehension', 7, 10)}
+  ${rcSwitch(true)}
+  <div class="main q-wrap">
+    <section>
+      <p class="q-instr">Выберите один ответ.</p>
+      <p class="q-ask" lang="en">The passage suggests that the camera studies chiefly challenge which assumption?</p>
+    </section>
+    ${rcOpts}
+  </div>
+  ${bar2('Не знаю', 'Проверить')}
+</div>`,
+  desktopHtml: `
+<div class="app">
+  ${sessionTop('verbal', 'Verbal · Reading Comprehension', 7, 10)}
+  <div class="main q-wrap">
+    <div class="rc-cols">
+      <section>${passageHtml()}</section>
+      <section style="display:flex;flex-direction:column;gap:22px">
+        <div><p class="q-instr">Выберите один ответ.</p><p class="q-ask" lang="en">The passage suggests that the camera studies chiefly challenge which assumption?</p></div>
+        ${rcOpts}
+      </section>
+    </div>
+  </div>
+  ${bar2('Не знаю', 'Проверить')}
+</div>`,
+  note: 'Телефон: под шапкой переключатель «Текст · Вопрос» (вкладки ARIA), у каждого вида своя прокрутка — вернулась к тексту и обратно, место не потеряно. Новый вопрос к тому же тексту открывается на «Вопросе», первый вопрос к тексту — на «Тексте» (R7-text). Нижняя панель одна для обоих видов. Компьютер: текст слева, вопрос и варианты справа, каждая колонка листается сама. Шрифт текста — 17,5 px, абзацы подписаны: вопросы ссылаются на них.' });
+add({ id: 'R7-text', group: 'R', name: 'Reading Comprehension — текст', tag: 'мини-апп и сайт', html: `
+<div class="app">
+  ${sessionTop('verbal', 'Verbal · Reading Comprehension', 7, 10)}
+  ${rcSwitch(false)}
+  <div class="main q-wrap">${passageHtml()}</div>
+  ${bar2('Не знаю', 'Проверить', true)}
+</div>`,
+  note: 'Вид «Текст» первого вопроса к тексту. «Проверить» неактивна, пока не выбран ответ на «Вопросе».' });
+
+// ---------- R8 · выбрать предложение в тексте ----------
+add({ id: 'R8', group: 'R', name: 'Reading Comprehension — выбрать предложение', tag: 'мини-апп и сайт', html: `
+<div class="app">
+  ${sessionTop('verbal', 'Verbal · Reading Comprehension', 8, 10)}
+  <div class="main q-wrap">
+    <section>
+      <p class="q-instr">Нажмите на предложение в тексте.</p>
+      <p class="q-ask" lang="en">Select the sentence that limits how far the camera findings should be generalized.</p>
+    </section>
+    ${passageHtml(4)}
+  </div>
+  ${bar2('Не знаю', 'Проверить')}
+</div>`,
+  note: 'Ответ — в самом тексте, поэтому переключателя «Текст · Вопрос» нет: вопрос сверху, текст ниже одной прокруткой. Каждое предложение — кнопка (пунктирное подчёркивание — «нажимается»); выбранное — маркер highlight и рамка ink, выбор одного снимает другое. После проверки: верное — рамка right и слово «верное» после него, выбранное неверное — рамка wrong. Компьютер — вопрос над текстом, колонка layout.content-max.' });
+
+// ---------- R9 · Quantitative Comparison ----------
+const QC_OPTS = ['Quantity A is greater.', 'Quantity B is greater.', 'The two quantities are equal.', 'The relationship cannot be determined from the information given.'];
+add({ id: 'R9', group: 'R', name: 'Quantitative Comparison — до проверки', tag: 'мини-апп и сайт', html: `
+<div class="app">
+  ${sessionTop('quant', 'Quant · Quantitative Comparison', 4, 10, calcBtn())}
+  <div class="main q-wrap">
+    <section>
+      <p class="q-instr">Сравните величины A и B.</p>
+      <p class="q-cond math"><i>x</i> &gt; 0 and <i>x</i><sup>2</sup> = 3<i>x</i></p>
+      <div class="qc">
+        <div class="qc-cell"><small>Quantity A</small><span class="math"><i>x</i> + 4</span></div>
+        <div class="qc-cell"><small>Quantity B</small><span class="math">2<i>x</i></span></div>
+      </div>
+    </section>
+    <div class="opt-list" role="radiogroup">${QC_OPTS.map((t, i) => radio(t, i === 0)).join('')}</div>
+  </div>
+  ${bar2('Не знаю', 'Проверить')}
+</div>`,
+  note: 'Четыре варианта всегда одни и те же (формат экзамена), по-английски. Формулы — Source Serif 4 (font.family.math), переменные курсивом. Калькулятор — кнопка в шапке у всех вопросов Quant (R13).' });
+
+// ---------- R10 · несколько ответов ----------
+add({ id: 'R10', group: 'R', name: 'Quant — несколько ответов', tag: 'мини-апп и сайт', html: `
+<div class="app">
+  ${sessionTop('quant', 'Quant · Несколько ответов', 6, 10, calcBtn())}
+  <div class="main q-wrap">
+    <section>
+      <p class="q-instr">Выберите все подходящие варианты.</p>
+      <p class="q-ask" lang="en"><span class="math"><i>x</i></span> is an integer, and <span class="math">3 &lt; <i>x</i><sup>2</sup> &lt; 30</span>. Which of the following could be the value of <span class="math"><i>x</i></span>?</p>
+    </section>
+    <div class="opt-list">${['−5', '−4', '−1', '2', '5', '6'].map((t, i) => box(t, i === 1 || i === 3).replace('class="opt "', 'class="opt math-opt"')).join('')}</div>
+  </div>
+  ${bar2('Не знаю', 'Проверить')}
+</div>`,
+  note: 'Квадраты: можно отметить любое число вариантов. Сколько верных — не говорим (как на экзамене). Засчитывается только точное совпадение. «Проверить» активна, если отмечен хотя бы один. После проверки — как в R6: верные выбранные — рамка right, выбранные неверные — wrong, пропущенные верные — пунктир right и «верный».' });
+
+// ---------- R11 · ввод числа ----------
+const kbd = `<div class="kbd" aria-hidden="true">${['1', '2', '3', '4', '5', '6', '7', '8', '9', ',', '0', '⌫'].map(k => `<span>${k}</span>`).join('')}</div>`;
+const numQ = `<section>
+      <p class="q-instr">Введите ответ числом.</p>
+      <p class="q-ask" lang="en">A store sells pens for <span class="math">$1.25</span> each. How many dollars do 18 pens cost?</p>
+    </section>`;
+add({ id: 'R11', group: 'R', name: 'Quant — ввод числа', tag: 'мини-апп и сайт', html: `
+<div class="app">
+  ${sessionTop('quant', 'Quant · Ввод числа', 7, 10, calcBtn())}
+  <div class="main q-wrap">
+    ${numQ}
+    <div class="num-entry"><span class="unit">$</span><span class="num-field focus" role="textbox" aria-label="Ответ">22,5<span class="caret"></span></span></div>
+  </div>
+  <footer class="bottom-bar over-kbd"><button type="button" class="btn btn-ghost">Не знаю</button><button type="button" class="btn btn-primary">Проверить</button></footer>
+  ${kbd}
+</div>`,
+  note: 'Поле — наше, клавиатура — системная (inputmode="decimal"; нарисована только чтобы показать: нижняя панель стоит над ней, поле не уходит под неё). Разделитель — и запятая, и точка (русская раскладка даёт запятую), минус — только впереди; лишнее не вводится. Засчитывается по значению: 22,5 = 22.50. Пустое поле — «Проверить» неактивна. Единицы ($, %) — подписью у поля, если они есть в задании. Enter на компьютере = «Проверить».' });
+add({ id: 'R11-bad', group: 'R', name: 'Ввод числа — так число не записать', tag: 'мини-апп и сайт', html: `
+<div class="app">
+  ${sessionTop('quant', 'Quant · Ввод числа', 7, 10, calcBtn())}
+  <div class="main q-wrap">
+    ${numQ}
+    <div>
+      <div class="num-entry"><span class="unit">$</span><span class="num-field is-bad" role="textbox" aria-label="Ответ" aria-invalid="true">22,5,0</span></div>
+      <p class="field-err" role="alert">${ic('i-alert', 'ic-sm')}Так число не записать: одна запятая или точка, минус — только впереди.</p>
+    </div>
+  </div>
+  ${bar2('Не знаю', 'Проверить', true)}
+</div>`,
+  note: 'Вставка из буфера может принести то, что клавиатура не даёт набрать. Тогда — рамка wrong и строка под полем, «Проверить» неактивна до исправления. Ответ не отправляется; сервер на такой ввод отвечает 400 с кодом, клиент до этого не доводит.' });
+
+// ---------- R11b · ввод дробью ----------
+add({ id: 'R11b', group: 'R', name: 'Quant — ввод дробью', tag: 'мини-апп и сайт', html: `
+<div class="app">
+  ${sessionTop('quant', 'Quant · Ввод дробью', 8, 10, calcBtn())}
+  <div class="main q-wrap">
+    <section>
+      <p class="q-instr">Введите ответ дробью. Сокращать не нужно.</p>
+      <p class="q-ask" lang="en">A bag holds 4 red, 6 blue, and 5 green marbles. One marble is drawn at random. What is the probability that it is <i>not</i> blue?</p>
+    </section>
+    <div class="frac-wrap">
+      <div class="frac">
+        <span class="num-field" role="textbox" aria-label="Числитель">9</span>
+        <span class="frac-line" aria-hidden="true"></span>
+        <span class="num-field focus" role="textbox" aria-label="Знаменатель">15<span class="caret"></span></span>
+      </div>
+      <small>Сверху — числитель, снизу — знаменатель</small>
+    </div>
+  </div>
+  <footer class="bottom-bar over-kbd"><button type="button" class="btn btn-ghost">Не знаю</button><button type="button" class="btn btn-primary">Проверить</button></footer>
+  ${kbd.replace('<span>,</span>', '<span></span>')}
+</div>`,
+  note: 'Два поля одно над другим, как в экзамене; только целые числа (запятой на клавиатуре нет, inputmode="numeric"). Переход в знаменатель — «далее» на клавиатуре или нажатие. Засчитывается по значению: 9/15 = 3/5. Знаменатель 0 — строка под полями «Знаменатель не может быть нулём», «Проверить» неактивна.' });
+
+// ---------- R12 · данные на графике ----------
+const BARS = [['Jan', 12], ['Feb', 18], ['Mar', 15], ['Apr', 24], ['May', 30]];
+const chart = `<figure class="fig">
+      <figcaption class="fig-title" lang="en">New subscribers to an online course, January–May (thousands)</figcaption>
+      <svg viewBox="0 0 330 190" role="img" aria-label="Столбцы по месяцам, тысяч: январь 12, февраль 18, март 15, апрель 24, май 30">
+        <g class="grid">${[0, 10, 20, 30].map(v => { const y = 160 - v * 140 / 30; return `<line x1="34" x2="326" y1="${y}" y2="${y}"/><text class="ax y" x="26" y="${y + 4}">${v}</text>`; }).join('')}</g>
+        ${BARS.map(([m, v], i) => { const x = 34 + 58.4 * i + 14.2; const h = v * 140 / 30; return `<rect class="bar-v" x="${x}" y="${160 - h}" width="30" height="${h}" rx="5"/><text class="val" x="${x + 15}" y="${154 - h}">${v}</text><text class="ax x" x="${x + 15}" y="178">${m}</text>`; }).join('')}
+      </svg>
+    </figure>`;
+const chartQ = `<section><p class="q-instr">Ответьте по графику.</p><p class="q-ask" lang="en">By approximately what percent did the number of new subscribers increase from March to May?</p></section>`;
+const chartOpts = `<div class="opt-list" role="radiogroup">${['50%', '67%', '100%', '150%', '200%'].map((t, i) => radio(t, i === 2)).join('')}</div>`;
+add({ id: 'R12', group: 'R', name: 'Quant — данные на графике', tag: 'мини-апп и сайт', desktop: true,
+  html: `
+<div class="app">
+  ${sessionTop('quant', 'Quant · Data Interpretation', 9, 10, calcBtn())}
+  <div class="main q-wrap">
+    ${chart}
+    ${chartQ}
+    ${chartOpts}
+  </div>
+  ${bar2('Не знаю', 'Проверить')}
+</div>`,
+  desktopHtml: `
+<div class="app">
+  ${sessionTop('quant', 'Quant · Data Interpretation', 9, 10, calcBtn())}
+  <div class="main q-wrap">
+    <div class="two">
+      <section>${chart}</section>
+      <section style="display:flex;flex-direction:column;gap:22px">${chartQ}${chartOpts}</section>
+    </div>
+  </div>
+  ${bar2('Не знаю', 'Проверить')}
+</div>`,
+  note: 'Рисунок — не картинка: клиент рисует его из данных задания (bar, line, table) в цветах темы. Столбцы и линии — базовый цвет раздела (рядом подписи значений), сетка — line, подписи осей — ink-3, значения — ink-2, шрифт — Onest. У рисунка — текстовое описание для чтения с экрана (aria-label). Таблица шире экрана листается только внутри своей рамки. Несколько вопросов к одному рисунку — рисунок над каждым. Компьютер: рисунок слева, вопрос справа.' });
+
+// ---------- R13 · калькулятор ----------
+const calcKeys = [['MR', 'fn'], ['MC', 'fn'], ['M+', 'fn'], ['(', 'fn op'], [')', 'fn op'], ['7'], ['8'], ['9'], ['÷', 'fn op'], ['√', 'fn op'], ['4'], ['5'], ['6'], ['×', 'fn op'], ['±', 'fn op'], ['1'], ['2'], ['3'], ['−', 'fn op'], ['C', 'fn'], ['0'], ['.'], ['=', 'eq'], ['+', 'fn op'], ['CE', 'fn']];
+const calcBody = `<div class="calc-disp"><small>18 × 1.25 =</small><b>22.5</b></div>
+    <div class="calc-keys">${calcKeys.map(([k, c]) => `<button type="button" class="key${c ? ' ' + c : ''}">${k}</button>`).join('')}</div>
+    <button type="button" class="btn btn-ghost btn-wide">Перенести в ответ</button>`;
+const r13 = `
+<div class="app">
+  ${sessionTop('quant', 'Quant · Ввод числа', 7, 10, calcBtn(true))}
+  <div class="main q-wrap">
+    ${numQ}
+    <div class="num-entry"><span class="unit">$</span><span class="num-field" role="textbox" aria-label="Ответ"><span class="ph">Ответ</span></span></div>
+  </div>
+  ${bar2('Не знаю', 'Проверить', true)}
+  <section class="calc" role="dialog" aria-label="Калькулятор">
+    <div class="calc-head"><b>Калькулятор</b><button type="button" class="icon-btn" aria-label="Закрыть калькулятор">${ic('i-close', 'ic-sm')}</button></div>
+    ${calcBody}
+  </section>
+  <section class="calc-win" role="dialog" aria-label="Калькулятор">
+    <div class="calc-head"><b>Калькулятор<small>перетащите за заголовок</small></b><button type="button" class="icon-btn" aria-label="Закрыть калькулятор">${ic('i-close', 'ic-sm')}</button></div>
+    ${calcBody}
+  </section>
+</div>`;
+add({ id: 'R13', group: 'R', name: 'Калькулятор поверх вопроса', tag: 'мини-апп и сайт', desktop: true, html: r13,
+  note: 'Как у ETS: четыре действия, скобки, √, ±, память MR/MC/M+, C (всё) и CE (последний ввод), порядок действий — по правилам; с клавиатуры компьютера — цифры, + − * /, Enter, Esc. Телефон: шторка снизу без затемнения, вопрос виден сверху; нижняя панель вопроса под шторкой. Компьютер: окно справа от вопроса, перетаскивается за заголовок, не перекрывает поле ответа; положение запоминается до конца сессии. «Перенести в ответ» — только в вопросах с вводом числа: число с экрана калькулятора встаёт в поле (точка → запятая по языку интерфейса), шторка закрывается. Калькулятор помнит своё состояние между вопросами одной сессии. Кнопка калькулятора в шапке нажата, пока он открыт.' });
+
+// ---------- R14 · «Проверка» на время ----------
+const timer = (t, low = false) => `<span class="timer${low ? ' low' : ''}" role="timer" aria-label="Осталось ${t}">${ic('i-clock', 'ic-sm')}${t}</span>`;
+const r14 = (desktop = false) => `
+<div class="app">
+  ${sessionTop('verbal', 'Verbal · Проверка', 5, 12, timer('12:40'))}
+  <div class="main q-wrap">
+    <div class="q-tools">
+      <button type="button" class="tool-chip" aria-haspopup="dialog">${ic('i-grid', 'ic-sm')}Вопросы</button>
+      <button type="button" class="tool-chip" aria-pressed="true">${ic('i-mark', 'ic-sm')}Вернуться</button>
+    </div>
+    <section>
+      <p class="q-instr">Выберите одно слово.</p>
+      <p class="q-text" lang="en">Critics who expected the sequel to be <span class="blank filled">formulaic</span> were surprised: it was the most daring film of the director’s career.</p>
+    </section>
+    <div class="opt-list" role="radiogroup">${radio('formulaic', true)}${radio('audacious')}${radio('ambitious')}${radio('controversial')}${radio('lavish')}</div>
+  </div>
+  <footer class="bottom-bar"><button type="button" class="btn btn-ghost icon-ghost" aria-label="Предыдущий вопрос">${ic('i-back')}</button><button type="button" class="btn btn-primary">Дальше</button></footer>
+</div>`;
+add({ id: 'R14', group: 'R', name: '«Проверка» — на время, без разбора', tag: 'мини-апп и сайт', desktop: true, html: r14(),
+  note: 'Как на экзамене: таймер всегда виден (за минуту до конца — цвет wrong, без мигания; озвучивается раз в минуту, не каждую секунду), разбора нет до конца. «Вернуться» — отметка вопроса (GivenAnswer.flagged), нажата — тёмная. Назад — стрелка слева внизу; вперёд — «Дальше», без ответа подпись «Пропустить». На последнем вопросе — «К списку вопросов» (R14-list). «Вопросы» открывает список. Закрыть (крестик) — «Выйти из проверки? Ответы сохранятся, таймер остановится» с двумя кнопками. Время вышло — R14-timeout. Без сети ответы копятся на устройстве (T6).' });
+const qcell = (n, s) => `<button type="button" class="q-cell${s.includes('skip') ? ' skip' : ''}"${s.includes('cur') ? ' aria-current="true"' : ''} aria-label="Вопрос ${n}${s.includes('skip') ? ', без ответа' : ', есть ответ'}${s.includes('mk') ? ', отмечен' : ''}">${n}${s.includes('mk') ? `<svg class="mk" aria-hidden="true"><use href="#i-mark"/></svg>` : ''}</button>`;
+const QSTATE = ['', '', 'mk', '', 'cur mk', 'skip', '', '', 'skip', '', 'skip mk', ''];
+add({ id: 'R14-list', group: 'R', name: '«Проверка» — список вопросов', tag: 'мини-апп и сайт', html: r14().replace(/<\/div>\s*$/, `
+  <div class="scrim"></div>
+  <section class="sheet" role="dialog" aria-label="Вопросы">
+    <span class="grabber"></span>
+    <div class="list-head" style="padding:0"><h2 class="h2">Вопросы</h2>${timer('12:40')}</div>
+    <div class="q-grid">${QSTATE.map((s, i) => qcell(i + 1, s)).join('')}</div>
+    <div class="q-legend"><span><i></i>есть ответ</span><span><i class="skip"></i>без ответа · 3</span><span><svg class="ic-sm" aria-hidden="true"><use href="#i-mark"/></svg>отмечено · 3</span></div>
+    <button type="button" class="btn btn-primary btn-wide">Завершить проверку</button>
+  </section>
+</div>`),
+  note: 'Шторка со всеми вопросами: нажатие — переход к вопросу. Есть ответ — заливка surface-3, без ответа — пунктирная рамка, отмеченные — закладка, текущий — рамка ink. Таймер идёт и здесь. «Завершить проверку» с вопросами без ответа — подтверждение «Без ответа: 3. Завершить?»; без пропусков — сразу итог (R15).' });
+add({ id: 'R14-timeout', group: 'R', name: '«Проверка» — время вышло', tag: 'мини-апп и сайт', html: `
+<div class="app">
+  <div class="main" style="justify-content:center">
+    <div class="state">
+      <span class="state-ic">${ic('i-clock')}</span>
+      <h1 class="h1">Время вышло</h1>
+      <p>Ответы сохранены: 9 из 12. Остальные засчитаны как без ответа — их разберём вместе со всеми.</p>
+    </div>
+  </div>
+  ${bar1('К итогу')}
+</div>`,
+  note: 'Время вышло — сессия закончена (TrainingMode check): экран сам, без кнопки «Продолжить». Ответ, выбранный на текущем вопросе, но не отправленный, — сохраняется. «К итогу» — R15, затем разбор (R16).' });
+
+// ---------- R16 · ответы и разборы после «Проверки» ----------
+const resRow = (n, type, r, t, mk = false) => `<li><a href="#" class="row"><span class="qn">${n}</span><span class="row-body"><b lang="en">${type}</b><small>${r === 'ok' ? 'верно' : r === 'no' ? 'неверно' : 'без ответа'}${mk ? ' · отмечен' : ''}</small></span><span class="res ${r}">${ic(r === 'ok' ? 'i-check' : r === 'no' ? 'i-cross' : 'i-minus', 'ic-sm')}</span><span class="t">${t}</span>${ic('i-chevron-right', 'ic-sm chev')}</a></li>`;
+const R16_ROWS = [['Text Completion', 'ok', '0:58'], ['Text Completion', 'ok', '1:12'], ['Sentence Equivalence', 'no', '1:40', true], ['Reading Comprehension', 'ok', '2:05'], ['Text Completion', 'ok', '1:31', true], ['Reading Comprehension', 'skip', '0:20'], ['Sentence Equivalence', 'ok', '1:02']];
+const r16 = `
+<div class="app">
+  <header class="x-head"><button type="button" class="icon-btn" aria-label="Назад к итогу">${ic('i-back')}</button><span>Ответы и разборы</span></header>
+  <div class="main sum16" style="gap:16px">
+    <div class="card mini-sum sec-verbal"><p class="sum-meta"><span class="dot"></span><span>Verbal · Проверка · 17 из 18 мин</span></p><p class="sum-line"><b>8</b><span>из 12 верно</span></p></div>
+    <div class="seg lg" role="group" aria-label="Показать" style="display:flex"><button type="button" aria-pressed="true" style="flex:1">Все · 12</button><button type="button" aria-pressed="false" style="flex:1">Ошибки · 4</button><button type="button" aria-pressed="false" style="flex:1">Отмеченные · 3</button></div>
+    <ul class="list" role="list">${R16_ROWS.map((r, i) => resRow(i + 1, ...r)).join('')}</ul>
+  </div>
+</div>`;
+add({ id: 'R16', group: 'R', name: 'Разбор после «Проверки» — все ответы', tag: 'мини-апп и сайт', desktop: true, html: r16,
+  note: 'Открывается из итога (R15) строкой «Все ответы и разборы» и после «Проверки», и после «Практики». Фильтр: все, ошибки (неверно и без ответа), отмеченные. Строка — номер, тип, итог словом и знаком, время на вопрос (в «Проверке» — важно для темпа). Нажатие — разбор вопроса (R19), стрелками в нём идём по отфильтрованному списку.' });
+
+// ---------- R17 · сообщить об ошибке ----------
+add({ id: 'R17', group: 'R', name: 'Сообщить об ошибке — шторка', tag: 'мини-апп и сайт', html: `
+<div class="app">
+  ${sessionTop('verbal', 'Verbal · Text Completion', 3, 10, prevBtn)}
+  <div class="main r-wrap"><p class="q-text sm" lang="en">Although the committee’s report was praised for its concision, critics noted that its brevity came at a cost…</p></div>
+  <div class="scrim"></div>
+  <section class="sheet" role="dialog" aria-label="Сообщить об ошибке">
+    <span class="grabber"></span>
+    <div><h2 class="h2">Сообщить об ошибке</h2><p class="sheet-note">Вопрос 3 · ${en('Text Completion')}</p></div>
+    <div><p class="field-head"><span>Где ошибка</span></p>
+      <div class="chips pick" role="group" aria-label="Где ошибка"><button type="button" class="chip" aria-pressed="false">В задании</button><button type="button" class="chip" aria-pressed="false">В ответе</button><button type="button" class="chip" aria-pressed="true">В разборе</button><button type="button" class="chip" aria-pressed="false">В переводе</button><button type="button" class="chip" aria-pressed="false">Другое</button></div>
+    </div>
+    <div><p class="field-head"><span>Что не так</span><span>0 / 2000</span></p><div class="textarea" role="textbox" aria-multiline="true" aria-label="Что не так">Можно коротко, на любом языке</div></div>
+    <button type="button" class="btn btn-primary btn-wide">Отправить</button>
+  </section>
+</div>`,
+  note: 'Открывается из разбора («Сообщить об ошибке») и в «Проверке» — из меню вопроса. «Где ошибка» — один выбор (kind: question, answer, explanation, translation, other); «В переводе» — только когда разбор открыт на втором языке. Текст необязателен для всех, кроме «Другое». «Отправить» неактивна, пока не выбрано «где». Отправлено — шторка закрывается, внизу на 3 с строка «Спасибо — проверим и поправим». Нет сети — отправим, когда появится (с id жалобы, чтобы повтор не создал дубль, #34).' });
+
+// ---------- R18 · теория ----------
+add({ id: 'R18', group: 'R', name: 'Теория: слова-сигналы контраста', tag: 'мини-апп и сайт', html: `
+<div class="app" data-lang="ru">
+  ${backHead}
+  <div class="main b-wrap">
+    <span class="kicker sec-verbal"><span class="dot"></span>Теория · ${en('Verbal')}</span>
+    <div class="explain-head"><h1 class="h1">Слова-сигналы контраста</h1><div class="seg" role="group" aria-label="Язык"><button type="button" aria-pressed="true">RU</button><button type="button" aria-pressed="false">EN</button></div></div>
+    <p class="lead">Такое слово переворачивает смысл: после него в пропуске — противоположное тому, что было до него.</p>
+    <dl class="list sig">
+      <div><dt lang="en">although, though</dt><dd>уступка: «хотя… — всё же»</dd></div>
+      <div><dt lang="en">yet, but</dt><dd>поворот: дальше — неожиданное</dd></div>
+      <div><dt lang="en">despite</dt><dd>«вопреки»: результат против ожидания</dd></div>
+      <div><dt lang="en">far from</dt><dd>«совсем не»: отрицание того, что дальше</dd></div>
+      <div><dt lang="en">while, whereas</dt><dd>две части предложения противопоставлены</dd></div>
+    </dl>
+    <div class="example-card"><small>Пример</small><p lang="en"><mark>Although</mark> the plan looked simple on paper, carrying it out proved anything but ___.</p><p>Сигнал — <span lang="en">although</span>: «просто на бумаге» → на деле совсем не просто. Ответ — <span lang="en">straightforward</span>.</p></div>
+  </div>
+  ${bar1('Потренировать · 10&nbsp;вопросов')}
+</div>`,
+  note: 'Открывается из разбора (строка «Тема: …») и из «Что повторить» в итоге. Теория на языке интерфейса с переключателем RU/EN, как разбор. «Потренировать» — тренировка «Практика» по этой теме (тип — где тема встречается чаще). Вложенный экран: на сайте «Назад» сверху, в мини-аппе — кнопка Telegram.' });
+
+// ---------- R19 · разбор, назад и вперёд ----------
+add({ id: 'R19', group: 'R', name: 'Разбор тренировки — назад и вперёд', tag: 'мини-апп и сайт', html: `
+<div class="app" data-lang="ru">
+  ${sessionTop('quant', 'Quant · Разбор', 4, 10, `<button type="button" class="icon-btn" aria-label="Предыдущий вопрос">${ic('i-back', 'ic-sm')}</button><button type="button" class="icon-btn" aria-label="Следующий вопрос">${ic('i-chevron-right', 'ic-sm')}</button>`)}
+  <div class="main r-wrap">
+    <div class="r-cols">
+      <section class="r-q">
+        <div class="verdict verdict-wrong" role="status"><span class="verdict-ic">${ic('i-cross', 'ic-sm')}</span><span class="verdict-text"><b>Неверно</b>Ваш ответ — «равны»</span></div>
+        <p class="q-cond math" style="text-align:left;margin:0"><i>x</i> &gt; 0 and <i>x</i><sup>2</sup> = 3<i>x</i></p>
+        <div class="qc"><div class="qc-cell"><small>Quantity A</small><span class="math"><i>x</i> + 4</span></div><div class="qc-cell"><small>Quantity B</small><span class="math">2<i>x</i></span></div></div>
+        <div class="opt-list">${radioR(QC_OPTS[0], 'is-ok', 'верный')}${radioR(QC_OPTS[2], 'is-no', 'ваш', true)}</div>
+      </section>
+      <section class="explain">
+        <div class="explain-head"><h2 class="h2">Сначала найдите <span class="math"><i>x</i></span></h2><div class="seg" role="group" aria-label="Язык разбора"><button type="button" aria-pressed="true">RU</button><button type="button" aria-pressed="false">EN</button></div></div>
+        <div class="explain-body" data-lang-block="ru">
+          <p><span class="math"><i>x</i><sup>2</sup> = 3<i>x</i></span> при <span class="math"><i>x</i> &gt; 0</span> даёт <mark><span class="math"><i>x</i> = 3</span></mark>. Тогда A = 7, B = 6: A больше.</p>
+          <p class="trap"><b>Почему «равны» кажется верным</b>При <span class="math"><i>x</i> = 4</span> обе величины равны 8 — но это <span class="math"><i>x</i></span> не подходит под условие.</p>
+        </div>
+      </section>
+    </div>
+  </div>
+  <footer class="bottom-bar"><button type="button" class="btn btn-ghost">К итогу</button><button type="button" class="btn btn-primary">Следующий</button></footer>
+</div>`,
+  note: 'Разбор после тренировки: стрелки в шапке и «Следующий» идут по вопросам (или по фильтру R16); свайп влево-вправо на телефоне — то же. В разборе показываются только верный и выбранный варианты, остальные — по нажатию «Все варианты» (если разбор длинный). Последний вопрос — «К итогу» единственной кнопкой. В «Проверке» в подписи вердикта — ещё время на вопрос: «1:40 — дольше среднего».' });
+
+// ---------- R20 · «Практика» — вернулась к прошлому вопросу ----------
+add({ id: 'R20', group: 'R', name: '«Практика» — вернулась к прошлому вопросу', tag: 'мини-апп и сайт', html: `
+<div class="app" data-lang="ru">
+  ${sessionTop('verbal', 'Verbal · Sentence Equivalence', 5, 10, prevBtn)}
+  <div class="main r-wrap">
+    <p class="notice">${ic('i-resume', 'ic-sm')}Это вопрос 5 — ответ уже засчитан, изменить его нельзя. Вы остановились на вопросе 7.</p>
+    <div class="r-q">
+      <div class="verdict verdict-right" role="status"><span class="verdict-ic">${ic('i-check', 'ic-sm')}</span><span class="verdict-text"><b>Верно</b>Оба слова значат «упрямый»</span></div>
+      <p class="q-text sm" lang="en">Far from being <span class="blank filled ok">obstinate</span>, the new manager proved willing to revise her plans whenever the data pointed to a better course.</p>
+      <div class="opt-list">${box('obstinate', true, 'is-ok', 'верный')}${box('intransigent', true, 'is-ok', 'верный')}</div>
+    </div>
+    <a href="#" class="link-row">${ic('i-book', 'ic-sm')}<span>Показать разбор</span>${ic('i-chevron-right', 'ic-sm')}</a>
+  </div>
+  ${bar1('К вопросу 7')}
+</div>`,
+  note: 'Стрелка «назад» в шапке «Практики» ведёт по уже отвеченным вопросам: вопрос виден с итогом, разбор свёрнут строкой. Ответ не меняется. «К вопросу 7» возвращает туда, где человек остановился, с тем, что он уже выбрал (не отправленным). Счётчик в шапке показывает номер просматриваемого вопроса.' });
 
 // ---------- Каталог ----------
 const GROUPS = { T: 'Общее', L: 'TOEFL', R: 'Тренировка', W: 'Слова', X: 'Экзамен', G: 'Прогресс и профиль' };
