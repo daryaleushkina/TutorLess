@@ -5,6 +5,7 @@ import dev.greprepapp.api.models.AnswerBatch
 import dev.greprepapp.api.models.Difficulty
 import dev.greprepapp.api.models.DifficultyCounts
 import dev.greprepapp.api.models.Explanation
+import dev.greprepapp.api.models.Home
 import dev.greprepapp.api.models.LocalizedText
 import dev.greprepapp.api.models.OptionExplanation
 import dev.greprepapp.api.models.OptionGroup
@@ -13,6 +14,7 @@ import dev.greprepapp.api.models.QuestionOption
 import dev.greprepapp.api.models.QuestionReport
 import dev.greprepapp.api.models.QuestionType
 import dev.greprepapp.api.models.Section
+import dev.greprepapp.api.models.SectionStats
 import dev.greprepapp.api.models.TrainingFinish
 import dev.greprepapp.api.models.TrainingItem
 import dev.greprepapp.api.models.TrainingMode
@@ -23,6 +25,7 @@ import dev.greprepapp.api.models.TrainingSession
 import dev.greprepapp.api.models.TrainingSummary
 import dev.greprepapp.api.models.TrainingTopic
 import dev.greprepapp.api.models.TrainingType
+import dev.greprepapp.api.models.WeekStats
 import dev.greprepapp.app.feature.training.CURRENT_EXAM
 import kotlinx.coroutines.CompletableDeferred
 import retrofit2.Response
@@ -270,6 +273,21 @@ object Fixtures {
 
 /** Подменный клиент тренировок: что пришло и что ответить. */
 class FakeTrainingsApi : TrainingsApi {
+    var home: Reply<Home> =
+        Reply.Ok(
+            Home(
+                lastTraining = null,
+                sections =
+                    listOf(
+                        SectionStats(Section.VERBAL, 0, 0),
+                        SectionStats(Section.QUANT, 0, 0),
+                        SectionStats(Section.ESSAY, 0, 0),
+                    ),
+                mistakes = 0,
+                weakSpot = null,
+                week = WeekStats(days = 0, answers = 0, minutes = 0),
+            ),
+        )
     var options: Reply<TrainingOptions> = Reply.Ok(Fixtures.options())
     var start: Reply<TrainingSession> = Reply.Ok(Fixtures.session(Fixtures.tc1, Fixtures.se))
     var answers: Reply<Unit> = Reply.Ok(Unit)
@@ -284,11 +302,21 @@ class FakeTrainingsApi : TrainingsApi {
     var answerReply: ((AnswerBatch) -> Reply<Unit>)? = null
 
     val optionCalls = mutableListOf<List<QuestionType>>()
+    val homeCalls = mutableListOf<Triple<dev.greprepapp.api.models.Exam, String, List<QuestionType>>>()
     val optionExams = mutableListOf<dev.greprepapp.api.models.Exam>()
     val starts = mutableListOf<TrainingRequest>()
     val sentAnswers = mutableListOf<Pair<String, AnswerBatch>>()
     val finishes = mutableListOf<Pair<String, TrainingFinish>>()
     val reports = mutableListOf<Pair<String, QuestionReport>>()
+
+    override suspend fun getHome(
+        exam: dev.greprepapp.api.models.Exam,
+        tz: String,
+        types: List<QuestionType>,
+    ): Response<Home> {
+        homeCalls += Triple(exam, tz, types)
+        return home.toResponse()
+    }
 
     override suspend fun getTrainingOptions(
         exam: dev.greprepapp.api.models.Exam,

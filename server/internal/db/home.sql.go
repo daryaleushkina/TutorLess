@@ -169,7 +169,7 @@ WITH intervals AS (
 SELECT count(DISTINCT width_bucket(answered_at, $1::timestamptz[]))::integer AS days,
        count(*)::integer AS answers,
        floor(coalesce(sum(greatest(0, least(week_seconds,
-         coalesce(time_limit_seconds - spent_before, week_seconds)
+         coalesce(time_limit_seconds - spent_before - (active_seconds - week_seconds), week_seconds)
        ))), 0) / 60)::integer AS minutes
 FROM consumption
 WHERE answered_at >= $2::timestamptz
@@ -191,6 +191,7 @@ type GetHomeWeekRow struct {
 }
 
 // Предыдущий ответ и израсходованный лимит читаются до фильтра недели: иначе понедельник обнуляет сессию.
+// active_seconds - week_seconds — расход текущего интервала до недели; он тоже уменьшает остаток лимита.
 func (q *Queries) GetHomeWeek(ctx context.Context, arg GetHomeWeekParams) (GetHomeWeekRow, error) {
 	row := q.db.QueryRow(ctx, getHomeWeek,
 		arg.DayStarts,
