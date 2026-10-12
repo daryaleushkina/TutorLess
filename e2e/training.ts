@@ -17,7 +17,7 @@ export async function actionButtonsFit(page: Page) {
 }
 
 export async function buildAndResume(page: Page) {
-  await page.getByRole('link', { name: 'Своя тренировка' }).click();
+  await page.getByRole('link', { name: 'Настроить тренировку' }).click();
   await expect(page.getByRole('heading', { name: 'Новая тренировка' })).toBeVisible();
   if (new URL(page.url()).pathname.startsWith('/tg/')) await expect(page.locator('#tg-mock-back')).toBeVisible();
   await page.getByRole('textbox', { name: 'Вопросов' }).fill('3');
@@ -30,9 +30,9 @@ export async function buildAndResume(page: Page) {
   await expect(page.getByRole('heading', { name: /Text Completion|Sentence Equivalence/ })).toBeVisible();
   await closeSession(page);
   const resume = page.getByRole('link', { name: /Продолжить тренировку/ });
-  await expect(resume).toContainText(/Verbal · Text Completion · вопрос\s1\sиз\s\d/);
-  expect(await resume.textContent()).toMatch(/вопрос\u00a01\u00a0из\u00a0\d/);
-  await page.getByRole('link', { name: 'Своя тренировка' }).click();
+  await expect(resume).toContainText(/Вопрос\s1\sиз\s\d · Text Completion/);
+  expect(await resume.textContent()).toMatch(/Вопрос\u00a01\u00a0из\u00a0\d/);
+  await page.getByRole('link', { name: 'Настроить тренировку' }).click();
   await expect(page.getByRole('radio', { name: 'Как в прошлый раз' })).toBeChecked();
   // В devseed одно лёгкое задание этого типа: последняя сборка хранит ограниченное доступностью число.
   await expect(page.getByRole('textbox', { name: 'Вопросов' })).toHaveValue('1');
@@ -46,7 +46,7 @@ export async function buildAndResume(page: Page) {
 }
 
 export async function presetMatchesForm(page: Page) {
-  await page.getByRole('link', { name: 'Своя тренировка' }).click();
+  await page.getByRole('link', { name: 'Настроить тренировку' }).click();
   await page.getByRole('button', { name: 'Quant', exact: true }).click();
   await page.getByRole('textbox', { name: 'Вопросов' }).fill('5');
   await page.getByRole('radio', { name: 'Проверка на время' }).click();
@@ -73,17 +73,17 @@ export async function resumeCounterStaysTogether(page: Page) {
     const items = Array.from({ length: 10 }, (_, position) => ({ ...session.items[position % session.items.length], position }));
     await route.fulfill({ response, json: schemas.TrainingSession.parse({ ...session, items }) });
   });
-  await page.getByRole('link', { name: 'Своя тренировка' }).click();
+  await page.getByRole('link', { name: 'Настроить тренировку' }).click();
   await page.getByRole('button', { name: /^Начать ·/ }).click();
   await closeSession(page);
   const resume = page.getByRole('link', { name: /Продолжить тренировку/ });
-  await expect(resume).toContainText(/вопрос\s1\sиз\s10/);
+  await expect(resume).toContainText(/Вопрос\s1\sиз\s10/);
   const lines = await resume.evaluate((element) => {
     const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
     for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-      const text = node.textContent ?? ''; const start = text.indexOf('вопрос');
+      const text = node.textContent ?? ''; const start = text.indexOf('Вопрос');
       if (start < 0) continue;
-      const range = document.createRange(); range.setStart(node, start); range.setEnd(node, text.length);
+      const range = document.createRange(); range.setStart(node, start); range.setEnd(node, start + 'Вопрос\u00a01\u00a0из\u00a010'.length);
       return range.getClientRects().length;
     }
     return 0;
@@ -96,18 +96,19 @@ export async function unavailableStorageKeepsSession(page: Page) {
     Object.defineProperty(IDBFactory.prototype, 'open', { value: () => { throw new DOMException('fixture unavailable', 'SecurityError'); } });
   });
   await page.reload();
-  await page.getByRole('link', { name: 'Своя тренировка' }).click();
+  await page.getByRole('link', { name: 'Настроить тренировку' }).click();
   await expect(page.getByText('Нет места на устройстве', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: /^Начать ·/ })).toBeDisabled();
   if (new URL(page.url()).pathname.startsWith('/tg/')) await page.locator('#tg-mock-back').click();
   else await page.getByRole('button', { name: 'Назад', exact: true }).click();
-  await expect(page.getByRole('link', { name: 'Своя тренировка' })).toBeVisible();
-  await page.getByRole('button', { name: 'Начать', exact: true }).click();
-  await expect(page.getByText('Здесь начнётся шаг. Тренировки и слова появятся в следующих частях.')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Настроить тренировку' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Начать', exact: true })).toBeDisabled();
+  await page.getByRole('navigation', { name: 'Разделы' }).getByRole('link', { name: 'Слова', exact: true }).click();
+  await expect(page.getByText('Здесь будут слова: учить, повторять и искать.')).toBeVisible();
 }
 
 export async function offlineBuilder(page: Page) {
-  await page.getByRole('link', { name: 'Своя тренировка' }).click();
+  await page.getByRole('link', { name: 'Настроить тренировку' }).click();
   const start = page.getByRole('button', { name: /^Начать ·/ });
   await expect(start).toBeEnabled();
   let attempts = 0;
@@ -123,7 +124,7 @@ export async function offlineBuilder(page: Page) {
 }
 
 export async function startSession(page: Page, mode: 'practice' | 'check' = 'practice', count = 3, section = 'Verbal', type = 'text_completion') {
-  await page.getByRole('link', { name: 'Своя тренировка' }).click();
+  await page.getByRole('link', { name: 'Настроить тренировку' }).click();
   await page.getByRole('button', { name: section, exact: true }).click();
   await page.getByRole('combobox', { name: 'Тип' }).selectOption(type);
   await page.getByRole('textbox', { name: 'Вопросов' }).fill(String(count));
@@ -309,7 +310,13 @@ export async function stableTrainingScreens(page: Page, capture = true) {
   await page.route('**/api/trainings/*/finish', (route) => route.fulfill({ status: 200, json: { correct: 0, total: 3, unanswered: 0, durationSeconds: 60, review: [] } }));
   await page.clock.setFixedTime(new Date());
   const session = await startSession(page, 'practice', 50);
-  if (capture) await checkScreen(page, 'training-question');
+  if (capture) {
+    await checkScreen(page, 'training-question');
+    await page.context().setOffline(true);
+    await expect(page.getByText('Нет сети — ответы сохранятся и уйдут сами.')).toBeVisible();
+    await checkScreen(page, 'training-offline');
+    await page.context().setOffline(false);
+  }
   await pick(page, session.items[0]!.question, true);
   await page.getByRole('button', { name: 'Проверить', exact: true }).click();
   await page.getByRole('button', { name: /^Почему не/ }).click();
@@ -550,7 +557,7 @@ export async function continuousReportSwipes(page: Page) {
   await expect(page.getByRole('heading', { name: 'Спасибо!' })).toBeVisible();
   expect(await restores()).toBe(0);
   await trainingBack(page); await closeSession(page);
-  await expect(page.getByRole('heading', { name: 'Сегодня' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Тренировка' })).toBeVisible();
   await expect.poll(restores).toBe(1);
 }
 

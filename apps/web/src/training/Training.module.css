@@ -193,3 +193,7 @@
 .spinner { flex: none; width: var(--size-icon-sm); height: var(--size-icon-sm); border: calc(var(--size-hairline) * 2) solid currentColor; border-right-color: transparent; border-radius: var(--radius-full); animation: spin var(--motion-duration-pulse) linear infinite; }
 @keyframes spin { to { transform: rotate(1turn); } }
 @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+
+/* T6: тихая строка не блокирует сохранённую тренировку. */
+.offlineNotice { display: flex; align-items: center; gap: var(--space-8); font: var(--font-meta); color: var(--color-text-2); }
+.offlineNotice svg { width: var(--size-icon-sm); height: var(--size-icon-sm); flex: none; }

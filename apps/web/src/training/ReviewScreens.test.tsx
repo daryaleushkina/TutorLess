@@ -1,5 +1,5 @@
 import { expect, test, vi } from 'vitest';
-import { fakeServer, json, renderApp, STARTER, user } from '../test/app';
+import { fakeServer, json, renderApp, OPTIONS, user } from '../test/app';
 import { givenAnswer, trainingSession } from '../test/training';
 import { storedTraining, type StoredTraining } from './model';
 import { trainingRepository } from './repository';
@@ -9,7 +9,7 @@ const completed = (): StoredTraining => ({ ...storedTraining(trainingSession({ m
   answers: { 0: givenAnswer(), 1: givenAnswer({ position: 1, optionIds: ['B'] }) },
   finish: { finishedAt: new Date().toISOString(), timedOut: true } });
 async function boot(training = completed(), locale: 'ru' | 'en' = 'ru') {
-  fakeServer({ 'GET /api/me': () => json(user({ locale })), 'GET /api/today': () => json(STARTER) });
+  fakeServer({ 'GET /api/me': () => json(user({ locale })), 'GET /api/trainings/options': () => json(OPTIONS) });
   vi.spyOn(trainingRepository, 'requestSync').mockImplementation(() => {});
   const app = await renderApp({ path: '/' });
   await expect.element(app.screen.getByRole('heading', { level: 1 })).toBeVisible();

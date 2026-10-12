@@ -1,30 +1,33 @@
+import { BrandMark } from '../components/BrandMark';
 // Оболочка экранов после входа.
 //   • AppGate — пускает только вошедших: сайт без сессии уводит на вход; мини-апп, который не смог войти по
 //     initData, показывает причину и «Повторить».
-//   • TabsLayout — экраны-разделы: в мини-аппе и на узком сайте — стеклянная капсула вкладок снизу; на сайте
-//     600–899 px — строка разделов сверху, шире — боковая панель (решение Даши 06.10.2026, DESIGN.md «Navigation»).
+//   • TabsLayout — нижние вкладки на телефоне, боковая панель на широком сайте.
 import { isApiError } from '@greprep/api-client';
 import { Link, Navigate, Outlet, useMatch, useMatchRoute, useRouter, useRouterState } from '@tanstack/react-router';
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { returnToSearch } from '../auth/returnTo';
-import { BrandMark } from '../components/BrandMark';
-import { BackIcon, ExamIcon, ProgressIcon, SettingsIcon, TodayIcon, WordsIcon } from '../components/icons';
-import { FullScreenStatus } from '../components/FullScreenStatus';
+import { ExamProvider, ExamSelection, ExamSwitch } from '../screens/exams/ExamSelection';
 import { BRAND_NAME } from '../config';
+import { returnToSearch } from '../auth/returnTo';
+import { BackIcon, ExamIcon, ProgressIcon, TrainIcon, WordsIcon } from '../components/icons';
+import { FullScreenStatus } from '../components/FullScreenStatus';
+import { useOnline } from '../useOnline';
 import { useI18n } from '../i18n/i18n';
 import { useSession } from '../session/session';
 import { useShell } from '../shellContext';
 import { loadSections } from '../sections';
 import { useTrainingSwipes } from '../telegram/hooks';
 import { useStoredTraining } from '../training/hooks';
-import glass from '../styles/glass.module.css';
 import styles from './AppLayout.module.css';
+import { TabHistoryProvider, useTabHistory } from './TabsContext';
+import { tabForPath } from './tabHistory';
 
 export function AppGate(): ReactNode {
   const { session } = useSession();
   const { t } = useI18n();
   const { shell } = useShell();
+  const online = useOnline();
   const href = useRouterState({ select: (state) => state.location.href });
   const returnTo = useRef(href);
   // Navigate меняет адрес раньше, чем уходит AppGate: не заменяем исходный экран адресом самого входа.
@@ -58,91 +61,89 @@ export function AppGate(): ReactNode {
     return (
       <FullScreenStatus
         live
-        title={offline ? t.today.offlineTitle : t.signIn.failedTitle}
-        text={offline ? t.signIn.offline : tooMany ? t.signIn.tooMany : t.today.failedText}
-        action={{ label: t.today.retry, onClick: session.retry }}
+        title={offline ? t.home.offlineTitle : t.signIn.failedTitle}
+        text={offline ? t.signIn.offline : tooMany ? t.signIn.tooMany : t.home.failedText}
+        action={{ label: t.home.retry, onClick: session.retry }}
       />
     );
   }
-  return <Outlet />;
+  if (session.status === 'loading') return <FullScreenStatus live title={online ? t.tabs.train : t.home.offlineTitle} text={online ? t.home.loading : t.home.offlineText} />;
+  return <ExamProvider><TabHistoryProvider key={`${session.user.id}:${session.user.activeExam}`}>{session.user.activeExam === null ? <ExamSelection /> : <Outlet />}</TabHistoryProvider></ExamProvider>;
 }
 
-// Вкладка горит по пути, а не по параметрам адреса: у мини-аппа в адресе параметры запуска Telegram, и с точным
-// сравнением параметров «Сегодня» не горела бы никогда.
 const TABS = [
-  { to: '/', key: 'today', Icon: TodayIcon },
+  { to: '/', key: 'train', Icon: TrainIcon },
   { to: '/words', key: 'words', Icon: WordsIcon },
   { to: '/exam', key: 'exam', Icon: ExamIcon },
   { to: '/progress', key: 'progress', Icon: ProgressIcon },
 ] as const;
 
 export function TabsLayout(): ReactNode {
-  const { shell } = useShell();
   const matchRoute = useMatchRoute();
-  // Настройки на телефоне — вложенный экран из «Прогресса»: без капсулы, с «назад».
   const nested = Boolean(matchRoute({ to: '/settings' }));
-  return (
-    <div className={styles.frame} data-shell={shell} data-nested={nested || undefined}>
-      {shell === 'site' && <SiteNav />}
-      <main className={`app-shell ${styles.main}`} id="main">
-        <div className={styles.column}>
-          <Outlet />
-        </div>
-      </main>
-      <TabBar />
-    </div>
-  );
+  return <ShellFrame nested={nested}><Outlet /></ShellFrame>;
 }
 
-/** Стеклянная капсула вкладок «Сегодня · Слова · Экзамен · Прогресс». */
+function ShellFrame({ children, nested = false, wide = false, training = false, footer }: { children: ReactNode; nested?: boolean; wide?: boolean; training?: boolean; footer?: ReactNode }) {
+  const { shell } = useShell();
+  return <div className={styles.frame} data-shell={shell} data-tabs data-nested={nested || undefined} data-wide={wide || undefined} data-training={training || undefined}>
+    {shell === 'site' && <SiteNav />}
+    <main className={`app-shell ${styles.main}`} id="main"><div className={styles.column}>
+      {!nested && !training && <SectionHeader />}
+      {children}
+    </div></main>
+    {footer}<TabBar />
+  </div>;
+}
+
+function TabLink({ tab, className }: { tab: typeof TABS[number]; className: string | undefined }) {
+  const { t } = useI18n();
+  const history = useTabHistory();
+  const router = useRouter();
+  const path = useRouterState({ select: (state) => state.location.pathname });
+  const { shell } = useShell();
+  const localPath = shell === 'telegram' ? path.replace(/^\/tg(?=\/)/, '') : path;
+  const active = localPath === '/settings' ? undefined : tabForPath(localPath) ?? history.active;
+  return <Link to={tab.to} className={className} aria-current={active === tab.key ? 'page' : undefined}
+    onClick={(e) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+      void router.navigate({ href: history.destination(tab.key) });
+    }}>
+    <tab.Icon /><span>{t.tabs[tab.key]}</span>
+  </Link>;
+}
+
 function TabBar(): ReactNode {
   const { t } = useI18n();
-  return (
-    <>
-      <span aria-hidden="true" className={styles.fade} />
-      <nav aria-label={t.tabs.sections} className={`tabbar ${glass.glass} ${styles.tabBar}`}>
-        {TABS.map(({ to, key, Icon }) => (
-          <Link key={key} to={to} className={styles.tab} activeProps={{ 'aria-current': 'page' }} activeOptions={{ exact: to === '/', includeSearch: false }}>
-            <Icon />
-            <span>{t.tabs[key]}</span>
-          </Link>
-        ))}
-      </nav>
-    </>
-  );
+  return <nav aria-label={t.tabs.sections} className={`tabbar ${styles.tabBar}`}>
+    {TABS.map((tab) => <TabLink key={tab.key} tab={tab} className={styles.tab} />)}
+  </nav>;
 }
 
-/** Сайт: боковая панель (шире 900 px) или строка сверху (600–899 px); уже — её место занимает капсула. */
+function ProfileLink({ compact = false }: { compact?: boolean }): ReactNode {
+  const { t } = useI18n();
+  const { session } = useSession();
+  const name = session.status === 'signedIn' ? session.user.name : '';
+  return <Link to="/settings" aria-label={compact ? t.navigation.profile : undefined} className={compact ? styles.topAvatar : styles.profile}
+    activeProps={{ 'aria-current': 'page' }}>
+    <span className={styles.avatar} aria-hidden="true">{Array.from(name.trim())[0]?.toLocaleUpperCase() ?? ''}</span>
+    {!compact && <span className={styles.profileText}><b title={name}>{name}</b><small>{t.navigation.profile}</small></span>}
+  </Link>;
+}
+
+function SectionHeader(): ReactNode {
+  return <header className={styles.sectionHeader}><ExamSwitch /><ProfileLink compact /></header>;
+}
+
 function SiteNav(): ReactNode {
   const { t } = useI18n();
-  return (
-    <aside className={styles.sideWrap}>
-      <nav aria-label={t.tabs.sections} className={`${glass.glass} ${styles.side}`}>
-        <Link to="/" className={styles.brand}>
-          <span className={styles.brandTile}>
-            <BrandMark />
-          </span>
-          <span className={styles.brandName}>{BRAND_NAME}</span>
-        </Link>
-        {TABS.map(({ to, key, Icon }) => (
-          <Link key={key} to={to} className={styles.navItem} activeProps={{ 'aria-current': 'page' }} activeOptions={{ exact: to === '/', includeSearch: false }}>
-            <Icon />
-            {t.tabs[key]}
-          </Link>
-        ))}
-        <span className={styles.spacer} />
-        <Link
-          to="/settings"
-          className={`${styles.navItem} ${styles.settingsItem}`}
-          activeProps={{ 'aria-current': 'page' }}
-          activeOptions={{ includeSearch: false }}
-        >
-          <SettingsIcon />
-          <span className={styles.settingsLabel}>{t.tabs.settings}</span>
-        </Link>
-      </nav>
-    </aside>
-  );
+  return <aside className={styles.sideWrap}><nav aria-label={t.tabs.sections} className={styles.side}>
+    <span className={styles.brand}><BrandMark />{BRAND_NAME}</span>
+    <ExamSwitch />
+    {TABS.map((tab) => <TabLink key={tab.key} tab={tab} className={styles.navItem} />)}
+    <ProfileLink />
+  </nav></aside>;
 }
 
 /**
@@ -157,9 +158,10 @@ export function FocusFooter({ children }: { children: ReactNode }): ReactNode {
   return host && createPortal(children, host);
 }
 
-export function FocusLayout({ children, footer, training = false, wide = false, session = false }: { children: ReactNode; footer?: ReactNode; training?: boolean; wide?: boolean; session?: boolean }): ReactNode {
+export function FocusLayout({ children, footer, training = false, wide = false, session = false, tabs = false }: { children: ReactNode; footer?: ReactNode; training?: boolean; wide?: boolean; session?: boolean; tabs?: boolean }): ReactNode {
   const { shell } = useShell();
   const [host, setHost] = useState<HTMLDivElement | null>(null);
+  if (tabs) return <FooterHost.Provider value={host}><ShellFrame training wide={wide} footer={<div className={styles.footerHost} ref={setHost} />}>{children}</ShellFrame></FooterHost.Provider>;
   return (
     <FooterHost.Provider value={host}><div className={styles.frame} data-shell={shell} data-nested data-training={training || undefined} data-wide={wide || undefined} data-session={session || undefined} data-footer={Boolean(footer) || undefined}>
       <main className={`app-shell ${styles.main}`} id="main">

@@ -148,3 +148,13 @@ describe('тема до первого кадра', () => {
     expect(setAttribute).toHaveBeenCalledWith('content', wanted);
   });
 });
+
+it('поздний ответ DeviceStorage не отменяет тему, которую человек уже выбрал', async () => {
+  let release: ((theme: string | null) => void) | undefined;
+  const restoring = restoreTheme({ getItem: () => new Promise((resolve) => { release = resolve; }), setItem: vi.fn() });
+  await saveTheme('light');
+  release?.('dark');
+  await restoring;
+  expect(dataset.theme).toBe('light');
+  expect(readTheme()).toBe('light');
+});

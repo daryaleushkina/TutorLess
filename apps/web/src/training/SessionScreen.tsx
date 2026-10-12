@@ -1,10 +1,9 @@
-import { sectionLang } from '../screens/today/summary';
-import { CURRENT_EXAM } from './exam';
+import { sectionLang } from './sectionLang';
 import type { TrainingRequest } from '@greprep/api-client';
 import { isApiError } from '@greprep/api-client';
 import { Link, useNavigate, useParams } from '@tanstack/react-router';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { BackIcon } from '../components/icons';
+import { BackIcon, OfflineIcon } from '../components/icons';
 import { StatusScreen } from '../components/StatusScreen';
 import { useI18n } from '../i18n/i18n';
 import { FocusLayout } from '../layout/AppLayout';
@@ -38,7 +37,7 @@ export function SessionScreen() {
   return <FocusLayout training wide session>
     <div className={styles.screen}>
       {shell === 'site' && <Link to="/" className={styles.back}>{t.training.question_close}</Link>}
-      {storage === 'blocked' ? <TrainingStorageBlocked /> : storage === 'unavailable' ? <StatusScreen title={t.training.training_storage_title} text={t.training.training_storage_message} /> : training.isPending ? <p role="status">{t.today.loading}</p> :
+      {storage === 'blocked' ? <TrainingStorageBlocked /> : storage === 'unavailable' ? <StatusScreen title={t.training.training_storage_title} text={t.training.training_storage_message} /> : training.isPending ? <p role="status">{t.home.loading}</p> :
         <StatusScreen title={t.training.training_missing_title} text={t.training.training_missing_message} />}
     </div>
   </FocusLayout>;
@@ -46,6 +45,7 @@ export function SessionScreen() {
 
 function ActiveSession({ incoming }: { incoming: StoredTraining }) {
   const s = useTrainingSession(incoming);
+  const online = useOnline();
   const { t, locale } = useI18n();
   const [language, setLanguage] = useState(locale);
   const { shell } = useShell();
@@ -112,6 +112,7 @@ function ActiveSession({ incoming }: { incoming: StoredTraining }) {
           </div>}
         </div>}
       </header>
+      {!online && <p className={styles.offlineNotice} role="status"><OfflineIcon />{text.question_offline}</p>}
       {s.overview ? <section className={styles.overview}>
         <h1 ref={heading} tabIndex={-1} className={styles.title}>{text.question_overview}</h1>
         <p className={styles.note}>{text.overview_summary(answered, total, flags)}</p>
@@ -144,7 +145,7 @@ function Summary({ training }: { training: StoredTraining }) {
   const text = t.training;
   const count = TrainingRules.repeatCount(result.review.reduce((sum, topic) => sum + topic.mistakes, 0));
   const time = TrainingRules.summaryMinutes(result.durationSeconds, training.session.mode === 'check' ? training.session.timeLimitSeconds : undefined);
-  const duration = t.today.minutes(time.minutes).replaceAll(' ', '\u00a0');
+  const duration = t.home.minutes(time.minutes).replaceAll(' ', '\u00a0');
   const section = <span lang={sectionLang(training.session.section)}>{t.sections[training.session.section]}</span>;
   const line = time.limitMinutes === undefined
     ? <>{section}{' · '}{[...training.session.questionTypes.map((type) => TYPE_LABELS[type]), duration].join(' · ')}</>
@@ -153,7 +154,7 @@ function Summary({ training }: { training: StoredTraining }) {
   const repeat = async () => {
     if (starting.current || !online) return;
     starting.current = true; setBusy(true); setProblem(undefined);
-    const request: TrainingRequest = { exam: training.session.exam ?? CURRENT_EXAM, section: training.session.section, questionTypes: training.session.questionTypes, count, mode: 'practice', topicIds: result.review.map((topic) => topic.topicId) };
+    const request: TrainingRequest = { exam: training.session.exam ?? 'gre', section: training.session.section, questionTypes: training.session.questionTypes, count, mode: 'practice', topicIds: result.review.map((topic) => topic.topicId) };
     try {
       const trainingId = await trainingRepository.start(request);
       await navigate({ to: '/training/$trainingId', params: { trainingId } });

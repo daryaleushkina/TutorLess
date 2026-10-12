@@ -22,7 +22,7 @@ export function ReadTraining({ id, finishedOnly = false, wide = false, back, onB
     <div className={`${styles.screen} ${styles.readTraining}`} data-shell={shell} data-wide={wide} data-section={training.data?.session.section}>
       {shell === 'site' && back}
       {storage === 'blocked' ? <TrainingStorageBlocked /> : storage === 'unavailable' ? <StatusScreen title={t.training.training_storage_title} text={t.training.training_storage_message} /> :
-        training.isPending ? <p role="status">{t.today.loading}</p> : !training.data || finishedOnly && !training.data.finish ?
+        training.isPending ? <p role="status">{t.home.loading}</p> : !training.data || finishedOnly && !training.data.finish ?
           <StatusScreen title={t.training.training_missing_title} text={t.training.training_missing_message} /> : children(training.data)}
     </div>
   </FocusLayout>;
@@ -38,5 +38,5 @@ export function TrainingHeading({ children }: { children: ReactNode }) {
 export function TrainingStorageBlocked({ heading = 'h1' }: { heading?: 'h1' | 'h2' }) {
   const { t } = useI18n();
   return <StatusScreen live heading={heading} title={t.training.training_updating_title} text={t.training.training_updating_message}
-    action={{ label: t.today.retry, onClick: trainingRepository.retryStorage }} />;
+    action={{ label: t.training.training_retry, onClick: trainingRepository.retryStorage }} />;
 }

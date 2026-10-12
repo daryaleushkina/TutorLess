@@ -1,9 +1,10 @@
+import { BrandMark } from '../../components/BrandMark';
 // Вход на сайте — Apple и Google. В мини-аппе этого экрана нет: вход идёт по initData.
 import { isApiError, signInForDevelopment } from '@greprep/api-client';
 import { Navigate, useNavigate, useSearch, type RegisteredRouter } from '@tanstack/react-router';
 import { useEffect, useState, type ReactNode } from 'react';
 import { beginSignIn } from '../../auth/oidc';
-import { BrandMark } from '../../components/BrandMark';
+import { AlertIcon, OfflineIcon } from '../../components/icons';
 import { KeepHyphenated } from '../../components/KeepHyphenated';
 import { BRAND_NAME, DEV_SIGN_IN, providerConfig, type Provider } from '../../config';
 import { GRE_DISCLAIMER } from '../../i18n/dict';
@@ -12,7 +13,6 @@ import { useI18n } from '../../i18n/i18n';
 import type { SignInReason } from '../../router';
 import { useSession } from '../../session/session';
 import { useShell } from '../../shellContext';
-import glass from '../../styles/glass.module.css';
 import { SignInButtons } from './SignInButtons';
 import styles from './SignIn.module.css';
 
@@ -80,20 +80,16 @@ export function SignInScreen(): ReactNode {
     <div className={styles.page}>
       <main className={`app-shell ${styles.scroll}`}>
         <div className={styles.panel}>
+          <span className={styles.brand}><BrandMark />{BRAND_NAME}</span>
           <div className={styles.intro}>
-            <span className={`${glass.strong} ${styles.mark}`}>
-              <BrandMark className={styles.glyph} />
-            </span>
-            <h1 className={styles.title}>{BRAND_NAME}</h1>
-            <p className={styles.tagline}>
-              <KeepHyphenated text={t.signIn.tagline} />
-            </p>
+            <h1 className={styles.title}>{t.signIn.title.split(/(®)/).map((part, index) => part === '®' ? <sup key={index}>®</sup> : part)}</h1>
+            <p className={styles.tagline}><KeepHyphenated text={t.signIn.tagline} /></p>
           </div>
 
           <div className={styles.actions}>
             {shown && (
               <p className={styles.message} role="alert">
-                {shown}
+                {reason === 'offline' ? <OfflineIcon /> : <AlertIcon />}{shown}
               </p>
             )}
             <SignInButtons busy={busy} onPress={(p) => void onProvider(p)} />

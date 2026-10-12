@@ -8,8 +8,8 @@
 .scroll {
   height: 100%;
   overflow-y: auto;
-  padding: calc(var(--app-inset-top) + var(--space-24)) calc(var(--app-inset-right) + var(--space-24)) 0
-    calc(var(--app-inset-left) + var(--space-24));
+  padding: calc(var(--app-inset-top) + var(--space-24)) calc(var(--app-inset-right) + var(--layout-gutter)) 0
+    calc(var(--app-inset-left) + var(--layout-gutter));
   display: flex;
   flex-direction: column;
 }
@@ -61,6 +61,7 @@
 .title {
   font: var(--font-h1);
   letter-spacing: var(--tracking-h1);
+  text-wrap: balance;
 }
 
 .tagline {
@@ -135,8 +136,8 @@
 }
 
 .logoGoogle {
-  width: 18px;
-  height: 18px;
+  width: var(--size-icon-sm);
+  height: var(--size-icon-sm);
 }
 
 .legal {
@@ -144,7 +145,7 @@
   font: var(--font-caption);
   letter-spacing: var(--tracking-caption);
   color: var(--color-text-3);
-  text-align: center;
+  text-align: left;
 }
 
 .legal + .legal {
@@ -214,8 +215,8 @@
   .panel {
     flex: none;
     width: 100%;
-    max-width: var(--layout-auth-column-max);
-    padding: var(--space-40) var(--space-32) var(--space-32);
+    max-width: calc(var(--layout-auth-column-max) + var(--space-40) + var(--space-40));
+    padding: var(--space-40) var(--space-40) var(--space-32);
     border-radius: var(--radius-l);
     background: var(--color-surface);
     border: var(--size-hairline) solid var(--color-line);
@@ -234,3 +235,9 @@
     height: var(--space-48);
   }
 }
+
+.brand { display: flex; align-items: center; gap: var(--space-8); font: var(--font-h2); letter-spacing: var(--tracking-h2); }
+.message { display: flex; align-items: center; gap: var(--space-8); color: var(--color-text-2); }
+.message svg { width: var(--size-icon-sm); height: var(--size-icon-sm); color: var(--color-wrong); flex: none; }
+
+.title sup { font: var(--font-meta); vertical-align: super; }

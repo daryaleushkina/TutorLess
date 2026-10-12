@@ -1,8 +1,7 @@
 // Маршруты. Одно дерево на обе оболочки: мини-апп живёт под /tg (basepath), сайт — в корне.
-//   /                 «Сегодня»          (вкладка)
+//   /                 «Тренировка»          (вкладка)
 //   /words /exam /progress               (вкладки; пока заглушки до своих фич)
-//   /settings         настройки          (на компьютере — пункт панели, на телефоне — экран из «Прогресса»)
-//   /step/$stepId     шаг из ленты       (пока заглушка; тренировки — ROADMAP §5)
+//   /settings         настройки          (на компьютере — пункт панели, на телефоне — аватар в шапке)
 //   /training/new     конструктор        (ленивый маршрут)
 //   /training/$trainingId локальная сессия и итог
 //   /signin           вход               (только сайт)
@@ -17,7 +16,7 @@ import { loadSections, SectionLoadError } from './sections';
 import { Crashed, reportRouteError } from './errors/ErrorBoundary';
 import { AppGate, TabsLayout } from './layout/AppLayout';
 import { SignInScreen } from './screens/signin/SignInScreen';
-import { TodayScreen } from './screens/today/TodayScreen';
+import { HomeScreen } from './screens/home/HomeScreen';
 import { TELEGRAM_BASE, type Shell } from './shell';
 
 export interface RouterContext {
@@ -46,7 +45,7 @@ const callbackRoute = createRoute({ getParentRoute: () => rootRoute, path: 'auth
 const appRoute = createRoute({ getParentRoute: () => rootRoute, id: 'app', component: AppGate });
 const tabsRoute = createRoute({ getParentRoute: () => appRoute, id: 'tabs', component: TabsLayout });
 
-const todayRoute = createRoute({ getParentRoute: () => tabsRoute, path: '/', component: TodayScreen });
+const homeRoute = createRoute({ getParentRoute: () => tabsRoute, path: '/', component: HomeScreen });
 // Фабрика маршрутов загружается с первым экраном. Иначе WebKit может закэшировать отказ её
 // общего чанка в офлайне; новый URL пакета разделов не сбрасывает отказ статической зависимости.
 const wordsRoute = createRoute({ getParentRoute: () => tabsRoute, path: 'words', errorComponent: SectionUnavailable })
@@ -57,11 +56,9 @@ const progressRoute = createRoute({ getParentRoute: () => tabsRoute, path: 'prog
   .lazy(() => loadSections().then((m) => createLazyRoute('/app/tabs/progress')({ component: m.ProgressScreen })));
 const settingsRoute = createRoute({ getParentRoute: () => tabsRoute, path: 'settings', errorComponent: SectionUnavailable })
   .lazy(() => loadSections().then((m) => createLazyRoute('/app/tabs/settings')({ component: m.SettingsScreen })));
-const stepRoute = createRoute({ getParentRoute: () => appRoute, path: 'step/$stepId', errorComponent: SectionUnavailable })
-  .lazy(() => loadSections().then((m) => createLazyRoute('/app/step/$stepId')({ component: m.StepScreen })));
 
 const builderRoute = createRoute({ getParentRoute: () => appRoute, path: 'training/new',
-  validateSearch: z.object({ section: z.enum(['verbal', 'quant']).optional().catch(undefined), type: schemas.QuestionType.optional().catch(undefined) }),
+  validateSearch: z.object({ section: schemas.Section.optional().catch(undefined), type: schemas.QuestionType.optional().catch(undefined) }),
 }).lazy(() => import('./training/routes.lazy').then((m) => m.builderRoute));
 const trainingRoute = createRoute({ getParentRoute: () => appRoute, path: 'training/$trainingId' })
   .lazy(() => import('./training/routes.lazy').then((m) => m.sessionRoute));
@@ -80,7 +77,7 @@ const reportRoute = createRoute({ getParentRoute: () => appRoute, path: 'trainin
 const routeTree = rootRoute.addChildren([
   signInRoute,
   callbackRoute,
-  appRoute.addChildren([tabsRoute.addChildren([todayRoute, wordsRoute, examRoute, progressRoute, settingsRoute]), stepRoute, builderRoute, trainingRoute, reviewRoute, reviewItemRoute, reportRoute]),
+  appRoute.addChildren([tabsRoute.addChildren([homeRoute, wordsRoute, examRoute, progressRoute, settingsRoute]), builderRoute, trainingRoute, reviewRoute, reviewItemRoute, reportRoute]),
 ]);
 
 /** history — для тестов (память вместо адресной строки); в приложении — адресная строка браузера. */

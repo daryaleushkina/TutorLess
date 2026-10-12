@@ -1,50 +1,49 @@
-// Сайт по ширине: телефон — капсула вкладок снизу, 600–899 px — строка разделов сверху, шире — боковая панель
-// (решение Даши 06.10.2026). Проекты site-phone, site-medium и site-desktop-* гоняют один сценарий на своей ширине.
 import { expect, navLink, test } from '../fixtures';
 
-test('разделы и настройки на своей ширине', async ({ site: page }) => {
+test('панель по ширине, экзамен аккаунта и профиль', async ({ site: page, me }) => {
   const width = page.viewportSize()?.width ?? 0;
+  await me.api('PUT', '/me/exam', { exam: 'toefl' });
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Экзамен: TOEFL, сменить' })).toHaveAttribute('aria-haspopup', 'dialog');
   for (const [tab, text] of [
-    ['Слова', 'Здесь будет словарь: слова на сегодня, повторение и поиск.'],
-    ['Экзамен', 'Здесь будут пробный экзамен как настоящий GRE и эссе с оценкой.'],
-    ['Прогресс', 'Тренировок ещё не было'],
-    ['Сегодня', 'Три шага · около 25 минут'],
+    ['Слова', 'Здесь будут слова: учить, повторять и искать.'],
+    ['Экзамен', 'Здесь будут пробные экзамены TOEFL с оценкой Writing и Speaking.'],
+    ['Прогресс', 'Здесь будет точность по разделам, история тренировок и примерный балл.'],
+    ['Тренировка', 'Здесь будут тренировки по четырём частям TOEFL.'],
   ] as const) {
     await navLink(page, tab).click();
-    await expect(page.getByText(text)).toBeVisible();
+    await expect(page.getByText(text, { exact: true })).toBeVisible();
     await expect(navLink(page, tab)).toHaveAttribute('aria-current', 'page');
   }
-
-  if (width < 600) {
-    // Телефон: капсула внизу, настройки — из «Прогресса», без капсулы и с «Назад».
-    await expect(page.locator('.tabbar')).toBeVisible();
-    await navLink(page, 'Прогресс').click();
-    await page.getByRole('link', { name: 'Настройки' }).click();
-    await expect(page.getByRole('heading', { name: 'Настройки' })).toBeVisible();
+  if (width < 900) await expect(page.locator('.tabbar')).toBeVisible();
+  else {
     await expect(page.locator('.tabbar')).toBeHidden();
-    await page.getByRole('link', { name: 'Назад' }).click();
-    await expect(page.getByText('Тренировок ещё не было')).toBeVisible();
-  } else {
-    // Шире: капсулы нет, «Настройки» — пункт панели; «Назад» на настройках не нужен.
-    await expect(page.locator('.tabbar')).toBeHidden();
-    await navLink(page, 'Настройки').click();
-    await expect(page.getByRole('heading', { name: 'Настройки' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Назад' })).toBeHidden();
     const panel = await page.getByRole('navigation', { name: 'Разделы' }).boundingBox();
-    // Панель: шире 900 px — колонка слева во всю высоту, уже — строка сверху от поля до поля содержимого
-    // (--layout-gutter с каждой стороны).
-    if (width >= 900) expect(panel?.height ?? 0).toBeGreaterThan(600);
-    else {
-      const gutter = await page.evaluate(() => Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-gutter')));
-      expect(panel?.width ?? 0).toBeGreaterThanOrEqual(width - 2 * gutter);
-    }
+    const sidebarWidth = await page.evaluate(() => Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--layout-sidebar-width')));
+    expect(panel?.width).toBe(sidebarWidth);
+    expect(panel?.height ?? 0).toBeGreaterThan(600);
+    const profile = await page.getByRole('link', { name: /Профиль/ }).boundingBox();
+    expect(profile?.y ?? 0).toBeGreaterThan(650);
   }
+  await page.getByRole('link', { name: /Профиль/ }).click();
+  await expect(page.getByRole('heading', { name: 'Профиль' })).toBeAttached();
 });
 
-test('шаг — режим фокуса без разделов, «Назад» — на «Сегодня»', async ({ site: page }) => {
-  await page.getByRole('button', { name: 'Начать' }).click();
-  await expect(page.getByRole('heading', { name: 'Повторение' })).toBeVisible();
+test('возврат во вкладку сохраняет конструктор и введённое число вопросов', async ({ site: page }) => {
+  await page.getByRole('link', { name: /^Quant/ }).click();
+  await page.getByRole('textbox', { name: 'Вопросов' }).fill('5');
+  await navLink(page, 'Слова').click();
+  await navLink(page, 'Тренировка').click();
+  await expect(page).toHaveURL(/\/training\/new\?section=quant$/);
+  await expect(page.getByRole('textbox', { name: 'Вопросов' })).toHaveValue('5');
+  await page.getByRole('button', { name: 'Назад', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Тренировка', exact: true })).toBeVisible();
+});
+
+test('главная начинает тренировку в режиме фокуса', async ({ site: page }) => {
+  await page.getByRole('button', { name: 'Начать', exact: true }).click();
+  await expect(page.getByRole('heading', { name: /Text Completion/ })).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'Разделы' })).toHaveCount(0);
-  await page.getByRole('link', { name: 'Назад' }).click();
-  await expect(page.getByText('Три шага · около 25 минут')).toBeVisible();
+  await page.getByRole('link', { name: 'Закрыть тренировку' }).click();
+  await expect(page.getByRole('link', { name: /Продолжить тренировку/ })).toBeVisible();
 });

@@ -6,7 +6,7 @@ vi.mock('@greprep/api-client', () => ({ reportClientError, lastSeenRequestId: ()
 beforeEach(() => {
   vi.resetModules();
   reportClientError.mockClear();
-  vi.stubGlobal('location', { pathname: '/step/x' });
+  vi.stubGlobal('location', { pathname: '/training/x' });
   vi.spyOn(console, 'error').mockImplementation(() => {});
 });
 
@@ -22,7 +22,7 @@ describe('reportError', () => {
     expect(reportClientError).toHaveBeenCalledWith({
       message: 'TypeError: boom',
       stack: expect.stringContaining('boom'),
-      route: '/step/x',
+      route: '/training/x',
       requestId: 'req-7',
       clientKind: 'telegram',
       appVersion: expect.any(String),

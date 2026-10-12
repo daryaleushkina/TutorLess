@@ -1,5 +1,4 @@
-import { CURRENT_EXAM } from './exam';
-import { ApiError, getTrainingOptions, startTraining, submitTrainingAnswers, finishTraining, reportQuestion, schemas, type GivenAnswer, type QuestionReport, type TrainingRequest } from '@greprep/api-client';
+import { ApiError, getTrainingOptions, startTraining, submitTrainingAnswers, finishTraining, reportQuestion, schemas, type Exam, type GivenAnswer, type QuestionReport, type TrainingRequest } from '@greprep/api-client';
 import { reportError } from '../errors/report';
 import { type ReportDraft, pendingReportSchema, storedTraining, type StoredTraining } from './model';
 import { TrainingRules } from './rules';
@@ -125,9 +124,9 @@ export class TrainingRepository {
   private current() { return this.authenticated ? this.owner : undefined; }
   private isCurrent(owner: TrainingOwner, generation: number) { return this.current() === owner && this.generation === generation; }
 
-  async options(signal?: AbortSignal) {
+  async options(exam: Exam, signal?: AbortSignal) {
     const generation = this.generation;
-    try { return await this.api.options({ exam: CURRENT_EXAM, types: SUPPORTED_TYPES }, { signal }); }
+    try { return await this.api.options({ exam, types: SUPPORTED_TYPES }, { signal }); }
     catch (error) { if (generation === this.generation) this.handle(error); throw error; }
   }
 

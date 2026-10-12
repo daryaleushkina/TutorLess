@@ -1,15 +1,11 @@
-// Знак — та же лента шагов, что в приложении: три узла на нити и строки шагов (макет T4-SignIn; так же рисует
-// приложение Apple, BrandMark.swift). Координаты — сетка рисунка 30 × 30, размер задаёт место, где знак стоит.
-import type { ReactNode } from 'react';
+import styles from './BrandMark.module.css';
 
-export function BrandMark({ className }: { className?: string }): ReactNode {
-  return (
-    <svg className={className} viewBox="0 0 30 30" fill="none" aria-hidden="true" focusable="false">
-      <path d="M9 7.5v15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" opacity=".45" />
-      <circle cx="9" cy="6" r="3.6" fill="currentColor" />
-      <circle cx="9" cy="15" r="2.6" stroke="currentColor" strokeWidth="1.8" />
-      <circle cx="9" cy="24" r="2.6" stroke="currentColor" strokeWidth="1.8" />
-      <path d="M16 6h8M16 15h6M16 24h7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-    </svg>
-  );
+/** Геометрия знака из каталога B; палитра и размер остаются в токенах. */
+export function BrandMark() {
+  return <svg className={styles.mark} viewBox="0 0 24 24" overflow="visible" aria-hidden="true" focusable="false">
+    <g transform="rotate(-12 12 12)">
+      <rect x="7" y="2" width="16" height="16" rx="5" fill="var(--color-exam-gre)" />
+      <rect x="1" y="6" width="18" height="18" rx="6" fill="var(--color-accent)" />
+    </g>
+  </svg>;
 }

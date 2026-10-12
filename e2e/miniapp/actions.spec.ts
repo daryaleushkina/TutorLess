@@ -2,7 +2,7 @@ import { checkScreen, expect, test } from '../fixtures';
 import { startSession } from '../training';
 
 test('кнопка над безопасной зоной; последнее поле не прячется под панелью', async ({ miniApp: page }) => {
-  await page.getByRole('link', { name: 'Своя тренировка' }).click();
+  await page.getByRole('link', { name: 'Настроить тренировку' }).click();
   const footer = page.locator('footer[data-shell="telegram"]');
   await expect(footer.getByRole('button', { name: /^Начать ·/ })).toBeVisible();
   await page.evaluate(() => {
@@ -34,7 +34,7 @@ test('кнопка над безопасной зоной; последнее п
 });
 
 test('запрос блокирует кнопку, показывает загрузку, после отказа можно повторить', async ({ miniApp: page }) => {
-  await page.getByRole('link', { name: 'Своя тренировка' }).click();
+  await page.getByRole('link', { name: 'Настроить тренировку' }).click();
   let release = () => {};
   const held = new Promise<void>((resolve) => { release = resolve; });
   await page.route('**/api/trainings', async (route) => {

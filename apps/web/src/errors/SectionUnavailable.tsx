@@ -15,6 +15,6 @@ export function SectionUnavailable({ error }: ErrorComponentProps) {
   const inTabs = useMatch({ from: '/app/tabs', shouldThrow: false });
   if (!(error instanceof SectionLoadError)) return <Crashed />;
   const Status = inTabs ? StatusScreen : FullScreenStatus;
-  return <div className={styles.screen}><Status live icon={<OfflineIcon />} title={t.today.offlineTitle}
-    action={{ label: t.today.retry, onClick: () => void router.invalidate() }} /></div>;
+  return <div className={styles.screen}><Status live icon={<OfflineIcon />} title={t.home.offlineTitle}
+    action={{ label: t.home.retry, onClick: () => void router.invalidate() }} /></div>;
 }

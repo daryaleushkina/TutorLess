@@ -1,5 +1,5 @@
 import { expect, test, vi } from 'vitest';
-import { fakeServer, json, renderApp, STARTER, user } from '../test/app';
+import { fakeServer, json, renderApp, OPTIONS, user } from '../test/app';
 import { trainingOptions, trainingSession } from '../test/training';
 
 const sdk = vi.hoisted(() => {
@@ -14,7 +14,7 @@ const sdk = vi.hoisted(() => {
   hapticFeedback: { impactOccurred: { ifAvailable: vi.fn() } },
 }; });
 vi.mock('@tma.js/sdk-react', () => sdk);
-const signedIn = { 'POST /api/auth/telegram-mini-app': () => json({ token: 'fixture', expiresAt: '2026-11-06T00:00:00Z', user: user() }), 'GET /api/today': () => json(STARTER) };
+const signedIn = { 'POST /api/auth/telegram-mini-app': () => json({ token: 'fixture', expiresAt: '2026-11-06T00:00:00Z', user: user() }), 'GET /api/trainings/options': () => json(OPTIONS) };
 const launch = { initDataRaw: 'fixture', languageCode: 'ru' };
 const back = () => sdk.backButton.onClick.ifAvailable.mock.calls.at(-1)?.[0]();
 
@@ -39,16 +39,16 @@ test('Telegram «назад» закрывает темы, затем конст
   await screen.getByRole('button', { name: 'Темы и сложность все' }).click(); back();
   await expect.element(screen.getByRole('heading', { name: 'Новая тренировка' })).toBeVisible();
   await screen.getByRole('button', { name: /Начать ·/ }).click(); await expect.element(screen.getByRole('heading', { name: 'Text Completion' })).toBeVisible(); back();
-  await expect.element(screen.getByRole('heading', { name: 'Сегодня' })).toBeVisible();
-  await screen.getByRole('link', { name: 'Своя тренировка' }).click(); await expect.element(screen.getByRole('heading', { name: 'Новая тренировка' })).toBeVisible(); back();
-  await expect.element(screen.getByRole('heading', { name: 'Сегодня' })).toBeVisible();
+  await expect.element(screen.getByRole('heading', { name: 'Тренировка' })).toBeVisible();
+  await screen.getByRole('link', { name: 'Настроить тренировку' }).click(); await expect.element(screen.getByRole('heading', { name: 'Новая тренировка' })).toBeVisible(); back();
+  await expect.element(screen.getByRole('heading', { name: 'Тренировка' })).toBeVisible();
 });
-test('Telegram «назад» во время загрузки возвращает на «Сегодня»', async () => {
+test('Telegram «назад» во время загрузки возвращает на «Тренировка»', async () => {
   let release: () => void = () => {}; const held = new Promise<void>((r) => { release = r; });
   fakeServer({ ...signedIn, 'GET /api/trainings/options': async () => { await held; return json(trainingOptions()); } });
   const { screen } = await renderApp({ path: '/training/new', shell: 'telegram', launch });
   await expect.element(screen.getByText('Загружаем темы')).toBeVisible(); back(); release();
-  await expect.element(screen.getByRole('heading', { name: 'Сегодня' })).toBeVisible();
+  await expect.element(screen.getByRole('heading', { name: 'Тренировка' })).toBeVisible();
 });
 
 
@@ -78,7 +78,7 @@ for (const enabled of [true, false]) test(`сессия сохраняет пр�
   await screen.getByRole('button', { name: /Начать ·/ }).click();
   await expect.element(screen.getByRole('heading', { name: 'Text Completion' })).toBeVisible();
   expect(sdk.swipeBehavior.disableVertical.ifAvailable).toHaveBeenCalled();
-  back(); await expect.element(screen.getByRole('heading', { name: 'Сегодня' })).toBeVisible();
+  back(); await expect.element(screen.getByRole('heading', { name: 'Тренировка' })).toBeVisible();
   expect(sdk.swipeBehavior.enableVertical.ifAvailable.mock.calls.length > 0).toBe(enabled);
   await expect.element(screen.getByRole('link', { name: /Продолжить тренировку/ })).toBeVisible();
 });
@@ -92,7 +92,7 @@ test('после перезагрузки отключённые сессией 
   const { screen } = await renderApp({ path: '/training/new', shell: 'telegram', launch });
   await screen.getByRole('button', { name: /Начать ·/ }).click();
   await expect.element(screen.getByRole('heading', { name: 'Text Completion' })).toBeVisible();
-  back(); await expect.element(screen.getByRole('heading', { name: 'Сегодня' })).toBeVisible();
+  back(); await expect.element(screen.getByRole('heading', { name: 'Тренировка' })).toBeVisible();
   expect(sdk.swipeBehavior.enableVertical.ifAvailable).toHaveBeenCalled();
   expect(sessionStorage.getItem('greprep.training.swipes')).toBeNull();
 });
@@ -108,7 +108,7 @@ for (const stored of ['disabled', 'broken', 'storage-failed', 'cleanup-failed', 
   await screen.getByRole('button', { name: /Начать ·/ }).click();
   await expect.element(screen.getByRole('heading', { name: 'Text Completion' })).toBeVisible();
   if (stored === 'cleanup-failed') vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => { throw new DOMException('fixture denied'); });
-  back(); await expect.element(screen.getByRole('heading', { name: 'Сегодня' })).toBeVisible();
+  back(); await expect.element(screen.getByRole('heading', { name: 'Тренировка' })).toBeVisible();
   expect(sdk.swipeBehavior.enableVertical.ifAvailable.mock.calls.length > 0).toBe(stored !== 'disabled' && stored !== 'unsupported');
   sdk.swipeBehavior.disableVertical.isAvailable.mockReturnValue(true);
 });
@@ -134,7 +134,7 @@ test('свайпы выключены только на вопросе и жал
   expect(sdk.swipeBehavior.enableVertical.ifAvailable).toHaveBeenCalledTimes(1);
   for (const heading of ['Вопрос 1', 'Разбор тренировки', '0 из 3 верно']) { back(); await expect.element(screen.getByRole('heading', { name: heading, exact: true })).toBeVisible(); }
   await screen.getByRole('button', { name: 'Готово', exact: true }).click();
-  await expect.element(screen.getByRole('heading', { name: 'Сегодня' })).toBeVisible();
+  await expect.element(screen.getByRole('heading', { name: 'Тренировка' })).toBeVisible();
   expect(sdk.swipeBehavior.enableVertical.ifAvailable).toHaveBeenCalledTimes(2);
 });
 
@@ -169,4 +169,18 @@ test('на маршруте жалобы свайпы выключены и по
   expect(sdk.swipeBehavior.enableVertical.ifAvailable).not.toHaveBeenCalled();
   back(); await expect.element(screen.getByRole('heading', { name: 'Text Completion' })).toBeVisible();
   expect(sdk.swipeBehavior.enableVertical.ifAvailable).not.toHaveBeenCalled();
+});
+
+test('оболочка: нативный назад закрывает выбор экзамена и возвращает из профиля во вкладку', async () => {
+  fakeServer(signedIn);
+  const { screen } = await renderApp({ path: '/tg/', shell: 'telegram', launch });
+  await screen.getByRole('button', { name: 'Экзамен: GRE, сменить' }).click();
+  await expect.element(screen.getByRole('dialog')).toBeVisible();
+  back();
+  await expect.element(screen.getByRole('dialog')).not.toBeInTheDocument();
+  await screen.getByRole('link', { name: 'Слова', exact: true }).click();
+  await screen.getByRole('link', { name: 'Профиль', exact: true }).click();
+  await expect.element(screen.getByRole('button', { name: 'Подписка' })).toBeDisabled();
+  back();
+  await expect.element(screen.getByRole('heading', { name: 'Слова', exact: true })).toBeVisible();
 });
