@@ -14,6 +14,7 @@
 //
 //	TEST_DATABASE_URL  Postgres, где создаётся база стенда (как у интеграционных тестов)
 //	E2E_DB             имя базы стенда (greprep_web_e2e)
+//	E2E_SLOT           независимый слот; по умолчанию 0 — прежние имена и порты
 //	E2E_API_ADDR       адрес API (127.0.0.1:8093)
 //	E2E_OIDC_ADDR      адрес подменного провайдера (127.0.0.1:8094)
 //	E2E_WEB_ORIGIN     адрес сайта под тестом — из него адрес возврата после входа (http://localhost:5191)
@@ -63,11 +64,15 @@ func env(key, def string) string {
 }
 
 func run(ctx context.Context, log *slog.Logger) error {
+	slot, err := e2eSlot(os.Getenv("E2E_SLOT"))
+	if err != nil {
+		return err
+	}
 	admin := env("TEST_DATABASE_URL", "postgres://greprep:greprep@127.0.0.1:55432/greprep?sslmode=disable")
-	dbName := env("E2E_DB", "greprep_web_e2e")
-	apiAddr := env("E2E_API_ADDR", "127.0.0.1:8093")
-	oidcAddr := env("E2E_OIDC_ADDR", "127.0.0.1:8094")
-	webOrigin := env("E2E_WEB_ORIGIN", "http://localhost:5191")
+	dbName := env("E2E_DB", slot.database)
+	apiAddr := env("E2E_API_ADDR", slot.apiAddr)
+	oidcAddr := env("E2E_OIDC_ADDR", slot.oidcAddr)
+	webOrigin := env("E2E_WEB_ORIGIN", slot.webOrigin)
 	botToken := os.Getenv("E2E_BOT_TOKEN")
 	if botToken == "" {
 		return errors.New("E2E_BOT_TOKEN is required (apps/web/playwright.config.ts sets it)")

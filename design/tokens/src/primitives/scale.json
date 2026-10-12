@@ -1,7 +1,5 @@
 {
   "space": {
-    "$type": "dimension",
-    "$description": "Отступы и промежутки: шаг 4 px, полушаги 2/6/10/14 — для плотных мест.",
     "2": {
       "$value": {
         "value": 2,
@@ -103,20 +101,22 @@
         "value": 72,
         "unit": "px"
       }
-    }
+    },
+    "$type": "dimension",
+    "$description": "Отступы и промежутки: шаг 4 px, полушаги 2/6/10/14 — для плотных мест."
   },
   "radius": {
     "$type": "dimension",
     "s": {
       "$value": {
-        "value": 10,
+        "value": 12,
         "unit": "px"
       },
       "$description": "Малые элементы: --r-s."
     },
     "m": {
       "$value": {
-        "value": 16,
+        "value": 18,
         "unit": "px"
       },
       "$description": "Варианты ответа и средние карточки: --r-m."
@@ -147,7 +147,7 @@
     },
     "button": {
       "$value": {
-        "value": 52,
+        "value": 54,
         "unit": "px"
       },
       "$description": "Кнопка действия .frame .btn."
@@ -175,7 +175,7 @@
     },
     "opt": {
       "$value": {
-        "value": 52,
+        "value": 54,
         "unit": "px"
       },
       "$description": "Вариант ответа."
@@ -189,7 +189,7 @@
     },
     "icon-sm": {
       "$value": {
-        "value": 16,
+        "value": 18,
         "unit": "px"
       },
       "$description": "Малая иконка .ic-sm."
@@ -203,14 +203,14 @@
     },
     "section-mark": {
       "$value": {
-        "value": 10,
+        "value": 9,
         "unit": "px"
       },
       "$description": "Точка цвета раздела."
     },
     "session-bar": {
       "$value": {
-        "value": 3,
+        "value": 4,
         "unit": "px"
       },
       "$description": "Полоса продвижения сессии."
@@ -234,21 +234,21 @@
     "$type": "dimension",
     "gutter": {
       "$value": {
-        "value": 22,
+        "value": 20,
         "unit": "px"
       },
       "$description": "Боковые поля .frame .main на телефоне."
     },
     "gutter-wide": {
       "$value": {
-        "value": 64,
+        "value": 56,
         "unit": "px"
       },
       "$description": "Боковые поля .frame .main на компьютере."
     },
     "main-top": {
       "$value": {
-        "value": 12,
+        "value": 0,
         "unit": "px"
       },
       "$description": "Верхнее поле основного содержимого."
@@ -262,21 +262,21 @@
     },
     "main-bottom-nav": {
       "$value": {
-        "value": 96,
+        "value": 112,
         "unit": "px"
       },
       "$description": "Место под нижнюю навигацию."
     },
     "nav-bottom": {
       "$value": {
-        "value": 28,
+        "value": 30,
         "unit": "px"
       },
       "$description": "Нижнее поле навигации."
     },
     "sidebar-width": {
       "$value": {
-        "value": 232,
+        "value": 248,
         "unit": "px"
       },
       "$description": "Ширина боковой навигации."
@@ -322,7 +322,7 @@
       "$type": "duration",
       "press": {
         "$value": {
-          "value": 160,
+          "value": 140,
           "unit": "ms"
         },
         "$description": "Отклик на нажатие"
@@ -346,16 +346,16 @@
       "$type": "cubicBezier",
       "out": {
         "$value": [
-          0.2,
-          0.8,
-          0.2,
+          0.23,
+          1,
+          0.32,
           1
         ],
-        "$description": "Кривая переходов вариантов ответа и карточек экзамена из core.css."
+        "$description": "Кривая ease-out из app-b/index.html."
       }
     },
     "press-scale": {
-      "$value": 0.98,
+      "$value": 0.97,
       "$type": "number",
       "$description": "Сжатие при нажатии"
     }

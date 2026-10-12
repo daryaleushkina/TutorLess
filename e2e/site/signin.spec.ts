@@ -1,17 +1,17 @@
-// Сайт: вход тремя способами через подменный провайдер (server/cmd/e2estack) — весь путь OIDC с PKCE, обмен
+import { e2eSlot } from '../../tools/dev/e2e-slot';
+// Сайт: вход через Apple и Google с подменным провайдером (server/cmd/e2estack) — весь путь OIDC с PKCE, обмен
 // кода на сервере, кука сессии; выход; отказы.
 import type { Page } from '@playwright/test';
-import { expect, newTelegramUser, signInitData, test } from '../fixtures';
+import { expect, test } from '../fixtures';
 
 const PROVIDERS = [
-  ['Войти через Telegram', 'telegram'],
   ['Вход с Apple', 'apple'],
   ['Войти с аккаунтом Google', 'google'],
 ] as const;
 
 /** Подменный провайдер пускает «человека» из login_hint: так тест задаёт, кто входит, или отказ (deny). */
 async function loginAs(page: Page, hint: string) {
-  await page.route('http://127.0.0.1:8094/auth?**', (route) => {
+  await page.route(`http://127.0.0.1:${e2eSlot().oidcPort}/auth?**`, (route) => {
     const url = new URL(route.request().url());
     url.searchParams.set('login_hint', hint);
     return route.continue({ url: url.toString() });
@@ -22,19 +22,19 @@ test.beforeEach(async ({ page, watch }) => {
   watch(page);
 });
 
-test('без входа — экран входа: три официальные кнопки, условия, дисклеймер ETS', async ({ page }) => {
+test('без входа — экран входа: две официальные кнопки, условия, дисклеймер ETS', async ({ page }) => {
   await page.goto('/');
   await page.waitForURL((url) => url.pathname === '/signin');
   expect(new URL(page.url()).searchParams.has('returnTo')).toBe(false);
   for (const [name] of PROVIDERS) await expect(page.getByRole('button', { name })).toBeVisible();
+  await expect(page.locator('[data-official-button="telegram"]')).toHaveCount(0);
   await expect(page.getByText('Продолжая, вы принимаете условия и политику конфиденциальности.')).toBeVisible();
   await expect(page.getByText(/is a registered trademark of Educational Testing Service/)).toBeVisible();
 });
 
 for (const [button, provider] of PROVIDERS) {
   test(`вход «${button}» → «Сегодня»; после перезагрузки — всё ещё вошли; «Выйти» — снова вход`, async ({ page }, testInfo) => {
-    // У Telegram человек — это его числовой id; у Apple и Google — строка sub.
-    await loginAs(page, provider === 'telegram' ? String(newTelegramUser().id) : `${provider}-${testInfo.testId}`);
+    await loginAs(page, `${provider}-${testInfo.testId}`);
     await page.goto('/signin');
     // Нажатие только запускает уход. Всю цепочку перенаправлений ждём как навигацию до конечного адреса.
     await page.getByRole('button', { name: button }).click({ noWaitAfter: true });
@@ -58,21 +58,6 @@ for (const [button, provider] of PROVIDERS) {
   });
 }
 
-test('вход через Telegram на сайте попадает в аккаунт мини-аппа (тот же Telegram id)', async ({ page }) => {
-  const user = newTelegramUser();
-  // Сначала человек открыл мини-апп — аккаунт заведён по initData.
-  const mini = await page.request.post('/api/auth/telegram-mini-app', { data: { initData: signInitData(user) } });
-  expect(mini.status()).toBe(200);
-  const miniAppAccount = ((await mini.json()) as { user: { id: string } }).user.id;
-  // Потом — сайт, кнопка Telegram, тот же id у провайдера.
-  await loginAs(page, String(user.id));
-  await page.goto('/signin');
-  await page.getByRole('button', { name: 'Войти через Telegram' }).click({ noWaitAfter: true });
-  await page.waitForURL((url) => url.pathname === '/');
-  await expect(page.getByRole('heading', { level: 1, name: 'Сегодня' })).toBeVisible();
-  const me = await page.request.get('/api/me');
-  expect(((await me.json()) as { id: string }).id).toBe(miniAppAccount);
-});
 
 test('отмена на странице провайдера — «Вход отменён», можно снова', async ({ page }) => {
   await loginAs(page, 'deny');
@@ -116,7 +101,7 @@ test('глубокая ссылка → отмена у провайдера →
   await page.getByRole('button', { name: 'Войти с аккаунтом Google' }).click({ noWaitAfter: true });
   await page.waitForURL((url) => url.pathname === '/signin' && url.searchParams.get('reason') === 'cancelled');
   expect(new URL(page.url()).searchParams.get('returnTo')).toBe('/settings');
-  await page.unroute('http://127.0.0.1:8094/auth?**');
+  await page.unroute(`http://127.0.0.1:${e2eSlot().oidcPort}/auth?**`);
   await loginAs(page, `google-deep-${info.testId}`);
   await page.getByRole('button', { name: 'Войти с аккаунтом Google' }).click({ noWaitAfter: true });
   await page.waitForURL((url) => url.pathname === '/settings');

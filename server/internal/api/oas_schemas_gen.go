@@ -859,6 +859,74 @@ func (s *HealthStatus) UnmarshalText(data []byte) error {
 	}
 }
 
+// Ref: #/components/schemas/Home
+type Home struct {
+	LastTraining NilLastTraining `json:"lastTraining"`
+	// Все разделы экзамена в порядке справочника; без
+	// ответов — нули; точность correct / total.
+	Sections []SectionStats `json:"sections"`
+	// Число разных опубликованных заданий (status=approved),
+	// последний сохранённый ответ на которые неверный, за
+	// всё время. Последний — по answeredAt, при совпадении по
+	// началу тренировки и её id. Неотвеченные позиции не
+	// заменяют последний ответ; черновики и снятые задания
+	// не считаются. Число соответствует source=mistakes без
+	// дополнительных фильтров конструктора.
+	Mistakes int         `json:"mistakes"`
+	WeakSpot NilWeakSpot `json:"weakSpot"`
+	Week     WeekStats   `json:"week"`
+}
+
+// GetLastTraining returns the value of LastTraining.
+func (s *Home) GetLastTraining() NilLastTraining {
+	return s.LastTraining
+}
+
+// GetSections returns the value of Sections.
+func (s *Home) GetSections() []SectionStats {
+	return s.Sections
+}
+
+// GetMistakes returns the value of Mistakes.
+func (s *Home) GetMistakes() int {
+	return s.Mistakes
+}
+
+// GetWeakSpot returns the value of WeakSpot.
+func (s *Home) GetWeakSpot() NilWeakSpot {
+	return s.WeakSpot
+}
+
+// GetWeek returns the value of Week.
+func (s *Home) GetWeek() WeekStats {
+	return s.Week
+}
+
+// SetLastTraining sets the value of LastTraining.
+func (s *Home) SetLastTraining(val NilLastTraining) {
+	s.LastTraining = val
+}
+
+// SetSections sets the value of Sections.
+func (s *Home) SetSections(val []SectionStats) {
+	s.Sections = val
+}
+
+// SetMistakes sets the value of Mistakes.
+func (s *Home) SetMistakes(val int) {
+	s.Mistakes = val
+}
+
+// SetWeakSpot sets the value of WeakSpot.
+func (s *Home) SetWeakSpot(val NilWeakSpot) {
+	s.WeakSpot = val
+}
+
+// SetWeek sets the value of Week.
+func (s *Home) SetWeek(val WeekStats) {
+	s.Week = val
+}
+
 // Ref: #/components/schemas/IdTokenSignIn
 type IdTokenSignIn struct {
 	Provider IdentityProvider `json:"provider"`
@@ -997,6 +1065,40 @@ func (s *IdentityProvider) UnmarshalText(data []byte) error {
 	}
 }
 
+// Последняя начатая тренировка по startedAt (при совпадении
+// — id), даже без ответов. Нет тренировки или её запрос
+// содержит тип вне переданного types — null. Запрос старого
+// сервера без exam дополняется из строки тренировки.
+// Нечитаемый старый запрос — null и запись ошибки в журнал
+// сервера.
+// Ref: #/components/schemas/LastTraining
+type LastTraining struct {
+	Request TrainingRequest `json:"request"`
+	// Фактическое число заданий сессии; request.count — исходное
+	// пожелание, оно может быть больше.
+	Size int `json:"size"`
+}
+
+// GetRequest returns the value of Request.
+func (s *LastTraining) GetRequest() TrainingRequest {
+	return s.Request
+}
+
+// GetSize returns the value of Size.
+func (s *LastTraining) GetSize() int {
+	return s.Size
+}
+
+// SetRequest sets the value of Request.
+func (s *LastTraining) SetRequest(val TrainingRequest) {
+	s.Request = val
+}
+
+// SetSize sets the value of Size.
+func (s *LastTraining) SetSize(val int) {
+	s.Size = val
+}
+
 // Ref: #/components/schemas/LinkedIdentity
 type LinkedIdentity struct {
 	Provider IdentityProvider `json:"provider"`
@@ -1065,6 +1167,21 @@ func (s *Locale) UnmarshalText(data []byte) error {
 	}
 }
 
+// Ref: #/components/schemas/LocaleChoice
+type LocaleChoice struct {
+	Locale Locale `json:"locale"`
+}
+
+// GetLocale returns the value of Locale.
+func (s *LocaleChoice) GetLocale() Locale {
+	return s.Locale
+}
+
+// SetLocale sets the value of Locale.
+func (s *LocaleChoice) SetLocale(val Locale) {
+	s.Locale = val
+}
+
 // Ref: #/components/schemas/LocalizedText
 type LocalizedText struct {
 	Ru string `json:"ru"`
@@ -1130,6 +1247,96 @@ func (o NilActiveExam) Get() (v ActiveExam, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o NilActiveExam) Or(d ActiveExam) ActiveExam {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewNilLastTraining returns new NilLastTraining with value set to v.
+func NewNilLastTraining(v LastTraining) NilLastTraining {
+	return NilLastTraining{
+		Value: v,
+	}
+}
+
+// NilLastTraining is nullable LastTraining.
+type NilLastTraining struct {
+	Value LastTraining
+	Null  bool
+}
+
+// SetTo sets value to v.
+func (o *NilLastTraining) SetTo(v LastTraining) {
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o NilLastTraining) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *NilLastTraining) SetToNull() {
+	o.Null = true
+	var v LastTraining
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o NilLastTraining) Get() (v LastTraining, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o NilLastTraining) Or(d LastTraining) LastTraining {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewNilWeakSpot returns new NilWeakSpot with value set to v.
+func NewNilWeakSpot(v WeakSpot) NilWeakSpot {
+	return NilWeakSpot{
+		Value: v,
+	}
+}
+
+// NilWeakSpot is nullable WeakSpot.
+type NilWeakSpot struct {
+	Value WeakSpot
+	Null  bool
+}
+
+// SetTo sets value to v.
+func (o *NilWeakSpot) SetTo(v WeakSpot) {
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o NilWeakSpot) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *NilWeakSpot) SetToNull() {
+	o.Null = true
+	var v WeakSpot
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o NilWeakSpot) Get() (v WeakSpot, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o NilWeakSpot) Or(d WeakSpot) WeakSpot {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -1590,6 +1797,52 @@ func (o OptString) Get() (v string, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptString) Or(d string) string {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptTrainingSource returns new OptTrainingSource with value set to v.
+func NewOptTrainingSource(v TrainingSource) OptTrainingSource {
+	return OptTrainingSource{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptTrainingSource is optional TrainingSource.
+type OptTrainingSource struct {
+	Value TrainingSource
+	Set   bool
+}
+
+// IsSet returns true if OptTrainingSource was set.
+func (o OptTrainingSource) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptTrainingSource) Reset() {
+	var v TrainingSource
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptTrainingSource) SetTo(v TrainingSource) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptTrainingSource) Get() (v TrainingSource, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptTrainingSource) Or(d TrainingSource) TrainingSource {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -2280,6 +2533,43 @@ func (s *Section) UnmarshalText(data []byte) error {
 	}
 }
 
+// Ref: #/components/schemas/SectionStats
+type SectionStats struct {
+	Section Section `json:"section"`
+	Total   int     `json:"total"`
+	Correct int     `json:"correct"`
+}
+
+// GetSection returns the value of Section.
+func (s *SectionStats) GetSection() Section {
+	return s.Section
+}
+
+// GetTotal returns the value of Total.
+func (s *SectionStats) GetTotal() int {
+	return s.Total
+}
+
+// GetCorrect returns the value of Correct.
+func (s *SectionStats) GetCorrect() int {
+	return s.Correct
+}
+
+// SetSection sets the value of Section.
+func (s *SectionStats) SetSection(val Section) {
+	s.Section = val
+}
+
+// SetTotal sets the value of Total.
+func (s *SectionStats) SetTotal(val int) {
+	s.Total = val
+}
+
+// SetCorrect sets the value of Correct.
+func (s *SectionStats) SetCorrect(val int) {
+	s.Correct = val
+}
+
 // Ref: #/components/schemas/Session
 type Session struct {
 	// Только при transport=bearer; хранить в Keychain / Keystore, в мини-аппе
@@ -2803,8 +3093,9 @@ func (s *TrainingPreset) SetRequest(val TrainingRequest) {
 
 // Ref: #/components/schemas/TrainingRequest
 type TrainingRequest struct {
-	Exam    Exam    `json:"exam"`
-	Section Section `json:"section"`
+	Source  OptTrainingSource `json:"source"`
+	Exam    Exam              `json:"exam"`
+	Section Section           `json:"section"`
 	// Конструктор даёт один тип; «Проверка на время» — все
 	// типы раздела вперемешку (макет R16).
 	QuestionTypes []QuestionType `json:"questionTypes"`
@@ -2813,6 +3104,11 @@ type TrainingRequest struct {
 	Difficulty OptDifficulty `json:"difficulty"`
 	Count      int           `json:"count"`
 	Mode       TrainingMode  `json:"mode"`
+}
+
+// GetSource returns the value of Source.
+func (s *TrainingRequest) GetSource() OptTrainingSource {
+	return s.Source
 }
 
 // GetExam returns the value of Exam.
@@ -2848,6 +3144,11 @@ func (s *TrainingRequest) GetCount() int {
 // GetMode returns the value of Mode.
 func (s *TrainingRequest) GetMode() TrainingMode {
 	return s.Mode
+}
+
+// SetSource sets the value of Source.
+func (s *TrainingRequest) SetSource(val OptTrainingSource) {
+	s.Source = val
 }
 
 // SetExam sets the value of Exam.
@@ -2989,6 +3290,50 @@ func (s *TrainingSession) SetFinishedAt(val OptDateTime) {
 // SetItems sets the value of Items.
 func (s *TrainingSession) SetItems(val []TrainingItem) {
 	s.Items = val
+}
+
+// Catalog (также при отсутствии поля) — весь каталог; mistakes —
+// только свои последние неверные ответы.
+// Ref: #/components/schemas/TrainingSource
+type TrainingSource string
+
+const (
+	TrainingSourceCatalog  TrainingSource = "catalog"
+	TrainingSourceMistakes TrainingSource = "mistakes"
+)
+
+// AllValues returns all TrainingSource values.
+func (TrainingSource) AllValues() []TrainingSource {
+	return []TrainingSource{
+		TrainingSourceCatalog,
+		TrainingSourceMistakes,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s TrainingSource) MarshalText() ([]byte, error) {
+	switch s {
+	case TrainingSourceCatalog:
+		return []byte(s), nil
+	case TrainingSourceMistakes:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *TrainingSource) UnmarshalText(data []byte) error {
+	switch TrainingSource(data) {
+	case TrainingSourceCatalog:
+		*s = TrainingSourceCatalog
+		return nil
+	case TrainingSourceMistakes:
+		*s = TrainingSourceMistakes
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
 }
 
 // Ref: #/components/schemas/TrainingSummary
@@ -3207,4 +3552,102 @@ func (s *User) SetActiveExam(val NilActiveExam) {
 // SetIdentities sets the value of Identities.
 func (s *User) SetIdentities(val []LinkedIdentity) {
 	s.Identities = val
+}
+
+// Тип с наименьшей точностью среди типов с минимум 10
+// сохранёнными ответами за скользящие последние 30 суток
+// и точностью строго ниже 70 процентов. Интервал [сейчас -
+// 30 суток, сейчас]. При одинаковой точности — тип в
+// лексикографическом порядке. Нет кандидата — null.
+// Ref: #/components/schemas/WeakSpot
+type WeakSpot struct {
+	QuestionType QuestionType `json:"questionType"`
+	Section      Section      `json:"section"`
+	// Процент верных ответов, 100 * correct / total, без округления.
+	Accuracy float64 `json:"accuracy"`
+}
+
+// GetQuestionType returns the value of QuestionType.
+func (s *WeakSpot) GetQuestionType() QuestionType {
+	return s.QuestionType
+}
+
+// GetSection returns the value of Section.
+func (s *WeakSpot) GetSection() Section {
+	return s.Section
+}
+
+// GetAccuracy returns the value of Accuracy.
+func (s *WeakSpot) GetAccuracy() float64 {
+	return s.Accuracy
+}
+
+// SetQuestionType sets the value of QuestionType.
+func (s *WeakSpot) SetQuestionType(val QuestionType) {
+	s.QuestionType = val
+}
+
+// SetSection sets the value of Section.
+func (s *WeakSpot) SetSection(val Section) {
+	s.Section = val
+}
+
+// SetAccuracy sets the value of Accuracy.
+func (s *WeakSpot) SetAccuracy(val float64) {
+	s.Accuracy = val
+}
+
+// Текущая календарная неделя в tz: от понедельника 00:00
+// включительно до следующего понедельника 00:00
+// исключительно (учитываются переходы летнего времени).
+// days — число местных дат с ответами, answers — число
+// сохранённых ответов в этом интервале. Ответы сессии
+// упорядочены по answeredAt, при совпадении — по позиции. Для
+// каждого ответа интервал начинается с предыдущего
+// answeredAt, для первого — со startedAt. Каждый интервал
+// ограничен 300 секундами: пауза дольше — человек отошёл.
+// Время сессии ограничено timeLimitSeconds, если лимит есть,
+// включая расход до начала недели. Для ответов недели
+// берётся только часть интервала после её начала; первый
+// ответ учитывает время от startedAt только если старт тоже в
+// неделе. minutes = floor(sum(учтённых секунд) / 60). Завершение без
+// ответа и elapsedMs не добавляют времени. Сначала
+// суммируются интервалы всех сессий, затем округляются
+// минуты; лимит сессии не возобновляется с началом новой
+// недели.
+// Ref: #/components/schemas/WeekStats
+type WeekStats struct {
+	Days    int `json:"days"`
+	Answers int `json:"answers"`
+	Minutes int `json:"minutes"`
+}
+
+// GetDays returns the value of Days.
+func (s *WeekStats) GetDays() int {
+	return s.Days
+}
+
+// GetAnswers returns the value of Answers.
+func (s *WeekStats) GetAnswers() int {
+	return s.Answers
+}
+
+// GetMinutes returns the value of Minutes.
+func (s *WeekStats) GetMinutes() int {
+	return s.Minutes
+}
+
+// SetDays sets the value of Days.
+func (s *WeekStats) SetDays(val int) {
+	s.Days = val
+}
+
+// SetAnswers sets the value of Answers.
+func (s *WeekStats) SetAnswers(val int) {
+	s.Answers = val
+}
+
+// SetMinutes sets the value of Minutes.
+func (s *WeekStats) SetMinutes(val int) {
+	s.Minutes = val
 }

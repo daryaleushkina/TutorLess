@@ -29,7 +29,7 @@ describe('pkce', () => {
 describe('beginSignIn', () => {
   it('адрес провайдера: код, PKCE, state, nonce, свои параметры провайдера сохранены', async () => {
     const storage = memoryStorage();
-    const url = new URL(await beginSignIn('telegram', config, 'https://site.example', storage, 1000));
+    const url = new URL(await beginSignIn('google', config, 'https://site.example', storage, 1000));
     const attempt = JSON.parse(storage.data.values().next().value ?? '{}');
     expect(url.origin + url.pathname).toBe('https://oauth.example/auth');
     expect(Object.fromEntries(url.searchParams)).toEqual({
@@ -43,7 +43,7 @@ describe('beginSignIn', () => {
       code_challenge: await codeChallenge(attempt.codeVerifier),
       code_challenge_method: 'S256',
     });
-    expect(attempt).toMatchObject({ provider: 'telegram', startedAt: 1000, redirectUri: `https://site.example${CALLBACK_PATH}` });
+    expect(attempt).toMatchObject({ provider: 'google', startedAt: 1000, redirectUri: `https://site.example${CALLBACK_PATH}` });
   });
 
   it('Apple на сайте — без scope: с name/email он требует form_post', async () => {

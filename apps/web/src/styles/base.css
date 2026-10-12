@@ -8,23 +8,33 @@
  */
 
 :root {
+  /* Запасные размеры вне Telegram; bindCssVars SDK перекрывает их inline после ответа клиента. */
+  --tg-viewport-stable-height: 100dvh;
+  --tg-viewport-height: 100dvh;
+  --app-visible-height: 100dvh;
+  --app-visible-top: 0px;
+  --tg-viewport-safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --tg-viewport-safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --tg-viewport-safe-area-inset-left: env(safe-area-inset-left, 0px);
+  --tg-viewport-safe-area-inset-right: env(safe-area-inset-right, 0px);
+  --tg-viewport-content-safe-area-inset-top: 0px;
+  --tg-viewport-content-safe-area-inset-bottom: 0px;
+  --tg-viewport-content-safe-area-inset-left: 0px;
+  --tg-viewport-content-safe-area-inset-right: 0px;
   /*
    * Видимая высота: в мини-аппе — от Telegram (по stableHeight, навык), на сайте — 100dvh. Не больше 100dvh: Telegram на
    * iPhone бывает сообщает высоту больше видимой, и капсула вкладок уезжала за нижний край (docs/HANDOFF.md, «Telegram»).
    */
-  --app-height: min(var(--tg-viewport-stable-height, 100dvh), 100dvh);
+  --app-height: min(var(--tg-viewport-height, var(--tg-viewport-stable-height, 100dvh)), var(--app-visible-height, 100dvh), 100dvh);
   /*
    * Отступы = системные (вырез, полоска «домой») + интерфейс Telegram поверх содержимого (кнопки шапки в
    * полноэкранном режиме). Сумма — практика сообщества, документация Telegram её явно не описывает (навык).
-   * Вне Telegram переменных нет — работает env().
+   * Вне Telegram запасные значения выше берутся из env().
    */
   --app-inset-top: calc(var(--tg-viewport-safe-area-inset-top, env(safe-area-inset-top, 0px)) + var(--tg-viewport-content-safe-area-inset-top, 0px));
   --app-inset-bottom: calc(var(--tg-viewport-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)) + var(--tg-viewport-content-safe-area-inset-bottom, 0px));
   --app-inset-left: calc(var(--tg-viewport-safe-area-inset-left, env(safe-area-inset-left, 0px)) + var(--tg-viewport-content-safe-area-inset-left, 0px));
   --app-inset-right: calc(var(--tg-viewport-safe-area-inset-right, env(safe-area-inset-right, 0px)) + var(--tg-viewport-content-safe-area-inset-right, 0px));
-  /* Свет сверху экрана — цвет раздела текущего шага; без света стекла не видно (DESIGN.md, «Elevation»). */
-  --glow-strong: var(--color-glow-verbal-strong);
-  --glow-soft: var(--color-glow-verbal-soft);
 }
 
 *,
@@ -53,6 +63,8 @@ body {
 }
 
 #root {
+  position: relative;
+  top: var(--app-visible-top, 0px);
   height: var(--app-height);
 }
 
@@ -104,7 +116,7 @@ a:active {
 }
 
 ::selection {
-  background: var(--color-verbal-tint);
+  background: var(--color-highlight);
 }
 
 @media (prefers-reduced-motion: reduce) {

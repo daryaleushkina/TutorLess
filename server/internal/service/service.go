@@ -37,12 +37,13 @@ const dbTimeout = 5 * time.Second
 
 // Service — все обработчики API.
 type Service struct {
-	cfg  config.Config
-	pool *pgxpool.Pool
-	q    *db.Queries
-	oidc *auth.OIDC
-	log  *slog.Logger
-	now  func() time.Time
+	cfg   config.Config
+	pool  *pgxpool.Pool
+	q     *db.Queries
+	oidc  *auth.OIDC
+	log   *slog.Logger
+	now   func() time.Time
+	zones locationCache
 }
 
 var (

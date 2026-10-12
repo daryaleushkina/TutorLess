@@ -24,7 +24,7 @@ export function StepScreen(): ReactNode {
   // Назад — по истории (на «Сегодня» вернётся прокрутка); открыли шаг сразу по ссылке — на «Сегодня».
   useBackButton(shell === 'telegram' ? () => (router.history.canGoBack() ? router.history.back() : void navigate({ to: '/' })) : null);
   return (
-    <FocusLayout glow={step?.section ?? 'verbal'}>
+    <FocusLayout>
       <div className={styles.screen}>
         {shell === 'site' && <BackLink fallback="/" />}
         <StatusScreen title={step?.title ?? t.placeholder.soon} text={t.placeholder.step} />

@@ -27,7 +27,7 @@ for (const fixture of roles) {
         assert.equal(token.$value.lineHeight, expected.height);
         assert.deepEqual(token.$value.letterSpacing, expected.tracking);
         assert.equal(token.$value.fontWeight, thin ? thinWeight : expected.weight);
-        assert.deepEqual(token.$value.fontFamily, ['Geologica', 'Onest', 'system-ui', 'sans-serif']);
+        assert.deepEqual(token.$value.fontFamily, ['Onest', 'Helvetica Neue', 'Arial', 'sans-serif']);
         if (thin) assert.equal(token.original.$value.fontWeight, '{font.weight.thin}');
       }
       const height = Number((expected.size * expected.height).toFixed(4));

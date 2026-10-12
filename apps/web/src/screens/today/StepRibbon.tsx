@@ -162,6 +162,10 @@ export function RibbonSkeleton(): ReactNode {
           <span className={`${styles.skLine} ${styles.sk}`} data-w="sub" />
         </div>
       </div>
+      <div className={styles.end}>
+        <span className={`${styles.endDot} ${styles.sk}`} />
+        <span className={`${styles.skLine} ${styles.sk}`} data-w="end" />
+      </div>
     </div>
   );
 }

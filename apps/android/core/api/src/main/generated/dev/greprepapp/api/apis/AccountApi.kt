@@ -9,6 +9,7 @@ import kotlinx.serialization.Serializable
 
 import dev.greprepapp.api.models.Error
 import dev.greprepapp.api.models.ExamChoice
+import dev.greprepapp.api.models.LocaleChoice
 import dev.greprepapp.api.models.User
 
 interface AccountApi {
@@ -38,5 +39,19 @@ interface AccountApi {
      */
     @PUT("api/me/exam")
     suspend fun setActiveExam(@Body examChoice: ExamChoice): Response<User>
+
+    /**
+     * PUT api/me/locale
+     * Сменить язык аккаунта для всех устройств
+     * 
+     * Responses:
+     *  - 200: Пользователь с выбранным языком (тот же ответ, что GET /api/me)
+     *  - 0: Любая ошибка — машинный код, текст для журнала, id запроса
+     *
+     * @param localeChoice 
+     * @return [User]
+     */
+    @PUT("api/me/locale")
+    suspend fun setLocale(@Body localeChoice: LocaleChoice): Response<User>
 
 }

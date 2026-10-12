@@ -18,7 +18,7 @@ export function ReadTraining({ id, finishedOnly = false, wide = false, back, onB
   const training = useStoredTraining(id);
   const storage = useTrainingStorage();
   useBackButton(shell === 'telegram' ? onBack : null);
-  return <FocusLayout glow={training.data?.session.section ?? 'verbal'} training wide={wide} session>
+  return <FocusLayout training wide={wide} session>
     <div className={`${styles.screen} ${styles.readTraining}`} data-shell={shell} data-wide={wide} data-section={training.data?.session.section}>
       {shell === 'site' && back}
       {storage === 'blocked' ? <TrainingStorageBlocked /> : storage === 'unavailable' ? <StatusScreen title={t.training.training_storage_title} text={t.training.training_storage_message} /> :

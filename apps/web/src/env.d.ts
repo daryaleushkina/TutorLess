@@ -4,8 +4,6 @@
 // Пусто — у провайдера ещё нет аккаунта: кнопка видна и честно говорит «ещё не подключён» (как в приложении Apple).
 interface ImportMetaEnv {
   readonly VITE_APP_VERSION: string;
-  readonly VITE_OIDC_TELEGRAM_AUTHORIZATION_ENDPOINT?: string;
-  readonly VITE_OIDC_TELEGRAM_CLIENT_ID?: string;
   readonly VITE_OIDC_APPLE_AUTHORIZATION_ENDPOINT?: string;
   readonly VITE_OIDC_APPLE_CLIENT_ID?: string;
   readonly VITE_OIDC_GOOGLE_AUTHORIZATION_ENDPOINT?: string;

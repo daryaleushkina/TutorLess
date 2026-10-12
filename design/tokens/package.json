@@ -2,11 +2,13 @@
   "name": "@greprep/tokens",
   "private": true,
   "type": "module",
-  "description": "Токены дизайна «Ночной студии»: один источник (DTCG) → CSS, Swift, Kotlin и шапка DESIGN.md",
+  "description": "Токены спокойного стиля B: один источник (DTCG) → CSS, Swift, Kotlin и шапка DESIGN.md",
   "scripts": {
     "build": "node build.mjs",
     "check": "node build.mjs --check",
-    "test": "node --test test/*.test.mjs"
+    "test": "node --test test/*.test.mjs",
+    "derive:ink": "node derive-ink.mjs",
+    "check:ink": "node derive-ink.mjs --check"
   },
   "devDependencies": {
     "style-dictionary": "5.6.0"

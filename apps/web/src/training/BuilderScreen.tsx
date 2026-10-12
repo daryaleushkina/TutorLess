@@ -5,7 +5,7 @@ import { useRef, useState } from 'react';
 import { BackIcon, ChevronRightIcon } from '../components/icons';
 import { StatusScreen } from '../components/StatusScreen';
 import { useI18n } from '../i18n/i18n';
-import { FocusLayout } from '../layout/AppLayout';
+import { FocusFooter, FocusLayout } from '../layout/AppLayout';
 import { useShell } from '../shellContext';
 import { useSession } from '../session/session';
 import { useBackButton } from '../telegram/hooks';
@@ -13,6 +13,7 @@ import { useOnline } from '../useOnline';
 import glass from '../styles/glass.module.css';
 import { TrainingStorageBlocked } from './ReadTraining';
 import { TrainingAction } from './Action';
+import { SessionFooter } from './SessionFooter';
 import { TYPE_LABELS, available, defaultForm, formOf, initialBuilder, minutes, presetsOf, requestOf, toggleTopic, topicsOf, updateOptions, type BuilderForm } from './builder';
 import { useTrainingStorage } from './hooks';
 import { trainingRepository } from './repository';
@@ -36,7 +37,7 @@ function BuilderStatus({ offline, unavailable, retry }: { offline: boolean; unav
   const { shell } = useShell();
   const navigate = useNavigate();
   useBackButton(shell === 'telegram' ? () => void navigate({ to: '/' }) : null);
-  return <FocusLayout glow="verbal"><div className={styles.screen}>
+  return <FocusLayout><div className={styles.screen}>
     {shell === 'site' && <Link to="/" className={styles.back}><BackIcon />{t.back}</Link>}
     <h1 className={styles.title}>{t.training.training_new}</h1>
     {unavailable || offline ? <StatusScreen heading="h2" live title={offline ? t.training.training_offline_title : t.training.training_failed_title}
@@ -75,7 +76,7 @@ function ReadyBuilder({ options }: { options: TrainingOptions }) {
   useBackButton(shell === 'telegram' ? back : null);
 
   const start = async () => {
-    // Два сообщения моста могут прийти до следующего рендера: состояние ещё не выключило MainButton.
+    // Два нажатия могут прийти до следующего рендера: состояние ещё не выключило кнопку.
     if (starting.current || !request || storage !== 'ready') return;
     if (!online) { setProblem('offline'); return; }
     starting.current = true;
@@ -88,7 +89,7 @@ function ReadyBuilder({ options }: { options: TrainingOptions }) {
     } finally { starting.current = false; setBusy(false); }
   };
 
-  return <FocusLayout glow={form.section} training wide={!topics}><div className={styles.screen} data-shell={shell}>
+  return <FocusLayout training wide={!topics}><div className={styles.screen} data-shell={shell}>
     {shell === 'site' && <button type="button" className={styles.back} onClick={back}><BackIcon />{t.back}</button>}
     <h1 className={styles.title}>{topics ? text.builder_topics : text.training_new}</h1>
     {topics ? <>
@@ -108,7 +109,7 @@ function ReadyBuilder({ options }: { options: TrainingOptions }) {
             onClick={() => edit((f) => ({ ...f, difficulty }))}>{text[`difficulty_${difficulty}`]}</button>)}
         </div>
       </fieldset>
-      <TrainingAction text={text.topics_done(text.questionsCount(available(state)))} disabled={available(state) === 0} onClick={() => setTopics(false)} />
+      <FocusFooter><SessionFooter><TrainingAction text={text.topics_done(text.questionsCount(available(state)))} disabled={available(state) === 0} onClick={() => setTopics(false)} /></SessionFooter></FocusFooter>
     </> : <>
       <div className={styles.builder}>
         {presets.length > 0 && <div className={`${styles.group} ${glass.strong}`}>
@@ -146,8 +147,8 @@ function ReadyBuilder({ options }: { options: TrainingOptions }) {
       {storage === 'blocked' && <TrainingStorageBlocked heading="h2" />}
       {storage === 'unavailable' && <p role="alert" className={styles.note}>{text.training_storage_title}</p>}
       {!request && <p role="status" className={styles.note}>{text.builder_nothing}</p>}
-      <TrainingAction text={request ? text.builder_start(countLabel, minutes(options, request)) : text.builder_nothing}
-        disabled={!request || !online || storage !== 'ready'} busy={busy} onClick={() => void start()} />
+      <FocusFooter><SessionFooter><TrainingAction text={request ? text.builder_start(countLabel, minutes(options, request)) : text.builder_nothing}
+        disabled={!request || !online || storage !== 'ready'} busy={busy} onClick={() => void start()} /></SessionFooter></FocusFooter>
     </>}
   </div></FocusLayout>;
 }

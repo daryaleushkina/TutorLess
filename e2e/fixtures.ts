@@ -5,6 +5,7 @@ import { expect, test as base, type BrowserContext, type Locator, type Page } fr
 import { E2E_BOT_TOKEN, type TgOptions } from '../playwright.config';
 import { schemas, type User } from '../packages/api-client/src';
 import { telegramLocale } from '../apps/web/src/i18n/locale';
+import { THEME_STORAGE_KEY } from '../apps/web/src/styles/theme';
 
 export interface TelegramUser {
   id: number;
@@ -55,6 +56,8 @@ export interface Me {
 }
 
 type Fixtures = TgOptions & {
+  savedTheme: 'light' | 'dark' | null;
+  themeSetup: void;
   /** Человек мини-аппа (Telegram). */
   tgUser: TelegramUser;
   /** Человек, вошедший через miniApp или site: me.api(...) — запросы от его имени. */
@@ -73,6 +76,19 @@ export const test = base.extend<Fixtures>({
   tgTheme: ['light', { option: true }],
   tgPlatform: ['ios', { option: true }],
   tgInsets: ['0,0,0,0', { option: true }],
+
+  // Светлые проекты выбирают тему на устройстве; тёмные проверяют умолчание без сохранённого выбора.
+  savedTheme: [async ({ tgTheme }, use, info) => {
+    const light = info.project.name.startsWith('tg-') ? tgTheme === 'light' : info.project.use.colorScheme === 'light';
+    await use(light ? 'light' : null);
+  }, { option: true }],
+  themeSetup: [async ({ context, savedTheme }, use) => {
+    await context.addInitScript(({ key, theme }) => {
+      if (theme === null) localStorage.removeItem(key);
+      else if (localStorage.getItem(key) === null) localStorage.setItem(key, theme);
+    }, { key: THEME_STORAGE_KEY, theme: savedTheme });
+    await use();
+  }, { auto: true }],
 
   // Свой «адрес» на каждый тест: сервер ограничивает частоту входа по адресу клиента (и верит X-Forwarded-For только
   // с 127.0.0.1 — как за Caddy), а параллельные тесты иначе делили бы одно окно и ловили 429.
@@ -190,6 +206,24 @@ export async function checkScreen(page: Page, name: string, opts: { mask?: Locat
     if (scrollable) {
       main.scrollTop = main.scrollHeight;
       if (main.scrollTop === 0) out.push('содержимое выше экрана, но не листается');
+    }
+    const footer = main.parentElement?.querySelector<HTMLElement>('footer[data-shell]');
+    if (footer) {
+      const f = footer.getBoundingClientRect();
+      if (Math.abs(main.getBoundingClientRect().bottom - f.top) > 1) out.push('main не заканчивается у панели действий');
+      if (Math.abs(f.bottom - innerHeight) > 1) out.push('фон панели действий не доходит до нижнего края');
+      if (!footer.contains(document.elementFromPoint(innerWidth / 2, innerHeight - 1))) out.push('под панелью действий видно содержимое');
+      const content = footer.firstElementChild?.getBoundingClientRect();
+      if (content) {
+        for (const button of footer.querySelectorAll('button')) {
+          const b = button.getBoundingClientRect();
+          if (b.left < content.left - 1 || b.right > content.right + 1) out.push('кнопка действий шире колонки панели');
+        }
+      }
+      if (scrollable) {
+        const last = [...main.querySelectorAll('*')].filter((el) => el.getBoundingClientRect().height > 0).at(-1);
+        if (last && last.getBoundingClientRect().bottom > f.top + 1) out.push('последнее содержимое прячется под панелью действий');
+      }
     }
     const bar = document.querySelector<HTMLElement>('.tabbar');
     if (bar && bar.getClientRects().length > 0 && getComputedStyle(bar).display !== 'none') {
