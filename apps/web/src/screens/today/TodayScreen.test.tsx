@@ -5,6 +5,20 @@ import { apiError, fakeServer, json, plan, renderApp, STARTER, step, user } from
 const signedIn = { 'GET /api/me': () => json(user()) };
 
 describe('«Сегодня»', () => {
+  it('загрузка плана не сдвигает ссылку, по которой человек уже может нажать', async () => {
+    let answer = (_response: Response) => {};
+    const pending = new Promise<Response>((resolve) => { answer = resolve; });
+    fakeServer({ ...signedIn, 'GET /api/today': () => pending });
+    const { screen } = await renderApp({ path: '/' });
+    const link = screen.getByRole('link', { name: 'Своя тренировка' });
+    await expect.element(link).toBeVisible();
+    await document.fonts.ready;
+    const before = link.element().getBoundingClientRect().top;
+    answer(json(STARTER));
+    await expect.element(screen.getByText('Три шага · около 25 минут')).toBeVisible();
+    expect(Math.abs(link.element().getBoundingClientRect().top - before)).toBeLessThanOrEqual(1);
+  });
+
   it('лента с сервера: сводка, текущий шаг на стекле с «Начать», конец ленты', async () => {
     fakeServer({ ...signedIn, 'GET /api/today': () => json(STARTER) });
     const { screen } = await renderApp({ path: '/' });

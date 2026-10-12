@@ -9,7 +9,7 @@ export const BRAND_NAME = 'GrePrepApp';
 /** Версия сборки — короткий коммит (vite.config.ts); уходит в отчёты об ошибках и видна в настройках. */
 export const APP_VERSION = import.meta.env.VITE_APP_VERSION;
 
-export type Provider = 'telegram' | 'apple' | 'google';
+export type Provider = 'apple' | 'google';
 
 export interface ProviderConfig {
   authorizationEndpoint: string;
@@ -25,8 +25,6 @@ function provider(endpoint: string | undefined, clientId: string | undefined): P
 export function providerConfig(p: Provider): ProviderConfig | null {
   const env = import.meta.env;
   switch (p) {
-    case 'telegram':
-      return provider(env.VITE_OIDC_TELEGRAM_AUTHORIZATION_ENDPOINT, env.VITE_OIDC_TELEGRAM_CLIENT_ID);
     case 'apple':
       return provider(env.VITE_OIDC_APPLE_AUTHORIZATION_ENDPOINT, env.VITE_OIDC_APPLE_CLIENT_ID);
     case 'google':

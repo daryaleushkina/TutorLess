@@ -14,10 +14,13 @@
 node_modules/
 dist/
 dist-e2e/
+dist-e2e-*/
 
 # Тесты: результаты, отчёты, покрытие (эталоны снимков e2e/__screens__ коммитим)
 test-results/
+test-results-*/
 playwright-report/
+playwright-report-*/
 coverage/
 coverage-e2e/
 coverage-e2e-raw/

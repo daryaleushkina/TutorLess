@@ -10,7 +10,6 @@ import { ChevronRightIcon, OfflineIcon } from '../../components/icons';
 import { StatusScreen } from '../../components/StatusScreen';
 import { reportError } from '../../errors/report';
 import { useI18n } from '../../i18n/i18n';
-import { useGlow } from '../../layout/AppLayout';
 import { useSession } from '../../session/session';
 import { useOnline } from '../../useOnline';
 import { useActiveTraining } from '../../training/hooks';
@@ -22,7 +21,6 @@ import styles from './Today.module.css';
 export function TodayScreen(): ReactNode {
   const { t } = useI18n();
   const { session } = useSession();
-  const setGlow = useGlow();
   const online = useOnline();
   const navigate = useNavigate();
   const [blockedStepId, setBlockedStepId] = useState<string | null>(null);
@@ -31,11 +29,6 @@ export function TodayScreen(): ReactNode {
   const activeTraining = useActiveTraining().data;
   const plan = today.data;
   const current = plan?.steps.find((s) => s.state === 'current');
-
-  // До отрисовки кадра: из эффекта после неё браузер успел бы показать кадр со светом прошлого экрана.
-  useLayoutEffect(() => {
-    setGlow(current?.section ?? 'verbal');
-  }, [current?.section, setGlow]);
 
   // Ответ не по договору — ошибка у нас, а не у человека: в отчёт.
   const error = today.error;

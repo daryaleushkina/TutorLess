@@ -13,8 +13,9 @@ describe('вход на сайте', () => {
   it('на сайте SDK Telegram отсутствует, как в бою', async () => {
     fakeServer(signedOut);
     const { screen } = await renderApp({ path: '/signin' });
-    await expect.element(screen.getByRole('button', { name: 'Войти через Telegram' })).toBeVisible();
+    await expect.element(screen.getByRole('button', { name: 'Вход с Apple' })).toBeVisible();
     expect(telegramRuntime()).toBeNull();
+    expect(screen.getByRole('button').elements().filter((button) => /Telegram/.test(button.textContent ?? ''))).toHaveLength(0);
   });
 
   it('глубокая ссылка сохраняется на входе и возвращается после входа подменой', async () => {
@@ -32,10 +33,10 @@ describe('вход на сайте', () => {
     expect(router.state.location.href).toBe('/step/words?source=plan#details');
   });
 
-  it('без сессии — на вход: три официальные кнопки, условия и дисклеймер ETS', async () => {
+  it('без сессии — на вход: две официальные кнопки, условия и дисклеймер ETS', async () => {
     fakeServer(signedOut);
     const { screen, router } = await renderApp({ path: '/' });
-    await expect.element(screen.getByRole('button', { name: 'Войти через Telegram' })).toBeVisible();
+    await expect.element(screen.getByRole('button', { name: 'Вход с Apple' })).toBeVisible();
     expect(router.state.location.pathname).toBe('/signin');
     expect(router.state.location.search).toEqual({});
     expect(telegramRuntime()).toBeNull();
@@ -45,7 +46,6 @@ describe('вход на сайте', () => {
   });
 
   it.each([
-    ['Войти через Telegram', 'Вход через Telegram ещё не подключён — он появится до беты.'],
     ['Вход с Apple', 'Вход с Apple ещё не подключён — он появится до беты.'],
     ['Войти с аккаунтом Google', 'Вход через Google ещё не подключён — он появится до беты.'],
   ])('провайдер без аккаунта: «%s» честно говорит, что не подключён', async (button, message) => {
@@ -92,7 +92,7 @@ describe('вход на сайте', () => {
   it('неизвестная причина в адресе — без сообщения', async () => {
     fakeServer(signedOut);
     const { screen } = await renderApp({ path: '/signin?reason=<script>' });
-    await expect.element(screen.getByRole('button', { name: 'Войти через Telegram' })).toBeVisible();
+    await expect.element(screen.getByRole('button', { name: 'Вход с Apple' })).toBeVisible();
     expect(screen.getByRole('alert').elements()).toHaveLength(0);
   });
 
@@ -111,13 +111,12 @@ describe('вход на сайте', () => {
     });
     const { screen } = await renderApp({ path: '/settings' });
     await screen.getByRole('button', { name: 'Sign out' }).click();
-    await expect.element(screen.getByRole('button', { name: 'Log in with Telegram' })).toBeVisible();
+    await expect.element(screen.getByRole('button', { name: 'Sign in with Apple' })).toBeVisible();
   });
 });
 
 describe('вход через провайдера', () => {
   it.each([
-    ['Войти через Telegram', 'TELEGRAM', 'tg-client', 'openid profile'],
     ['Вход с Apple', 'APPLE', 'apple-services-id', null],
     ['Войти с аккаунтом Google', 'GOOGLE', 'google-client', 'openid profile'],
   ])('«%s» уводит на страницу провайдера с PKCE и адресом возврата', async (button, env, clientId, scope) => {

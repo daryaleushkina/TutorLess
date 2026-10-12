@@ -1,4 +1,4 @@
-// Вход на сайте через Telegram, Apple и Google: OpenID Connect, код авторизации с PKCE. Сайт уводит человека на
+// Вход на сайте через Apple и Google: OpenID Connect, код авторизации с PKCE. Сайт уводит человека на
 // страницу провайдера, тот возвращает его на /auth/callback с кодом, а код на id_token меняет сервер — секрет
 // клиента в браузер не попадает (api/openapi.yaml, /api/auth/oidc/code). Так же устроено окно входа в приложении
 // Apple (apps/apple, WebSignIn.swift).
@@ -83,7 +83,7 @@ export function finishSignIn(search: URLSearchParams, storage: AttemptStorage, n
 
 /** Попытка из хранилища — внешние данные: проверяется по схеме, а не «как Attempt». */
 const AttemptSchema = z.object({
-  provider: z.enum(['telegram', 'apple', 'google']),
+  provider: z.enum(['apple', 'google']),
   state: z.string().min(1),
   nonce: z.string().min(1),
   codeVerifier: z.string().min(43),

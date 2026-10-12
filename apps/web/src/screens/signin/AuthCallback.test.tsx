@@ -6,7 +6,7 @@ function storeAttempt(state = 'state-1', returnTo = '/') {
   sessionStorage.setItem(
     'greprep.signIn',
     JSON.stringify({
-      provider: 'telegram',
+      provider: 'google',
       state,
       nonce: 'nonce-0123456789abcdef',
       codeVerifier: 'v'.repeat(43),
@@ -32,7 +32,7 @@ describe('возврат от провайдера', () => {
     expect(router.state.location.pathname).toBe('/');
     const body: unknown = await requests.find((r) => r.url.endsWith('/api/auth/oidc/code'))?.json();
     expect(body).toEqual({
-      provider: 'telegram',
+      provider: 'google',
       code: 'c-1',
       codeVerifier: 'v'.repeat(43),
       redirectUri: `${location.origin}/auth/callback`,

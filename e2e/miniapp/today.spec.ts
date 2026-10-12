@@ -81,12 +81,12 @@ test('API от имени человека: свой план и свой акк
   expect((await request.get('/api/today')).status()).toBe(401);
 });
 
-test('тема Telegram сменилась посреди работы — приложение и шапка клиента следом', async ({ miniApp: page, tgTheme }) => {
+test('смена темы Telegram сохраняет выбранную тему приложения и шапки', async ({ miniApp: page, tgTheme }) => {
   const next = tgTheme === 'light' ? 'dark' : 'light';
   const bg = () => page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--color-bg').trim());
   const before = await bg();
   // window.__tgMock — переключатель темы в подмене Telegram (apps/web/src/telegram/mockEnv.ts).
   await page.evaluate((name) => (window as unknown as { __tgMock: { setTheme: (n: string) => void } }).__tgMock.setTheme(name), next);
-  await expect(page.locator('html')).toHaveAttribute('data-theme', next);
-  await expect.poll(bg).not.toBe(before);
+  await expect(page.locator('html')).toHaveAttribute('data-theme', tgTheme);
+  await expect.poll(bg).toBe(before);
 });

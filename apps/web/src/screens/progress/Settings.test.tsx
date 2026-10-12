@@ -10,7 +10,7 @@ describe('настройки', () => {
     const { screen, router } = await renderApp({ path: '/settings' });
     await expect.element(screen.getByText(/^Версия /)).toBeVisible();
     await screen.getByRole('button', { name: 'Выйти' }).click();
-    await expect.element(screen.getByRole('button', { name: 'Войти через Telegram' })).toBeVisible();
+    await expect.element(screen.getByRole('button', { name: 'Вход с Apple' })).toBeVisible();
     expect(router.state.location.pathname).toBe('/signin');
     expect(router.state.location.search).toEqual({});
     expect(requests.some((r) => r.method === 'POST' && r.url.endsWith('/api/auth/logout'))).toBe(true);
@@ -37,7 +37,7 @@ describe('настройки', () => {
     expect(queryClient.getQueryData(['/api/today'])).toBeDefined();
     await router.navigate({ to: '/settings' });
     await screen.getByRole('button', { name: 'Выйти' }).click();
-    await expect.element(screen.getByRole('button', { name: 'Войти через Telegram' })).toBeVisible();
+    await expect.element(screen.getByRole('button', { name: 'Вход с Apple' })).toBeVisible();
     expect(router.state.location.pathname).toBe('/signin');
     expect(queryClient.getQueryData(['/api/today'])).toBeUndefined();
     expect(requests.some((r) => r.url.endsWith('/api/auth/logout'))).toBe(true);

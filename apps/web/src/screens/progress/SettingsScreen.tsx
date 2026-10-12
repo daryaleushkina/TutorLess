@@ -3,11 +3,11 @@
 // вход — это сам Telegram (комментарий в web-G2-Settings).
 import { isApiError } from '@greprep/api-client';
 import { useNavigate } from '@tanstack/react-router';
-import { useLayoutEffect, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { APP_VERSION } from '../../config';
 import { GRE_DISCLAIMER } from '../../i18n/dict';
 import { useI18n } from '../../i18n/i18n';
-import { BackLink, useGlow } from '../../layout/AppLayout';
+import { BackLink } from '../../layout/AppLayout';
 import { useSession } from '../../session/session';
 import { useShell } from '../../shellContext';
 import { useBackButton } from '../../telegram/hooks';
@@ -18,10 +18,8 @@ export function SettingsScreen(): ReactNode {
   const { shell } = useShell();
   const { signOut } = useSession();
   const navigate = useNavigate();
-  const setGlow = useGlow();
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState<string | null>(null);
-  useLayoutEffect(() => setGlow('verbal'), [setGlow]);
   useBackButton(shell === 'telegram' ? () => void navigate({ to: '/progress' }) : null);
 
   const onSignOut = async () => {

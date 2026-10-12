@@ -11,6 +11,7 @@ const sdk = vi.hoisted(() => {
   closingBehavior: { mount: { ifAvailable: vi.fn() }, isConfirmationEnabled: vi.fn(() => false), enableConfirmation: { isAvailable: vi.fn(() => false), ifAvailable: vi.fn() }, disableConfirmation: { ifAvailable: vi.fn() } },
   swipeBehavior: { disableVertical: { isAvailable: vi.fn(() => true), ifAvailable: vi.fn() }, enableVertical: { ifAvailable: vi.fn() }, isVerticalEnabled: vi.fn(() => true) },
   miniApp: { ready: { ifAvailable: vi.fn() } },
+  hapticFeedback: { impactOccurred: { ifAvailable: vi.fn() } },
 }; });
 vi.mock('@tma.js/sdk-react', () => sdk);
 const signedIn = { 'POST /api/auth/telegram-mini-app': () => json({ token: 'fixture', expiresAt: '2026-11-06T00:00:00Z', user: user() }), 'GET /api/today': () => json(STARTER) };
@@ -51,16 +52,19 @@ test('Telegram «назад» во время загрузки возвраща�
 });
 
 
-test('два сигнала MainButton в одном кадре создают одну тренировку', async () => {
+test('два нажатия нашей кнопки в одном кадре создают одну тренировку', async () => {
   let release: () => void = () => {}; const held = new Promise<void>((r) => { release = r; });
   const server = fakeServer({ ...signedIn, 'GET /api/trainings/options': () => json(trainingOptions()),
     'POST /api/trainings': async () => { await held; return json(trainingSession()); } });
-  sdk.mainButton.setParams.isAvailable.mockReturnValue(true);
+  sdk.mainButton.setParams.isAvailable.mockReturnValue(true); vi.clearAllMocks();
   const { screen } = await renderApp({ path: '/training/new', shell: 'telegram', launch });
   try {
     await expect.element(screen.getByRole('textbox', { name: 'Вопросов' })).toBeVisible();
-    const click = sdk.mainButton.onClick.ifAvailable.mock.calls.at(-1)?.[0];
-    expect(click).toBeDefined(); click?.(); click?.();
+    const button = screen.getByRole('button', { name: /^Начать ·/ }).element();
+    if (!(button instanceof HTMLButtonElement)) throw new Error('fixture button missing');
+    button.click(); button.click();
+    expect(sdk.mainButton.setParams.ifAvailable).not.toHaveBeenCalled();
+    expect(sdk.secondaryButton.setParams.ifAvailable).not.toHaveBeenCalled();
     await expect.poll(() => server.requests.filter((r) => r.method === 'POST' && new URL(r.url).pathname === '/api/trainings').length).toBe(1);
     release(); await expect.element(screen.getByRole('heading', { name: 'Text Completion' })).toBeVisible();
   } finally { release(); sdk.mainButton.setParams.isAvailable.mockReturnValue(false); }

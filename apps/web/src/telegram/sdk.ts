@@ -1,10 +1,11 @@
 // Запуск мини-аппа: порядок инициализации @tma.js/sdk-react 3.x — по навыку telegram-mini-app
-// (assets/bootstrap.tsx). Цвета — свои, «Шагов» (решение Даши 05.10.2026): из темы Telegram берётся только,
-// светлая она или тёмная, а шапке, фону и нижней панели клиента отдаётся наш фон, чтобы швов не было.
-import { backButton, init, initData, mainButton, secondaryButton, swipeBehavior, miniApp, retrieveLaunchParams, themeParams, viewport } from '@tma.js/sdk-react';
+// (assets/bootstrap.tsx). Тема — наша, тёмная по умолчанию (решение Даши 10.10.2026):
+// шапке, фону и нижней панели клиента отдаётся наш фон, чтобы швов не было.
+import { backButton, createRequestId, DeviceStorage, deviceStorage, hapticFeedback, init, initData, swipeBehavior, miniApp, request2Fp, retrieveLaunchParams, themeParams, viewport } from '@tma.js/sdk-react';
 import { setTelegramRuntime } from './runtime';
+import type { DeviceThemeStorage } from '../styles/theme';
 
-setTelegramRuntime({ backButton, swipeBehavior, mainButton, secondaryButton, miniApp });
+setTelegramRuntime({ backButton, swipeBehavior, miniApp, hapticFeedback });
 
 export interface TelegramLaunch {
   /** Сырая initData — уходит на сервер, тот проверяет подпись ключом бота. */
@@ -46,8 +47,7 @@ export async function startTelegram(): Promise<TelegramStart> {
   // зовёт эффекты дважды.
   themeParams.mount();
   miniApp.mount();
-  mainButton.mount.ifAvailable();
-  secondaryButton.mount.ifAvailable();
+  syncTelegramTheme();
   swipeBehavior.mount.ifAvailable();
   themeParams.bindCssVars();
   miniApp.bindCssVars();
@@ -99,13 +99,10 @@ async function enterFullscreenOnPhone(): Promise<void> {
 }
 
 /**
- * Тема Telegram → data-theme на <html>: токены переключают цвета сами (design/tokens, generated/web). Светлая или
- * тёмная — по теме клиента (themeParams), а не miniApp.isDark: тот считается по фону мини-аппа, а фон мы задаём сами,
- * и после этого смена темы в Telegram до приложения не доходила бы.
+ * Цвета клиента следуют нашему data-theme. Тема Telegram и системы не меняет выбор устройства.
  */
-export function followTelegramTheme(): () => void {
+export function syncTelegramTheme(): () => void {
   const apply = () => {
-    document.documentElement.dataset.theme = themeParams.isDark() ? 'dark' : 'light';
     // Наш фон — шапке, фону под приложением и нижней панели клиента. Цвет читаем из токенов после смены темы.
     const bg = getComputedStyle(document.documentElement).getPropertyValue('--color-bg').trim();
     if (isHex(bg)) {
@@ -115,7 +112,30 @@ export function followTelegramTheme(): () => void {
     }
   };
   apply();
-  return themeParams.isDark.sub(apply);
+  const observer = new MutationObserver(apply);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  return () => observer.disconnect();
+}
+
+/** Старые клиенты живут на localStorage; поддерживаемые операции ограничены сроком ответа клиента. */
+export function telegramThemeStorage(): DeviceThemeStorage | undefined {
+  if (!deviceStorage.getItem.isAvailable() || !deviceStorage.setItem.isAvailable()) return undefined;
+  // В SDK 3.3.0 getItem/setItem не принимают RequestOptions. Собственный экземпляр этой же
+  // stateless-компоненты ограничивает запрос на мосте: таймаут снимает и обработчики ответа.
+  return new DeviceStorage({
+    isTma: () => deviceStorage.getItem.isAvailable(),
+    version: retrieveLaunchParams().tgWebAppVersion,
+    createRequestId,
+    // Proxy сохраняет перегруженные сигнатуры request2Fp для всех методов моста.
+    request: new Proxy(request2Fp, {
+      apply(request, receiver: unknown, [method, event, options]: [unknown, unknown, unknown?]) {
+        return Reflect.apply(request, receiver, [method, event, {
+          ...(typeof options === 'object' && options !== null ? options : {}),
+          timeout: 3000,
+        }]);
+      },
+    }),
+  });
 }
 
 function isHex(value: string): value is `#${string}` {

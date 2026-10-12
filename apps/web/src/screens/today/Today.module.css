@@ -12,27 +12,28 @@
 }
 
 .title {
-  font: var(--font-title-1);
-  letter-spacing: var(--tracking-title-1);
+  font: var(--font-h1);
+  letter-spacing: var(--tracking-h1);
 }
 
 .summary {
-  font: var(--font-subhead);
-  letter-spacing: var(--tracking-subhead);
-  color: var(--color-text-secondary);
+  font: var(--font-meta);
+  letter-spacing: var(--tracking-meta);
+  color: var(--color-text-2);
   font-variant-numeric: tabular-nums;
 }
 
 .stale {
   margin-top: var(--space-12);
-  font: var(--font-subhead);
-  color: var(--color-text-secondary);
+  font: var(--font-meta);
+  letter-spacing: var(--tracking-meta);
+  color: var(--color-text-2);
 }
 
 /* ── лента ── */
 
 .ribbon {
-  --node-column: var(--size-step-node-current);
+  --node-column: var(--size-icon-button);
   --ribbon-gap: var(--space-24);
   --ribbon-column-gap: var(--space-14);
   margin-top: var(--space-28);
@@ -52,28 +53,29 @@
 /* Нить — от низа узла до следующего шага; у конца ленты её нет. */
 .line {
   position: absolute;
-  left: calc((var(--node-column) - var(--size-step-line)) / 2);
-  top: var(--size-step-node);
+  left: calc((var(--node-column) - var(--size-hairline)) / 2);
+  top: var(--space-28);
   bottom: calc(-1 * var(--ribbon-gap));
-  width: var(--size-step-line);
+  width: var(--size-hairline);
   background: var(--color-line);
 }
 
 .item[data-state='current'] .line {
-  top: calc(var(--space-16) + var(--size-step-node-current));
+  top: calc(var(--space-16) + var(--size-icon-button));
 }
 
 .node {
   --section-color: var(--color-verbal);
-  --section-tint: var(--color-verbal-tint);
+  --section-ink: var(--color-verbal-ink);
+  --section-tint: var(--color-verbal-soft);
   position: relative;
   justify-self: center;
-  width: var(--size-step-node);
-  height: var(--size-step-node);
+  width: var(--space-28);
+  height: var(--space-28);
   border-radius: var(--radius-full);
   border: var(--size-hairline) solid var(--color-line);
   background: var(--color-surface);
-  color: var(--section-color);
+  color: var(--section-ink);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -87,30 +89,33 @@
 .node[data-section='quant'],
 .section[data-section='quant'] {
   --section-color: var(--color-quant);
-  --section-tint: var(--color-quant-tint);
+  --section-ink: var(--color-quant-ink);
+  --section-tint: var(--color-quant-soft);
 }
 
 .node[data-section='words'],
 .section[data-section='words'] {
   --section-color: var(--color-words);
-  --section-tint: var(--color-words-tint);
+  --section-ink: var(--color-words-ink);
+  --section-tint: var(--color-words-soft);
 }
 
 .node[data-section='essay'],
 .section[data-section='essay'] {
   --section-color: var(--color-essay);
-  --section-tint: var(--color-essay-tint);
+  --section-ink: var(--color-essay-ink);
+  --section-tint: var(--color-essay-soft);
 }
 
 /* Текущий шаг: заливка цвета раздела и кольцо его подложки (DESIGN.md, step-node-current). */
 .item[data-state='current'] .node {
   margin-top: var(--space-16);
-  width: var(--size-step-node-current);
-  height: var(--size-step-node-current);
+  width: var(--size-icon-button);
+  height: var(--size-icon-button);
   border: 0;
   background: var(--section-color);
-  color: var(--color-surface);
-  box-shadow: 0 0 0 var(--size-step-ring) var(--section-tint);
+  color: var(--color-on-accent);
+  outline: var(--space-4) solid var(--section-tint);
 }
 
 .item[data-state='current'] .node svg {
@@ -125,7 +130,7 @@
 }
 
 .card {
-  border-radius: var(--radius-xxl);
+  border-radius: var(--radius-l);
   padding: var(--space-16) var(--space-16) var(--space-16);
   display: flex;
   flex-direction: column;
@@ -147,20 +152,22 @@
 }
 
 .cardTitle {
-  font: var(--font-title-3);
-  letter-spacing: var(--tracking-title-3);
+  font: var(--font-h2);
+  letter-spacing: var(--tracking-h2);
 }
 
 .minutes {
   flex: none;
-  font: var(--font-subhead);
-  color: var(--color-text-secondary);
+  font: var(--font-meta);
+  letter-spacing: var(--tracking-meta);
+  color: var(--color-text-3);
   font-variant-numeric: tabular-nums;
 }
 
 .cardSub {
-  font: var(--font-subhead);
-  color: var(--color-text-secondary);
+  font: var(--font-meta);
+  letter-spacing: var(--tracking-meta);
+  color: var(--color-text-2);
 }
 
 .cardSubMinutes {
@@ -170,9 +177,11 @@
 
 .section {
   --section-color: var(--color-verbal);
-  font: var(--font-subhead);
+  --section-ink: var(--color-verbal-ink);
+  font: var(--font-meta);
+  letter-spacing: var(--tracking-meta);
   font-weight: var(--font-weight-medium);
-  color: var(--section-color);
+  color: var(--section-ink);
 }
 
 .startWrap {
@@ -188,10 +197,11 @@
   align-self: flex-end;
   padding: var(--space-2) var(--space-6);
   border: var(--size-hairline) solid var(--color-line);
-  border-radius: var(--radius-xs);
-  font: var(--font-key);
-  font-family: var(--font-family-text);
-  color: var(--color-text-secondary);
+  border-radius: var(--radius-s);
+  font: var(--font-caption);
+  letter-spacing: var(--tracking-caption);
+  font-family: var(--font-family-mono);
+  color: var(--color-text-3);
 }
 
 @media (hover: hover) and (pointer: fine) and (min-width: 900px) {
@@ -200,7 +210,7 @@
   }
 }
 
-/* Главная кнопка экрана — одна, графитовая капсула (DESIGN.md, button-main). */
+/* Свечение — только у главного действия (DESIGN.md, «Правило одного света»). */
 .start {
   height: var(--size-button);
   padding: 0 var(--space-24);
@@ -208,13 +218,14 @@
   border-radius: var(--radius-full);
   background: var(--color-accent);
   color: var(--color-on-accent);
-  font: var(--font-callout);
-  font-weight: var(--font-weight-semibold);
+  font: var(--font-button);
+  letter-spacing: var(--tracking-button);
 }
 
 .blocked {
-  font: var(--font-footnote);
-  color: var(--color-text-secondary);
+  font: var(--font-meta);
+  letter-spacing: var(--tracking-meta);
+  color: var(--color-text-3);
 }
 
 .rowWrap {
@@ -233,13 +244,13 @@
   gap: var(--space-12);
   color: var(--color-text);
   text-decoration: none;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-m);
 }
 
 /* Наведение — только там, где есть мышь: на телефоне подсветка «залипала» бы после касания. */
 @media (hover: hover) and (pointer: fine) {
   a.row:hover {
-    background: var(--color-fill);
+    background: var(--color-surface-2);
   }
 }
 
@@ -253,6 +264,7 @@
 
 .rowTitle {
   font: var(--font-body);
+  letter-spacing: var(--tracking-body);
   font-weight: var(--font-weight-medium);
 }
 
@@ -274,8 +286,8 @@
 
 .endDot {
   justify-self: center;
-  width: var(--size-step-end);
-  height: var(--size-step-end);
+  width: var(--space-8);
+  height: var(--space-8);
   border-radius: var(--radius-full);
   background: var(--color-line);
 }
@@ -292,31 +304,34 @@
 
 .endTitle {
   font: var(--font-body);
+  letter-spacing: var(--tracking-body);
   font-weight: var(--font-weight-semibold);
 }
 
 .endNote {
-  font: var(--font-subhead);
-  color: var(--color-text-secondary);
+  font: var(--font-meta);
+  letter-spacing: var(--tracking-meta);
+  color: var(--color-text-3);
 }
 
 /* ── скелет загрузки (T5) ── */
 
 .sk {
-  background: var(--color-fill);
+  background: var(--color-surface-2);
   animation: pulse var(--motion-duration-pulse) ease-in-out infinite;
 }
 
 /* Скелет узла — серый и без кольца, даже у текущего шага (иначе стиль текущего узла перекрасил бы его). */
 .item .node.sk {
   border: 0;
-  background: var(--color-fill);
+  background: var(--color-surface-2);
   box-shadow: none;
+  outline: none;
 }
 
 @keyframes pulse {
   50% {
-    opacity: 0.5;
+    opacity: var(--opacity-disabled);
   }
 }
 
@@ -328,18 +343,24 @@
 
 .skLine {
   display: block;
-  height: var(--space-14);
-  border-radius: var(--radius-sm);
+  font: var(--font-meta);
+  letter-spacing: var(--tracking-meta);
+  border-radius: var(--radius-s);
+}
+
+/* Высота роли текста меняется вместе со шрифтом и размером текста; скелет держит ту же геометрию. */
+.skLine::before {
+  content: '\00a0';
 }
 
 .skLine[data-w='summary'] {
   width: 40%;
-  margin-top: var(--space-6);
 }
 
 .skLine[data-w='title'] {
   width: 62%;
-  height: var(--space-20);
+  font: var(--font-h2);
+  letter-spacing: var(--tracking-h2);
 }
 
 .skLine[data-w='sub'] {
@@ -348,13 +369,17 @@
 
 .skLine[data-w='row'] {
   width: 70%;
-  height: var(--space-16);
+  font: var(--font-body);
+  letter-spacing: var(--tracking-body);
 }
 
 .skLine[data-w='short'] {
   width: 34%;
-  height: var(--space-16);
+  font: var(--font-body);
+  letter-spacing: var(--tracking-body);
 }
+
+.skLine[data-w='end'] { width: 34%; }
 
 .skButton {
   display: block;
@@ -384,7 +409,7 @@
   }
 
   .cardText {
-    flex: 1 1 var(--layout-tagline-max);
+    flex: 1 1 calc(var(--layout-content-max) / 2);
   }
 
   .cardHead .minutes {
@@ -405,8 +430,8 @@
   }
 }
 
-.continue { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: var(--space-12); margin-top: var(--space-20); padding: var(--space-16); border-radius: var(--radius-xxl); background: var(--color-surface); text-decoration: none; }
-.own { align-self: flex-start; display: inline-flex; align-items: center; min-height: var(--size-tap-target); margin-top: var(--space-24); font: var(--font-subhead); font-weight: var(--font-weight-medium); color: var(--color-text); text-underline-offset: var(--space-4); }
+.continue { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: var(--space-12); margin-top: var(--space-20); padding: var(--space-16); border-radius: var(--radius-l); background: var(--color-surface); text-decoration: none; }
+.own { align-self: flex-start; display: inline-flex; align-items: center; min-height: var(--size-tap-target); margin-top: var(--space-24); font: var(--font-action); letter-spacing: var(--tracking-action); color: var(--color-text); text-underline-offset: var(--space-4); }
 
 .continueText { display: flex; flex-direction: column; gap: var(--space-4); }
-.continue svg { flex: none; width: var(--space-20); height: var(--space-20); color: var(--color-text-secondary); }
+.continue svg { flex: none; width: var(--space-20); height: var(--space-20); color: var(--color-text-2); }
