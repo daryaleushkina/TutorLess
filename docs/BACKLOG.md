@@ -46,3 +46,4 @@ tools/dev/backlog.sh           # пересобрать это зеркало
 - [#42](https://github.com/daryaleushkina/TutorLess/issues/42) Вход через Telegram на сайте и в приложениях: убрать (решение Даши 10.10.2026)
 - [#43](https://github.com/daryaleushkina/TutorLess/issues/43) Android: конструктор на 320 dp при шрифте 200 % — «Тип» рвётся на буквы, кнопка «Начать» обрезана
 - [#44](https://github.com/daryaleushkina/TutorLess/issues/44) Токены тени и затемнения для стиля B (шторка, всплывающее окно)
+- [#45](https://github.com/daryaleushkina/TutorLess/issues/45) Numeric entry: optional unit before and after the answer box ($ ___ , ___ %)
