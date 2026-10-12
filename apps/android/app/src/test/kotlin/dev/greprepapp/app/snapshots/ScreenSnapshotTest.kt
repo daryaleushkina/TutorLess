@@ -10,7 +10,6 @@ import androidx.compose.ui.unit.Density
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
 import com.github.takahirom.roborazzi.captureRoboImage
 import dev.greprepapp.api.models.Section
-import dev.greprepapp.api.models.StepState
 import dev.greprepapp.app.core.session.SignOutReason
 import dev.greprepapp.app.feature.shell.AppTab
 import dev.greprepapp.app.feature.shell.MainScaffold
@@ -18,15 +17,7 @@ import dev.greprepapp.app.feature.signin.SignInContent
 import dev.greprepapp.app.feature.signin.SignInViewModel
 import dev.greprepapp.app.feature.signin.SignInViewModel.Message
 import dev.greprepapp.app.feature.signin.SignInViewModel.Method
-import dev.greprepapp.app.feature.today.TodayContent
-import dev.greprepapp.app.feature.today.TodayPlan
-import dev.greprepapp.app.feature.today.TodayViewModel.Content
-import dev.greprepapp.app.feature.today.TodayViewModel.Problem
-import dev.greprepapp.app.feature.today.TodayViewModel.UiState
 import dev.greprepapp.app.testing.createAppComposeRule
-import dev.greprepapp.app.testing.plan
-import dev.greprepapp.app.testing.starterPlan
-import dev.greprepapp.app.testing.step
 import dev.greprepapp.design.GpTheme
 import org.junit.Rule
 import org.junit.Test
@@ -50,88 +41,259 @@ class ScreenSnapshotTest(
     theme: String,
 ) : SnapshotBase(theme) {
     @Test
-    fun signIn() = snap("signin") { SignIn() }
+    fun home() = snap("home") { Home() }
 
     @Test
-    fun signInExpiredWithGoogleMessage() =
-        snap("signin-expired-google-message") {
-            SignIn(SignInViewModel.UiState(message = Message.NotConnectedYet(Method.Google)), SignOutReason.SessionExpired)
+    fun homeLarge() = snap("home-large", large = true) { Home() }
+
+    @Test
+    fun homeHistory() = snap("homeHistory") { Home(ShellFixtures.history) }
+
+    @Test
+    fun homeHistoryLarge() = snap("homeHistory-large", large = true) { Home(ShellFixtures.history) }
+
+    @Test
+    fun homeOffline() = snap("homeOffline") { Home(ShellFixtures.first.copy(problem = dev.greprepapp.api.ApiFailure.Offline)) }
+
+    @Test
+    fun homeOfflineLarge() =
+        snap("homeOffline-large", large = true) {
+            Home(ShellFixtures.first.copy(problem = dev.greprepapp.api.ApiFailure.Offline))
         }
 
     @Test
-    fun signInFailed() = snap("signin-failed") { SignIn(SignInViewModel.UiState(message = Message.Failed)) }
-
-    @Test
-    fun today() = snap("today") { Today(starter) }
-
-    @Test
-    fun todayLoading() = snap("today-loading") { Today(UiState()) }
-
-    @Test
-    fun todayOfflineStale() = snap("today-offline-stale") { Today(starter.copy(stale = Problem.Offline)) }
-
-    @Test
-    fun todayFailedStale() = snap("today-failed-stale") { Today(starter.copy(stale = Problem.Failed)) }
-
-    @Test
-    fun todayOfflineEmpty() = snap("today-offline-empty") { Today(UiState(content = Content.Unavailable(Problem.Offline))) }
-
-    @Test
-    fun todayFailedEmpty() = snap("today-failed-empty") { Today(UiState(content = Content.Unavailable(Problem.Failed))) }
-
-    @Test
-    fun todayNeedsNetwork() = snap("today-needs-network") { Today(starter.copy(blockedStepId = "words")) }
-
-    @Test
-    fun todayComplete() =
-        snap("today-complete") {
-            val done =
-                plan(
-                    step("w", Section.WORDS, StepState.DONE, 5, "Слова: повторение"),
-                    step("v", Section.VERBAL, StepState.DONE, 12, "Verbal: Text Completion"),
-                )
-            Today(UiState(content = Content.Plan(TodayPlan.from(done))))
-        }
-
-    @Test
-    fun todayLargeText() = snap("today-large-text", large = true) { Today(starter) }
-
-    @Test
-    fun todayEightStepsWithSystemFontScale() {
-        val eight =
-            plan(
-                step("1", Section.WORDS, StepState.DONE, 5, "Слова: повторение"),
-                step("2", Section.VERBAL, StepState.CURRENT, 10, "Verbal: Text Completion"),
-                step("3", Section.QUANT, StepState.NEXT, 10, "Quant: Quantitative Comparison"),
-                step("4", Section.VERBAL, StepState.NEXT, 8, "Verbal: Sentence Equivalence"),
-                step("5", Section.QUANT, StepState.NEXT, 12, "Quant: Data Interpretation"),
-                step("6", Section.WORDS, StepState.NEXT, 5, "Слова: новые"),
-                step("7", Section.ESSAY, StepState.NEXT, 30, "Эссе: Analyze an Issue"),
-                step("8", Section.VERBAL, StepState.NEXT, 10, "Verbal: Reading Comprehension"),
+    fun homeLoading() =
+        snap("homeLoading") {
+            Home(
+                dev.greprepapp.app.feature.shell
+                    .ShellState(),
             )
-        snap("today-eight-steps-font-130", large = true, systemFontScale = SYSTEM_FONT_SCALE) {
-            Today(UiState(content = Content.Plan(TodayPlan.from(eight))))
         }
-    }
 
     @Test
-    fun words() = snap("words") { Today(starter, tab = AppTab.Words) }
+    fun homeLoadingLarge() =
+        snap("homeLoading-large", large = true) {
+            Home(
+                dev.greprepapp.app.feature.shell
+                    .ShellState(),
+            )
+        }
 
     @Test
-    fun exam() = snap("exam") { Today(starter, tab = AppTab.Exam) }
+    fun homeFailed() =
+        snap("homeFailed") {
+            Home(
+                dev.greprepapp.app.feature.shell.ShellState(
+                    loading = false,
+                    problem =
+                        dev.greprepapp.api.ApiFailure
+                            .Unexpected("invalid response"),
+                ),
+            )
+        }
 
     @Test
-    fun progress() = snap("progress") { Today(starter, tab = AppTab.Progress) }
+    fun homeFailedLarge() =
+        snap("homeFailed-large", large = true) {
+            Home(
+                dev.greprepapp.app.feature.shell.ShellState(
+                    loading = false,
+                    problem =
+                        dev.greprepapp.api.ApiFailure
+                            .Unexpected("invalid response"),
+                ),
+            )
+        }
+
+    @Test
+    fun homeOfflineEmpty() =
+        snap("homeOfflineEmpty") {
+            Home(
+                dev.greprepapp.app.feature.shell
+                    .ShellState(loading = false, problem = dev.greprepapp.api.ApiFailure.Offline),
+            )
+        }
+
+    @Test
+    fun homeOfflineEmptyLarge() =
+        snap("homeOfflineEmpty-large", large = true) {
+            Home(
+                dev.greprepapp.app.feature.shell
+                    .ShellState(loading = false, problem = dev.greprepapp.api.ApiFailure.Offline),
+            )
+        }
+
+    @Test
+    fun homeToefl() = snap("homeToefl") { Home(ShellFixtures.toefl) }
+
+    @Test
+    fun homeToeflLarge() = snap("homeToefl-large", large = true) { Home(ShellFixtures.toefl) }
+
+    @Test
+    fun words() = snap("words") { Home(tab = AppTab.Words) }
+
+    @Test
+    fun wordsLarge() = snap("words-large", large = true) { Home(tab = AppTab.Words) }
+
+    @Test
+    fun exam() = snap("exam") { Home(tab = AppTab.Exam) }
+
+    @Test
+    fun examLarge() = snap("exam-large", large = true) { Home(tab = AppTab.Exam) }
+
+    @Test
+    fun examToefl() = snap("examToefl") { Home(ShellFixtures.toefl, tab = AppTab.Exam) }
+
+    @Test
+    fun examToeflLarge() = snap("examToefl-large", large = true) { Home(ShellFixtures.toefl, tab = AppTab.Exam) }
+
+    @Test
+    fun progress() = snap("progress") { Home(tab = AppTab.Progress) }
+
+    @Test
+    fun progressLarge() = snap("progress-large", large = true) { Home(tab = AppTab.Progress) }
 
     @Test
     fun settings() = snap("settings") { Settings() }
 
     @Test
-    fun step() = snap("step") { Step() }
+    fun settingsLarge() = snap("settings-large", large = true) { Settings() }
+
+    @Test
+    fun signIn() = snap("signin") { SignIn() }
+
+    @Test
+    fun signInLarge() = snap("signin-large", large = true) { SignIn() }
+
+    @Test
+    fun signInFailed() = snap("signin-failed") { SignIn(SignInViewModel.UiState(message = Message.Failed)) }
+
+    @Test
+    fun signInFailedLarge() = snap("signin-failed-large", large = true) { SignIn(SignInViewModel.UiState(message = Message.Failed)) }
+
+    @Test
+    fun chooseExam() =
+        snap("chooseExam") {
+            dev.greprepapp.app.feature.shell.ExamPicker(
+                ShellFixtures.first.copy(user = ShellFixtures.first.user!!.copy(activeExam = null)),
+                {},
+                {},
+            )
+        }
+
+    @Test
+    fun chooseExamLarge() =
+        snap("chooseExam-large", large = true) {
+            dev.greprepapp.app.feature.shell.ExamPicker(
+                ShellFixtures.first.copy(user = ShellFixtures.first.user!!.copy(activeExam = null)),
+                {},
+                {},
+            )
+        }
+
+    @Test
+    fun chooseExamBusy() =
+        snap("chooseExamBusy") {
+            dev.greprepapp.app.feature.shell.ExamPicker(
+                ShellFixtures.first.copy(
+                    user = ShellFixtures.first.user!!.copy(activeExam = null),
+                    choosing = dev.greprepapp.api.models.Exam.GRE,
+                ),
+                {
+                },
+                {},
+            )
+        }
+
+    @Test
+    fun chooseExamBusyLarge() =
+        snap("chooseExamBusy-large", large = true) {
+            dev.greprepapp.app.feature.shell.ExamPicker(
+                ShellFixtures.first.copy(
+                    user = ShellFixtures.first.user!!.copy(activeExam = null),
+                    choosing = dev.greprepapp.api.models.Exam.GRE,
+                ),
+                {
+                },
+                {},
+            )
+        }
+
+    @Test
+    fun homeContinue() =
+        snap("homeContinue") {
+            Home(
+                ShellFixtures.history,
+                active =
+                    dev.greprepapp.app.feature.training.ContinueTraining(
+                        "training",
+                        dev.greprepapp.api.models.Section.VERBAL,
+                        listOf(dev.greprepapp.api.models.QuestionType.TEXT_COMPLETION),
+                        3,
+                        10,
+                    ),
+            )
+        }
+
+    @Test
+    fun homeContinueLarge() =
+        snap("homeContinue-large", large = true) {
+            Home(
+                ShellFixtures.history,
+                active =
+                    dev.greprepapp.app.feature.training.ContinueTraining(
+                        "training",
+                        dev.greprepapp.api.models.Section.VERBAL,
+                        listOf(dev.greprepapp.api.models.QuestionType.TEXT_COMPLETION),
+                        3,
+                        10,
+                    ),
+            )
+        }
+
+    @Test
+    fun homeStartOffline() =
+        snap("homeStartOffline") {
+            Home(
+                ShellFixtures.first.copy(problem = dev.greprepapp.api.ApiFailure.Offline),
+                action =
+                    dev.greprepapp.app.feature.shell
+                        .HomeAction(problem = dev.greprepapp.app.feature.training.StartProblem.Offline),
+            )
+        }
+
+    @Test
+    fun homeStartOfflineLarge() =
+        snap("homeStartOffline-large", large = true) {
+            Home(
+                ShellFixtures.first.copy(problem = dev.greprepapp.api.ApiFailure.Offline),
+                action =
+                    dev.greprepapp.app.feature.shell
+                        .HomeAction(problem = dev.greprepapp.app.feature.training.StartProblem.Offline),
+            )
+        }
+
+    @Test
+    fun examSheet() =
+        snap("examSheet") {
+            dev.greprepapp.app.feature.shell
+                .ExamSheet(ShellFixtures.first, {}, {})
+        }
+
+    @Test
+    fun examSheetLarge() =
+        snap("examSheet-large", large = true) {
+            dev.greprepapp.app.feature.shell
+                .ExamSheet(ShellFixtures.first, {}, {})
+        }
+
+    @Test
+    fun signInExpiredWithGoogleMessage() =
+        snap("signin-expired-google-message") {
+            SignIn(SignInViewModel.UiState(message = Message.NotConnectedYet(SignInViewModel.Method.Google)), SignOutReason.SessionExpired)
+        }
 
     companion object {
-        private const val SYSTEM_FONT_SCALE = 1.3f
-
         @JvmStatic
         @ParameterizedRobolectricTestRunner.Parameters(name = "{0}")
         fun themes() = listOf(arrayOf("light"), arrayOf("dark"))

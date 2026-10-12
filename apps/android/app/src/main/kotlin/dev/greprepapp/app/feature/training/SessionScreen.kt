@@ -1035,7 +1035,7 @@ private fun summaryLine(
     val (minutes, limit) =
         TrainingRules.summaryMinutes(result.durationSeconds, if (s.training.isCheck) session.timeLimitSeconds else null)
     // «11 минут» не разрывается переносом строки.
-    val duration = pluralStringResource(R.plurals.today_minutes, minutes, minutes).replace(' ', NBSP)
+    val duration = pluralStringResource(R.plurals.training_minutes, minutes, minutes).replace(' ', NBSP)
     val sectionLabel = session.section.label()
     return if (limit != null) {
         listOf(

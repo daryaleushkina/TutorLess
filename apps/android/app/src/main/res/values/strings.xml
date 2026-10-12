@@ -2,7 +2,7 @@
 <!-- Тексты — те же, что в приложении Apple (Localizable.xcstrings): платформы говорят одними словами.
      Язык по умолчанию — русский (аудитория — русскоязычные), английский — values-en. -->
 <resources>
-    <string name="app_name" translatable="false">GrePrepApp</string>
+    <string name="app_name" translatable="false">Tutorless</string>
 
     <!-- Названия разделов экзамена остаются английскими в обеих локализациях. -->
     <string name="section_reading" translatable="false">Reading</string>
@@ -11,11 +11,11 @@
     <string name="section_speaking" translatable="false">Speaking</string>
 
     <!-- Вход -->
-    <string name="signin_tagline">Подготовка к GRE® с разбором каждой ошибки — по-русски и по-английски.</string>
+    <string name="signin_tagline">Вопросы как на настоящем экзамене и разбор каждой ошибки на вашем языке.</string>
     <string name="signin_apple">Вход с Apple</string>
     <string name="signin_google">Войти с аккаунтом Google</string>
     <string name="signin_legal">Продолжая, вы принимаете условия и политику конфиденциальности.</string>
-    <string name="signin_disclaimer" translatable="false">GRE® is a registered trademark of Educational Testing Service (ETS). This product is not endorsed or approved by ETS.</string>
+    <string name="signin_disclaimer" translatable="false">GRE® and TOEFL® are registered trademarks of Educational Testing Service (ETS). This product is not endorsed or approved by ETS.</string>
     <string name="signin_expired">Вход закончился — войдите снова.</string>
     <string name="signin_not_connected_apple">Вход с Apple ещё не подключён — он появится до беты.</string>
     <string name="signin_not_connected_google">Вход через Google ещё не подключён — он появится до беты.</string>
@@ -24,7 +24,6 @@
     <string name="signin_failed">Не получилось войти. Попробуйте ещё раз.</string>
 
     <!-- Вкладки -->
-    <string name="tab_today">Сегодня</string>
     <string name="tab_words">Слова</string>
     <string name="tab_exam">Экзамен</string>
     <string name="tab_progress">Прогресс</string>
@@ -35,74 +34,22 @@
     <string name="section_words">Слова</string>
     <string name="section_essay">Эссе</string>
 
-    <!-- Сегодня -->
-    <string name="today_plan">План на сегодня</string>
-    <string name="today_no_steps">На сегодня шагов нет</string>
-    <string name="today_steps_1">Один шаг</string>
-    <string name="today_steps_2">Два шага</string>
-    <string name="today_steps_3">Три шага</string>
-    <string name="today_steps_4">Четыре шага</string>
-    <string name="today_steps_5">Пять шагов</string>
-    <string name="today_steps_6">Шесть шагов</string>
-    <string name="today_steps_7">Семь шагов</string>
-    <string name="today_steps_8">Восемь шагов</string>
-    <string name="today_summary">%1$s · %2$s</string>
-    <string name="today_step_minutes_approx">~%1$d мин</string>
-    <string name="today_step_minutes">%1$d мин</string>
-    <string name="today_start">Начать</string>
-    <string name="today_start_step">Начать шаг</string>
-    <string name="today_now">Сейчас: %1$s</string>
-    <string name="today_end">На сегодня всё.</string>
-    <string name="today_done_title">На сегодня всё</string>
-    <string name="today_done_subtitle">Завтра здесь будет новый план.</string>
-    <string name="today_loading">Загружаем план на сегодня</string>
-    <string name="today_offline_title">Нет сети</string>
-    <string name="today_offline_message">План на сегодня загрузится, когда появится сеть.</string>
-    <string name="today_failed_title">Не получилось загрузить план</string>
-    <string name="today_failed_message">Мы уже знаем об ошибке. Попробуйте ещё раз чуть позже.</string>
-    <string name="today_retry">Повторить</string>
-    <string name="today_stale_offline">Нет сети — план обновится сам, когда она появится.</string>
-    <string name="today_stale_failed">Не получилось обновить план — покажем свежий, как только сервер ответит.</string>
-    <string name="today_needs_network">Чтобы начать, нужна сеть. Когда она появится, всё заработает.</string>
-    <string name="step_placeholder">Здесь начнётся шаг. Тренировки и слова появятся в следующих частях.</string>
 
-    <!-- Разделы, которых в каркасе ещё нет -->
-    <string name="placeholder_soon">Скоро</string>
-    <string name="placeholder_words">Здесь будет словарь: слова на сегодня, повторение и поиск.</string>
-    <string name="placeholder_exam">Здесь будут пробный экзамен как настоящий GRE и эссе с оценкой.</string>
-    <string name="progress_empty_title">Тренировок ещё не было</string>
-    <string name="progress_empty_message">Здесь появятся темы, где больше всего ошибок, — по порядку, с чего начать.</string>
+
+    <!-- Пустые вкладки -->
+    <string name="placeholder_words">Здесь будут слова: учить, повторять и искать.</string>
+    <string name="placeholder_exam">Здесь будут пробные экзамены GRE и эссе с оценкой.</string>
+    <string name="progress_empty_message">Здесь будет точность по разделам, история тренировок и примерный балл.</string>
 
     <!-- Настройки -->
-    <string name="settings">Настройки</string>
     <string name="settings_sign_out">Выйти</string>
     <string name="settings_version">Версия %1$s</string>
     <string name="navigate_back">Назад</string>
 
-    <plurals name="today_minutes">
-        <item quantity="one">%d минута</item>
-        <item quantity="few">%d минуты</item>
-        <item quantity="many">%d минут</item>
-        <item quantity="other">%d минуты</item>
-    </plurals>
-    <plurals name="today_minutes_about">
-        <item quantity="one">около %d минуты</item>
-        <item quantity="few">около %d минут</item>
-        <item quantity="many">около %d минут</item>
-        <item quantity="other">около %d минуты</item>
-    </plurals>
-    <plurals name="today_steps">
-        <item quantity="one">%d шаг</item>
-        <item quantity="few">%d шага</item>
-        <item quantity="many">%d шагов</item>
-        <item quantity="other">%d шага</item>
-    </plurals>
 
     <!-- Тренировки (макеты R1–R17) -->
     <string name="training_new">Новая тренировка</string>
-    <string name="training_own">Своя тренировка</string>
     <string name="training_continue">Продолжить тренировку</string>
-    <string name="training_continue_subtitle">%1$s · вопрос %2$d из %3$d</string>
     <string name="training_loading">Загружаем темы</string>
     <string name="training_offline_title">Нет сети</string>
     <string name="training_offline_message">Чтобы начать тренировку, нужна сеть: задания скачаются целиком, и дальше можно без неё.</string>
@@ -110,7 +57,7 @@
     <string name="training_failed_message">Мы уже знаем об ошибке. Попробуйте ещё раз чуть позже.</string>
     <string name="training_retry">Повторить</string>
     <string name="training_missing_title">Тренировки нет на устройстве</string>
-    <string name="training_missing_message">Она могла устареть. Начните новую с экрана «Сегодня».</string>
+    <string name="training_missing_message">Она могла устареть. Начните новую тренировку.</string>
     <string name="builder_preset_last">Как в прошлый раз</string>
     <string name="builder_preset_timed">Проверка на время</string>
     <string name="builder_preset_timed_subtitle">%1$s · %2$s · %3$d мин, как секция экзамена</string>
@@ -249,10 +196,92 @@
         <item quantity="many">%d ошибок</item>
         <item quantity="other">%d ошибки</item>
     </plurals>
-    <string name="ets_disclaimer" translatable="false">GRE® is a registered trademark of Educational Testing Service (ETS). This product is not endorsed or approved by ETS.</string>
     <string name="keyboard_start">начать</string>
     <string name="keyboard_choose">выбрать</string>
     <string name="keyboard_next">дальше</string>
     <string name="keyboard_review">выбрать вопрос</string>
     <string name="report_save_failed">Не удалось сохранить жалобу. Попробуйте ещё раз.</string>
+    <string name="tab_training">Тренировка</string>
+    <string name="profile">Профиль</string>
+    <string name="signin_headline">GRE® и TOEFL® без репетитора</string>
+    <string name="placeholder_exam_toefl">Здесь будут пробные экзамены TOEFL с оценкой Writing и Speaking.</string>
+    <string name="profile_language">Язык</string>
+    <string name="profile_theme">Тема</string>
+    <string name="profile_text_size">Размер текста</string>
+    <string name="profile_light">Светлая</string>
+    <string name="profile_dark">Тёмная</string>
+    <string name="profile_normal">Обычный</string>
+    <string name="profile_larger">Крупнее</string>
+    <string name="profile_subscription">Подписка</string>
+    <string name="profile_identities">Способы входа</string>
+    <string name="profile_contact">Написать нам</string>
+    <string name="profile_apple">Вход с Apple</string>
+    <string name="profile_google">Вход через Google</string>
+    <string name="profile_save_failed">Не получилось сохранить выбор. Попробуйте ещё раз.</string>
+    <string name="exam_pick_title">К какому экзамену готовитесь?</string>
+    <string name="exam_pick_message">От него зависят задания, слова и пробный экзамен. Сменить можно в любой момент.</string>
+    <string name="exam_gre_goal">Магистратура и PhD</string>
+    <string name="exam_toefl_goal">Английский для учёбы</string>
+    <string name="exam_pick_failed">Не получилось сохранить выбор. Попробуйте ещё раз.</string>
+    <string name="exam_change_failed">Не получилось сменить экзамен. Попробуйте ещё раз.</string>
+    <string name="exam_pick_offline">Нет сети — выбрать экзамен получится, когда она вернётся.</string>
+    <string name="exam_change_note">У каждого экзамена свой прогресс, при смене он не теряется.</string>
+    <string name="home_offline_title">Нет сети</string>
+    <string name="home_offline_message">Тренировка загрузится, когда сеть вернётся.</string>
+    <string name="home_failed_title">Не получилось загрузить тренировку</string>
+    <string name="home_failed_message">Мы уже знаем об ошибке. Попробуйте ещё раз чуть позже.</string>
+    <string name="home_retry">Попробовать снова</string>
+    <string name="home_stale_offline">Нет сети — обновим, когда она появится.</string>
+    <string name="home_stale_failed">Не получилось обновить — покажем свежее, как только сервер ответит.</string>
+    <string name="home_continue">Вопрос %1$d из %2$d · %3$s</string>
+    <string name="home_start_meta">%1$s · %2$s%3$s · ~%4$d мин</string>
+    <string name="home_first_note">После каждого ответа — разбор на вашем языке: почему верно и где ловушка в остальных вариантах.</string>
+    <string name="home_last_note">Как в прошлый раз</string>
+    <string name="home_configure">Настроить тренировку</string>
+    <string name="home_start_offline">Чтобы начать, нужна сеть: задания скачаются целиком, и дальше можно без неё.</string>
+    <string name="home_empty_toefl">Здесь будут тренировки по четырём частям TOEFL.</string>
+    <string name="home_sections">Разделы</string>
+    <string name="home_mistakes">Повторить мои ошибки</string>
+    <string name="home_weak">Слабое место: %1$s</string>
+    <string name="home_accuracy">%1$s · %2$d %% верно</string>
+    <string name="home_week">Эта неделя</string>
+    <string name="training_start">Начать</string>
+    <string name="training_starting">Начинаем…</string>
+    <string name="home_verbal_types">Text Completion · Sentence Equivalence · Reading Comprehension</string>
+    <string name="home_quant_types">Quantitative Comparison · задачи · графики</string>
+    <string name="home_essay_types">Analyze an Issue · 30 минут</string>
+    <string name="home_reading_types">Complete the Words · Read in Daily Life · Academic Passage</string>
+    <string name="home_listening_types">Choose a Response · Conversation · Announcement · Academic Talk</string>
+    <string name="home_writing_types">Build a Sentence · Write an Email · Academic Discussion</string>
+    <string name="home_speaking_types">Listen and Repeat · Take an Interview</string>
+    <plurals name="training_minutes">
+        <item quantity="one">%d минута</item>
+        <item quantity="few">%d минуты</item>
+        <item quantity="many">%d минут</item>
+        <item quantity="other">%d минуты</item>
+    </plurals>
+    <string name="profile_signout_offline">Нет сети — выйти получится, когда она вернётся.</string>
+    <string name="profile_signout_failed">Не получилось выйти. Попробуйте ещё раз.</string>
+    <string name="home_correct">верно</string>
+    <string name="home_week_time">%1$s · %2$d мин</string>
+    <plurals name="home_days">
+        <item quantity="one">%d день</item>
+        <item quantity="few">%d дня</item>
+        <item quantity="other">%d дней</item>
+    </plurals>
+    <plurals name="home_answers">
+        <item quantity="one">%d ответ</item>
+        <item quantity="few">%d ответа</item>
+        <item quantity="other">%d ответов</item>
+    </plurals>
+    <plurals name="home_questions">
+        <item quantity="one">%d вопрос</item>
+        <item quantity="few">%d вопроса</item>
+        <item quantity="other">%d вопросов</item>
+    </plurals>
+    <plurals name="home_mistakes_count">
+        <item quantity="one">%d задание из прошлых тренировок</item>
+        <item quantity="few">%d задания из прошлых тренировок</item>
+        <item quantity="other">%d заданий из прошлых тренировок</item>
+    </plurals>
 </resources>

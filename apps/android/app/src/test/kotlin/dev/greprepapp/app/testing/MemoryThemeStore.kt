@@ -7,6 +7,15 @@ import kotlinx.coroutines.CompletableDeferred
 class MemoryThemeStore(
     var choice: AppTheme = AppTheme.Dark,
 ) : ThemeStore {
+    var large = false
+
+    override suspend fun loadLargeText(): Boolean = large
+
+    override suspend fun saveLargeText(large: Boolean) {
+        saveFailure?.let { throw it }
+        this.large = large
+    }
+
     var gate: CompletableDeferred<Unit>? = null
     var loadFailure: Exception? = null
     var saveFailure: Exception? = null

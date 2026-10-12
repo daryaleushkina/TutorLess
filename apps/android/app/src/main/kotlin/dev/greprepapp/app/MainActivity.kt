@@ -35,12 +35,16 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/** Одна активность; AppCompat ведёт язык и ночные ресурсы на Android 8–12. */
+/** Одна активность; AppCompat ведёт ночные ресурсы, язык интерфейса приходит из аккаунта. */
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     @Inject lateinit var session: SessionManager
 
     @Inject lateinit var config: AppConfig
+
+    @Inject lateinit var shell: dev.greprepapp.app.feature.shell.ShellRepository
+
+    @Inject lateinit var cleanup: dev.greprepapp.app.core.LegacyCacheCleanup
 
     @Inject lateinit var themes: ThemeManager
 
@@ -64,6 +68,7 @@ class MainActivity : AppCompatActivity() {
             shouldKeepSplash(themes.state.value, session.state.value, resources.configuration.uiMode, themeResourcesTimedOut)
         }
         super.onCreate(savedInstanceState)
+        lifecycleScope.launch { cleanup.run() }
         lifecycleScope.launch {
             // В фоне Android может задержать uiMode. Каждый START начинает новый срок,
             // а STOP отменяет ожидание, чтобы не принять задержку за ошибку ресурсов.
@@ -105,8 +110,22 @@ class MainActivity : AppCompatActivity() {
             contentInstalled = true
             contentInstaller.install(this) {
                 val choice by themes.state.collectAsStateWithLifecycle()
-                GpTheme(darkTheme = choice.theme == AppTheme.Dark) {
-                    AppRoot(session = session, config = config, modifier = Modifier.semantics { testTagsAsResourceId = true })
+                val account by shell.state.collectAsStateWithLifecycle()
+                val base = androidx.compose.ui.platform.LocalContext.current
+                val deviceConfiguration = androidx.compose.ui.platform.LocalConfiguration.current
+                val localized =
+                    androidx.compose.runtime.remember(base, deviceConfiguration, account.user?.locale) {
+                        val configuration = Configuration(deviceConfiguration)
+                        account.user?.locale?.let { configuration.setLocale(java.util.Locale.forLanguageTag(it.value)) }
+                        base.createConfigurationContext(configuration)
+                    }
+                androidx.compose.runtime.CompositionLocalProvider(
+                    androidx.compose.ui.platform.LocalConfiguration provides localized.resources.configuration,
+                    androidx.compose.ui.platform.LocalResources provides localized.resources,
+                ) {
+                    GpTheme(darkTheme = choice.theme == AppTheme.Dark, largeText = choice.largeText) {
+                        AppRoot(session = session, config = config, modifier = Modifier.semantics { testTagsAsResourceId = true })
+                    }
                 }
             }
         }

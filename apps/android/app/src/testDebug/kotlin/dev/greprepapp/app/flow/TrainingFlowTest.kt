@@ -23,7 +23,6 @@ import dagger.hilt.android.testing.HiltTestApplication
 import dev.greprepapp.api.models.QuestionReport
 import dev.greprepapp.api.models.QuestionType
 import dev.greprepapp.api.models.Section
-import dev.greprepapp.api.models.StepState
 import dev.greprepapp.api.models.TrainingMode
 import dev.greprepapp.app.MainActivity
 import dev.greprepapp.app.feature.training.TrainingStore
@@ -32,8 +31,6 @@ import dev.greprepapp.app.testing.Fixtures
 import dev.greprepapp.app.testing.ManualTicker
 import dev.greprepapp.app.testing.MutableClock
 import dev.greprepapp.app.testing.NightModeResetRule
-import dev.greprepapp.app.testing.plan
-import dev.greprepapp.app.testing.step
 import kotlinx.coroutines.cancel
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -47,7 +44,7 @@ import org.robolectric.annotation.Config
 import javax.inject.Inject
 
 /**
- * Тренировка через интерфейс, как её проходит человек: «Сегодня» → конструктор → вопросы с разбором → итог →
+ * Тренировка через интерфейс, как её проходит человек: главная тренировки → конструктор → вопросы с разбором → итог →
  * разбор → «Сообщить об ошибке»; «Проверка» с таймером; без сети; «Продолжить тренировку».
  */
 @OptIn(ExperimentalTestApi::class)
@@ -101,9 +98,9 @@ class TrainingFlowTest {
         waitFor("signin.dev.name")
         compose.onNodeWithTag("signin.dev.name").performTextInput("trainee")
         compose.onNodeWithTag("signin.dev.submit").performClick()
-        waitFor("today.plan")
-        compose.onNodeWithTag("today.plan").performScrollToNode(hasTestTag("today.newTraining"))
-        click("today.newTraining")
+        waitFor("training.home")
+        compose.onNodeWithTag("shell.scroll").performScrollToNode(hasTestTag("home.configure"))
+        click("home.configure")
         waitFor("builder.start")
     }
 
@@ -255,7 +252,7 @@ class TrainingFlowTest {
     }
 
     @Test
-    fun todayContinuesTheStartedTrainingOnTheSameQuestion() {
+    fun homeContinuesTheStartedTrainingOnTheSameQuestion() {
         openBuilder()
         click("builder.start")
         answerPractice("A")
@@ -263,9 +260,9 @@ class TrainingFlowTest {
         waitFor("question.prompt")
         click("session.close")
 
-        waitFor("today.continue")
-        compose.onNodeWithTag("today.continue").assertTextContains("вопрос 2 из 2", substring = true)
-        click("today.continue")
+        waitFor("home.continue")
+        compose.onNodeWithTag("home.continue").assertTextContains("Вопрос 2 из 2", substring = true)
+        click("home.continue")
         compose.waitUntilAtLeastOneExists(hasText("diplomat", substring = true), TIMEOUT)
     }
 
@@ -275,17 +272,17 @@ class TrainingFlowTest {
         click("builder.start")
         answerPractice("A")
         click("session.close")
-        waitFor("today.continue")
+        waitFor("home.continue")
 
         click("tab.progress")
-        click("progress.settings")
+        click("shell.profile")
         click("settings.signOut")
         waitFor("signin.dev.name")
         compose.onNodeWithTag("signin.dev.name").performTextInput("someone-else")
         compose.onNodeWithTag("signin.dev.submit").performClick()
-        waitFor("today.plan")
-        compose.onNodeWithTag("today.plan").performScrollToNode(hasTestTag("today.newTraining"))
-        compose.onNodeWithTag("today.continue").assertDoesNotExist()
+        waitFor("training.home")
+        compose.onNodeWithTag("shell.scroll").performScrollToNode(hasTestTag("home.configure"))
+        compose.onNodeWithTag("home.continue").assertDoesNotExist()
         assertTrue("на устройстве ничего не осталось", trainings.trainings.value.isEmpty())
     }
 
@@ -359,13 +356,12 @@ class TrainingFlowTest {
     }
 
     @Test
-    fun todayQuantStepOpensTheBuilderOnQuant() {
-        server.plan = plan(step("q", Section.QUANT, StepState.CURRENT, 10, "Quant: Quantitative Comparison"))
+    fun homeQuantSectionOpensTheBuilderOnQuant() {
         scenario = ActivityScenario.launch(MainActivity::class.java)
         waitFor("signin.dev.name")
         compose.onNodeWithTag("signin.dev.name").performTextInput("stepper")
         compose.onNodeWithTag("signin.dev.submit").performClick()
-        click("today.start")
+        click("home.section.quant")
         waitFor("builder.start")
         compose.onNodeWithTag("builder.section.quant").assertIsSelected()
         compose.onNodeWithTag("builder.type").assertTextContains("Quantitative Comparison", substring = true)

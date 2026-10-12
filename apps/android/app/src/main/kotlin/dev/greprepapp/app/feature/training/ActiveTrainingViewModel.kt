@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
-/** Незаконченная тренировка для «Продолжить тренировку» на «Сегодня» (макет T1). */
+/** Незаконченная тренировка для «Продолжить тренировку» на главной (макет T1). */
 data class ContinueTraining(
     val trainingId: String,
     val section: Section,
@@ -19,6 +19,7 @@ data class ContinueTraining(
     /** С нуля: «вопрос 4 из 10» — position + 1. */
     val position: Int,
     val total: Int,
+    val exam: dev.greprepapp.api.models.Exam = dev.greprepapp.api.models.Exam.GRE,
 )
 
 /** Вопрос, о котором человек сообщает ошибку, — для экрана «Сообщить об ошибке» (макет R17). */
@@ -34,7 +35,7 @@ fun StoredTraining.reportTarget(position: Int): ReportTarget {
     return ReportTarget(id, position, q.id, q.questionType)
 }
 
-/** Начатая и не законченная тренировка — её видно на «Сегодня», пока человек вошёл. */
+/** Начатая и не законченная тренировка — её видно на главной, пока человек вошёл. */
 @HiltViewModel
 class ActiveTrainingViewModel
     @Inject
@@ -47,6 +48,7 @@ class ActiveTrainingViewModel
                     t?.let {
                         ContinueTraining(
                             trainingId = it.id,
+                            exam = it.session.exam ?: dev.greprepapp.api.models.Exam.GRE,
                             section = it.session.section,
                             types = it.session.questionTypes,
                             position = it.position,

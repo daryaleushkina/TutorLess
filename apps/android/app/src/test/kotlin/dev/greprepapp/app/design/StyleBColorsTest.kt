@@ -13,15 +13,9 @@ import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.text.TextLayoutResult
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
 import dev.greprepapp.api.models.Section
-import dev.greprepapp.api.models.StepState
 import dev.greprepapp.app.feature.shell.MainScaffold
-import dev.greprepapp.app.feature.today.TodayContent
-import dev.greprepapp.app.feature.today.TodayPlan
-import dev.greprepapp.app.feature.today.TodayViewModel
 import dev.greprepapp.app.snapshots.TrainingScreens
 import dev.greprepapp.app.testing.createAppComposeRule
-import dev.greprepapp.app.testing.plan
-import dev.greprepapp.app.testing.step
 import dev.greprepapp.design.GpTheme
 import greprep.design.GpDarkColors
 import greprep.design.GpLightColors
@@ -45,41 +39,16 @@ class StyleBColorsTest(
     private val colors = if (dark) GpDarkColors else GpLightColors
 
     @Test
-    fun todaySectionLabelsUseInkAndActiveNavigationUsesText() {
-        val today =
-            TodayPlan.from(
-                plan(
-                    step("v", Section.VERBAL, StepState.CURRENT, 10, "Текущий шаг"),
-                    step("q", Section.QUANT, StepState.NEXT, 10, "Следующий шаг"),
-                    step("w", Section.WORDS, StepState.NEXT, 5, "Шаг со словами"),
-                    step("e", Section.ESSAY, StepState.NEXT, 30, "Шаг с эссе"),
-                ),
-            )
+    fun activeNavigationUsesText() {
         compose.setContent {
             GpTheme(darkTheme = dark) {
-                MainScaffold(appVersion = "0.1.0 (1)", onSignOut = {}) {
-                    TodayContent(
-                        TodayViewModel.UiState(content = TodayViewModel.Content.Plan(today)),
-                        onRefresh = {},
-                        onSelect = {},
-                    )
-                }
+                MainScaffold(appVersion = "0.1.0 (1)", onSignOut = {}) {}
             }
         }
-        assertColor(colors.verbalInk, compose.onNodeWithText("Verbal", useUnmergedTree = true))
-        assertColor(colors.quantInk, compose.onNodeWithText("Quant", useUnmergedTree = true))
         assertColor(
             colors.text,
-            compose.onNode(hasText("Сегодня") and hasAnyAncestor(hasTestTag("tab.today")), useUnmergedTree = true),
+            compose.onNode(hasText("Тренировка") and hasAnyAncestor(hasTestTag("tab.training")), useUnmergedTree = true),
         )
-        compose.onNodeWithTag("today.plan").performScrollToNode(hasText("Слова"))
-        // «Слова» есть и во вкладках: цвет раздела проверяем внутри строки плана.
-        assertColor(
-            colors.wordsInk,
-            compose.onNode(hasText("Слова") and hasAnyAncestor(hasTestTag("today.step.w")), useUnmergedTree = true),
-        )
-        compose.onNodeWithTag("today.plan").performScrollToNode(hasText("Эссе"))
-        assertColor(colors.essayInk, compose.onNodeWithText("Эссе", useUnmergedTree = true))
     }
 
     @Test

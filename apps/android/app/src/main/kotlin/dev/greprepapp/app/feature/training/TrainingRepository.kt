@@ -86,7 +86,7 @@ class TrainingRepository
 
         val trainings: StateFlow<Map<String, StoredTraining>> = store.visible
 
-        /** Незаконченная тренировка для «Продолжить» на «Сегодня» — самая свежая. */
+        /** Незаконченная тренировка для «Продолжить» на главной — самая свежая. */
         val active: Flow<StoredTraining?> =
             trainings
                 .map { all ->
@@ -118,9 +118,9 @@ class TrainingRepository
 
         private fun currentSession(): Long? = (session.state.value as? SessionState.SignedIn)?.id
 
-        suspend fun options(): ApiResult<TrainingOptions> {
+        suspend fun options(exam: dev.greprepapp.api.models.Exam = dev.greprepapp.api.models.Exam.GRE): ApiResult<TrainingOptions> {
             val id = currentSession()
-            val result = apiCall { api.getTrainingOptions(CURRENT_EXAM, SUPPORTED) }
+            val result = apiCall { api.getTrainingOptions(exam, SUPPORTED) }
             if (result is ApiResult.Failed && id != null) handle(result.failure, id, "options")
             return result
         }
@@ -477,7 +477,13 @@ class TrainingRepository
 
         companion object {
             /** Типы, которые приложение умеет показывать: о других сервер не расскажет (договор, options). */
-            val SUPPORTED: List<QuestionType> = QuestionType.entries
+            val SUPPORTED: List<QuestionType> =
+                listOf(
+                    QuestionType.TEXT_COMPLETION,
+                    QuestionType.SENTENCE_EQUIVALENCE,
+                    QuestionType.QUANTITATIVE_COMPARISON,
+                    QuestionType.MULTIPLE_CHOICE,
+                )
             private const val NO_QUESTIONS = "no_questions"
             private const val KEEP_FINISHED = 3
             private const val MAX_ELAPSED_MS = 86_400_000

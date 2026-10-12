@@ -3,7 +3,7 @@ package dev.greprepapp.api
 import dev.greprepapp.api.models.ClientError
 import dev.greprepapp.api.models.ClientKind
 import dev.greprepapp.api.models.DevSignIn
-import dev.greprepapp.api.models.Section
+import dev.greprepapp.api.models.Role
 import dev.greprepapp.api.models.SessionTransport
 import kotlinx.coroutines.test.runTest
 import mockwebserver3.MockResponse
@@ -67,25 +67,19 @@ class ApiCallTest {
             server.enqueue(
                 json(
                     200,
-                    """{"date":"2026-10-06","steps":[{"id":"w","section":"words","title":"Слова","minutes":5,""" +
-                        """"state":"current","extra":true}],"newField":{"a":1}}""",
+                    """{"id":"fixture","name":"Fixture","role":"user","locale":"ru","activeExam":null,"identities":[],"newField":{"a":1}}""",
                 ),
             )
-            val result = apiCall { api.today.getToday() }
+            val result = apiCall { api.account.getMe() }
             result as ApiResult.Ok
-            assertEquals(
-                Section.WORDS,
-                result.value.steps
-                    .single()
-                    .section,
-            )
+            assertEquals(Role.USER, result.value.role)
         }
 
     @Test
     fun missingRequiredFieldIsUnexpectedNotEmptySuccess() =
         runTest {
-            server.enqueue(json(200, """{"date":"2026-10-06"}"""))
-            val result = apiCall { api.today.getToday() }
+            server.enqueue(json(200, """{"id":"fixture"}"""))
+            val result = apiCall { api.account.getMe() }
             assertTrue(result is ApiResult.Failed && result.failure is ApiFailure.Unexpected)
         }
 
@@ -93,7 +87,7 @@ class ApiCallTest {
     fun unauthorizedMeansSessionIsGone() =
         runTest {
             server.enqueue(json(401, """{"code":"unauthorized","message":"no session","requestId":"r1"}"""))
-            assertEquals(ApiResult.Failed(ApiFailure.Unauthorized), apiCall { api.today.getToday() })
+            assertEquals(ApiResult.Failed(ApiFailure.Unauthorized), apiCall { api.account.getMe() })
         }
 
     @Test
@@ -107,7 +101,7 @@ class ApiCallTest {
                         .body("<html>Bad Gateway</html>")
                         .build(),
                 )
-                assertEquals(ApiResult.Failed(ApiFailure.Offline), apiCall { api.today.getToday() })
+                assertEquals(ApiResult.Failed(ApiFailure.Offline), apiCall { api.account.getMe() })
             }
         }
 
@@ -117,7 +111,7 @@ class ApiCallTest {
             server.enqueue(json(429, """{"code":"too_many_requests","message":"slow down","requestId":"req-9"}"""))
             assertEquals(
                 ApiResult.Failed(ApiFailure.Server(429, "too_many_requests", "req-9")),
-                apiCall { api.today.getToday() },
+                apiCall { api.account.getMe() },
             )
         }
 
@@ -132,7 +126,7 @@ class ApiCallTest {
                     .body("oops")
                     .build(),
             )
-            val failure = (apiCall { api.today.getToday() } as ApiResult.Failed).failure
+            val failure = (apiCall { api.account.getMe() } as ApiResult.Failed).failure
             assertEquals(ApiFailure.Server(500, "http_500", "hdr-1"), failure)
             assertTrue(failure.isReportable)
         }
@@ -150,7 +144,7 @@ class ApiCallTest {
     fun brokenConnectionIsOffline() =
         runTest {
             server.enqueue(MockResponse.Builder().onRequestStart(SocketEffect.CloseSocket()).build())
-            assertEquals(ApiResult.Failed(ApiFailure.Offline), apiCall { api.today.getToday() })
+            assertEquals(ApiResult.Failed(ApiFailure.Offline), apiCall { api.account.getMe() })
         }
 
     @Test
@@ -163,11 +157,11 @@ class ApiCallTest {
                     .code(200)
                     .addHeader("Content-Type", "application/json")
                     .addHeader("Content-Length", "500")
-                    .body("""{"date":"2026-10-06","steps":[""")
+                    .body("""{"id":""")
                     .onResponseBody(SocketEffect.ShutdownConnection)
                     .build(),
             )
-            assertEquals(ApiResult.Failed(ApiFailure.Offline), apiCall { api.today.getToday() })
+            assertEquals(ApiResult.Failed(ApiFailure.Offline), apiCall { api.account.getMe() })
         }
 
     @Test
@@ -176,7 +170,7 @@ class ApiCallTest {
             val url = server.url("/")
             server.close()
             val closed = GrePrepApi(url, OkHttpClient())
-            assertEquals(ApiResult.Failed(ApiFailure.Offline), apiCall { closed.today.getToday() })
+            assertEquals(ApiResult.Failed(ApiFailure.Offline), apiCall { closed.account.getMe() })
         }
 
     @Test
