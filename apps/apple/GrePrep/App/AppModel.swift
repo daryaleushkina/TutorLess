@@ -48,7 +48,9 @@ final class AppModel {
         self.network = network
         let api = API(config: config, session: session, tokens: tokens)
         self.api = api
-        makeAPI = { token in API(config: config, session: session, tokens: MemoryTokenStore(token)) }
+        makeAPI = { token in
+            API(config: config, session: session, tokens: MemoryTokenStore(token), connection: api.connection)
+        }
         trainings = TrainingModel(
             store: TrainingStore.live(beside: cache),
             report: { message, requestID in
@@ -108,26 +110,6 @@ final class AppModel {
         trainings.connect(
             api: makeAPI(signedIn.token), ownerID: signedIn.user.id,
             credentialID: TrainingStore.credentialID(signedIn.token))
-    }
-
-    /// Выход: на устройстве — сразу и до конца (токен, кэш), на сервере — следом, без ожидания. Не дошло до
-    /// сервера (нет сети) — токена на устройстве уже нет, а сессия на сервере истечёт сама.
-    func signOut() {
-        let token: String?
-        do {
-            token = try tokens.token()
-        } catch {
-            token = nil
-            report("keychain read failed on sign-out: \(error)", route: "sign-out")
-        }
-        forgetSession(reason: nil)
-        if let token {
-            let api = makeAPI(token)
-            Task {
-                // Необязательный фон: на устройстве человек уже вышел, сервер — уборка.
-                _ = try? await api.signOut()
-            }
-        }
     }
 
     /// Нажатие в профиле подтверждается сервером: при сбое человек остаётся на прежнем экране.

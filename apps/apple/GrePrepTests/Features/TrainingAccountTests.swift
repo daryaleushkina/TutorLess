@@ -37,7 +37,7 @@ struct TrainingAccountTests {
         await eventually { !server.requests("POST /api/client-errors").isEmpty }
         let messages = try server.requests("POST /api/client-errors").map { try $0.json()["message"] as? String ?? "" }
         #expect(messages.allSatisfy { !$0.contains(store.directory.path) && !$0.contains("private damaged storage") })
-        app.signOut()
+        await app.requestSignOut()
         #expect(app.phase == .signedOut(nil) && app.trainings.trainings.isEmpty)
     }
 
@@ -87,7 +87,7 @@ struct TrainingAccountTests {
         server.on("POST /api/auth/logout", .status(204))
         let app = app()
         await eventually { app.trainings.trainings[t.id] != nil }
-        app.signOut()
+        await app.requestSignOut()
         await eventually { !FileManager.default.fileExists(atPath: store.directory.path) }
         #expect(app.trainings.trainings.isEmpty)
     }
@@ -113,7 +113,7 @@ struct TrainingAccountTests {
         server.on("GET /api/trainings/options", .json(200, TrainingFixture.json(TrainingFixture.options)))
         let app = app()
         _ = try await app.trainings.options()
-        app.signOut()
+        await app.requestSignOut()
         try app.didSignIn(.init(token: "new", user: Fixture.user))
         _ = try await app.trainings.options()
         #expect(try store.load { _ in }.isEmpty)

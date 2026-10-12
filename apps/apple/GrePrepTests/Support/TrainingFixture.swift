@@ -35,19 +35,8 @@ enum TrainingFixture {
             let answer: [String]
             let explanation: Components.Schemas.Explanation
         }
-        /// Общий сид держит и новые типы заданий, а нативный договор Apple — только те, что клиент рисует
-        /// (`api/native-question-types.json`). Фикстура берёт задания известных типов, как сервер отдаёт клиенту
-        /// только объявленные в `X-Training-Capabilities`; ошибка в задании известного типа по-прежнему роняет тест.
-        struct Entry: Decodable {
-            let item: Item?
-            private enum CodingKeys: String, CodingKey { case type }
-            init(from decoder: any Decoder) throws {
-                let type = try decoder.container(keyedBy: CodingKeys.self).decode(String.self, forKey: .type)
-                item = Components.Schemas.QuestionType(rawValue: type) == nil ? nil : try Item(from: decoder)
-            }
-        }
-        private let questions: [Entry]
-        var items: [Item] { questions.compactMap(\.item) }
+        private let questions: [Item]
+        var items: [Item] { questions }
         struct Topic: Decodable {
             let id: String
             let title: Components.Schemas.LocalizedText

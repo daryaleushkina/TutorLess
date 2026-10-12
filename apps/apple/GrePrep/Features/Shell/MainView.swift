@@ -41,6 +41,10 @@ enum AppTab: String, Hashable, CaseIterable {
 }
 
 enum ShellRoute: Hashable { case profile }
+private enum SidebarDestination: Hashable {
+    case tab(AppTab)
+    case profile
+}
 
 /// У каждого раздела свой стек; смена вкладки не уничтожает ни путь, ни сохранённую главную.
 struct MainView: View {
@@ -50,6 +54,7 @@ struct MainView: View {
     let model: ShellModel
     var refreshesOnAppear = true
     @State private var selection: AppTab = .training
+    @State private var sidebarSelection: SidebarDestination = .tab(.training)
     @State private var paths: [AppTab: [ShellRoute]] = [:]
     @State private var trainingEntry: TrainingEntry?
     private let initialExamPicker: Bool
@@ -65,6 +70,7 @@ struct MainView: View {
         self.refreshesOnAppear = refreshesOnAppear
         initialExamPicker = examPicker
         _selection = State(initialValue: initialTab)
+        _sidebarSelection = State(initialValue: profile ? .profile : .tab(initialTab))
         _paths = State(initialValue: profile ? [initialTab: [.profile]] : [:])
     }
 
@@ -75,7 +81,7 @@ struct MainView: View {
             true
         #endif
     }
-    private var profileIsVisible: Bool { paths[selection]?.last == .profile }
+    private var profileIsVisible: Bool { wide ? sidebarSelection == .profile : paths[selection]?.last == .profile }
 
     var body: some View {
         Group {
@@ -111,12 +117,12 @@ struct MainView: View {
                         .padding(.horizontal, GPSpace.s16).padding(.top, GPSpace.s20)
                     List(
                         AppTab.allCases, id: \.self,
-                        selection: Binding<AppTab?>(
-                            get: { selection }, set: { if let tab = $0 { selection = tab } }
+                        selection: Binding<SidebarDestination?>(
+                            get: { sidebarSelection }, set: { if let destination = $0 { selectSidebar(destination) } }
                         )
                     ) { tab in
                         Button {
-                            selection = tab
+                            selectSidebar(.tab(tab))
                         } label: {
                             // Явный состав строки сохраняет цвет SF Symbols, который AppKit теряет у Label в sidebar.
                             HStack(spacing: GPSpace.s12) {
@@ -126,7 +132,7 @@ struct MainView: View {
                             .font(.gp(type.navLabelWide, scale: textScale))
                             .foregroundStyle(selection == tab && !profileIsVisible ? Color(.text) : Color(.text3))
                         }.buttonStyle(ShellSidebarButtonStyle())
-                            .tag(tab).accessibilityIdentifier("shell.tab.\(tab.rawValue)")
+                            .tag(SidebarDestination.tab(tab)).accessibilityIdentifier("shell.tab.\(tab.rawValue)")
                     }
                     .listStyle(.sidebar).scrollContentBackground(.hidden)
                     .tint(profileIsVisible ? Color.clear : Color(.surface2))
@@ -142,12 +148,17 @@ struct MainView: View {
                             profileIsVisible ? Color(.surface2) : Color.clear,
                             in: RoundedRectangle(cornerRadius: GPRadius.m)
                         )
+                        .accessibilityAddTraits(profileIsVisible ? .isSelected : [])
                         .accessibilityIdentifier("shell.profile")
                 }
                 .background(Color(.bg).ignoresSafeArea())
                 .navigationSplitViewColumnWidth(GPLayout.sidebarWidth)
             } detail: {
-                stack(selection)
+                if sidebarSelection == .profile {
+                    NavigationStack { SettingsView(model: model) }
+                } else {
+                    stack(selection)
+                }
             }
             .navigationSplitViewStyle(.balanced)
         } else {
@@ -203,7 +214,15 @@ struct MainView: View {
         }.id(tab)
     }
 
+    private func selectSidebar(_ destination: SidebarDestination) {
+        sidebarSelection = destination
+        if case let .tab(tab) = destination { selection = tab }
+    }
     private func openProfile(in tab: AppTab) {
+        if wide {
+            sidebarSelection = .profile
+            return
+        }
         if paths[tab]?.last != .profile { paths[tab, default: []].append(.profile) }
     }
     private func refreshHome() { if refreshesOnAppear { Task { await model.refresh() } } }

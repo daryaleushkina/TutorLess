@@ -4,6 +4,7 @@ import SwiftUI
 struct TrainingHomeView: View {
     let model: ShellModel
     @Environment(\.gpWideLayout) private var wide
+    @Environment(\.locale) private var locale
     var onTraining: (TrainingEntry) -> Void = { _ in }
 
     var body: some View {
@@ -43,7 +44,10 @@ struct TrainingHomeView: View {
                     if let request = model.startRequest {
                         startCard(request)
                     } else {
-                        Text("Здесь будут тренировки по четырём частям TOEFL.").gpText(\.lead).foregroundStyle(
+                        Text(
+                            model.exam == .toefl
+                                ? "Здесь будут тренировки по четырём частям TOEFL." : "Пока нет доступных заданий"
+                        ).gpText(\.lead).foregroundStyle(
                             Color(.text2)
                         )
                         .frame(maxWidth: GPLayout.textMax, alignment: .leading).fixedSize(
@@ -102,8 +106,9 @@ struct TrainingHomeView: View {
                 Button {
                     Task { if let id = await model.start() { onTraining(.session(id)) } }
                 } label: {
-                    Text(model.starting ? "Начинаем…" : "Начать")
-                }.buttonStyle(PrimaryCapsuleStyle(isBusy: model.starting)).accessibilityIdentifier("home.start")
+                    Text(model.startingAction == .primary ? "Начинаем…" : "Начать")
+                }.buttonStyle(PrimaryCapsuleStyle(isBusy: model.startingAction == .primary)).accessibilityIdentifier(
+                    "home.start")
                 Button {
                     onTraining(.builder(nil))
                 } label: {
@@ -112,7 +117,7 @@ struct TrainingHomeView: View {
                 }.buttonStyle(.plain).accessibilityLabel(Text("Настроить тренировку"))
                     .accessibilityIdentifier("home.configure").allowsHitTesting(!model.starting)
             }.padding(.top, GPSpace.s12)
-            if let problem = model.startProblem {
+            if let problem = model.startProblem, model.startProblemAction == .primary {
                 ShellNotice(
                     symbol: problem == .offline ? "wifi.slash" : "exclamationmark.circle",
                     message:
@@ -135,26 +140,27 @@ struct TrainingHomeView: View {
     @ViewBuilder private func sectionRow(_ section: Components.Schemas.Section, content: HomeContent) -> some View {
         let available = model.types(in: section)
         if available.isEmpty {
-            row(section, types: StudySection(section).emptyTypes, stats: nil, active: false)
+            row(section, types: Text(StudySection(section).emptyTypes), stats: nil, active: false)
+                .accessibilityElement(children: .combine).disabled(true).accessibilityValue(Text("Недоступно"))
                 .opacity(GPOpacity.disabled).accessibilityIdentifier("home.section.\(section.rawValue)")
         } else {
             Button {
                 onTraining(.builder(.init(section: section)))
             } label: {
                 row(
-                    section, types: available.map { $0.questionType.label }.joined(separator: " · "),
+                    section, types: Text(verbatim: available.map { $0.questionType.label }.joined(separator: " · ")),
                     stats: content.stats.sections.first { $0.section == section }, active: true)
             }.buttonStyle(.plain).accessibilityIdentifier("home.section.\(section.rawValue)")
         }
     }
     private func row(
-        _ section: Components.Schemas.Section, types: String, stats: Components.Schemas.SectionStats?, active: Bool
+        _ section: Components.Schemas.Section, types: Text, stats: Components.Schemas.SectionStats?, active: Bool
     ) -> some View {
         HStack(spacing: GPSpace.s12) {
             Circle().fill(StudySection(section).color).frame(width: GPSize.sectionMark, height: GPSize.sectionMark)
             VStack(alignment: .leading, spacing: GPSpace.s4) {
                 Text(StudySection(section).label).gpText(\.h3)
-                Text(verbatim: types).gpText(\.caption).foregroundStyle(Color(.text3)).lineLimit(1)
+                types.gpText(\.caption).foregroundStyle(Color(.text3)).lineLimit(1)
             }
             Spacer(minLength: GPSpace.s4)
             if let stats, stats.total > 0 {
@@ -169,60 +175,78 @@ struct TrainingHomeView: View {
     }
 
     @ViewBuilder private func statistics(_ stats: HomeDTO) -> some View {
-        VStack(spacing: 0) {
-            if stats.mistakes > 0 {
-                Button {
-                    Task { if let id = await model.start(mistakes: true) { onTraining(.session(id)) } }
-                } label: {
-                    HStack(spacing: GPSpace.s12) {
-                        Image(systemName: "arrow.triangle.2.circlepath").frame(width: GPSize.icon)
-                        VStack(alignment: .leading, spacing: GPSpace.s4) {
-                            Text("Повторить мои ошибки").gpText(\.h3)
-                            Text("\(stats.mistakes) заданий из прошлых тренировок").gpText(\.caption).foregroundStyle(
-                                Color(.text3))
-                        }
-                        Spacer(minLength: GPSpace.s4)
-                        if model.starting {
-                            ProgressView()
-                        } else {
+        if stats.mistakes > 0 || stats.weakSpot != nil {
+            VStack(spacing: 0) {
+                if stats.mistakes > 0 {
+                    Button {
+                        Task { if let id = await model.start(mistakes: true) { onTraining(.session(id)) } }
+                    } label: {
+                        HStack(spacing: GPSpace.s12) {
+                            Image(systemName: "arrow.triangle.2.circlepath").frame(width: GPSize.icon)
+                            VStack(alignment: .leading, spacing: GPSpace.s4) {
+                                Text("Повторить мои ошибки").gpText(\.h3)
+                                Text("\(stats.mistakes) заданий из прошлых тренировок").gpText(\.caption)
+                                    .foregroundStyle(
+                                        Color(.text3))
+                            }
+                            Spacer(minLength: GPSpace.s4)
+                            if model.startingAction == .mistakes {
+                                ProgressView()
+                            } else {
+                                Image(systemName: "chevron.forward").foregroundStyle(Color(.text3))
+                            }
+                        }.padding(GPSpace.s16).contentShape(Rectangle())
+                    }.buttonStyle(.plain).allowsHitTesting(!model.starting).accessibilityIdentifier("home.mistakes")
+                    if let problem = model.startProblem, model.startProblemAction == .mistakes {
+                        ShellNotice(
+                            symbol: problem == .offline ? "wifi.slash" : "exclamationmark.circle",
+                            message: problem == .offline
+                                ? "Чтобы начать, нужна сеть: задания скачаются целиком, и дальше можно без неё."
+                                : "Не получилось начать тренировку. Попробуйте ещё раз."
+                        ).padding(GPSpace.s16).accessibilityIdentifier("home.mistakesError")
+                    }
+                }
+                if let weak = stats.weakSpot {
+                    if stats.mistakes > 0 { Divider().overlay(Color(.line)).padding(.horizontal, GPSpace.s16) }
+                    Button {
+                        onTraining(.builder(.init(section: weak.section, type: weak.questionType)))
+                    } label: {
+                        HStack(spacing: GPSpace.s12) {
+                            Image(systemName: "scope").frame(width: GPSize.icon)
+                            VStack(alignment: .leading, spacing: GPSpace.s4) {
+                                Text("Слабое место: \(weak.questionType.label)").gpText(\.h3)
+                                Text(
+                                    "\(String(interface: StudySection(weak.section).label)) · \(Int(weak.accuracy.rounded()))% верно"
+                                )
+                                .gpText(\.caption).foregroundStyle(Color(.text3))
+                            }
+                            Spacer(minLength: GPSpace.s4)
                             Image(systemName: "chevron.forward").foregroundStyle(Color(.text3))
-                        }
-                    }.padding(GPSpace.s16)
-                }.buttonStyle(.plain).allowsHitTesting(!model.starting).accessibilityIdentifier("home.mistakes")
-            }
-            if let weak = stats.weakSpot {
-                if stats.mistakes > 0 { Divider().overlay(Color(.line)).padding(.horizontal, GPSpace.s16) }
-                Button {
-                    onTraining(.builder(.init(section: weak.section, type: weak.questionType)))
-                } label: {
-                    HStack(spacing: GPSpace.s12) {
-                        Image(systemName: "scope").frame(width: GPSize.icon)
-                        VStack(alignment: .leading, spacing: GPSpace.s4) {
-                            Text("Слабое место: \(weak.questionType.label)").gpText(\.h3)
-                            Text(
-                                "\(String(interface: StudySection(weak.section).label)) · \(Int(weak.accuracy.rounded()))% верно"
-                            )
-                            .gpText(\.caption).foregroundStyle(Color(.text3))
-                        }
-                        Spacer(minLength: GPSpace.s4)
-                        Image(systemName: "chevron.forward").foregroundStyle(Color(.text3))
-                    }.padding(GPSpace.s16)
-                }.buttonStyle(.plain).accessibilityIdentifier("home.weakSpot")
-            }
-        }.surface()
-        Text("Эта неделя").gpText(\.h2).accessibilityAddTraits(.isHeader)
-        HStack(alignment: .top, spacing: GPSpace.s16) {
-            weekValue(stats.week.days, label: "дней")
-            weekValue(stats.week.answers, label: "ответов")
-            weekValue(stats.week.minutes, label: "минут")
-        }.padding(GPSpace.s20).surface().accessibilityIdentifier("home.week")
+                        }.padding(GPSpace.s16)
+                    }.buttonStyle(.plain).accessibilityIdentifier("home.weakSpot")
+                }
+            }.surface()
+        }
+        if stats.week.answers > 0 {
+            VStack(alignment: .leading, spacing: GPSpace.s8) {
+                Text("Эта неделя").gpText(\.meta).foregroundStyle(Color(.text3))
+                Text(
+                    verbatim:
+                        "\(HomeWeekCopy.text(HomeWeekCopy.days(stats.week.days), locale: locale)) · \(HomeWeekCopy.text(HomeWeekCopy.duration(stats.week.minutes), locale: locale))"
+                )
+                .gpText(\.h2).monospacedDigit()
+                Text(HomeWeekCopy.answers(stats.week.answers)).gpText(\.meta).foregroundStyle(Color(.text2))
+            }.frame(maxWidth: .infinity, alignment: .leading).padding(GPSpace.s20).surface()
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(
+                    Text(
+                        verbatim:
+                            "\(String(localized: "Эта неделя", locale: locale)), \(HomeWeekCopy.text(HomeWeekCopy.days(stats.week.days), locale: locale)) · \(HomeWeekCopy.text(HomeWeekCopy.duration(stats.week.minutes), locale: locale)), \(HomeWeekCopy.text(HomeWeekCopy.answers(stats.week.answers), locale: locale))"
+                    )
+                ).accessibilityIdentifier("home.week")
+        }
     }
-    private func weekValue(_ value: Int, label: LocalizedStringKey) -> some View {
-        VStack(alignment: .leading, spacing: GPSpace.s4) {
-            Text(verbatim: value.formatted()).gpText(\.h1).monospacedDigit()
-            Text(label).gpText(\.caption).foregroundStyle(Color(.text3))
-        }.frame(maxWidth: .infinity, alignment: .leading)
-    }
+
 }
 
 struct ShellNotice: View {
@@ -294,5 +318,19 @@ extension View {
     fileprivate func surface() -> some View {
         background(Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.l))
             .overlay(RoundedRectangle(cornerRadius: GPRadius.l).stroke(Color(.line), lineWidth: GPSize.hairline))
+    }
+}
+
+/// Числа недели локализуются целиком: единица не отрывается от числа, включая VoiceOver.
+enum HomeWeekCopy {
+    static func days(_ value: Int) -> LocalizedStringResource { "\(value) дней" }
+    static func answers(_ value: Int) -> LocalizedStringResource { "\(value) заданий" }
+    static func duration(_ minutes: Int) -> LocalizedStringResource {
+        minutes < 60 ? "\(minutes) мин" : "\(minutes / 60) ч \(minutes % 60) мин"
+    }
+    static func text(_ resource: LocalizedStringResource, locale: Locale) -> String {
+        var resource = resource
+        resource.locale = locale
+        return String(localized: resource)
     }
 }

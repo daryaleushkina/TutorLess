@@ -737,7 +737,7 @@ struct ScreenSnapshotTests {
     }
 
     enum Device { case phone, pad }
-    enum Presentation { case root, profile, examPicker }
+    enum Presentation { case root, profile, examPicker, homeBottom }
     enum Theme { case light, dark }
 
     /// Тесты только для телефона на iPad и Mac пропускаются явно (в отчёте — «пропущен», а не пустой «прошёл»).
@@ -850,23 +850,31 @@ struct ScreenSnapshotTests {
                         await eventually {
                             controller.view.layoutIfNeeded()
                             let controllers = Self.controllers(controller)
+                            if presentation == .homeBottom {
+                                let scrolls = Self.views(controller.view).compactMap { $0 as? UIScrollView }
+                                    .filter { $0.contentSize.height > 0 }
+                                guard let scroll = scrolls.max(by: { $0.bounds.width < $1.bounds.width }) else {
+                                    return false
+                                }
+                                let bottom =
+                                    scroll.contentSize.height - scroll.bounds.height
+                                    + scroll.adjustedContentInset.bottom
+                                if bottom > 0 { scroll.setContentOffset(CGPoint(x: 0, y: bottom), animated: false) }
+                                return true
+                            }
                             if presentation == .examPicker {
                                 return controllers.contains {
                                     $0.presentedViewController?.view.window != nil
                                         && $0.presentedViewController?.isBeingPresented == false
                                 }
                             }
-                            let tabs = controllers.compactMap { $0 as? UITabBarController }
                             if device == .pad || regularWidth {
                                 return controllers.compactMap { $0 as? UINavigationController }.contains {
-                                    $0.viewControllers.count > 1 && $0.visibleViewController?.view.window != nil
+                                    $0.visibleViewController?.view.window != nil
                                 }
                             }
-                            guard !tabs.isEmpty else { return false }
-                            return tabs.allSatisfy {
-                                let bar = $0.tabBar
-                                return bar.isHidden || bar.alpha == 0
-                                    || !bar.convert(bar.bounds, to: window).intersects(window.bounds)
+                            return controllers.compactMap { $0 as? UINavigationController }.contains {
+                                $0.viewControllers.count > 1 && $0.visibleViewController?.view.window != nil
                             }
                         }
                         window.layoutIfNeeded()
@@ -948,6 +956,23 @@ struct ScreenSnapshotTests {
                 // AppKit откладывает высоту многострочного поля до раскладки. Иначе после очистки длинного
                 // текста cacheDisplay может снять ещё прежнюю высоту и сдвинуть сообщение об ошибке.
                 controller.view.layoutSubtreeIfNeeded()
+                if presentation == .homeBottom {
+                    await eventually {
+                        controller.view.layoutSubtreeIfNeeded()
+                        let scrolls = Self.views(controller.view).compactMap { $0 as? NSScrollView }
+                            .filter { ($0.documentView?.bounds.height ?? 0) > 0 }
+                        guard let scroll = scrolls.max(by: { $0.bounds.width < $1.bounds.width }),
+                            let document = scroll.documentView
+                        else { return false }
+                        if document.bounds.height > scroll.contentSize.height {
+                            let bottom = document.isFlipped ? document.bounds.height - scroll.contentSize.height : 0
+                            scroll.contentView.scroll(to: NSPoint(x: 0, y: bottom))
+                            scroll.reflectScrolledClipView(scroll.contentView)
+                        }
+                        return true
+                    }
+                    controller.view.layoutSubtreeIfNeeded()
+                }
                 if presentation == .examPicker {
                     await eventually { window.childWindows?.contains { $0.isVisible && $0.contentView != nil } == true }
                     controller.view.layoutSubtreeIfNeeded()
@@ -997,5 +1022,8 @@ struct ScreenSnapshotTests {
         private static func controllers(_ root: UIViewController) -> [UIViewController] {
             [root] + root.children.flatMap(controllers)
         }
+        private static func views(_ root: UIView) -> [UIView] { [root] + root.subviews.flatMap(views) }
+    #else
+        private static func views(_ root: NSView) -> [NSView] { [root] + root.subviews.flatMap(views) }
     #endif
 }

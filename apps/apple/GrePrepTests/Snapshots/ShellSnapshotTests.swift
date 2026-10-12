@@ -8,6 +8,7 @@ extension ScreenSnapshotTests {
     enum ShellScreen: String, CaseIterable, Sendable {
         case home, history, historyWithoutAnswers, offline, failed, loading, offlineEmpty, toefl
         case examChoice, examBusy, examSwitch, words, examEmpty, toeflExam, progress, profile
+        case greEmpty, historyEmptyWeek
     }
 
     @Test("Оболочка B: все состояния, обе темы и размеры", arguments: ShellScreen.allCases)
@@ -24,6 +25,15 @@ extension ScreenSnapshotTests {
                 options: .init(types: [], presets: [], maxQuestions: 50))
         }
         snapshot.user = user
+        if screen == .greEmpty {
+            snapshot.homes["gre"] = .init(
+                stats: ShellFixture.stats, options: .init(types: [], presets: [], maxQuestions: 50))
+        }
+        if screen == .historyEmptyWeek {
+            var stats = ShellFixture.stats
+            stats.sections[0] = .init(section: .verbal, total: 40, correct: 27)
+            snapshot.homes["gre"] = .init(stats: stats, options: TrainingFixture.options)
+        }
         if screen == .historyWithoutAnswers {
             var stats = ShellFixture.stats
             stats.lastTraining = .init(request: TrainingFixture.options.presets[0].request, size: 3)
@@ -36,7 +46,7 @@ extension ScreenSnapshotTests {
             stats.sections[1] = .init(section: .quant, total: 35, correct: 26)
             stats.mistakes = 12
             stats.weakSpot = .init(questionType: .sentenceEquivalence, section: .verbal, accuracy: 58)
-            stats.week = .init(days: 3, answers: 42, minutes: 38)
+            stats.week = .init(days: 4, answers: 86, minutes: 130)
             snapshot.homes["gre"] = .init(stats: stats, options: TrainingFixture.options)
         }
         if screen == .loading || screen == .offlineEmpty { snapshot.homes = [:] }
@@ -68,7 +78,8 @@ extension ScreenSnapshotTests {
         }
         let view: AnyView
         switch screen {
-        case .home, .history, .historyWithoutAnswers, .offline, .failed, .loading, .offlineEmpty, .toefl:
+        case .home, .history, .historyWithoutAnswers, .offline, .failed, .loading, .offlineEmpty, .toefl, .greEmpty,
+            .historyEmptyWeek:
             view = AnyView(MainView(model: model, refreshesOnAppear: false))
         case .examChoice, .examBusy:
             view = AnyView(ExamPickerView(model: model, firstEntry: true))
@@ -96,6 +107,36 @@ extension ScreenSnapshotTests {
         #endif
         gate.open()
         _ = await busyTask?.value
+    }
+
+    @Test("T1: после прокрутки видна неделя из макета")
+    func homeWeekAtBottom() async throws {
+        var snapshot = ShellFixture.snapshot
+        var stats = ShellFixture.stats
+        stats.sections[0] = .init(section: .verbal, total: 40, correct: 27)
+        stats.sections[1] = .init(section: .quant, total: 35, correct: 26)
+        stats.mistakes = 12
+        stats.weakSpot = .init(questionType: .sentenceEquivalence, section: .verbal, accuracy: 58)
+        stats.week = .init(days: 4, answers: 86, minutes: 130)
+        stats.lastTraining = .init(request: TrainingFixture.options.presets[0].request, size: 10)
+        snapshot.homes["gre"] = .init(stats: stats, options: TrainingFixture.options)
+        let cache = temporaryCache()
+        try cache.save(snapshot)
+        ShellFixture.stub(server, stats: stats)
+        let app = AppModel(
+            config: server.config(), tokens: MemoryTokenStore("t"), cache: cache, network: NetworkMonitor(),
+            session: server.session)
+        let model = try #require(app.shell)
+        let view = MainView(model: model, refreshesOnAppear: false).environment(app)
+        await assertScreens(view, named: "home-week-bottom", precision: 0.995, presentation: .homeBottom)
+        await assertScreens(
+            view.environment(\.textScale, GPType.textScaleLarge), named: "home-week-bottom-larger",
+            precision: 0.995, largerText: true, presentation: .homeBottom)
+        #if os(iOS)
+            await assertScreens(
+                view, named: "home-week-bottom-wide", devices: [.pad], precision: 0.995,
+                padLandscape: true, presentation: .homeBottom)
+        #endif
     }
 
     @Test("T4: ошибка входа над официальными кнопками")

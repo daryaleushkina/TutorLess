@@ -809,7 +809,9 @@ final class AppFlowTests: XCTestCase {
         XCTAssertTrue(app.segmentedControls["settings.language"].waitForExistence(timeout: 5))
         for id in ["subscription", "identities", "contact"] {
             XCTAssertFalse(app.buttons["settings.inactive.\(id)"].exists)
-            XCTAssertTrue(app.descendants(matching: .any)["settings.inactive.\(id)"].exists)
+            let row = app.descendants(matching: .any)["settings.inactive.\(id)"]
+            XCTAssertTrue(row.exists)
+            XCTAssertEqual(row.value as? String, "Недоступно")
         }
         let profile = app.scrollViews["shell.profileScreen"]
         XCTAssertTrue(profile.exists)
@@ -845,6 +847,15 @@ final class AppFlowTests: XCTestCase {
         let savedAccount3 = try await account(name)
         XCTAssertEqual(savedAccount3.user.locale, "ru")
         try capture("profile-locale-offline")
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            offline.descendants(matching: .any)["shell.tab.training"].firstMatch.tap()
+        } else {
+            offline.navigationBars.buttons.firstMatch.tap()
+        }
+        XCTAssertTrue(offline.buttons["home.configure"].waitForExistence(timeout: 5))
+        offline.buttons["shell.profile"].firstMatch.tap()
+        XCTAssertTrue(offline.segmentedControls["settings.language"].waitForExistence(timeout: 5))
+        XCTAssertFalse(error.exists, "ошибка прежнего выбора языка не должна возвращаться при открытии профиля")
     }
 
     func testShellRepeatMistakesStartsFromSavedWrongAnswer() async throws {
@@ -855,33 +866,54 @@ final class AppFlowTests: XCTestCase {
         app.buttons["training.close"].tap()
         let mistakes = app.buttons["home.mistakes"]
         XCTAssertTrue(mistakes.waitForExistence(timeout: 15))
+        let week = app.descendants(matching: .any)["home.week"]
+        XCTAssertTrue(week.waitForExistence(timeout: 5))
+        app.scrollViews["home.screen"].swipeUp()
+        XCTAssertTrue(week.label.contains("1 день"))
+        XCTAssertTrue(week.label.contains("1 задание"))
+        XCTAssertTrue(
+            week.staticTexts.allElementsBoundByIndex.allSatisfy { $0.label != "1" },
+            "число и подпись недели должны читаться вместе")
+        let visible = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in mistakes.isHittable }, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [visible], timeout: 5), .completed)
+        try capture("week-saved-answer")
         mistakes.tap()
         XCTAssertTrue(app.otherElements["training.session"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.tabBars.firstMatch.exists == false || !app.tabBars.firstMatch.isHittable)
         try capture("mistakes-session")
     }
 
-    func testShellTabHistory() {
+    func testShellTabHistory() throws {
         let app = launch(reset: true)
         signIn(app)
         if UIDevice.current.userInterfaceIdiom == .pad {
+            app.buttons["shell.profile"].firstMatch.tap()
+            XCTAssertTrue(app.segmentedControls["settings.language"].waitForExistence(timeout: 5))
+            app.descendants(matching: .any)["shell.tab.training"].firstMatch.tap()
+            XCTAssertTrue(app.buttons["home.configure"].waitForExistence(timeout: 5))
+            XCTAssertFalse(app.segmentedControls["settings.language"].exists)
             app.buttons["shell.profile"].firstMatch.tap()
             XCTAssertTrue(app.segmentedControls["settings.language"].waitForExistence(timeout: 5))
             app.descendants(matching: .any)["shell.tab.words"].firstMatch.tap()
             XCTAssertTrue(app.scrollViews["shell.empty.words"].waitForExistence(timeout: 5))
             app.descendants(matching: .any)["shell.tab.training"].firstMatch.tap()
             XCTAssertTrue(
-                app.segmentedControls["settings.language"].waitForExistence(timeout: 5),
-                "стек тренировки потерял профиль")
+                app.buttons["home.configure"].waitForExistence(timeout: 5),
+                "профиль не должен входить в историю вкладки на iPad")
+            app.buttons["shell.profile"].firstMatch.tap()
+            XCTAssertTrue(app.segmentedControls["settings.language"].waitForExistence(timeout: 5))
+            try capture("sidebar-profile")
         } else {
             app.buttons["Прогресс"].firstMatch.tap()
             app.buttons["shell.profile"].firstMatch.tap()
             XCTAssertTrue(app.segmentedControls["settings.language"].waitForExistence(timeout: 5))
-            app.navigationBars.buttons.firstMatch.tap()
-            XCTAssertTrue(app.scrollViews["shell.empty.progress"].waitForExistence(timeout: 5))
-            app.buttons["Тренировка"].firstMatch.tap()
+            app.tabBars.buttons["Тренировка"].tap()
             XCTAssertTrue(app.buttons["home.configure"].waitForExistence(timeout: 5))
-            app.buttons["Прогресс"].firstMatch.tap()
+            app.tabBars.buttons["Прогресс"].tap()
+            XCTAssertTrue(app.segmentedControls["settings.language"].waitForExistence(timeout: 5))
+            try capture("tab-history-profile")
+            app.navigationBars.buttons.firstMatch.tap()
             XCTAssertTrue(app.scrollViews["shell.empty.progress"].waitForExistence(timeout: 5))
         }
     }

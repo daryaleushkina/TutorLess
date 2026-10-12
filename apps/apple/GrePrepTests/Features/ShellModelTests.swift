@@ -20,6 +20,16 @@ struct ShellModelTests {
         return app
     }
 
+    @Test("до ответа аккаунта язык берётся из локализаций приложения")
+    func languageBeforeAccountLoads() {
+        let app = AppModel(
+            config: server.config(), tokens: MemoryTokenStore("t"), cache: cache, network: network,
+            session: server.session)
+        #expect(app.shell?.user == nil)
+        #expect(app.shell?.locale == InterfaceLocale.preferredLanguage)
+        #expect(InterfaceLocale.preferredLanguage.rawValue == Bundle.main.preferredLocalizations.first)
+    }
+
     @Test("первый вход: экзамен отсутствует, каталог только от сервера")
     func firstEntry() async throws {
         let app = try app(user: ShellFixture.user(exam: nil))
@@ -80,9 +90,152 @@ struct ShellModelTests {
         let task = Task { await model.choose(.gre) }
         await eventually { model.choosing == .gre }
         #expect(!(await model.choose(.toefl)))
-        #expect(server.requests("PUT /api/me/exam").count <= 1)
+        await eventually { server.requests("PUT /api/me/exam").count == 1 }
+        #expect(server.requests("PUT /api/me/exam").count == 1)
         gate.open()
         #expect(await task.value)
+        #expect(server.requests("PUT /api/me/exam").count == 1)
+    }
+
+    @Test("503 не блокирует следующий старт при живой сети", arguments: [502, 503, 504])
+    func startAfterServerReturns(status: Int) async throws {
+        let app = try app()
+        let model = try #require(app.shell)
+        await model.refresh()
+        server.on("GET /api/home", .status(status))
+        await model.refresh()
+        #expect(model.problem == .offline)
+        server.on("GET /api/home", .json(200, ShellFixture.homeJSON))
+        server.on("POST /api/trainings", .json(201, TrainingFixture.json(TrainingFixture.session)))
+        #expect(await model.start() == TrainingFixture.session.id)
+        #expect(model.problem == nil && model.startProblem == nil)
+        await eventually { server.requests("GET /api/home").count >= 3 }
+    }
+
+    @Test("503 → 200 восстанавливается сам, без pull-to-refresh")
+    func serverRecoversWhileTrainingIsOpen() async throws {
+        let app = try app()
+        let model = try #require(app.shell)
+        server.on("GET /api/home", .status(503), .json(200, ShellFixture.homeJSON))
+        await model.refresh()
+        #expect(model.problem == .offline)
+        await eventually { model.problem == nil && model.home != nil }
+        #expect(server.requests("GET /api/home").count == 2)
+    }
+
+    @Test("успех запроса языка снимает старую ошибку связи")
+    func successfulRequestClearsOffline() async throws {
+        let app = try app()
+        let model = try #require(app.shell)
+        await model.refresh()
+        server.on("GET /api/home", .status(503))
+        await model.refresh()
+        server.on("PUT /api/me/locale", .json(200, ShellFixture.json(ShellFixture.user(locale: .en))))
+        await model.setLocale(.en)
+        #expect(model.problem == nil)
+    }
+
+    @Test("повторение ошибок использует лимит сервера, без ограничения десятью")
+    func mistakesUseServerLimit() async throws {
+        let app = try app()
+        let model = try #require(app.shell)
+        var stats = ShellFixture.stats
+        stats.mistakes = 24
+        server.on("GET /api/home", .json(200, ShellFixture.json(stats)))
+        await model.refresh()
+        server.on("POST /api/trainings", .json(201, TrainingFixture.json(TrainingFixture.session)))
+        #expect(await model.start(mistakes: true) == TrainingFixture.session.id)
+        #expect(try server.requests("POST /api/trainings").first?.json()["count"] as? Int == 24)
+    }
+
+    @Test("пауза повтора растёт, выход отменяет ожидающий запрос", arguments: [false, true])
+    func recoveryDelayAndCancellation(retire: Bool) async throws {
+        let app = try app()
+        await app.shell?.refresh()
+        let clock = RecoveryGate()
+        let model = ShellModel(
+            api: app.api, cache: cache, network: network, trainings: app.trainings,
+            recoverySleep: { try await clock.sleep($0) }, unauthorized: {}, report: { _, _ in })
+        server.on("GET /api/home", .status(503))
+        let initial = server.requests("GET /api/home").count
+        await model.refresh()
+        await eventually { clock.delays.count == 1 }
+        #expect(clock.delays == [.seconds(2)])
+        #expect(server.requests("GET /api/home").count == initial + 1)
+        if retire {
+            model.retire()
+            clock.advance()
+            await eventually { clock.completed == 1 }
+            #expect(server.requests("GET /api/home").count == initial + 1)
+        } else {
+            clock.advance()
+            await eventually { clock.delays.count == 2 }
+            #expect(clock.delays == [.seconds(2), .seconds(4)])
+            server.on("GET /api/home", .json(200, ShellFixture.homeJSON))
+            clock.advance()
+            await eventually { server.requests("GET /api/home").count == initial + 3 && !model.refreshing }
+            #expect(model.problem == nil)
+            model.retire()
+        }
+    }
+
+    @Test("ошибка относится к нажатой строке, ACK ответов подтверждает восстановление сервера")
+    func startFailureBelongsToActionAndAcknowledgementRecovers() async throws {
+        let app = try app()
+        let model = try #require(app.shell)
+        var stats = ShellFixture.stats
+        stats.mistakes = 2
+        server.on("GET /api/home", .json(200, ShellFixture.json(stats)))
+        await model.refresh()
+        server.on("POST /api/trainings", .failure(.timedOut))
+        #expect(await model.start(mistakes: true) == nil)
+        #expect(model.startProblem == .offline && model.startProblemAction == .mistakes)
+        #expect(model.startingAction == nil)
+        server.on("POST /api/trainings/ack/answers", .status(204))
+        try await app.api.trainingAnswers("ack", answers: [])
+        #expect(model.problem == nil && model.startProblem == nil)
+        model.retire()
+    }
+
+    @Test("индикатор только у нажатой строки; восстановление пути снимает ошибку старта")
+    func startBusyAndNetworkReturn() async throws {
+        let app = try app()
+        let model = try #require(app.shell)
+        var stats = ShellFixture.stats
+        stats.mistakes = 2
+        server.on("GET /api/home", .json(200, ShellFixture.json(stats)))
+        await model.refresh()
+        let gate = StubServer.Gate()
+        server.on("POST /api/trainings", .gated(gate, 201, TrainingFixture.json(TrainingFixture.session)))
+        let task = Task { await model.start(mistakes: true) }
+        await eventually { model.startingAction == .mistakes }
+        #expect(await model.start() == nil)
+        gate.open()
+        #expect(await task.value != nil)
+        #expect(server.requests("POST /api/trainings").count == 1)
+        network.set(online: false)
+        #expect(await model.start() == nil)
+        #expect(model.startProblem == .offline)
+        network.set(online: true)
+        await model.networkChanged()
+        #expect(model.startProblem == nil)
+    }
+
+    @Test("повторное открытие экзамена и профиля не возвращает старое сообщение")
+    func dismissActionErrors() async throws {
+        let app = try app()
+        let model = try #require(app.shell)
+        await model.refresh()
+        server.on("PUT /api/me/exam", .json(500, Fixture.error("internal")))
+        #expect(!(await model.choose(.toefl)))
+        #expect(model.examProblem == .failed)
+        model.clearExamProblem()
+        #expect(model.examProblem == nil)
+        server.on("PUT /api/me/locale", .json(500, Fixture.error("internal")))
+        await model.setLocale(.en)
+        #expect(model.localeProblem == .failed)
+        model.clearLocaleProblem()
+        #expect(model.localeProblem == nil)
     }
 
     @Test("язык меняется сразу, принадлежит аккаунту и откатывается при сбое", arguments: [200, 500])
@@ -285,7 +438,19 @@ struct ShellModelTests {
 
     @Test("выход из профиля: сбой оставляет аккаунт, успех стирает данные", arguments: [200, 500, 0, 401])
     func signOut(status: Int) async throws {
-        let app = try app()
+        ShellFixture.stub(server)
+        let tokens = MemoryTokenStore()
+        let preferences = UserDefaults(suiteName: "logout-\(UUID().uuidString)")!
+        let app = AppModel(
+            config: server.config(), tokens: tokens, cache: cache, network: network, session: server.session,
+            preferences: preferences)
+        try app.didSignIn(.init(token: "t", user: ShellFixture.user()))
+        let model = try #require(app.shell)
+        await model.refresh()
+        server.on("POST /api/trainings", .json(201, TrainingFixture.json(TrainingFixture.session)))
+        #expect(await model.start() == TrainingFixture.session.id)
+        #expect(FileManager.default.fileExists(atPath: cache.fileURL.path))
+        #expect(preferences.string(forKey: InterfaceLocale.storageKey) == "ru")
         server.on(
             "POST /api/auth/logout",
             status == 0
@@ -295,5 +460,35 @@ struct ShellModelTests {
         #expect(app.phase == (status == 200 || status == 401 ? .signedOut(nil) : .signedIn))
         #expect(app.signOutProblem == (status == 0 ? .offline : status == 500 ? .failed : nil))
         #expect(!app.signingOut)
+        if status == 200 || status == 401 {
+            #expect(try tokens.token() == nil)
+            #expect(!FileManager.default.fileExists(atPath: cache.fileURL.path))
+            #expect(preferences.object(forKey: InterfaceLocale.storageKey) == nil)
+            #expect(app.shell == nil && app.trainings.trainings.isEmpty)
+            let directory = TrainingStore.live(beside: cache).directory
+            await eventually { !FileManager.default.fileExists(atPath: directory.path) }
+        } else {
+            #expect(try tokens.token() == "t")
+            #expect(cache.load() != nil && !app.trainings.trainings.isEmpty)
+            #expect(preferences.string(forKey: InterfaceLocale.storageKey) == "ru")
+        }
+    }
+}
+
+/// Вместо реальных пауз тест сам разрешает продолжение восстановления; отмена проверяется после сигнала.
+@MainActor
+private final class RecoveryGate {
+    var delays: [Duration] = []
+    var completed = 0
+    private var continuation: CheckedContinuation<Void, Never>?
+    func sleep(_ duration: Duration) async throws {
+        delays.append(duration)
+        await withCheckedContinuation { continuation = $0 }
+        completed += 1
+        try Task.checkCancellation()
+    }
+    func advance() {
+        continuation?.resume()
+        continuation = nil
     }
 }

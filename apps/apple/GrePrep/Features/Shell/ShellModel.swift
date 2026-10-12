@@ -7,17 +7,42 @@ import Observation
 @Observable
 final class ShellModel {
     enum Problem: Equatable { case offline, failed }
+    enum StartAction { case primary, mistakes }
+    typealias RecoverySleep = @Sendable (Duration) async throws -> Void
+    nonisolated static let recoverySleep: RecoverySleep = { try await Task.sleep(for: $0) }
     private(set) var snapshot: ShellSnapshot {
         didSet { preferences.set(snapshot.user?.locale.rawValue, forKey: InterfaceLocale.storageKey) }
     }
     private(set) var refreshing = false
-    private(set) var problem: Problem?
+    private var connectionProblem: Problem?
+    private var problemRevision = 0
+    private(set) var problem: Problem? {
+        get { api.connection.revision == problemRevision ? connectionProblem : nil }
+        set {
+            connectionProblem = newValue
+            problemRevision = api.connection.revision
+            if newValue == .offline { scheduleRecovery() }
+            if newValue == nil { stopRecovery() }
+        }
+    }
     private(set) var choosing: Exam?
     private(set) var examProblem: Problem?
     private(set) var changingLocale = false
     private(set) var localeProblem: Problem?
-    private(set) var starting = false
-    private(set) var startProblem: Problem?
+    private(set) var startingAction: StartAction?
+    var starting: Bool { startingAction != nil }
+    private var actionProblem: Problem?
+    private var startProblemRevision = 0
+    private(set) var startProblemAction: StartAction?
+    private(set) var startProblem: Problem? {
+        get {
+            actionProblem == .offline && api.connection.revision != startProblemRevision ? nil : actionProblem
+        }
+        set {
+            actionProblem = newValue
+            startProblemRevision = api.connection.revision
+        }
+    }
     @ObservationIgnored private let api: API
     @ObservationIgnored private let cache: ShellCache
     @ObservationIgnored private let preferences: UserDefaults
@@ -28,13 +53,18 @@ final class ShellModel {
     @ObservationIgnored private var generation = 0
     @ObservationIgnored private var retired = false
     @ObservationIgnored private var refreshAgain = false
+    @ObservationIgnored private var recoveryTask: Task<Void, Never>?
+    @ObservationIgnored private let sleep: RecoverySleep
+    @ObservationIgnored private var recoverySeconds = 2
 
     init(
         api: API, cache: ShellCache, network: NetworkMonitor, trainings: TrainingModel, user: UserDTO? = nil,
         preferences: UserDefaults = .standard,
+        recoverySleep: @escaping RecoverySleep = ShellModel.recoverySleep,
         unauthorized: @escaping () -> Void, report: @escaping (String, String?) -> Void
     ) {
         self.api = api
+        sleep = recoverySleep
         self.cache = cache
         self.preferences = preferences
         self.network = network
@@ -53,7 +83,7 @@ final class ShellModel {
     var user: UserDTO? { snapshot.user }
     var exams: [ExamInfo] { snapshot.exams }
     var exam: Exam? { user?.activeExam.flatMap { Exam(rawValue: $0.rawValue) } }
-    var locale: Components.Schemas.Locale { user?.locale ?? .ru }
+    var locale: Components.Schemas.Locale { user?.locale ?? InterfaceLocale.preferredLanguage }
     var home: HomeContent? { exam.flatMap { snapshot.homes[$0.rawValue] } }
     var sections: [Components.Schemas.Section] { exams.first { $0.id == exam }?.sections ?? [] }
     var staleProblem: Problem? { !network.isOnline ? .offline : problem }
@@ -141,7 +171,7 @@ final class ShellModel {
         generation += 1
         let epoch = generation
         refreshing = false
-        starting = false
+        startingAction = nil
         refreshAgain = false
         choosing = selected
         examProblem = nil
@@ -172,7 +202,7 @@ final class ShellModel {
         let wasRefreshing = refreshing
         generation += 1
         refreshing = false
-        starting = false
+        startingAction = nil
         let previous = user.locale
         let epoch = generation
         changingLocale = true
@@ -192,6 +222,7 @@ final class ShellModel {
             guard current(epoch) else { return }
             guard saved.locale == selected else { throw APIFailure.unexpected("locale choice not saved") }
             snapshot.user = saved
+            problem = nil
             persist()
         } catch {
             guard current(epoch) else { return }
@@ -210,15 +241,20 @@ final class ShellModel {
             }
             request.topicIds = nil
             request.difficulty = nil
-            request.count = min(10, home.stats.mistakes, home.options.maxQuestions)
+            request.count = min(home.stats.mistakes, home.options.maxQuestions)
             request.mode = .practice
         }
         let epoch = generation
-        starting = true
+        startingAction = mistakes ? .mistakes : .primary
+        startProblemAction = startingAction
         startProblem = nil
-        defer { if current(epoch) { starting = false } }
+        defer { if current(epoch) { startingAction = nil } }
         do {
-            guard network.isOnline, staleProblem != .offline else { throw APIFailure.offline }
+            guard network.isOnline else { throw APIFailure.offline }
+            if connectionProblem == .offline {
+                await refresh()
+                guard current(epoch) else { return nil }
+            }
             let candidateSections =
                 mistakes
                 ? [request.section] + sections.filter { $0 != request.section && !types(in: $0).isEmpty }
@@ -229,7 +265,10 @@ final class ShellModel {
                 if mistakes { request.questionTypes = types(in: section).map(\.questionType) }
                 do {
                     let id = try await trainings.start(request)
-                    return current(epoch) ? id : nil
+                    guard current(epoch) else { return nil }
+                    problem = nil
+                    startProblem = nil
+                    return id
                 } catch {
                     // Сессия содержит один раздел; ошибки могут быть в другом, чем последняя тренировка.
                     if mistakes, case let .server(_, code, _) = error, code == "no_questions",
@@ -248,8 +287,41 @@ final class ShellModel {
         }
     }
 
-    func networkChanged() async { if network.isOnline { await refresh() } }
+    func networkChanged() async {
+        stopRecovery()
+        if network.isOnline {
+            startProblem = nil
+            await refresh()
+        }
+    }
+    func clearExamProblem() { examProblem = nil }
+    func clearLocaleProblem() { localeProblem = nil }
+
+    private func stopRecovery() {
+        recoveryTask?.cancel()
+        recoveryTask = nil
+        recoverySeconds = 2
+    }
+    private func scheduleRecovery() {
+        guard !retired, network.isOnline, recoveryTask == nil else { return }
+        let seconds = recoverySeconds
+        recoverySeconds = min(seconds * 2, 30)
+        let sleep = sleep
+        recoveryTask = Task { [weak self] in
+            do { try await sleep(.seconds(seconds)) } catch is CancellationError {
+                return
+            } catch {
+                self?.report("shell recovery delay failed: \(error)", nil)
+                return
+            }
+            guard !Task.isCancelled, let self else { return }
+            self.recoveryTask = nil
+            guard self.network.isOnline, self.connectionProblem == .offline, !self.retired else { return }
+            await self.refresh()
+        }
+    }
     func retire() {
+        stopRecovery()
         retired = true
         generation += 1
     }
@@ -272,7 +344,10 @@ final class ShellModel {
             unauthorized()
             return nil
         }
-        if error == .offline { return .offline }
+        if error == .offline {
+            problem = .offline
+            return .offline
+        }
         report("\(route) failed: \(error)", error.requestID)
         return .failed
     }

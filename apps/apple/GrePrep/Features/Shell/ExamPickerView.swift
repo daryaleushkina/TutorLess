@@ -74,6 +74,7 @@ struct ExamPickerView: View {
     let firstEntry: Bool
     var onChosen: () -> Void = {}
     @Environment(\.gpWideLayout) private var wide
+    @FocusState private var focusedExam: Exam?
 
     var body: some View {
         Group {
@@ -95,6 +96,15 @@ struct ExamPickerView: View {
             }
         }
         .background(Color(.bg).ignoresSafeArea())
+        #if os(macOS)
+            .defaultFocus($focusedExam, model.exam, priority: .userInitiated)
+        #endif
+        .onAppear {
+            model.clearExamProblem()
+            #if os(macOS)
+                focusedExam = model.exam
+            #endif
+        }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(firstEntry ? "exam.firstEntry" : "exam.switcher")
     }
@@ -150,6 +160,7 @@ struct ExamPickerView: View {
         .buttonStyle(.plain)
         .allowsHitTesting(model.choosing == nil && !model.changingLocale)
         .opacity(model.choosing != nil && model.choosing != exam.id ? GPOpacity.disabled : 1)
+        .focused($focusedExam, equals: exam.id)
         .accessibilityIdentifier("exam.choose.\(exam.id.rawValue)")
         .accessibilityAddTraits(model.exam == exam.id ? .isSelected : [])
     }

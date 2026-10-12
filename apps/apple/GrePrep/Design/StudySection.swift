@@ -86,11 +86,11 @@ enum StudySection: String, Hashable, Sendable, CaseIterable {
         }
     }
 
-    var emptyTypes: String {
+    var emptyTypes: LocalizedStringResource {
         switch self {
         case .verbal: "Text Completion · Sentence Equivalence · Reading Comprehension"
         case .quant: "Quantitative Comparison · Multiple Choice"
-        case .essay: "Analyze an Issue · 30 min"
+        case .essay: "Analyze an Issue · 30 минут"
         case .reading: "Complete the Words · Read in Daily Life · Academic Passage"
         case .listening: "Choose a Response · Conversation · Announcement · Academic Talk"
         case .writing: "Build a Sentence · Write an Email · Academic Discussion"

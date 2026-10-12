@@ -69,12 +69,12 @@ struct AppModelTests {
         #expect(app.phase == .signedIn)
     }
 
-    @Test("выход: токен и план стёрты сразу, сервер получает выход со старым токеном")
+    @Test("выход из профиля: сервер получает старый токен, после подтверждения данные стираются")
     func signOut() async throws {
         server.on("POST /api/auth/logout", .status(204))
         try cache.save(ShellFixture.snapshot)
         let (app, tokens) = app(token: "old")
-        app.signOut()
+        await app.requestSignOut()
         #expect(app.phase == .signedOut(nil))
         #expect(app.shell == nil)
         #expect(try tokens.token() == nil)
@@ -111,7 +111,7 @@ struct AppModelLifecycleTests {
         let model = try #require(app.shell)
         let inFlight = Task { await model.refresh() }
         await eventually { !server.requests("GET /api/me").isEmpty }
-        app.signOut()
+        await app.requestSignOut()
         gate.open()
         await inFlight.value
         #expect(cache.load() == nil)
@@ -130,7 +130,7 @@ struct AppModelLifecycleTests {
         let old = try #require(app.shell)
         let inFlight = Task { await old.refresh() }
         await eventually { !server.requests("GET /api/me").isEmpty }
-        app.signOut()
+        await app.requestSignOut()
         try app.didSignIn(SignedIn(token: "new", user: Fixture.user))
         gate.open()
         await inFlight.value
@@ -153,13 +153,13 @@ struct AppModelLifecycleTests {
     }
 
     @Test("Keychain не стёр токен при выходе — вход всё равно не возвращается при следующем запуске")
-    func signOutWhenClearFails() throws {
+    func signOutWhenClearFails() async throws {
         server.on("POST /api/client-errors", .status(204))
         server.on("POST /api/auth/logout", .status(204))
         let tokens = UndeletableTokenStore(token: "t")
         let app = AppModel(
             config: server.config(), tokens: tokens, cache: cache, network: NetworkMonitor(), session: server.session)
-        app.signOut()
+        await app.requestSignOut()
         #expect(app.phase == .signedOut(nil))
         let relaunched = AppModel(
             config: server.config(), tokens: tokens, cache: cache, network: NetworkMonitor(), session: server.session)

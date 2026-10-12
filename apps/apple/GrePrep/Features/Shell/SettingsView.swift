@@ -26,7 +26,7 @@ struct SettingsView: View {
                         Picker(
                             "Язык",
                             selection: Binding(
-                                get: { shell?.locale ?? .ru },
+                                get: { shell?.locale ?? InterfaceLocale.preferredLanguage },
                                 set: { value in Task { await shell?.setLocale(value) } })
                         ) {
                             Text("Русский").tag(Components.Schemas.Locale.ru)
@@ -98,9 +98,9 @@ struct SettingsView: View {
         .background(Color(.bg).ignoresSafeArea())
         .navigationTitle(Text("Профиль"))
         #if os(iOS)
-            .toolbar(.hidden, for: .tabBar)
             .navigationBarTitleDisplayMode(.inline)
         #endif
+        .onAppear { shell?.clearLocaleProblem() }
         .accessibilityIdentifier("shell.profileScreen")
     }
 
@@ -134,6 +134,8 @@ struct SettingsView: View {
         .foregroundStyle(Color(.text3)).opacity(GPOpacity.disabled)
         .frame(maxWidth: .infinity, minHeight: GPSize.sectionRow, alignment: .leading)
         .padding(.horizontal, GPSpace.s16)
+        .disabled(true)
+        .accessibilityElement(children: .combine).accessibilityValue(Text("Недоступно"))
         .accessibilityIdentifier("settings.inactive.\(id)")
     }
 }

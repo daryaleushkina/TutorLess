@@ -271,6 +271,12 @@
     },
     "%lld мин": {
       "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld мин"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -977,26 +983,6 @@
         }
       }
     },
-    "Завтра здесь будет новый план.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tomorrow there will be a new plan here."
-          }
-        }
-      }
-    },
-    "Загружаем план на сегодня": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Loading today’s plan"
-          }
-        }
-      }
-    },
     "Загружаем темы": {
       "localizations": {
         "en": {
@@ -1049,16 +1035,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Finish"
-          }
-        }
-      }
-    },
-    "Здесь будет словарь: слова на сегодня, повторение и поиск.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The dictionary will live here: today’s words, review and search."
           }
         }
       }
@@ -1291,26 +1267,6 @@
         }
       }
     },
-    "На сегодня всё": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "That’s all for today"
-          }
-        }
-      }
-    },
-    "На сегодня всё.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "That’s all for today."
-          }
-        }
-      }
-    },
     "Написать нам": {
       "localizations": {
         "ru": {
@@ -1435,16 +1391,6 @@
         }
       }
     },
-    "Не получилось загрузить план": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Couldn’t load the plan"
-          }
-        }
-      }
-    },
     "Не получилось загрузить темы": {
       "localizations": {
         "en": {
@@ -1493,16 +1439,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Couldn’t start the practice. Please try again."
-          }
-        }
-      }
-    },
-    "Не получилось обновить план — покажем свежий, как только сервер ответит.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Couldn’t update the plan — we’ll show a fresh one as soon as the server responds."
           }
         }
       }
@@ -1671,16 +1607,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "You’re offline. We’ll update when your connection returns."
-          }
-        }
-      }
-    },
-    "Нет сети — план обновится сам, когда она появится.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No connection — the plan will update by itself once it’s back."
           }
         }
       }
@@ -1973,26 +1899,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "No mistakes."
-          }
-        }
-      }
-    },
-    "План на сегодня": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Today’s plan"
-          }
-        }
-      }
-    },
-    "План на сегодня загрузится, когда появится сеть.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Today’s plan will load once you’re back online."
           }
         }
       }
@@ -2371,16 +2277,6 @@
         }
       }
     },
-    "Своя тренировка": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Custom practice"
-          }
-        }
-      }
-    },
     "Свёрнуто": {
       "localizations": {
         "en": {
@@ -2725,16 +2621,6 @@
         }
       }
     },
-    "Чтобы начать, нужна сеть. Когда она появится, всё заработает.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "You need a connection to start. Once it’s back, everything will work."
-          }
-        }
-      }
-    },
     "Чтобы начать, нужна сеть: задания скачаются целиком, и дальше можно без неё.": {
       "localizations": {
         "ru": {
@@ -3059,6 +2945,122 @@
           "stringUnit": {
             "state": "translated",
             "value": "Нет сети — ответы сохранятся и уйдут сами."
+          }
+        }
+      }
+    },
+    "%lld дней": {
+      "localizations": {
+        "ru": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld день"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld дня"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld дней"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld дня"
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld day"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld days"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld ч %lld мин": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld ч %lld мин"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld hr %2$lld min"
+          }
+        }
+      }
+    },
+    "Пока нет доступных заданий": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пока нет доступных заданий"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No questions available yet"
+          }
+        }
+      }
+    },
+    "Analyze an Issue · 30 минут": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analyze an Issue · 30 минут"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analyze an Issue · 30 minutes"
+          }
+        }
+      }
+    },
+    "Недоступно": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Недоступно"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unavailable"
           }
         }
       }
