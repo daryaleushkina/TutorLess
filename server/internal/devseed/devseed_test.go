@@ -17,8 +17,12 @@ func TestLoad(t *testing.T) {
 		perType[q.Type]++
 	}
 	for _, typ := range training.Types {
-		if perType[typ] < 5 {
-			t.Errorf("%s: %d questions, want at least 5", typ, perType[typ])
+		want := 5
+		if typ == training.MultipleChoiceMulti || typ == training.NumericEntry || typ == training.SelectInPassage {
+			want = 3
+		}
+		if perType[typ] < want {
+			t.Errorf("%s: %d questions, want at least %d", typ, perType[typ], want)
 		}
 	}
 	if len(s.Topics) == 0 {

@@ -29,7 +29,7 @@ import kotlinx.serialization.Serializable
 
 
 /**
- * Первый срез тренировок — задания с выбором ответа (решение Даши 06.10.2026): Text Completion (1–3 пропуска), Sentence Equivalence (два ответа из шести), Quantitative Comparison, обычный выбор в математике. Reading Comprehension, ввод числа и несколько верных — следующими срезами.
+ * Типы GRE (решение Даши 12.10.2026). multiple_choice и multiple_choice_multi бывают в Quant и Reading Comprehension; select_in_passage — в Verbal, numeric_entry — в Quant.
  *
  * Values: TEXT_COMPLETION,SENTENCE_EQUIVALENCE,QUANTITATIVE_COMPARISON,MULTIPLE_CHOICE
  */

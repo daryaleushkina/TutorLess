@@ -63,7 +63,7 @@ func TestTrainingRulesConformance(t *testing.T) {
 				if err := c.Answer.Validate(); err != nil {
 					t.Fatalf("GivenAnswer: %v", err)
 				}
-				got, err := CheckAnswer(q, c.Answer.OptionIds, c.Answer.DontKnow)
+				got, err := CheckResponse(q, conformanceResponse(c.Answer))
 				if c.BadAnswer {
 					if !errors.Is(err, ErrBadAnswer) {
 						t.Errorf("CheckAnswer error = %v, want ErrBadAnswer", err)
@@ -91,14 +91,14 @@ func TestTrainingRulesConformance(t *testing.T) {
 				for _, item := range c.Session.Items {
 					q := conformanceQuestion(t, item.Question)
 					answer, _ := item.Answer.Get()
-					correct, err := CheckAnswer(q, answer.OptionIds, answer.DontKnow)
+					correct, err := CheckResponse(q, conformanceResponse(answer))
 					if err != nil {
 						t.Fatalf("position %d: %v", item.Position, err)
 					}
 					results = append(results, Result{
 						Position: item.Position, TopicID: item.Question.TopicId,
 						Title:    Text{Ru: item.Question.TopicTitle.Ru, En: item.Question.TopicTitle.En},
-						Answered: len(answer.OptionIds) > 0, DontKnow: answer.DontKnow, Correct: correct,
+						Answered: conformanceResponse(answer).Answered(), DontKnow: answer.DontKnow, Correct: correct,
 					})
 				}
 				got := Summarize(results, TimedOut(Mode(c.Session.Mode), c.Finish.TimedOut))
@@ -144,28 +144,57 @@ func conformanceQuestion(t *testing.T, q api.Question) Question {
 	if err := q.Validate(); err != nil {
 		t.Fatalf("Question contract: %v", err)
 	}
-	out := Question{
-		Type: Type(q.QuestionType), Answer: q.Answer,
-		Body: Body{
-			Prompt: q.Prompt, Condition: q.Condition.Or(""), QuantityA: q.QuantityA.Or(""), QuantityB: q.QuantityB.Or(""),
-			SelectCount: q.SelectCount,
-		},
-		Explanation: Explanation{Solution: Text{Ru: q.Explanation.Solution.Ru, En: q.Explanation.Solution.En}},
+
+	out := Question{Type: Type(q.QuestionType), Answer: q.Answer}
+	raw, err := q.MarshalJSON()
+	if err != nil {
+		t.Fatal(err)
 	}
-	for _, group := range q.Groups {
-		g := Group{}
-		for _, option := range group.Options {
-			g.Options = append(g.Options, Option{ID: option.ID, Text: option.Text})
-		}
-		out.Body.Groups = append(out.Body.Groups, g)
+	if err := json.Unmarshal(raw, &out.Body); err != nil {
+		t.Fatal(err)
 	}
-	for _, option := range q.Explanation.Options {
-		out.Explanation.Options = append(out.Explanation.Options, OptionExplanation{
-			OptionID: option.OptionId, Text: Text{Ru: option.Text.Ru, En: option.Text.En},
-		})
+	if err := json.Unmarshal(raw, &out); err != nil {
+		t.Fatal(err)
 	}
+
 	if err := Validate(out); err != nil {
 		t.Fatalf("Question rules: %v", err)
 	}
 	return out
+}
+
+func conformanceResponse(a api.GivenAnswer) Response {
+	out := Response{OptionIDs: a.OptionIds, DontKnow: a.DontKnow, SentenceID: a.SentenceId.Or("")}
+	if n, ok := a.NumericAnswer.Get(); ok {
+		out.Numeric = &NumericResponse{Number: n.Number.Or(""), Numerator: n.Numerator.Or(""), Denominator: n.Denominator.Or("")}
+	}
+	return out
+}
+
+func TestNewQuestionTypesConformance(t *testing.T) {
+	raw, err := os.ReadFile("../../../api/conformance/question-types.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var cases conformanceCases
+	dec := json.NewDecoder(bytes.NewReader(raw))
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(&cases); err != nil {
+		t.Fatal(err)
+	}
+	if len(cases.Answers) == 0 {
+		t.Fatal("empty conformance")
+	}
+	for _, c := range cases.Answers {
+		t.Run(c.Name, func(t *testing.T) {
+			q := conformanceQuestion(t, c.Question)
+			got, err := CheckResponse(q, conformanceResponse(c.Answer))
+			if c.BadAnswer != errors.Is(err, ErrBadAnswer) || got != c.Correct {
+				t.Fatalf("correct=%v error=%v; want correct=%v bad=%v", got, err, c.Correct, c.BadAnswer)
+			}
+			if err != nil && !c.BadAnswer {
+				t.Fatal(err)
+			}
+		})
+	}
 }

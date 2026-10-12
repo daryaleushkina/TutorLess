@@ -1,7 +1,11 @@
 -- Последняя начатая сессия и её фактический размер, в том числе до первого ответа.
 -- name: GetHomeLastTraining :one
 SELECT (tr.request || jsonb_build_object('exam', tr.exam_id))::jsonb AS request,
-       (SELECT count(*)::integer FROM training_items i WHERE i.training_id = tr.id) AS size
+       (SELECT count(*)::integer FROM training_items i WHERE i.training_id = tr.id) AS size,
+  NOT EXISTS (SELECT 1 FROM training_items i JOIN questions q ON q.id = i.question_id
+    WHERE i.training_id = tr.id AND NOT (q.question_type = ANY (sqlc.arg(supported_types)::text[])
+  AND (sqlc.arg(with_passage)::boolean OR q.passage_id IS NULL)
+  AND (sqlc.arg(with_figure)::boolean OR q.figure_id IS NULL))) AS compatible
 FROM trainings tr
 WHERE tr.user_id = $1 AND tr.exam_id = $2
 ORDER BY tr.started_at DESC, tr.id DESC LIMIT 1;
@@ -21,7 +25,9 @@ SELECT count(*)::integer AS mistakes FROM (
   SELECT DISTINCT ON (i.question_id) i.correct
   FROM trainings tr JOIN training_items i ON i.training_id = tr.id
   JOIN questions q ON q.id = i.question_id AND q.status = 'approved'
-  WHERE tr.user_id = sqlc.arg(user_id) AND tr.exam_id = sqlc.arg(exam_id) AND i.answered_at IS NOT NULL
+  WHERE tr.user_id = sqlc.arg(user_id) AND tr.exam_id = sqlc.arg(exam_id) AND i.answered_at IS NOT NULL AND q.question_type = ANY (sqlc.arg(supported_types)::text[])
+  AND (sqlc.arg(with_passage)::boolean OR q.passage_id IS NULL)
+  AND (sqlc.arg(with_figure)::boolean OR q.figure_id IS NULL)
   ORDER BY i.question_id, i.answered_at DESC, tr.started_at DESC, tr.id DESC
 ) latest WHERE NOT correct;
 
@@ -32,6 +38,9 @@ FROM trainings tr
 JOIN training_items i ON i.training_id = tr.id
 JOIN questions q ON q.id = i.question_id
 WHERE tr.user_id = sqlc.arg(user_id) AND tr.exam_id = sqlc.arg(exam_id)
+  AND q.question_type = ANY (sqlc.arg(supported_types)::text[])
+  AND (sqlc.arg(with_passage)::boolean OR q.passage_id IS NULL)
+  AND (sqlc.arg(with_figure)::boolean OR q.figure_id IS NULL)
   AND i.answered_at >= sqlc.arg(since)::timestamptz AND i.answered_at <= sqlc.arg(until)::timestamptz
 GROUP BY q.question_type, tr.section
 HAVING count(*) >= 10 AND count(*) FILTER (WHERE i.correct) * 10 < count(*) * 7

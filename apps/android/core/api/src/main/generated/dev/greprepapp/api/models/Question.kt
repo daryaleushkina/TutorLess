@@ -23,10 +23,14 @@
 
 package dev.greprepapp.api.models
 
+import dev.greprepapp.api.models.DataFigure
 import dev.greprepapp.api.models.Difficulty
 import dev.greprepapp.api.models.Explanation
 import dev.greprepapp.api.models.LocalizedText
+import dev.greprepapp.api.models.NumericAnswer
+import dev.greprepapp.api.models.NumericEntry
 import dev.greprepapp.api.models.OptionGroup
+import dev.greprepapp.api.models.Passage
 import dev.greprepapp.api.models.QuestionType
 import dev.greprepapp.api.models.Section
 
@@ -44,13 +48,17 @@ import kotlinx.serialization.Contextual
  * @param topicTitle 
  * @param difficulty 
  * @param prompt Текст задания на английском. Пропуски Text Completion и Sentence Equivalence — «___» по порядку групп вариантов.
- * @param groups Группа — один пропуск Text Completion; у остальных типов одна группа
- * @param selectCount Сколько вариантов выбрать в группе (Sentence Equivalence — 2)
- * @param answer Верные варианты. Приходит вместе с заданием: проверка без сети идёт на устройстве; сервер проверяет ответ сам и статистику клиенту не доверяет.
+ * @param groups Группа — пропуск TC; одна у выбора вариантов, пусто у числа и выбора предложения
+ * @param selectCount Число требуемых вариантов; 0 — все подходящие (multi), число или предложение
+ * @param answer Верные варианты или один id предложения; у numeric_entry пусто. Приходит вместе с заданием: проверка без сети идёт на устройстве; сервер проверяет ответ сам и статистику клиенту не доверяет.
  * @param explanation 
  * @param condition Условие над величинами Quantitative Comparison (например, «0 < x < 1»)
  * @param quantityA 
  * @param quantityB 
+ * @param numericEntry 
+ * @param numericAnswer 
+ * @param passage 
+ * @param figure 
  */
 @Serializable
 
@@ -78,15 +86,15 @@ data class Question (
     @SerialName(value = "prompt")
     val prompt: kotlin.String,
 
-    /* Группа — один пропуск Text Completion; у остальных типов одна группа */
+    /* Группа — пропуск TC; одна у выбора вариантов, пусто у числа и выбора предложения */
     @SerialName(value = "groups")
     val groups: kotlin.collections.List<OptionGroup>,
 
-    /* Сколько вариантов выбрать в группе (Sentence Equivalence — 2) */
+    /* Число требуемых вариантов; 0 — все подходящие (multi), число или предложение */
     @SerialName(value = "selectCount")
     val selectCount: kotlin.Int,
 
-    /* Верные варианты. Приходит вместе с заданием: проверка без сети идёт на устройстве; сервер проверяет ответ сам и статистику клиенту не доверяет. */
+    /* Верные варианты или один id предложения; у numeric_entry пусто. Приходит вместе с заданием: проверка без сети идёт на устройстве; сервер проверяет ответ сам и статистику клиенту не доверяет. */
     @SerialName(value = "answer")
     val answer: kotlin.collections.List<kotlin.String>,
 
@@ -101,7 +109,19 @@ data class Question (
     val quantityA: kotlin.String? = null,
 
     @SerialName(value = "quantityB")
-    val quantityB: kotlin.String? = null
+    val quantityB: kotlin.String? = null,
+
+    @SerialName(value = "numericEntry")
+    val numericEntry: NumericEntry? = null,
+
+    @SerialName(value = "numericAnswer")
+    val numericAnswer: NumericAnswer? = null,
+
+    @SerialName(value = "passage")
+    val passage: Passage? = null,
+
+    @SerialName(value = "figure")
+    val figure: DataFigure? = null
 
 ) {
 

@@ -1,0 +1,3620 @@
+{
+  "answers": [
+    {
+      "name": "multi_exact_set_in_any_order",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000027",
+        "questionType": "multiple_choice_multi",
+        "section": "quant",
+        "topicId": "integer-properties",
+        "topicTitle": {
+          "ru": "Свойства целых чисел",
+          "en": "Integer properties"
+        },
+        "difficulty": "easy",
+        "prompt": "Select all even integers greater than 2.",
+        "groups": [
+          {
+            "options": [
+              {
+                "id": "A",
+                "text": "1"
+              },
+              {
+                "id": "B",
+                "text": "2"
+              },
+              {
+                "id": "C",
+                "text": "3"
+              },
+              {
+                "id": "D",
+                "text": "4"
+              },
+              {
+                "id": "E",
+                "text": "5"
+              },
+              {
+                "id": "F",
+                "text": "6"
+              },
+              {
+                "id": "G",
+                "text": "7"
+              },
+              {
+                "id": "H",
+                "text": "8"
+              },
+              {
+                "id": "I",
+                "text": "9"
+              },
+              {
+                "id": "J",
+                "text": "10"
+              }
+            ]
+          }
+        ],
+        "selectCount": 0,
+        "answer": [
+          "D",
+          "F",
+          "H",
+          "J"
+        ],
+        "explanation": {
+          "solution": {
+            "ru": "Чётное число делится на 2. Из списка больше 2 числа 4, 6, 8 и 10.",
+            "en": "An even integer is divisible by 2. The listed even integers greater than 2 are 4, 6, 8, and 10."
+          },
+          "options": [
+            {
+              "optionId": "A",
+              "text": {
+                "ru": "1 не делится на 2 без остатка.",
+                "en": "1 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "B",
+              "text": {
+                "ru": "2 не больше 2.",
+                "en": "2 is not greater than 2."
+              }
+            },
+            {
+              "optionId": "C",
+              "text": {
+                "ru": "3 не делится на 2 без остатка.",
+                "en": "3 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "E",
+              "text": {
+                "ru": "5 не делится на 2 без остатка.",
+                "en": "5 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "G",
+              "text": {
+                "ru": "7 не делится на 2 без остатка.",
+                "en": "7 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "I",
+              "text": {
+                "ru": "9 не делится на 2 без остатка.",
+                "en": "9 is not divisible by 2."
+              }
+            }
+          ]
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [
+          "J",
+          "H",
+          "F",
+          "D"
+        ],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000
+      },
+      "correct": true,
+      "badAnswer": false
+    },
+    {
+      "name": "multi_partial_has_no_credit",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000027",
+        "questionType": "multiple_choice_multi",
+        "section": "quant",
+        "topicId": "integer-properties",
+        "topicTitle": {
+          "ru": "Свойства целых чисел",
+          "en": "Integer properties"
+        },
+        "difficulty": "easy",
+        "prompt": "Select all even integers greater than 2.",
+        "groups": [
+          {
+            "options": [
+              {
+                "id": "A",
+                "text": "1"
+              },
+              {
+                "id": "B",
+                "text": "2"
+              },
+              {
+                "id": "C",
+                "text": "3"
+              },
+              {
+                "id": "D",
+                "text": "4"
+              },
+              {
+                "id": "E",
+                "text": "5"
+              },
+              {
+                "id": "F",
+                "text": "6"
+              },
+              {
+                "id": "G",
+                "text": "7"
+              },
+              {
+                "id": "H",
+                "text": "8"
+              },
+              {
+                "id": "I",
+                "text": "9"
+              },
+              {
+                "id": "J",
+                "text": "10"
+              }
+            ]
+          }
+        ],
+        "selectCount": 0,
+        "answer": [
+          "D",
+          "F",
+          "H",
+          "J"
+        ],
+        "explanation": {
+          "solution": {
+            "ru": "Чётное число делится на 2. Из списка больше 2 числа 4, 6, 8 и 10.",
+            "en": "An even integer is divisible by 2. The listed even integers greater than 2 are 4, 6, 8, and 10."
+          },
+          "options": [
+            {
+              "optionId": "A",
+              "text": {
+                "ru": "1 не делится на 2 без остатка.",
+                "en": "1 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "B",
+              "text": {
+                "ru": "2 не больше 2.",
+                "en": "2 is not greater than 2."
+              }
+            },
+            {
+              "optionId": "C",
+              "text": {
+                "ru": "3 не делится на 2 без остатка.",
+                "en": "3 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "E",
+              "text": {
+                "ru": "5 не делится на 2 без остатка.",
+                "en": "5 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "G",
+              "text": {
+                "ru": "7 не делится на 2 без остатка.",
+                "en": "7 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "I",
+              "text": {
+                "ru": "9 не делится на 2 без остатка.",
+                "en": "9 is not divisible by 2."
+              }
+            }
+          ]
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [
+          "D",
+          "F"
+        ],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000
+      },
+      "correct": false,
+      "badAnswer": false
+    },
+    {
+      "name": "multi_extra_wrong_has_no_credit",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000027",
+        "questionType": "multiple_choice_multi",
+        "section": "quant",
+        "topicId": "integer-properties",
+        "topicTitle": {
+          "ru": "Свойства целых чисел",
+          "en": "Integer properties"
+        },
+        "difficulty": "easy",
+        "prompt": "Select all even integers greater than 2.",
+        "groups": [
+          {
+            "options": [
+              {
+                "id": "A",
+                "text": "1"
+              },
+              {
+                "id": "B",
+                "text": "2"
+              },
+              {
+                "id": "C",
+                "text": "3"
+              },
+              {
+                "id": "D",
+                "text": "4"
+              },
+              {
+                "id": "E",
+                "text": "5"
+              },
+              {
+                "id": "F",
+                "text": "6"
+              },
+              {
+                "id": "G",
+                "text": "7"
+              },
+              {
+                "id": "H",
+                "text": "8"
+              },
+              {
+                "id": "I",
+                "text": "9"
+              },
+              {
+                "id": "J",
+                "text": "10"
+              }
+            ]
+          }
+        ],
+        "selectCount": 0,
+        "answer": [
+          "D",
+          "F",
+          "H",
+          "J"
+        ],
+        "explanation": {
+          "solution": {
+            "ru": "Чётное число делится на 2. Из списка больше 2 числа 4, 6, 8 и 10.",
+            "en": "An even integer is divisible by 2. The listed even integers greater than 2 are 4, 6, 8, and 10."
+          },
+          "options": [
+            {
+              "optionId": "A",
+              "text": {
+                "ru": "1 не делится на 2 без остатка.",
+                "en": "1 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "B",
+              "text": {
+                "ru": "2 не больше 2.",
+                "en": "2 is not greater than 2."
+              }
+            },
+            {
+              "optionId": "C",
+              "text": {
+                "ru": "3 не делится на 2 без остатка.",
+                "en": "3 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "E",
+              "text": {
+                "ru": "5 не делится на 2 без остатка.",
+                "en": "5 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "G",
+              "text": {
+                "ru": "7 не делится на 2 без остатка.",
+                "en": "7 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "I",
+              "text": {
+                "ru": "9 не делится на 2 без остатка.",
+                "en": "9 is not divisible by 2."
+              }
+            }
+          ]
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [
+          "A",
+          "D",
+          "F",
+          "H",
+          "J"
+        ],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000
+      },
+      "correct": false,
+      "badAnswer": false
+    },
+    {
+      "name": "multi_empty_is_unanswered",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000027",
+        "questionType": "multiple_choice_multi",
+        "section": "quant",
+        "topicId": "integer-properties",
+        "topicTitle": {
+          "ru": "Свойства целых чисел",
+          "en": "Integer properties"
+        },
+        "difficulty": "easy",
+        "prompt": "Select all even integers greater than 2.",
+        "groups": [
+          {
+            "options": [
+              {
+                "id": "A",
+                "text": "1"
+              },
+              {
+                "id": "B",
+                "text": "2"
+              },
+              {
+                "id": "C",
+                "text": "3"
+              },
+              {
+                "id": "D",
+                "text": "4"
+              },
+              {
+                "id": "E",
+                "text": "5"
+              },
+              {
+                "id": "F",
+                "text": "6"
+              },
+              {
+                "id": "G",
+                "text": "7"
+              },
+              {
+                "id": "H",
+                "text": "8"
+              },
+              {
+                "id": "I",
+                "text": "9"
+              },
+              {
+                "id": "J",
+                "text": "10"
+              }
+            ]
+          }
+        ],
+        "selectCount": 0,
+        "answer": [
+          "D",
+          "F",
+          "H",
+          "J"
+        ],
+        "explanation": {
+          "solution": {
+            "ru": "Чётное число делится на 2. Из списка больше 2 числа 4, 6, 8 и 10.",
+            "en": "An even integer is divisible by 2. The listed even integers greater than 2 are 4, 6, 8, and 10."
+          },
+          "options": [
+            {
+              "optionId": "A",
+              "text": {
+                "ru": "1 не делится на 2 без остатка.",
+                "en": "1 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "B",
+              "text": {
+                "ru": "2 не больше 2.",
+                "en": "2 is not greater than 2."
+              }
+            },
+            {
+              "optionId": "C",
+              "text": {
+                "ru": "3 не делится на 2 без остатка.",
+                "en": "3 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "E",
+              "text": {
+                "ru": "5 не делится на 2 без остатка.",
+                "en": "5 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "G",
+              "text": {
+                "ru": "7 не делится на 2 без остатка.",
+                "en": "7 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "I",
+              "text": {
+                "ru": "9 не делится на 2 без остатка.",
+                "en": "9 is not divisible by 2."
+              }
+            }
+          ]
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000
+      },
+      "correct": false,
+      "badAnswer": false
+    },
+    {
+      "name": "multi_dont_know",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000027",
+        "questionType": "multiple_choice_multi",
+        "section": "quant",
+        "topicId": "integer-properties",
+        "topicTitle": {
+          "ru": "Свойства целых чисел",
+          "en": "Integer properties"
+        },
+        "difficulty": "easy",
+        "prompt": "Select all even integers greater than 2.",
+        "groups": [
+          {
+            "options": [
+              {
+                "id": "A",
+                "text": "1"
+              },
+              {
+                "id": "B",
+                "text": "2"
+              },
+              {
+                "id": "C",
+                "text": "3"
+              },
+              {
+                "id": "D",
+                "text": "4"
+              },
+              {
+                "id": "E",
+                "text": "5"
+              },
+              {
+                "id": "F",
+                "text": "6"
+              },
+              {
+                "id": "G",
+                "text": "7"
+              },
+              {
+                "id": "H",
+                "text": "8"
+              },
+              {
+                "id": "I",
+                "text": "9"
+              },
+              {
+                "id": "J",
+                "text": "10"
+              }
+            ]
+          }
+        ],
+        "selectCount": 0,
+        "answer": [
+          "D",
+          "F",
+          "H",
+          "J"
+        ],
+        "explanation": {
+          "solution": {
+            "ru": "Чётное число делится на 2. Из списка больше 2 числа 4, 6, 8 и 10.",
+            "en": "An even integer is divisible by 2. The listed even integers greater than 2 are 4, 6, 8, and 10."
+          },
+          "options": [
+            {
+              "optionId": "A",
+              "text": {
+                "ru": "1 не делится на 2 без остатка.",
+                "en": "1 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "B",
+              "text": {
+                "ru": "2 не больше 2.",
+                "en": "2 is not greater than 2."
+              }
+            },
+            {
+              "optionId": "C",
+              "text": {
+                "ru": "3 не делится на 2 без остатка.",
+                "en": "3 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "E",
+              "text": {
+                "ru": "5 не делится на 2 без остатка.",
+                "en": "5 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "G",
+              "text": {
+                "ru": "7 не делится на 2 без остатка.",
+                "en": "7 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "I",
+              "text": {
+                "ru": "9 не делится на 2 без остатка.",
+                "en": "9 is not divisible by 2."
+              }
+            }
+          ]
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": true,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000
+      },
+      "correct": false,
+      "badAnswer": false
+    },
+    {
+      "name": "multi_duplicate_is_bad",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000027",
+        "questionType": "multiple_choice_multi",
+        "section": "quant",
+        "topicId": "integer-properties",
+        "topicTitle": {
+          "ru": "Свойства целых чисел",
+          "en": "Integer properties"
+        },
+        "difficulty": "easy",
+        "prompt": "Select all even integers greater than 2.",
+        "groups": [
+          {
+            "options": [
+              {
+                "id": "A",
+                "text": "1"
+              },
+              {
+                "id": "B",
+                "text": "2"
+              },
+              {
+                "id": "C",
+                "text": "3"
+              },
+              {
+                "id": "D",
+                "text": "4"
+              },
+              {
+                "id": "E",
+                "text": "5"
+              },
+              {
+                "id": "F",
+                "text": "6"
+              },
+              {
+                "id": "G",
+                "text": "7"
+              },
+              {
+                "id": "H",
+                "text": "8"
+              },
+              {
+                "id": "I",
+                "text": "9"
+              },
+              {
+                "id": "J",
+                "text": "10"
+              }
+            ]
+          }
+        ],
+        "selectCount": 0,
+        "answer": [
+          "D",
+          "F",
+          "H",
+          "J"
+        ],
+        "explanation": {
+          "solution": {
+            "ru": "Чётное число делится на 2. Из списка больше 2 числа 4, 6, 8 и 10.",
+            "en": "An even integer is divisible by 2. The listed even integers greater than 2 are 4, 6, 8, and 10."
+          },
+          "options": [
+            {
+              "optionId": "A",
+              "text": {
+                "ru": "1 не делится на 2 без остатка.",
+                "en": "1 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "B",
+              "text": {
+                "ru": "2 не больше 2.",
+                "en": "2 is not greater than 2."
+              }
+            },
+            {
+              "optionId": "C",
+              "text": {
+                "ru": "3 не делится на 2 без остатка.",
+                "en": "3 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "E",
+              "text": {
+                "ru": "5 не делится на 2 без остатка.",
+                "en": "5 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "G",
+              "text": {
+                "ru": "7 не делится на 2 без остатка.",
+                "en": "7 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "I",
+              "text": {
+                "ru": "9 не делится на 2 без остатка.",
+                "en": "9 is not divisible by 2."
+              }
+            }
+          ]
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [
+          "D",
+          "D"
+        ],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000
+      },
+      "correct": false,
+      "badAnswer": true
+    },
+    {
+      "name": "multi_unknown_is_bad",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000027",
+        "questionType": "multiple_choice_multi",
+        "section": "quant",
+        "topicId": "integer-properties",
+        "topicTitle": {
+          "ru": "Свойства целых чисел",
+          "en": "Integer properties"
+        },
+        "difficulty": "easy",
+        "prompt": "Select all even integers greater than 2.",
+        "groups": [
+          {
+            "options": [
+              {
+                "id": "A",
+                "text": "1"
+              },
+              {
+                "id": "B",
+                "text": "2"
+              },
+              {
+                "id": "C",
+                "text": "3"
+              },
+              {
+                "id": "D",
+                "text": "4"
+              },
+              {
+                "id": "E",
+                "text": "5"
+              },
+              {
+                "id": "F",
+                "text": "6"
+              },
+              {
+                "id": "G",
+                "text": "7"
+              },
+              {
+                "id": "H",
+                "text": "8"
+              },
+              {
+                "id": "I",
+                "text": "9"
+              },
+              {
+                "id": "J",
+                "text": "10"
+              }
+            ]
+          }
+        ],
+        "selectCount": 0,
+        "answer": [
+          "D",
+          "F",
+          "H",
+          "J"
+        ],
+        "explanation": {
+          "solution": {
+            "ru": "Чётное число делится на 2. Из списка больше 2 числа 4, 6, 8 и 10.",
+            "en": "An even integer is divisible by 2. The listed even integers greater than 2 are 4, 6, 8, and 10."
+          },
+          "options": [
+            {
+              "optionId": "A",
+              "text": {
+                "ru": "1 не делится на 2 без остатка.",
+                "en": "1 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "B",
+              "text": {
+                "ru": "2 не больше 2.",
+                "en": "2 is not greater than 2."
+              }
+            },
+            {
+              "optionId": "C",
+              "text": {
+                "ru": "3 не делится на 2 без остатка.",
+                "en": "3 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "E",
+              "text": {
+                "ru": "5 не делится на 2 без остатка.",
+                "en": "5 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "G",
+              "text": {
+                "ru": "7 не делится на 2 без остатка.",
+                "en": "7 is not divisible by 2."
+              }
+            },
+            {
+              "optionId": "I",
+              "text": {
+                "ru": "9 не делится на 2 без остатка.",
+                "en": "9 is not divisible by 2."
+              }
+            }
+          ]
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [
+          "Z"
+        ],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000
+      },
+      "correct": false,
+      "badAnswer": true
+    },
+    {
+      "name": "multi_all_choices_correct",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000028",
+        "questionType": "multiple_choice_multi",
+        "section": "quant",
+        "topicId": "integer-properties",
+        "topicTitle": {
+          "ru": "Свойства целых чисел",
+          "en": "Integer properties"
+        },
+        "difficulty": "medium",
+        "prompt": "Select all listed integers that are divisible by 3.",
+        "groups": [
+          {
+            "options": [
+              {
+                "id": "A",
+                "text": "3"
+              },
+              {
+                "id": "B",
+                "text": "6"
+              },
+              {
+                "id": "C",
+                "text": "9"
+              }
+            ]
+          }
+        ],
+        "selectCount": 0,
+        "answer": [
+          "A",
+          "B",
+          "C"
+        ],
+        "explanation": {
+          "solution": {
+            "ru": "3, 6 и 9 делятся на 3 без остатка: частные равны 1, 2 и 3. Подходят все варианты.",
+            "en": "Dividing 3, 6, and 9 by 3 gives 1, 2, and 3. Every choice is correct."
+          },
+          "options": []
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [
+          "C",
+          "A",
+          "B"
+        ],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000
+      },
+      "correct": true,
+      "badAnswer": false
+    },
+    {
+      "name": "multi_single_correct_choice",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000029",
+        "questionType": "multiple_choice_multi",
+        "section": "quant",
+        "topicId": "data-interpretation",
+        "topicTitle": {
+          "ru": "Чтение данных",
+          "en": "Data interpretation"
+        },
+        "difficulty": "hard",
+        "prompt": "Select all days on which East sent exactly 6 more parcels than West.",
+        "groups": [
+          {
+            "options": [
+              {
+                "id": "A",
+                "text": "Monday"
+              },
+              {
+                "id": "B",
+                "text": "Tuesday"
+              },
+              {
+                "id": "C",
+                "text": "Wednesday"
+              }
+            ]
+          }
+        ],
+        "selectCount": 0,
+        "answer": [
+          "A"
+        ],
+        "explanation": {
+          "solution": {
+            "ru": "Разности по дням: 18 − 12 = 6, 24 − 20 = 4, 30 − 28 = 2. Подходит только понедельник.",
+            "en": "The daily differences are 18 − 12 = 6, 24 − 20 = 4, and 30 − 28 = 2. Only Monday qualifies."
+          },
+          "options": [
+            {
+              "optionId": "B",
+              "text": {
+                "ru": "Во вторник разность равна 4, а не 6.",
+                "en": "On Tuesday the difference is 4, not 6."
+              }
+            },
+            {
+              "optionId": "C",
+              "text": {
+                "ru": "В среду разность равна 2.",
+                "en": "On Wednesday the difference is 2."
+              }
+            }
+          ]
+        },
+        "figure": {
+          "id": "weekly-parcels",
+          "kind": "bar",
+          "title": "Parcels sent by two depots",
+          "xLabel": "Day",
+          "yLabel": "Parcels",
+          "unit": "parcels",
+          "categories": [
+            "Monday",
+            "Tuesday",
+            "Wednesday"
+          ],
+          "series": [
+            {
+              "id": "east",
+              "label": "East",
+              "values": [
+                18,
+                24,
+                30
+              ]
+            },
+            {
+              "id": "west",
+              "label": "West",
+              "values": [
+                12,
+                20,
+                28
+              ]
+            }
+          ],
+          "description": "East sent 18, 24, and 30 parcels on Monday, Tuesday, and Wednesday. West sent 12, 20, and 28 parcels on those days."
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [
+          "A"
+        ],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000
+      },
+      "correct": true,
+      "badAnswer": false
+    },
+    {
+      "name": "reading_multi_correct",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000030",
+        "questionType": "multiple_choice_multi",
+        "section": "verbal",
+        "topicId": "reading-evidence",
+        "topicTitle": {
+          "ru": "Доказательства в тексте",
+          "en": "Evidence in passages"
+        },
+        "difficulty": "easy",
+        "prompt": "Select all statements supported by the library records.",
+        "groups": [
+          {
+            "options": [
+              {
+                "id": "A",
+                "text": "Loans increased in September."
+              },
+              {
+                "id": "B",
+                "text": "Longer hours were the sole cause of the increase."
+              },
+              {
+                "id": "C",
+                "text": "Student borrowers were not identified separately."
+              }
+            ]
+          }
+        ],
+        "selectCount": 0,
+        "answer": [
+          "A",
+          "C"
+        ],
+        "explanation": {
+          "solution": {
+            "ru": "Выдач стало больше, но записи не различали группы читателей. Срок обучения изменился одновременно с часами работы, поэтому причину роста установить нельзя.",
+            "en": "Loans increased, and the records did not separate borrower groups. The school term and opening hours changed together, so the cause cannot be isolated."
+          },
+          "options": [
+            {
+              "optionId": "B",
+              "text": {
+                "ru": "Автор прямо отвергает вывод об одной причине.",
+                "en": "The author explicitly rejects attributing the change to one cause."
+              }
+            }
+          ]
+        },
+        "passage": {
+          "id": "library-hours",
+          "paragraphs": [
+            {
+              "sentences": [
+                {
+                  "id": "s1",
+                  "text": "A town library recorded more loans in September after extending its Saturday opening hours."
+                },
+                {
+                  "id": "s2",
+                  "text": "The local school term also began that month."
+                },
+                {
+                  "id": "s3",
+                  "text": "The records did not distinguish student borrowers from other borrowers."
+                },
+                {
+                  "id": "s4",
+                  "text": "The increase therefore cannot be attributed solely to the longer opening hours."
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [
+          "C",
+          "A"
+        ],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000
+      },
+      "correct": true,
+      "badAnswer": false
+    },
+    {
+      "name": "number_equivalent_decimal",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000033",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A ribbon 14 meters long is cut into 4 equal pieces. What is the length, in meters, of each piece?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "number"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Длина одного отрезка равна 14 / 4 = 3,5 м.",
+            "en": "Each piece is 14 / 4 = 3.5 meters long."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "number": "3.5"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "number": "3.50"
+        }
+      },
+      "correct": true,
+      "badAnswer": false
+    },
+    {
+      "name": "number_exact",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000033",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A ribbon 14 meters long is cut into 4 equal pieces. What is the length, in meters, of each piece?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "number"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Длина одного отрезка равна 14 / 4 = 3,5 м.",
+            "en": "Each piece is 14 / 4 = 3.5 meters long."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "number": "3.5"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "number": "3.5"
+        }
+      },
+      "correct": true,
+      "badAnswer": false
+    },
+    {
+      "name": "number_wrong",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000033",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A ribbon 14 meters long is cut into 4 equal pieces. What is the length, in meters, of each piece?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "number"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Длина одного отрезка равна 14 / 4 = 3,5 м.",
+            "en": "Each piece is 14 / 4 = 3.5 meters long."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "number": "3.5"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "number": "3.6"
+        }
+      },
+      "correct": false,
+      "badAnswer": false
+    },
+    {
+      "name": "number_no_tolerance",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000033",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A ribbon 14 meters long is cut into 4 equal pieces. What is the length, in meters, of each piece?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "number"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Длина одного отрезка равна 14 / 4 = 3,5 м.",
+            "en": "Each piece is 14 / 4 = 3.5 meters long."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "number": "3.5"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "number": "3.5000000000000000001"
+        }
+      },
+      "correct": false,
+      "badAnswer": false
+    },
+    {
+      "name": "number_empty_is_unanswered",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000033",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A ribbon 14 meters long is cut into 4 equal pieces. What is the length, in meters, of each piece?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "number"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Длина одного отрезка равна 14 / 4 = 3,5 м.",
+            "en": "Each piece is 14 / 4 = 3.5 meters long."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "number": "3.5"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000
+      },
+      "correct": false,
+      "badAnswer": false
+    },
+    {
+      "name": "number_dont_know",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000033",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A ribbon 14 meters long is cut into 4 equal pieces. What is the length, in meters, of each piece?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "number"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Длина одного отрезка равна 14 / 4 = 3,5 м.",
+            "en": "Each piece is 14 / 4 = 3.5 meters long."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "number": "3.5"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": true,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000
+      },
+      "correct": false,
+      "badAnswer": false
+    },
+    {
+      "name": "round_key_to_required_places",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000034",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "medium",
+        "prompt": "What is 7 divided by 8, rounded to the nearest hundredth?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "number",
+          "decimalPlaces": 2
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "7 / 8 = 0,875. До сотых это 0,88: третий знак после запятой равен 5.",
+            "en": "7 / 8 = 0.875. The third decimal digit is 5, so the value rounded to the nearest hundredth is 0.88."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "number": "0.875"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "number": "0.880"
+        }
+      },
+      "correct": true,
+      "badAnswer": false
+    },
+    {
+      "name": "round_unrounded_answer_is_wrong",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000034",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "medium",
+        "prompt": "What is 7 divided by 8, rounded to the nearest hundredth?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "number",
+          "decimalPlaces": 2
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "7 / 8 = 0,875. До сотых это 0,88: третий знак после запятой равен 5.",
+            "en": "7 / 8 = 0.875. The third decimal digit is 5, so the value rounded to the nearest hundredth is 0.88."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "number": "0.875"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "number": "0.875"
+        }
+      },
+      "correct": false,
+      "badAnswer": false
+    },
+    {
+      "name": "round_wrong",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000034",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "medium",
+        "prompt": "What is 7 divided by 8, rounded to the nearest hundredth?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "number",
+          "decimalPlaces": 2
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "7 / 8 = 0,875. До сотых это 0,88: третий знак после запятой равен 5.",
+            "en": "7 / 8 = 0.875. The third decimal digit is 5, so the value rounded to the nearest hundredth is 0.88."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "number": "0.875"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "number": "0.87"
+        }
+      },
+      "correct": false,
+      "badAnswer": false
+    },
+    {
+      "name": "number_integer_equivalence",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000035",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "data-interpretation",
+        "topicTitle": {
+          "ru": "Чтение данных",
+          "en": "Data interpretation"
+        },
+        "difficulty": "hard",
+        "prompt": "According to the graph, how many orders were received over the four days in total?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "number"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Сумма равна 6 + 10 + 14 + 18 = 48 заказов.",
+            "en": "The total is 6 + 10 + 14 + 18 = 48 orders."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "number": "48"
+        },
+        "figure": {
+          "id": "daily-orders",
+          "kind": "line",
+          "title": "Orders received over four days",
+          "xLabel": "Day",
+          "yLabel": "Orders",
+          "unit": "orders",
+          "categories": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ],
+          "series": [
+            {
+              "id": "orders",
+              "label": "Orders",
+              "values": [
+                6,
+                10,
+                14,
+                18
+              ]
+            }
+          ],
+          "description": "On days 1, 2, 3, and 4 the shop received 6, 10, 14, and 18 orders, respectively."
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "number": "048.000"
+        }
+      },
+      "correct": true,
+      "badAnswer": false
+    },
+    {
+      "name": "fraction_unreduced",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000036",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A jar contains 3 blue beads and 3 red beads. What fraction of the beads are blue?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "fraction"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Всего 6 бусин, из них 3 синие. Доля равна 3/6 = 1/2; сокращать дробь для ответа не обязательно.",
+            "en": "There are 6 beads, of which 3 are blue. The fraction is 3/6 = 1/2; an equivalent unreduced fraction is also correct."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "numerator": "1",
+          "denominator": "2"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "numerator": "3",
+          "denominator": "6"
+        }
+      },
+      "correct": true,
+      "badAnswer": false
+    },
+    {
+      "name": "fraction_reduced",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000036",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A jar contains 3 blue beads and 3 red beads. What fraction of the beads are blue?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "fraction"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Всего 6 бусин, из них 3 синие. Доля равна 3/6 = 1/2; сокращать дробь для ответа не обязательно.",
+            "en": "There are 6 beads, of which 3 are blue. The fraction is 3/6 = 1/2; an equivalent unreduced fraction is also correct."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "numerator": "1",
+          "denominator": "2"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "numerator": "1",
+          "denominator": "2"
+        }
+      },
+      "correct": true,
+      "badAnswer": false
+    },
+    {
+      "name": "fraction_wrong",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000036",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A jar contains 3 blue beads and 3 red beads. What fraction of the beads are blue?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "fraction"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Всего 6 бусин, из них 3 синие. Доля равна 3/6 = 1/2; сокращать дробь для ответа не обязательно.",
+            "en": "There are 6 beads, of which 3 are blue. The fraction is 3/6 = 1/2; an equivalent unreduced fraction is also correct."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "numerator": "1",
+          "denominator": "2"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "numerator": "1",
+          "denominator": "3"
+        }
+      },
+      "correct": false,
+      "badAnswer": false
+    },
+    {
+      "name": "fraction_double_negative",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000036",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A jar contains 3 blue beads and 3 red beads. What fraction of the beads are blue?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "fraction"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Всего 6 бусин, из них 3 синие. Доля равна 3/6 = 1/2; сокращать дробь для ответа не обязательно.",
+            "en": "There are 6 beads, of which 3 are blue. The fraction is 3/6 = 1/2; an equivalent unreduced fraction is also correct."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "numerator": "1",
+          "denominator": "2"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "numerator": "-3",
+          "denominator": "-6"
+        }
+      },
+      "correct": true,
+      "badAnswer": false
+    },
+    {
+      "name": "fraction_negative_denominator",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000038",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "hard",
+        "prompt": "What is the exact value of 1/4 minus 5/8? Enter a fraction.",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "fraction"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "1/4 = 2/8, поэтому 2/8 − 5/8 = −3/8.",
+            "en": "Since 1/4 = 2/8, the difference is 2/8 − 5/8 = −3/8."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "numerator": "-3",
+          "denominator": "8"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "numerator": "3",
+          "denominator": "-8"
+        }
+      },
+      "correct": true,
+      "badAnswer": false
+    },
+    {
+      "name": "fraction_empty_is_unanswered",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000036",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A jar contains 3 blue beads and 3 red beads. What fraction of the beads are blue?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "fraction"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Всего 6 бусин, из них 3 синие. Доля равна 3/6 = 1/2; сокращать дробь для ответа не обязательно.",
+            "en": "There are 6 beads, of which 3 are blue. The fraction is 3/6 = 1/2; an equivalent unreduced fraction is also correct."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "numerator": "1",
+          "denominator": "2"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000
+      },
+      "correct": false,
+      "badAnswer": false
+    },
+    {
+      "name": "fraction_dont_know",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000036",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A jar contains 3 blue beads and 3 red beads. What fraction of the beads are blue?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "fraction"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Всего 6 бусин, из них 3 синие. Доля равна 3/6 = 1/2; сокращать дробь для ответа не обязательно.",
+            "en": "There are 6 beads, of which 3 are blue. The fraction is 3/6 = 1/2; an equivalent unreduced fraction is also correct."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "numerator": "1",
+          "denominator": "2"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": true,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000
+      },
+      "correct": false,
+      "badAnswer": false
+    },
+    {
+      "name": "fraction_zero_denominator_is_bad",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000036",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A jar contains 3 blue beads and 3 red beads. What fraction of the beads are blue?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "fraction"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Всего 6 бусин, из них 3 синие. Доля равна 3/6 = 1/2; сокращать дробь для ответа не обязательно.",
+            "en": "There are 6 beads, of which 3 are blue. The fraction is 3/6 = 1/2; an equivalent unreduced fraction is also correct."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "numerator": "1",
+          "denominator": "2"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "numerator": "1",
+          "denominator": "0"
+        }
+      },
+      "correct": false,
+      "badAnswer": true
+    },
+    {
+      "name": "fraction_decimal_component_is_bad",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000036",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A jar contains 3 blue beads and 3 red beads. What fraction of the beads are blue?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "fraction"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Всего 6 бусин, из них 3 синие. Доля равна 3/6 = 1/2; сокращать дробь для ответа не обязательно.",
+            "en": "There are 6 beads, of which 3 are blue. The fraction is 3/6 = 1/2; an equivalent unreduced fraction is also correct."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "numerator": "1",
+          "denominator": "2"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "numerator": "1.0",
+          "denominator": "2"
+        }
+      },
+      "correct": false,
+      "badAnswer": true
+    },
+    {
+      "name": "fraction_missing_component_is_bad",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000036",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A jar contains 3 blue beads and 3 red beads. What fraction of the beads are blue?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "fraction"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Всего 6 бусин, из них 3 синие. Доля равна 3/6 = 1/2; сокращать дробь для ответа не обязательно.",
+            "en": "There are 6 beads, of which 3 are blue. The fraction is 3/6 = 1/2; an equivalent unreduced fraction is also correct."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "numerator": "1",
+          "denominator": "2"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "numerator": "1"
+        }
+      },
+      "correct": false,
+      "badAnswer": true
+    },
+    {
+      "name": "fraction_number_format_is_bad",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000036",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A jar contains 3 blue beads and 3 red beads. What fraction of the beads are blue?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "fraction"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Всего 6 бусин, из них 3 синие. Доля равна 3/6 = 1/2; сокращать дробь для ответа не обязательно.",
+            "en": "There are 6 beads, of which 3 are blue. The fraction is 3/6 = 1/2; an equivalent unreduced fraction is also correct."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "numerator": "1",
+          "denominator": "2"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "number": "0.5"
+        }
+      },
+      "correct": false,
+      "badAnswer": true
+    },
+    {
+      "name": "number_bad_'1e1'",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000033",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A ribbon 14 meters long is cut into 4 equal pieces. What is the length, in meters, of each piece?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "number"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Длина одного отрезка равна 14 / 4 = 3,5 м.",
+            "en": "Each piece is 14 / 4 = 3.5 meters long."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "number": "3.5"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "number": "1e1"
+        }
+      },
+      "correct": false,
+      "badAnswer": true
+    },
+    {
+      "name": "number_bad_'NaN'",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000033",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A ribbon 14 meters long is cut into 4 equal pieces. What is the length, in meters, of each piece?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "number"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Длина одного отрезка равна 14 / 4 = 3,5 м.",
+            "en": "Each piece is 14 / 4 = 3.5 meters long."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "number": "3.5"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "number": "NaN"
+        }
+      },
+      "correct": false,
+      "badAnswer": true
+    },
+    {
+      "name": "number_bad_'Infinity'",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000033",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A ribbon 14 meters long is cut into 4 equal pieces. What is the length, in meters, of each piece?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "number"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Длина одного отрезка равна 14 / 4 = 3,5 м.",
+            "en": "Each piece is 14 / 4 = 3.5 meters long."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "number": "3.5"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "number": "Infinity"
+        }
+      },
+      "correct": false,
+      "badAnswer": true
+    },
+    {
+      "name": "number_bad_' 3.5'",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000033",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A ribbon 14 meters long is cut into 4 equal pieces. What is the length, in meters, of each piece?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "number"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Длина одного отрезка равна 14 / 4 = 3,5 м.",
+            "en": "Each piece is 14 / 4 = 3.5 meters long."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "number": "3.5"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "number": " 3.5"
+        }
+      },
+      "correct": false,
+      "badAnswer": true
+    },
+    {
+      "name": "number_bad_'3,5'",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000033",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A ribbon 14 meters long is cut into 4 equal pieces. What is the length, in meters, of each piece?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "number"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Длина одного отрезка равна 14 / 4 = 3,5 м.",
+            "en": "Each piece is 14 / 4 = 3.5 meters long."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "number": "3.5"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "number": "3,5"
+        }
+      },
+      "correct": false,
+      "badAnswer": true
+    },
+    {
+      "name": "number_bad_'3/2'",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000033",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A ribbon 14 meters long is cut into 4 equal pieces. What is the length, in meters, of each piece?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "number"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Длина одного отрезка равна 14 / 4 = 3,5 м.",
+            "en": "Each piece is 14 / 4 = 3.5 meters long."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "number": "3.5"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "number": "3/2"
+        }
+      },
+      "correct": false,
+      "badAnswer": true
+    },
+    {
+      "name": "number_bad_'+3.5'",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000033",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A ribbon 14 meters long is cut into 4 equal pieces. What is the length, in meters, of each piece?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "number"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Длина одного отрезка равна 14 / 4 = 3,5 м.",
+            "en": "Each piece is 14 / 4 = 3.5 meters long."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "number": "3.5"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "number": "+3.5"
+        }
+      },
+      "correct": false,
+      "badAnswer": true
+    },
+    {
+      "name": "number_bad_'--3'",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000033",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A ribbon 14 meters long is cut into 4 equal pieces. What is the length, in meters, of each piece?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "number"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Длина одного отрезка равна 14 / 4 = 3,5 м.",
+            "en": "Each piece is 14 / 4 = 3.5 meters long."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "number": "3.5"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "number": "--3"
+        }
+      },
+      "correct": false,
+      "badAnswer": true
+    },
+    {
+      "name": "number_bad_'3.5\\n'",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000033",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A ribbon 14 meters long is cut into 4 equal pieces. What is the length, in meters, of each piece?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "number"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Длина одного отрезка равна 14 / 4 = 3,5 м.",
+            "en": "Each piece is 14 / 4 = 3.5 meters long."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "number": "3.5"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "number": "3.5\n"
+        }
+      },
+      "correct": false,
+      "badAnswer": true
+    },
+    {
+      "name": "number_fraction_format_is_bad",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000033",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A ribbon 14 meters long is cut into 4 equal pieces. What is the length, in meters, of each piece?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "number"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Длина одного отрезка равна 14 / 4 = 3,5 м.",
+            "en": "Each piece is 14 / 4 = 3.5 meters long."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "number": "3.5"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "numerator": "7",
+          "denominator": "2"
+        }
+      },
+      "correct": false,
+      "badAnswer": true
+    },
+    {
+      "name": "number_mixed_forms_is_bad",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000033",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A ribbon 14 meters long is cut into 4 equal pieces. What is the length, in meters, of each piece?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "number"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Длина одного отрезка равна 14 / 4 = 3,5 м.",
+            "en": "Each piece is 14 / 4 = 3.5 meters long."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "number": "3.5"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "number": "3.5",
+          "numerator": "7",
+          "denominator": "2"
+        }
+      },
+      "correct": false,
+      "badAnswer": true
+    },
+    {
+      "name": "number_with_options_is_bad",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000033",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A ribbon 14 meters long is cut into 4 equal pieces. What is the length, in meters, of each piece?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "number"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Длина одного отрезка равна 14 / 4 = 3,5 м.",
+            "en": "Each piece is 14 / 4 = 3.5 meters long."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "number": "3.5"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [
+          "A"
+        ],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "number": "3.5"
+        }
+      },
+      "correct": false,
+      "badAnswer": true
+    },
+    {
+      "name": "number_with_dont_know_is_bad",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000033",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A ribbon 14 meters long is cut into 4 equal pieces. What is the length, in meters, of each piece?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "number"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Длина одного отрезка равна 14 / 4 = 3,5 м.",
+            "en": "Each piece is 14 / 4 = 3.5 meters long."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "number": "3.5"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": true,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "number": "3.5"
+        }
+      },
+      "correct": false,
+      "badAnswer": true
+    },
+    {
+      "name": "numeric_empty_object_is_bad",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000033",
+        "questionType": "numeric_entry",
+        "section": "quant",
+        "topicId": "numeric-values",
+        "topicTitle": {
+          "ru": "Числа и дроби",
+          "en": "Numbers and fractions"
+        },
+        "difficulty": "easy",
+        "prompt": "A ribbon 14 meters long is cut into 4 equal pieces. What is the length, in meters, of each piece?",
+        "groups": [],
+        "selectCount": 0,
+        "numericEntry": {
+          "format": "number"
+        },
+        "answer": [],
+        "explanation": {
+          "solution": {
+            "ru": "Длина одного отрезка равна 14 / 4 = 3,5 м.",
+            "en": "Each piece is 14 / 4 = 3.5 meters long."
+          },
+          "options": []
+        },
+        "numericAnswer": {
+          "number": "3.5"
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {}
+      },
+      "correct": false,
+      "badAnswer": true
+    },
+    {
+      "name": "sentence_correct",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000039",
+        "questionType": "select_in_passage",
+        "section": "verbal",
+        "topicId": "reading-evidence",
+        "topicTitle": {
+          "ru": "Доказательства в тексте",
+          "en": "Evidence in passages"
+        },
+        "difficulty": "easy",
+        "prompt": "Select the sentence identifying a second change that could explain the increase in loans.",
+        "groups": [],
+        "selectCount": 0,
+        "answer": [
+          "s2"
+        ],
+        "explanation": {
+          "solution": {
+            "ru": "Второе предложение указывает на начало школьного учебного периода. Оно произошло одновременно с продлением часов работы.",
+            "en": "The second sentence identifies the start of the school term, which coincided with the change in opening hours."
+          },
+          "options": []
+        },
+        "passage": {
+          "id": "library-hours",
+          "paragraphs": [
+            {
+              "sentences": [
+                {
+                  "id": "s1",
+                  "text": "A town library recorded more loans in September after extending its Saturday opening hours."
+                },
+                {
+                  "id": "s2",
+                  "text": "The local school term also began that month."
+                },
+                {
+                  "id": "s3",
+                  "text": "The records did not distinguish student borrowers from other borrowers."
+                },
+                {
+                  "id": "s4",
+                  "text": "The increase therefore cannot be attributed solely to the longer opening hours."
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "sentenceId": "s2"
+      },
+      "correct": true,
+      "badAnswer": false
+    },
+    {
+      "name": "sentence_wrong",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000039",
+        "questionType": "select_in_passage",
+        "section": "verbal",
+        "topicId": "reading-evidence",
+        "topicTitle": {
+          "ru": "Доказательства в тексте",
+          "en": "Evidence in passages"
+        },
+        "difficulty": "easy",
+        "prompt": "Select the sentence identifying a second change that could explain the increase in loans.",
+        "groups": [],
+        "selectCount": 0,
+        "answer": [
+          "s2"
+        ],
+        "explanation": {
+          "solution": {
+            "ru": "Второе предложение указывает на начало школьного учебного периода. Оно произошло одновременно с продлением часов работы.",
+            "en": "The second sentence identifies the start of the school term, which coincided with the change in opening hours."
+          },
+          "options": []
+        },
+        "passage": {
+          "id": "library-hours",
+          "paragraphs": [
+            {
+              "sentences": [
+                {
+                  "id": "s1",
+                  "text": "A town library recorded more loans in September after extending its Saturday opening hours."
+                },
+                {
+                  "id": "s2",
+                  "text": "The local school term also began that month."
+                },
+                {
+                  "id": "s3",
+                  "text": "The records did not distinguish student borrowers from other borrowers."
+                },
+                {
+                  "id": "s4",
+                  "text": "The increase therefore cannot be attributed solely to the longer opening hours."
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "sentenceId": "s1"
+      },
+      "correct": false,
+      "badAnswer": false
+    },
+    {
+      "name": "sentence_unknown_is_bad",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000039",
+        "questionType": "select_in_passage",
+        "section": "verbal",
+        "topicId": "reading-evidence",
+        "topicTitle": {
+          "ru": "Доказательства в тексте",
+          "en": "Evidence in passages"
+        },
+        "difficulty": "easy",
+        "prompt": "Select the sentence identifying a second change that could explain the increase in loans.",
+        "groups": [],
+        "selectCount": 0,
+        "answer": [
+          "s2"
+        ],
+        "explanation": {
+          "solution": {
+            "ru": "Второе предложение указывает на начало школьного учебного периода. Оно произошло одновременно с продлением часов работы.",
+            "en": "The second sentence identifies the start of the school term, which coincided with the change in opening hours."
+          },
+          "options": []
+        },
+        "passage": {
+          "id": "library-hours",
+          "paragraphs": [
+            {
+              "sentences": [
+                {
+                  "id": "s1",
+                  "text": "A town library recorded more loans in September after extending its Saturday opening hours."
+                },
+                {
+                  "id": "s2",
+                  "text": "The local school term also began that month."
+                },
+                {
+                  "id": "s3",
+                  "text": "The records did not distinguish student borrowers from other borrowers."
+                },
+                {
+                  "id": "s4",
+                  "text": "The increase therefore cannot be attributed solely to the longer opening hours."
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "sentenceId": "unknown"
+      },
+      "correct": false,
+      "badAnswer": true
+    },
+    {
+      "name": "sentence_with_options_is_bad",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000039",
+        "questionType": "select_in_passage",
+        "section": "verbal",
+        "topicId": "reading-evidence",
+        "topicTitle": {
+          "ru": "Доказательства в тексте",
+          "en": "Evidence in passages"
+        },
+        "difficulty": "easy",
+        "prompt": "Select the sentence identifying a second change that could explain the increase in loans.",
+        "groups": [],
+        "selectCount": 0,
+        "answer": [
+          "s2"
+        ],
+        "explanation": {
+          "solution": {
+            "ru": "Второе предложение указывает на начало школьного учебного периода. Оно произошло одновременно с продлением часов работы.",
+            "en": "The second sentence identifies the start of the school term, which coincided with the change in opening hours."
+          },
+          "options": []
+        },
+        "passage": {
+          "id": "library-hours",
+          "paragraphs": [
+            {
+              "sentences": [
+                {
+                  "id": "s1",
+                  "text": "A town library recorded more loans in September after extending its Saturday opening hours."
+                },
+                {
+                  "id": "s2",
+                  "text": "The local school term also began that month."
+                },
+                {
+                  "id": "s3",
+                  "text": "The records did not distinguish student borrowers from other borrowers."
+                },
+                {
+                  "id": "s4",
+                  "text": "The increase therefore cannot be attributed solely to the longer opening hours."
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [
+          "s2"
+        ],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "sentenceId": "s2"
+      },
+      "correct": false,
+      "badAnswer": true
+    },
+    {
+      "name": "sentence_with_number_is_bad",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000039",
+        "questionType": "select_in_passage",
+        "section": "verbal",
+        "topicId": "reading-evidence",
+        "topicTitle": {
+          "ru": "Доказательства в тексте",
+          "en": "Evidence in passages"
+        },
+        "difficulty": "easy",
+        "prompt": "Select the sentence identifying a second change that could explain the increase in loans.",
+        "groups": [],
+        "selectCount": 0,
+        "answer": [
+          "s2"
+        ],
+        "explanation": {
+          "solution": {
+            "ru": "Второе предложение указывает на начало школьного учебного периода. Оно произошло одновременно с продлением часов работы.",
+            "en": "The second sentence identifies the start of the school term, which coincided with the change in opening hours."
+          },
+          "options": []
+        },
+        "passage": {
+          "id": "library-hours",
+          "paragraphs": [
+            {
+              "sentences": [
+                {
+                  "id": "s1",
+                  "text": "A town library recorded more loans in September after extending its Saturday opening hours."
+                },
+                {
+                  "id": "s2",
+                  "text": "The local school term also began that month."
+                },
+                {
+                  "id": "s3",
+                  "text": "The records did not distinguish student borrowers from other borrowers."
+                },
+                {
+                  "id": "s4",
+                  "text": "The increase therefore cannot be attributed solely to the longer opening hours."
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "number": "2"
+        },
+        "sentenceId": "s2"
+      },
+      "correct": false,
+      "badAnswer": true
+    },
+    {
+      "name": "sentence_with_dont_know_is_bad",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000039",
+        "questionType": "select_in_passage",
+        "section": "verbal",
+        "topicId": "reading-evidence",
+        "topicTitle": {
+          "ru": "Доказательства в тексте",
+          "en": "Evidence in passages"
+        },
+        "difficulty": "easy",
+        "prompt": "Select the sentence identifying a second change that could explain the increase in loans.",
+        "groups": [],
+        "selectCount": 0,
+        "answer": [
+          "s2"
+        ],
+        "explanation": {
+          "solution": {
+            "ru": "Второе предложение указывает на начало школьного учебного периода. Оно произошло одновременно с продлением часов работы.",
+            "en": "The second sentence identifies the start of the school term, which coincided with the change in opening hours."
+          },
+          "options": []
+        },
+        "passage": {
+          "id": "library-hours",
+          "paragraphs": [
+            {
+              "sentences": [
+                {
+                  "id": "s1",
+                  "text": "A town library recorded more loans in September after extending its Saturday opening hours."
+                },
+                {
+                  "id": "s2",
+                  "text": "The local school term also began that month."
+                },
+                {
+                  "id": "s3",
+                  "text": "The records did not distinguish student borrowers from other borrowers."
+                },
+                {
+                  "id": "s4",
+                  "text": "The increase therefore cannot be attributed solely to the longer opening hours."
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": true,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "sentenceId": "s2"
+      },
+      "correct": false,
+      "badAnswer": true
+    },
+    {
+      "name": "sentence_empty_is_unanswered",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000039",
+        "questionType": "select_in_passage",
+        "section": "verbal",
+        "topicId": "reading-evidence",
+        "topicTitle": {
+          "ru": "Доказательства в тексте",
+          "en": "Evidence in passages"
+        },
+        "difficulty": "easy",
+        "prompt": "Select the sentence identifying a second change that could explain the increase in loans.",
+        "groups": [],
+        "selectCount": 0,
+        "answer": [
+          "s2"
+        ],
+        "explanation": {
+          "solution": {
+            "ru": "Второе предложение указывает на начало школьного учебного периода. Оно произошло одновременно с продлением часов работы.",
+            "en": "The second sentence identifies the start of the school term, which coincided with the change in opening hours."
+          },
+          "options": []
+        },
+        "passage": {
+          "id": "library-hours",
+          "paragraphs": [
+            {
+              "sentences": [
+                {
+                  "id": "s1",
+                  "text": "A town library recorded more loans in September after extending its Saturday opening hours."
+                },
+                {
+                  "id": "s2",
+                  "text": "The local school term also began that month."
+                },
+                {
+                  "id": "s3",
+                  "text": "The records did not distinguish student borrowers from other borrowers."
+                },
+                {
+                  "id": "s4",
+                  "text": "The increase therefore cannot be attributed solely to the longer opening hours."
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000
+      },
+      "correct": false,
+      "badAnswer": false
+    },
+    {
+      "name": "sentence_dont_know",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000039",
+        "questionType": "select_in_passage",
+        "section": "verbal",
+        "topicId": "reading-evidence",
+        "topicTitle": {
+          "ru": "Доказательства в тексте",
+          "en": "Evidence in passages"
+        },
+        "difficulty": "easy",
+        "prompt": "Select the sentence identifying a second change that could explain the increase in loans.",
+        "groups": [],
+        "selectCount": 0,
+        "answer": [
+          "s2"
+        ],
+        "explanation": {
+          "solution": {
+            "ru": "Второе предложение указывает на начало школьного учебного периода. Оно произошло одновременно с продлением часов работы.",
+            "en": "The second sentence identifies the start of the school term, which coincided with the change in opening hours."
+          },
+          "options": []
+        },
+        "passage": {
+          "id": "library-hours",
+          "paragraphs": [
+            {
+              "sentences": [
+                {
+                  "id": "s1",
+                  "text": "A town library recorded more loans in September after extending its Saturday opening hours."
+                },
+                {
+                  "id": "s2",
+                  "text": "The local school term also began that month."
+                },
+                {
+                  "id": "s3",
+                  "text": "The records did not distinguish student borrowers from other borrowers."
+                },
+                {
+                  "id": "s4",
+                  "text": "The increase therefore cannot be attributed solely to the longer opening hours."
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": true,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000
+      },
+      "correct": false,
+      "badAnswer": false
+    },
+    {
+      "name": "reading_single_choice",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000042",
+        "questionType": "multiple_choice",
+        "section": "verbal",
+        "topicId": "reading-evidence",
+        "topicTitle": {
+          "ru": "Доказательства в тексте",
+          "en": "Evidence in passages"
+        },
+        "difficulty": "easy",
+        "prompt": "Which statement best describes the limitation of the library evidence?",
+        "groups": [
+          {
+            "options": [
+              {
+                "id": "A",
+                "text": "The library recorded no loans."
+              },
+              {
+                "id": "B",
+                "text": "The records cannot isolate the effect of longer hours."
+              },
+              {
+                "id": "C",
+                "text": "Only students borrowed books."
+              },
+              {
+                "id": "D",
+                "text": "The library was closed on Saturdays."
+              },
+              {
+                "id": "E",
+                "text": "The school term ended in September."
+              }
+            ]
+          }
+        ],
+        "selectCount": 1,
+        "answer": [
+          "B"
+        ],
+        "explanation": {
+          "solution": {
+            "ru": "Два изменения совпали по времени, а записи не различали группы читателей. Поэтому нельзя выделить влияние часов работы.",
+            "en": "Two changes occurred together, and borrower groups were not separated. The records cannot isolate the effect of opening hours."
+          },
+          "options": [
+            {
+              "optionId": "A",
+              "text": {
+                "ru": "Число выдач выросло, а не исчезло.",
+                "en": "Loans increased; they did not disappear."
+              }
+            },
+            {
+              "optionId": "C",
+              "text": {
+                "ru": "Записи не различали группы читателей.",
+                "en": "The records did not distinguish borrower groups."
+              }
+            },
+            {
+              "optionId": "D",
+              "text": {
+                "ru": "По субботам часы работы продлили.",
+                "en": "Saturday opening hours were extended."
+              }
+            },
+            {
+              "optionId": "E",
+              "text": {
+                "ru": "Учебный период начался.",
+                "en": "The school term began."
+              }
+            }
+          ]
+        },
+        "passage": {
+          "id": "library-hours",
+          "paragraphs": [
+            {
+              "sentences": [
+                {
+                  "id": "s1",
+                  "text": "A town library recorded more loans in September after extending its Saturday opening hours."
+                },
+                {
+                  "id": "s2",
+                  "text": "The local school term also began that month."
+                },
+                {
+                  "id": "s3",
+                  "text": "The records did not distinguish student borrowers from other borrowers."
+                },
+                {
+                  "id": "s4",
+                  "text": "The increase therefore cannot be attributed solely to the longer opening hours."
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [
+          "B"
+        ],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000
+      },
+      "correct": true,
+      "badAnswer": false
+    },
+    {
+      "name": "figure_single_choice",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000043",
+        "questionType": "multiple_choice",
+        "section": "quant",
+        "topicId": "data-interpretation",
+        "topicTitle": {
+          "ru": "Чтение данных",
+          "en": "Data interpretation"
+        },
+        "difficulty": "medium",
+        "prompt": "By what percent did daily orders increase from day 1 to day 4?",
+        "groups": [
+          {
+            "options": [
+              {
+                "id": "A",
+                "text": "50%"
+              },
+              {
+                "id": "B",
+                "text": "100%"
+              },
+              {
+                "id": "C",
+                "text": "150%"
+              },
+              {
+                "id": "D",
+                "text": "200%"
+              },
+              {
+                "id": "E",
+                "text": "300%"
+              }
+            ]
+          }
+        ],
+        "selectCount": 1,
+        "answer": [
+          "D"
+        ],
+        "explanation": {
+          "solution": {
+            "ru": "Заказов стало на 18 − 6 = 12 больше. Относительно исходных 6 это 12 / 6 × 100% = 200%.",
+            "en": "Orders increased by 18 − 6 = 12. Relative to the original 6, this is 12 / 6 × 100% = 200%."
+          },
+          "options": [
+            {
+              "optionId": "A",
+              "text": {
+                "ru": "Сравнили разность с другим основанием. Основание здесь — 6.",
+                "en": "The base for the percent increase is the original value, 6."
+              }
+            },
+            {
+              "optionId": "B",
+              "text": {
+                "ru": "При росте на 100% было бы 12 заказов.",
+                "en": "An increase of 100% would give 12 orders."
+              }
+            },
+            {
+              "optionId": "C",
+              "text": {
+                "ru": "Рост на 150% дал бы 15 заказов.",
+                "en": "An increase of 150% would give 15 orders."
+              }
+            },
+            {
+              "optionId": "E",
+              "text": {
+                "ru": "18 составляет 300% от 6, но прирост равен 200%.",
+                "en": "18 is 300% of 6, but the increase is 200%."
+              }
+            }
+          ]
+        },
+        "figure": {
+          "id": "daily-orders",
+          "kind": "line",
+          "title": "Orders received over four days",
+          "xLabel": "Day",
+          "yLabel": "Orders",
+          "unit": "orders",
+          "categories": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ],
+          "series": [
+            {
+              "id": "orders",
+              "label": "Orders",
+              "values": [
+                6,
+                10,
+                14,
+                18
+              ]
+            }
+          ],
+          "description": "On days 1, 2, 3, and 4 the shop received 6, 10, 14, and 18 orders, respectively."
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [
+          "D"
+        ],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000
+      },
+      "correct": true,
+      "badAnswer": false
+    },
+    {
+      "name": "legacy_choice_rejects_numeric",
+      "question": {
+        "id": "d3f00000-0000-4000-8000-000000000043",
+        "questionType": "multiple_choice",
+        "section": "quant",
+        "topicId": "data-interpretation",
+        "topicTitle": {
+          "ru": "Чтение данных",
+          "en": "Data interpretation"
+        },
+        "difficulty": "medium",
+        "prompt": "By what percent did daily orders increase from day 1 to day 4?",
+        "groups": [
+          {
+            "options": [
+              {
+                "id": "A",
+                "text": "50%"
+              },
+              {
+                "id": "B",
+                "text": "100%"
+              },
+              {
+                "id": "C",
+                "text": "150%"
+              },
+              {
+                "id": "D",
+                "text": "200%"
+              },
+              {
+                "id": "E",
+                "text": "300%"
+              }
+            ]
+          }
+        ],
+        "selectCount": 1,
+        "answer": [
+          "D"
+        ],
+        "explanation": {
+          "solution": {
+            "ru": "Заказов стало на 18 − 6 = 12 больше. Относительно исходных 6 это 12 / 6 × 100% = 200%.",
+            "en": "Orders increased by 18 − 6 = 12. Relative to the original 6, this is 12 / 6 × 100% = 200%."
+          },
+          "options": [
+            {
+              "optionId": "A",
+              "text": {
+                "ru": "Сравнили разность с другим основанием. Основание здесь — 6.",
+                "en": "The base for the percent increase is the original value, 6."
+              }
+            },
+            {
+              "optionId": "B",
+              "text": {
+                "ru": "При росте на 100% было бы 12 заказов.",
+                "en": "An increase of 100% would give 12 orders."
+              }
+            },
+            {
+              "optionId": "C",
+              "text": {
+                "ru": "Рост на 150% дал бы 15 заказов.",
+                "en": "An increase of 150% would give 15 orders."
+              }
+            },
+            {
+              "optionId": "E",
+              "text": {
+                "ru": "18 составляет 300% от 6, но прирост равен 200%.",
+                "en": "18 is 300% of 6, but the increase is 200%."
+              }
+            }
+          ]
+        },
+        "figure": {
+          "id": "daily-orders",
+          "kind": "line",
+          "title": "Orders received over four days",
+          "xLabel": "Day",
+          "yLabel": "Orders",
+          "unit": "orders",
+          "categories": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ],
+          "series": [
+            {
+              "id": "orders",
+              "label": "Orders",
+              "values": [
+                6,
+                10,
+                14,
+                18
+              ]
+            }
+          ],
+          "description": "On days 1, 2, 3, and 4 the shop received 6, 10, 14, and 18 orders, respectively."
+        }
+      },
+      "answer": {
+        "position": 0,
+        "optionIds": [],
+        "dontKnow": false,
+        "flagged": false,
+        "answeredAt": "2026-10-12T00:00:00Z",
+        "elapsedMs": 1000,
+        "numericAnswer": {
+          "number": "200"
+        }
+      },
+      "correct": false,
+      "badAnswer": true
+    }
+  ]
+}

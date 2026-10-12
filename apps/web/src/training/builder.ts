@@ -2,6 +2,7 @@ import { CURRENT_EXAM } from './exam';
 import type { Difficulty, QuestionType, TrainingMode, TrainingOptions, TrainingRequest } from '@greprep/api-client';
 
 export const TYPE_LABELS: Record<QuestionType, string> = {
+  multiple_choice_multi: 'Multiple Answer', numeric_entry: 'Numeric Entry', select_in_passage: 'Select in Passage',
   text_completion: 'Text Completion', sentence_equivalence: 'Sentence Equivalence',
   quantitative_comparison: 'Quantitative Comparison', multiple_choice: 'Multiple Choice',
 };

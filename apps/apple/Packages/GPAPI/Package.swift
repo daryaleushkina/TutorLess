@@ -25,6 +25,7 @@ let package = Package(
                 .product(name: "HTTPTypes", package: "swift-http-types"),
             ],
             swiftSettings: [.swiftLanguageMode(.v6)]
-        )
+        ),
+        .testTarget(name: "GPAPITests", dependencies: ["GPAPI"], swiftSettings: [.swiftLanguageMode(.v6)]),
     ]
 )

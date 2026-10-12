@@ -19,6 +19,15 @@ import (
 // FinishTrainingParams is parameters of finishTraining operation.
 type FinishTrainingParams struct {
 	TrainingId uuid.UUID
+	// Через запятую: поддерживаемые QuestionType и формы passage, figure.
+	// Без заголовка — четыре старых типа и только задания
+	// без текста/рисунка. Заголовок задаёт полный список; query
+	// types на главной и в конструкторе дополнительно сужает
+	// его. Неизвестная или пустая возможность — 400 bad_request.
+	// Неподдерживаемая сессия целиком — 409 unsupported_training:
+	// позиции и итог не обрезаются. Тот же заголовок
+	// отправляется при старте, чтении, ответах и завершении.
+	XTrainingCapabilities OptString `json:",omitempty,omitzero"`
 }
 
 func unpackFinishTrainingParams(packed middleware.Parameters) (params FinishTrainingParams) {
@@ -29,10 +38,20 @@ func unpackFinishTrainingParams(packed middleware.Parameters) (params FinishTrai
 		}
 		params.TrainingId = packed[key].(uuid.UUID)
 	}
+	{
+		key := middleware.ParameterKey{
+			Name: "X-Training-Capabilities",
+			In:   "header",
+		}
+		if v, ok := packed[key]; ok {
+			params.XTrainingCapabilities = v.(OptString)
+		}
+	}
 	return params
 }
 
 func decodeFinishTrainingParams(args [1]string, argsEscaped bool, r *http.Request) (params FinishTrainingParams, _ error) {
+	h := uri.NewHeaderDecoder(r.Header)
 	// Decode path: trainingId.
 	if err := func() error {
 		param := args[0]
@@ -78,6 +97,72 @@ func decodeFinishTrainingParams(args [1]string, argsEscaped bool, r *http.Reques
 			Err:  err,
 		}
 	}
+	// Decode header: X-Training-Capabilities.
+	if err := func() error {
+		cfg := uri.HeaderParameterDecodingConfig{
+			Name:    "X-Training-Capabilities",
+			Explode: false,
+		}
+		if err := h.HasParam(cfg); err == nil {
+			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotXTrainingCapabilitiesVal string
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToString(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotXTrainingCapabilitiesVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.XTrainingCapabilities.SetTo(paramsDotXTrainingCapabilitiesVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+			if err := func() error {
+				if value, ok := params.XTrainingCapabilities.Get(); ok {
+					if err := func() error {
+						if err := (validate.String{
+							MinLength:     1,
+							MinLengthSet:  true,
+							MaxLength:     512,
+							MaxLengthSet:  true,
+							Email:         false,
+							Hostname:      false,
+							Regex:         nil,
+							MinNumeric:    0,
+							MinNumericSet: false,
+							MaxNumeric:    0,
+							MaxNumericSet: false,
+						}).Validate(string(value)); err != nil {
+							return errors.Wrap(err, "string")
+						}
+						return nil
+					}(); err != nil {
+						return err
+					}
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "X-Training-Capabilities",
+			In:   "header",
+			Err:  err,
+		}
+	}
 	return params, nil
 }
 
@@ -89,9 +174,18 @@ type GetHomeParams struct {
 	Tz string
 	// Типы заданий, которые клиент умеет показывать. Если
 	// последний запрос содержит тип вне списка, lastTraining — null.
-	// Статистика разделов, ошибок и слабого типа от списка
-	// не зависит.
+	// Статистика разделов и недели общая; ошибки и слабый
+	// тип учитывают только доступные формы.
 	Types []QuestionType `json:",omitempty"`
+	// Через запятую: поддерживаемые QuestionType и формы passage, figure.
+	// Без заголовка — четыре старых типа и только задания
+	// без текста/рисунка. Заголовок задаёт полный список; query
+	// types на главной и в конструкторе дополнительно сужает
+	// его. Неизвестная или пустая возможность — 400 bad_request.
+	// Неподдерживаемая сессия целиком — 409 unsupported_training:
+	// позиции и итог не обрезаются. Тот же заголовок
+	// отправляется при старте, чтении, ответах и завершении.
+	XTrainingCapabilities OptString `json:",omitempty,omitzero"`
 }
 
 func unpackGetHomeParams(packed middleware.Parameters) (params GetHomeParams) {
@@ -114,13 +208,25 @@ func unpackGetHomeParams(packed middleware.Parameters) (params GetHomeParams) {
 			Name: "types",
 			In:   "query",
 		}
-		params.Types = packed[key].([]QuestionType)
+		if v, ok := packed[key]; ok {
+			params.Types = v.([]QuestionType)
+		}
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "X-Training-Capabilities",
+			In:   "header",
+		}
+		if v, ok := packed[key]; ok {
+			params.XTrainingCapabilities = v.(OptString)
+		}
 	}
 	return params
 }
 
 func decodeGetHomeParams(args [0]string, argsEscaped bool, r *http.Request) (params GetHomeParams, _ error) {
 	q := uri.NewQueryDecoder(r.URL.Query())
+	h := uri.NewHeaderDecoder(r.Header)
 	// Decode query: exam.
 	if err := func() error {
 		cfg := uri.QueryParameterDecodingConfig{
@@ -258,7 +364,7 @@ func decodeGetHomeParams(args [0]string, argsEscaped bool, r *http.Request) (par
 			}
 			if err := func() error {
 				if params.Types == nil {
-					return errors.New("nil is invalid value")
+					return nil // optional
 				}
 				if err := (validate.Array{
 					MinLength:    1,
@@ -289,8 +395,6 @@ func decodeGetHomeParams(args [0]string, argsEscaped bool, r *http.Request) (par
 			}(); err != nil {
 				return err
 			}
-		} else {
-			return err
 		}
 		return nil
 	}(); err != nil {
@@ -300,12 +404,87 @@ func decodeGetHomeParams(args [0]string, argsEscaped bool, r *http.Request) (par
 			Err:  err,
 		}
 	}
+	// Decode header: X-Training-Capabilities.
+	if err := func() error {
+		cfg := uri.HeaderParameterDecodingConfig{
+			Name:    "X-Training-Capabilities",
+			Explode: false,
+		}
+		if err := h.HasParam(cfg); err == nil {
+			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotXTrainingCapabilitiesVal string
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToString(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotXTrainingCapabilitiesVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.XTrainingCapabilities.SetTo(paramsDotXTrainingCapabilitiesVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+			if err := func() error {
+				if value, ok := params.XTrainingCapabilities.Get(); ok {
+					if err := func() error {
+						if err := (validate.String{
+							MinLength:     1,
+							MinLengthSet:  true,
+							MaxLength:     512,
+							MaxLengthSet:  true,
+							Email:         false,
+							Hostname:      false,
+							Regex:         nil,
+							MinNumeric:    0,
+							MinNumericSet: false,
+							MaxNumeric:    0,
+							MaxNumericSet: false,
+						}).Validate(string(value)); err != nil {
+							return errors.Wrap(err, "string")
+						}
+						return nil
+					}(); err != nil {
+						return err
+					}
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "X-Training-Capabilities",
+			In:   "header",
+			Err:  err,
+		}
+	}
 	return params, nil
 }
 
 // GetTrainingParams is parameters of getTraining operation.
 type GetTrainingParams struct {
 	TrainingId uuid.UUID
+	// Через запятую: поддерживаемые QuestionType и формы passage, figure.
+	// Без заголовка — четыре старых типа и только задания
+	// без текста/рисунка. Заголовок задаёт полный список; query
+	// types на главной и в конструкторе дополнительно сужает
+	// его. Неизвестная или пустая возможность — 400 bad_request.
+	// Неподдерживаемая сессия целиком — 409 unsupported_training:
+	// позиции и итог не обрезаются. Тот же заголовок
+	// отправляется при старте, чтении, ответах и завершении.
+	XTrainingCapabilities OptString `json:",omitempty,omitzero"`
 }
 
 func unpackGetTrainingParams(packed middleware.Parameters) (params GetTrainingParams) {
@@ -316,10 +495,20 @@ func unpackGetTrainingParams(packed middleware.Parameters) (params GetTrainingPa
 		}
 		params.TrainingId = packed[key].(uuid.UUID)
 	}
+	{
+		key := middleware.ParameterKey{
+			Name: "X-Training-Capabilities",
+			In:   "header",
+		}
+		if v, ok := packed[key]; ok {
+			params.XTrainingCapabilities = v.(OptString)
+		}
+	}
 	return params
 }
 
 func decodeGetTrainingParams(args [1]string, argsEscaped bool, r *http.Request) (params GetTrainingParams, _ error) {
+	h := uri.NewHeaderDecoder(r.Header)
 	// Decode path: trainingId.
 	if err := func() error {
 		param := args[0]
@@ -365,6 +554,72 @@ func decodeGetTrainingParams(args [1]string, argsEscaped bool, r *http.Request) 
 			Err:  err,
 		}
 	}
+	// Decode header: X-Training-Capabilities.
+	if err := func() error {
+		cfg := uri.HeaderParameterDecodingConfig{
+			Name:    "X-Training-Capabilities",
+			Explode: false,
+		}
+		if err := h.HasParam(cfg); err == nil {
+			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotXTrainingCapabilitiesVal string
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToString(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotXTrainingCapabilitiesVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.XTrainingCapabilities.SetTo(paramsDotXTrainingCapabilitiesVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+			if err := func() error {
+				if value, ok := params.XTrainingCapabilities.Get(); ok {
+					if err := func() error {
+						if err := (validate.String{
+							MinLength:     1,
+							MinLengthSet:  true,
+							MaxLength:     512,
+							MaxLengthSet:  true,
+							Email:         false,
+							Hostname:      false,
+							Regex:         nil,
+							MinNumeric:    0,
+							MinNumericSet: false,
+							MaxNumeric:    0,
+							MaxNumericSet: false,
+						}).Validate(string(value)); err != nil {
+							return errors.Wrap(err, "string")
+						}
+						return nil
+					}(); err != nil {
+						return err
+					}
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "X-Training-Capabilities",
+			In:   "header",
+			Err:  err,
+		}
+	}
 	return params, nil
 }
 
@@ -376,6 +631,15 @@ type GetTrainingOptionsParams struct {
 	// на сервере не ломает уже установленные версии
 	// приложений.
 	Types []QuestionType `json:",omitempty"`
+	// Через запятую: поддерживаемые QuestionType и формы passage, figure.
+	// Без заголовка — четыре старых типа и только задания
+	// без текста/рисунка. Заголовок задаёт полный список; query
+	// types на главной и в конструкторе дополнительно сужает
+	// его. Неизвестная или пустая возможность — 400 bad_request.
+	// Неподдерживаемая сессия целиком — 409 unsupported_training:
+	// позиции и итог не обрезаются. Тот же заголовок
+	// отправляется при старте, чтении, ответах и завершении.
+	XTrainingCapabilities OptString `json:",omitempty,omitzero"`
 }
 
 func unpackGetTrainingOptionsParams(packed middleware.Parameters) (params GetTrainingOptionsParams) {
@@ -391,13 +655,25 @@ func unpackGetTrainingOptionsParams(packed middleware.Parameters) (params GetTra
 			Name: "types",
 			In:   "query",
 		}
-		params.Types = packed[key].([]QuestionType)
+		if v, ok := packed[key]; ok {
+			params.Types = v.([]QuestionType)
+		}
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "X-Training-Capabilities",
+			In:   "header",
+		}
+		if v, ok := packed[key]; ok {
+			params.XTrainingCapabilities = v.(OptString)
+		}
 	}
 	return params
 }
 
 func decodeGetTrainingOptionsParams(args [0]string, argsEscaped bool, r *http.Request) (params GetTrainingOptionsParams, _ error) {
 	q := uri.NewQueryDecoder(r.URL.Query())
+	h := uri.NewHeaderDecoder(r.Header)
 	// Decode query: exam.
 	if err := func() error {
 		cfg := uri.QueryParameterDecodingConfig{
@@ -479,7 +755,7 @@ func decodeGetTrainingOptionsParams(args [0]string, argsEscaped bool, r *http.Re
 			}
 			if err := func() error {
 				if params.Types == nil {
-					return errors.New("nil is invalid value")
+					return nil // optional
 				}
 				if err := (validate.Array{
 					MinLength:    1,
@@ -510,14 +786,78 @@ func decodeGetTrainingOptionsParams(args [0]string, argsEscaped bool, r *http.Re
 			}(); err != nil {
 				return err
 			}
-		} else {
-			return err
 		}
 		return nil
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
 			Name: "types",
 			In:   "query",
+			Err:  err,
+		}
+	}
+	// Decode header: X-Training-Capabilities.
+	if err := func() error {
+		cfg := uri.HeaderParameterDecodingConfig{
+			Name:    "X-Training-Capabilities",
+			Explode: false,
+		}
+		if err := h.HasParam(cfg); err == nil {
+			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotXTrainingCapabilitiesVal string
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToString(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotXTrainingCapabilitiesVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.XTrainingCapabilities.SetTo(paramsDotXTrainingCapabilitiesVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+			if err := func() error {
+				if value, ok := params.XTrainingCapabilities.Get(); ok {
+					if err := func() error {
+						if err := (validate.String{
+							MinLength:     1,
+							MinLengthSet:  true,
+							MaxLength:     512,
+							MaxLengthSet:  true,
+							Email:         false,
+							Hostname:      false,
+							Regex:         nil,
+							MinNumeric:    0,
+							MinNumericSet: false,
+							MaxNumeric:    0,
+							MaxNumericSet: false,
+						}).Validate(string(value)); err != nil {
+							return errors.Wrap(err, "string")
+						}
+						return nil
+					}(); err != nil {
+						return err
+					}
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "X-Training-Capabilities",
+			In:   "header",
 			Err:  err,
 		}
 	}
@@ -589,9 +929,115 @@ func decodeReportQuestionParams(args [1]string, argsEscaped bool, r *http.Reques
 	return params, nil
 }
 
+// StartTrainingParams is parameters of startTraining operation.
+type StartTrainingParams struct {
+	// Через запятую: поддерживаемые QuestionType и формы passage, figure.
+	// Без заголовка — четыре старых типа и только задания
+	// без текста/рисунка. Заголовок задаёт полный список; query
+	// types на главной и в конструкторе дополнительно сужает
+	// его. Неизвестная или пустая возможность — 400 bad_request.
+	// Неподдерживаемая сессия целиком — 409 unsupported_training:
+	// позиции и итог не обрезаются. Тот же заголовок
+	// отправляется при старте, чтении, ответах и завершении.
+	XTrainingCapabilities OptString `json:",omitempty,omitzero"`
+}
+
+func unpackStartTrainingParams(packed middleware.Parameters) (params StartTrainingParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "X-Training-Capabilities",
+			In:   "header",
+		}
+		if v, ok := packed[key]; ok {
+			params.XTrainingCapabilities = v.(OptString)
+		}
+	}
+	return params
+}
+
+func decodeStartTrainingParams(args [0]string, argsEscaped bool, r *http.Request) (params StartTrainingParams, _ error) {
+	h := uri.NewHeaderDecoder(r.Header)
+	// Decode header: X-Training-Capabilities.
+	if err := func() error {
+		cfg := uri.HeaderParameterDecodingConfig{
+			Name:    "X-Training-Capabilities",
+			Explode: false,
+		}
+		if err := h.HasParam(cfg); err == nil {
+			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotXTrainingCapabilitiesVal string
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToString(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotXTrainingCapabilitiesVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.XTrainingCapabilities.SetTo(paramsDotXTrainingCapabilitiesVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+			if err := func() error {
+				if value, ok := params.XTrainingCapabilities.Get(); ok {
+					if err := func() error {
+						if err := (validate.String{
+							MinLength:     1,
+							MinLengthSet:  true,
+							MaxLength:     512,
+							MaxLengthSet:  true,
+							Email:         false,
+							Hostname:      false,
+							Regex:         nil,
+							MinNumeric:    0,
+							MinNumericSet: false,
+							MaxNumeric:    0,
+							MaxNumericSet: false,
+						}).Validate(string(value)); err != nil {
+							return errors.Wrap(err, "string")
+						}
+						return nil
+					}(); err != nil {
+						return err
+					}
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "X-Training-Capabilities",
+			In:   "header",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
 // SubmitTrainingAnswersParams is parameters of submitTrainingAnswers operation.
 type SubmitTrainingAnswersParams struct {
 	TrainingId uuid.UUID
+	// Через запятую: поддерживаемые QuestionType и формы passage, figure.
+	// Без заголовка — четыре старых типа и только задания
+	// без текста/рисунка. Заголовок задаёт полный список; query
+	// types на главной и в конструкторе дополнительно сужает
+	// его. Неизвестная или пустая возможность — 400 bad_request.
+	// Неподдерживаемая сессия целиком — 409 unsupported_training:
+	// позиции и итог не обрезаются. Тот же заголовок
+	// отправляется при старте, чтении, ответах и завершении.
+	XTrainingCapabilities OptString `json:",omitempty,omitzero"`
 }
 
 func unpackSubmitTrainingAnswersParams(packed middleware.Parameters) (params SubmitTrainingAnswersParams) {
@@ -602,10 +1048,20 @@ func unpackSubmitTrainingAnswersParams(packed middleware.Parameters) (params Sub
 		}
 		params.TrainingId = packed[key].(uuid.UUID)
 	}
+	{
+		key := middleware.ParameterKey{
+			Name: "X-Training-Capabilities",
+			In:   "header",
+		}
+		if v, ok := packed[key]; ok {
+			params.XTrainingCapabilities = v.(OptString)
+		}
+	}
 	return params
 }
 
 func decodeSubmitTrainingAnswersParams(args [1]string, argsEscaped bool, r *http.Request) (params SubmitTrainingAnswersParams, _ error) {
+	h := uri.NewHeaderDecoder(r.Header)
 	// Decode path: trainingId.
 	if err := func() error {
 		param := args[0]
@@ -648,6 +1104,72 @@ func decodeSubmitTrainingAnswersParams(args [1]string, argsEscaped bool, r *http
 		return params, &ogenerrors.DecodeParamError{
 			Name: "trainingId",
 			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode header: X-Training-Capabilities.
+	if err := func() error {
+		cfg := uri.HeaderParameterDecodingConfig{
+			Name:    "X-Training-Capabilities",
+			Explode: false,
+		}
+		if err := h.HasParam(cfg); err == nil {
+			if err := h.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotXTrainingCapabilitiesVal string
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToString(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotXTrainingCapabilitiesVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.XTrainingCapabilities.SetTo(paramsDotXTrainingCapabilitiesVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+			if err := func() error {
+				if value, ok := params.XTrainingCapabilities.Get(); ok {
+					if err := func() error {
+						if err := (validate.String{
+							MinLength:     1,
+							MinLengthSet:  true,
+							MaxLength:     512,
+							MaxLengthSet:  true,
+							Email:         false,
+							Hostname:      false,
+							Regex:         nil,
+							MinNumeric:    0,
+							MinNumericSet: false,
+							MaxNumeric:    0,
+							MaxNumericSet: false,
+						}).Validate(string(value)); err != nil {
+							return errors.Wrap(err, "string")
+						}
+						return nil
+					}(); err != nil {
+						return err
+					}
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "X-Training-Capabilities",
+			In:   "header",
 			Err:  err,
 		}
 	}
