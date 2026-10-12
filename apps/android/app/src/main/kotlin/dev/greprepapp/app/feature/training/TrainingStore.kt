@@ -13,17 +13,20 @@ import kotlinx.serialization.builtins.ListSerializer
 import java.io.File
 import java.io.IOException
 import java.security.MessageDigest
+import java.util.UUID
 
 /** «Сообщить об ошибке», которое ещё не дошло до сервера: без сети жалоба не теряется. */
 @Serializable
 data class PendingReport(
     val questionId: String,
     val report: QuestionReport,
+    /** Старый файл читается без id, затем очередь мигрирует и сохраняется атомарно. */
+    val reportId: String = "",
 )
 
 /**
  * Тренировки на устройстве — по файлу на тренировку, рядом очередь жалоб; всё в noBackupFilesDir, как кэш
- * «Сегодня». Запись — через временный файл и переименование: оборванная запись не портит прошлую. В памяти —
+ * главной. Запись — через временный файл и переименование: оборванная запись не портит прошлую. В памяти —
  * то же самое потоком, чтобы экраны видели изменения сразу. Методы синхронные и под одним замком: зовут их с
  * IoDispatcher, а выход (clear) идёт под замком SessionManager.
  */
@@ -148,7 +151,15 @@ class TrainingStore(
         mutableReports.value =
             when (val r = read(reportsFile, ListSerializer(PendingReport.serializer()))) {
                 is Read.Ok -> {
-                    r.value
+                    val reports = identifyReports(r.value)
+                    if (reports != r.value) {
+                        try {
+                            write(reportsFile, ListSerializer(PendingReport.serializer()), reports)
+                        } catch (failure: IOException) {
+                            dropped += failure.javaClass.simpleName
+                        }
+                    }
+                    reports
                 }
 
                 Read.Missing -> {
@@ -202,9 +213,13 @@ class TrainingStore(
     @Synchronized
     fun putReports(reports: List<PendingReport>) {
         ensureLoaded()
-        write(reportsFile, ListSerializer(PendingReport.serializer()), reports)
-        mutableReports.value = reports
+        val identified = identifyReports(reports)
+        write(reportsFile, ListSerializer(PendingReport.serializer()), identified)
+        mutableReports.value = identified
     }
+
+    private fun identifyReports(reports: List<PendingReport>): List<PendingReport> =
+        reports.map { if (it.reportId.isBlank()) it.copy(reportId = UUID.randomUUID().toString()) else it }
 
     /** Выход: тренировки и жалобы прошлого человека стираются вместе с ним. */
     @Synchronized

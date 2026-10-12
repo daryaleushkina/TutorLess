@@ -18,6 +18,7 @@ async function boot(training = completed(), locale: 'ru' | 'en' = 'ru') {
   await trainingRepository.store.put(owner, training);
   await app.router.navigate({ to: '/training/$trainingId', params: { trainingId: training.session.id } });
   await expect.element(app.screen.getByRole('heading', { level: 1 })).toBeVisible();
+  if (training.finish?.timedOut) await app.screen.getByRole('button', { name: locale === 'ru' ? 'К итогу' : 'View results', exact: true }).click();
   return app;
 }
 
@@ -30,13 +31,13 @@ test('итог → все ответы, фильтр ошибок, вопрос 
   await screen.getByRole('button', { name: 'Ошибки · 2' }).click();
   await expect.element(screen.getByRole('link', { name: /Вопрос 1, верно/ })).not.toBeInTheDocument();
   await screen.getByRole('link', { name: /Вопрос 2, неверно/ }).click();
-  await expect.element(screen.getByText('ваш ответ', { exact: true })).toBeVisible();
-  await expect.element(screen.getByText('верный', { exact: true })).toBeVisible();
+  await expect.element(screen.getByText('Ваш ответ', { exact: true })).toBeVisible();
+  await expect.element(screen.getByText('Верный ответ', { exact: true })).toBeVisible();
   await screen.getByRole('button', { name: 'Почему не B?' }).click();
   await screen.getByRole('button', { name: 'EN', exact: true }).click();
   await expect.element(screen.getByText('Incorrect.', { exact: true })).toBeVisible();
   await expect.element(screen.getByTestId('explanation-option')).toHaveTextContent('Fixture');
-  await screen.getByRole('link', { name: 'Назад', exact: true }).click();
+  await screen.getByRole('button', { name: 'Закрыть тренировку', exact: true }).click();
   await screen.getByRole('link', { name: 'Назад', exact: true }).click();
   await expect.element(screen.getByRole('heading', { name: '1 из 3 верно' })).toBeVisible();
 });
@@ -48,11 +49,10 @@ test('жалоба с вопроса требует категорию, сохр
   await screen.getByRole('button', { name: 'В разборе', exact: true }).click();
   await screen.getByRole('textbox', { name: 'Что не так' }).fill('  Synthetic complaint  ');
   await screen.getByRole('button', { name: 'Отправить', exact: true }).click();
-  await expect.element(screen.getByRole('heading', { name: 'Спасибо!' })).toBeVisible();
+  await expect.element(screen.getByRole('status').filter({ hasText: 'Спасибо — проверим и поправим' })).toBeVisible();
   const owner = await trainingRepository.store.currentOwner();
   if (!owner) throw new Error('fixture owner missing');
   expect((await trainingRepository.store.reports(owner))[0]?.report).toEqual({ kind: 'explanation', text: 'Synthetic complaint', trainingId: trainingSession().id });
-  await screen.getByRole('button', { name: 'Вернуться к вопросу' }).click();
   await expect.element(screen.getByRole('heading', { name: 'Text Completion' })).toBeVisible();
 });
 
@@ -68,7 +68,7 @@ test('пустой фильтр, правильный ответ и язык р�
   await screen.getByRole('link', { name: /Question 1, correct/ }).click();
   await expect.element(screen.getByRole('button', { name: 'EN', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await screen.getByRole('link', { name: 'Report a mistake' }).click();
-  await screen.getByRole('link', { name: 'Back', exact: true }).click();
+  await screen.getByRole('button', { name: 'Back', exact: true }).click();
   await expect.element(screen.getByRole('heading', { name: 'Question 1', exact: true })).toBeVisible();
 });
 
@@ -79,6 +79,7 @@ for (const route of ['review', 'review/-1', 'report/99']) test(`глубокая
   await app.router.navigate({ to: `/training/${training.session.id}/${route}` });
   await expect.element(app.screen.getByText('Тренировки нет на устройстве', { exact: true })).toBeVisible();
   await expect.element(app.screen.getByTestId('explanation')).not.toBeInTheDocument();
+  if (route.startsWith('review/')) await expect.element(app.screen.getByRole('link', { name: 'Назад', exact: true })).toBeVisible();
 });
 
 test('жалоба из разбора: отказ устройства сохраняет ввод, повтор и пустой текст работают', async () => {
@@ -87,24 +88,23 @@ test('жалоба из разбора: отказ устройства сохр
   await screen.getByRole('link', { name: /Вопрос 3, без ответа/ }).click();
   await expect.element(screen.getByText('без ответа', { exact: true })).toBeVisible();
   await screen.getByRole('link', { name: 'Сообщить об ошибке' }).click();
-  await screen.getByRole('button', { name: 'Другое', exact: true }).click();
+  await screen.getByRole('button', { name: 'В задании', exact: true }).click();
   await screen.getByRole('textbox', { name: 'Что не так' }).fill('Synthetic fixture');
   const save = vi.spyOn(trainingRepository.store, 'putReport').mockRejectedValueOnce(new DOMException('private fixture', 'QuotaExceededError'));
   await screen.getByRole('button', { name: 'Отправить', exact: true }).click();
   await expect.element(screen.getByRole('alert')).toHaveTextContent('Не получилось сохранить сообщение. Освободите место на устройстве и попробуйте снова.');
   await expect.element(screen.getByRole('textbox', { name: 'Что не так' })).toHaveValue('Synthetic fixture');
-  await screen.getByRole('textbox', { name: 'Что не так' }).fill('  ');
+  await screen.getByRole('textbox', { name: 'Что не так' }).fill('Synthetic retry');
   await screen.getByRole('button', { name: 'Отправить', exact: true }).click();
-  await expect.element(screen.getByRole('heading', { name: 'Спасибо!' })).toBeVisible();
-  expect(save.mock.calls[1]?.[1].report).toEqual({ kind: 'other', trainingId: trainingSession().id });
-  await screen.getByRole('button', { name: 'Вернуться к вопросу' }).click();
+  await expect.element(screen.getByRole('status').filter({ hasText: 'Спасибо — проверим и поправим' })).toBeVisible();
+  expect(save.mock.calls[1]?.[1].report).toEqual({ kind: 'question', text: 'Synthetic retry', trainingId: trainingSession().id });
   await expect.element(screen.getByRole('heading', { name: 'Вопрос 3' })).toBeVisible();
 });
 
 test('жалоба: максимум 2000 символов Unicode, двойной сигнал и возврат во время сохранения', async () => {
   const { screen } = await boot(storedTraining(trainingSession(), Date.now()));
   await screen.getByRole('link', { name: 'Сообщить об ошибке' }).click();
-  await screen.getByRole('button', { name: 'В переводе', exact: true }).click();
+  await screen.getByRole('button', { name: 'В разборе', exact: true }).click();
   const unicode = screen.getByRole('textbox', { name: 'Что не так' }).element();
   if (!(unicode instanceof HTMLTextAreaElement)) throw new Error('fixture textarea missing');
   unicode.focus();
@@ -120,7 +120,7 @@ test('жалоба: максимум 2000 символов Unicode, двойно
     button.dispatchEvent(new MouseEvent('click', { bubbles: true })); button.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await expect.poll(() => save.mock.calls.length).toBe(1);
     await expect.element(screen.getByRole('textbox', { name: 'Что не так' })).toBeDisabled();
-    await screen.getByRole('link', { name: 'Назад', exact: true }).click();
+    await screen.getByRole('button', { name: 'Назад', exact: true }).click();
   } finally { release(); }
   await expect.poll(async () => {
     const owner = await trainingRepository.store.currentOwner();
@@ -133,18 +133,19 @@ for (const route of ['review/1.0', 'review/0x1', 'report/1.0', 'report/0x1']) te
   const app = await boot();
   await app.router.navigate({ to: `/training/${trainingSession().id}/${route}` });
   await expect.element(app.screen.getByText('Тренировки нет на устройстве', { exact: true })).toBeVisible();
+  if (route.startsWith('review/')) await expect.element(app.screen.getByRole('link', { name: 'Назад', exact: true })).toBeVisible();
 });
 
 test('черновик жалобы переживает закрытие формы и очищается только отменой или отправкой', async () => {
   const { screen, router } = await boot(storedTraining(trainingSession(), Date.now()));
   await screen.getByRole('link', { name: 'Сообщить об ошибке' }).click();
-  await screen.getByRole('button', { name: 'В переводе', exact: true }).click();
+  await screen.getByRole('button', { name: 'В разборе', exact: true }).click();
   await screen.getByRole('textbox', { name: 'Что не так' }).fill('Synthetic draft');
   await router.navigate({ to: '/training/$trainingId', params: { trainingId: trainingSession().id } });
   await screen.getByRole('link', { name: 'Сообщить об ошибке' }).click();
   await expect.element(screen.getByRole('textbox', { name: 'Что не так' })).toHaveValue('Synthetic draft');
-  await expect.element(screen.getByRole('button', { name: 'В переводе', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await screen.getByRole('link', { name: 'Назад', exact: true }).click();
+  await expect.element(screen.getByRole('button', { name: 'В разборе', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await screen.getByRole('button', { name: 'Назад', exact: true }).click();
   await screen.getByRole('link', { name: 'Сообщить об ошибке' }).click();
   await expect.element(screen.getByRole('textbox', { name: 'Что не так' })).toHaveValue('');
 });
@@ -187,7 +188,7 @@ test('вставка считает место, освобождённое вы�
 test('смена владельца формы не предлагает освобождать место', async () => {
   const { screen } = await boot(storedTraining(trainingSession(), Date.now()));
   await screen.getByRole('link', { name: 'Сообщить об ошибке' }).click();
-  await screen.getByRole('button', { name: 'Другое', exact: true }).click();
+  await screen.getByRole('button', { name: 'В задании', exact: true }).click();
   vi.spyOn(trainingRepository.store, 'putReport').mockResolvedValueOnce(false);
   await screen.getByRole('button', { name: 'Отправить', exact: true }).click();
   await expect.element(screen.getByRole('alert')).toHaveTextContent('Сессия изменилась. Войдите снова и попробуйте отправить сообщение.');
@@ -197,7 +198,7 @@ test('смена владельца формы не предлагает осв�
 test('синхронный черновик не требует подтверждения закрытия', async () => {
   const { screen } = await boot(storedTraining(trainingSession(), Date.now()));
   await screen.getByRole('link', { name: 'Сообщить об ошибке' }).click();
-  await screen.getByRole('button', { name: 'Другое', exact: true }).click();
+  await screen.getByRole('button', { name: 'В задании', exact: true }).click();
   await expect.element(screen.getByText('Черновик сохранён', { exact: true })).toBeInTheDocument();
   const closing = new Event('beforeunload', { cancelable: true }); window.dispatchEvent(closing); expect(closing.defaultPrevented).toBe(false);
 });
@@ -205,22 +206,23 @@ test('синхронный черновик не требует подтверж
 test('«Назад» уходит при сбое стирания черновика', async () => {
   const { screen } = await boot(storedTraining(trainingSession(), Date.now()));
   await screen.getByRole('link', { name: 'Сообщить об ошибке' }).click();
-  await screen.getByRole('button', { name: 'Другое', exact: true }).click();
+  await screen.getByRole('button', { name: 'В задании', exact: true }).click();
   await expect.element(screen.getByText('Черновик сохранён', { exact: true })).toBeInTheDocument();
   vi.spyOn(Storage.prototype, 'removeItem').mockImplementationOnce(() => { throw new DOMException('Synthetic private text', 'SecurityError'); });
-  await screen.getByRole('link', { name: 'Назад', exact: true }).click();
+  await screen.getByRole('button', { name: 'Назад', exact: true }).click();
   await expect.element(screen.getByRole('heading', { name: 'Text Completion' })).toBeVisible();
 });
 
-for (const modifier of ['metaKey', 'ctrlKey', 'button'] as const) test(`ссылка «Назад» сохраняет родное действие ${modifier}`, async () => {
-  const { screen } = await boot(storedTraining(trainingSession(), Date.now()));
+test('кнопка «Назад» закрывает шторку и удаляет черновик', async () => {
+  const { screen, router } = await boot(storedTraining(trainingSession(), Date.now()));
   await screen.getByRole('link', { name: 'Сообщить об ошибке' }).click();
+  await screen.getByRole('textbox', { name: 'Что не так' }).fill('Synthetic draft');
   const clear = vi.spyOn(trainingRepository, 'discardReportDraft');
-  let prevented: boolean | undefined;
-  const observe = (event: MouseEvent) => { prevented = event.defaultPrevented; event.preventDefault(); };
-  document.addEventListener('click', observe, { once: true });
-  screen.getByRole('link', { name: 'Назад', exact: true }).element().dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, ... (modifier === 'button' ? { button: 1 } : { [modifier]: true }) }));
-  expect(prevented).toBe(false); expect(clear).not.toHaveBeenCalled();
+  await screen.getByRole('button', { name: 'Назад', exact: true }).click();
+  await expect.poll(() => clear.mock.calls.length).toBe(1);
+  await expect.poll(() => router.state.location.pathname).toBe(`/training/${trainingSession().id}`);
+  await expect.element(screen.getByRole('heading', { name: 'Text Completion' })).toBeVisible();
+  expect(trainingRepository.getReportDraft(trainingSession().id, 0)).toBeUndefined();
 });
 
 test('200 изменений пишутся синхронно и не перечитывают тренировку', async () => {
@@ -254,7 +256,7 @@ test('вставка и ввод не отменяются обработчик�
 test('форма показывает блокировку миграции очереди, повтор сохраняет тренировку', async () => {
   const { screen } = await boot(storedTraining(trainingSession(), Date.now()));
   await screen.getByRole('link', { name: 'Сообщить об ошибке' }).click();
-  await screen.getByRole('button', { name: 'Другое', exact: true }).click();
+  await screen.getByRole('button', { name: 'В задании', exact: true }).click();
   vi.spyOn(trainingRepository.store, 'putReport').mockRejectedValueOnce(new TrainingStorageBlockedError());
   await screen.getByRole('button', { name: 'Отправить', exact: true }).click();
   await expect.element(screen.getByText('Закройте другие вкладки приложения и попробуйте снова.', { exact: true })).toBeVisible();
@@ -265,7 +267,7 @@ test('форма показывает блокировку миграции оч
 test('пропавшая запись жалобы имеет своё сообщение, ошибки формы не печатают ввод', async () => {
   const { screen } = await boot(storedTraining(trainingSession(), Date.now()));
   await screen.getByRole('link', { name: 'Сообщить об ошибке' }).click();
-  await screen.getByRole('button', { name: 'Другое', exact: true }).click();
+  await screen.getByRole('button', { name: 'В задании', exact: true }).click();
   vi.spyOn(trainingRepository, 'recordReport').mockRejectedValueOnce(new TrainingMissingError()).mockRejectedValueOnce(new Error('Synthetic private text'));
   await screen.getByRole('button', { name: 'Отправить', exact: true }).click();
   await expect.element(screen.getByRole('alert')).toHaveTextContent('Тренировки больше нет на устройстве. Вернитесь и начните новую.');
@@ -276,14 +278,14 @@ test('пропавшая запись жалобы имеет своё сооб�
 test('«Назад» стирает до навигации; новое открытие и поздняя отправка не теряют новый ввод', async () => {
   const { screen } = await boot(storedTraining(trainingSession(), Date.now()));
   await screen.getByRole('link', { name: 'Сообщить об ошибке' }).click();
-  await screen.getByRole('button', { name: 'Другое', exact: true }).click();
+  await screen.getByRole('button', { name: 'В задании', exact: true }).click();
   await screen.getByRole('textbox', { name: 'Что не так' }).fill('Synthetic old');
   let release = () => {}; const held = new Promise<void>((resolve) => { release = resolve; });
   const original = trainingRepository.recordReport.bind(trainingRepository);
   vi.spyOn(trainingRepository, 'recordReport').mockImplementationOnce(async (...args) => { await held; await original(...args); });
   try {
     await screen.getByRole('button', { name: 'Отправить', exact: true }).click();
-    const link = screen.getByRole('link', { name: 'Назад', exact: true }).element();
+    const link = screen.getByRole('button', { name: 'Назад', exact: true }).element();
     link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
     expect(trainingRepository.getReportDraft(trainingSession().id, 0)).toBeUndefined();
     await expect.element(screen.getByRole('heading', { name: 'Text Completion' })).toBeVisible();
@@ -312,7 +314,7 @@ test('нормализация переносов строк во вставке
 test('после переполнения localStorage форма работает, следующее изменение сохраняется', async () => {
   const { screen } = await boot(storedTraining(trainingSession(), Date.now()));
   await screen.getByRole('link', { name: 'Сообщить об ошибке' }).click();
-  await screen.getByRole('button', { name: 'Другое', exact: true }).click();
+  await screen.getByRole('button', { name: 'В задании', exact: true }).click();
   vi.spyOn(Storage.prototype, 'setItem').mockImplementationOnce(() => { throw new DOMException('Synthetic private text', 'QuotaExceededError'); });
   await screen.getByRole('textbox', { name: 'Что не так' }).fill('Synthetic first');
   await expect.element(screen.getByText('Черновик не сохранён на устройстве', { exact: true })).toBeInTheDocument();
@@ -321,7 +323,7 @@ test('после переполнения localStorage форма работае
   await expect.element(screen.getByText('Черновик сохранён', { exact: true })).toBeInTheDocument();
   expect(trainingRepository.getReportDraft(trainingSession().id, 0)?.text).toBe('Synthetic last');
   await screen.getByRole('button', { name: 'Отправить', exact: true }).click();
-  await expect.element(screen.getByRole('heading', { name: 'Спасибо!' })).toBeVisible();
+  await expect.element(screen.getByRole('status').filter({ hasText: 'Спасибо — проверим и поправим' })).toBeVisible();
   expect(trainingRepository.getReportDraft(trainingSession().id, 0)).toBeUndefined();
 });
 

@@ -48,14 +48,14 @@ describe('конструктор — поведение Android', () => {
     expect(defaultForm(empty, 'verbal').type).toBe('text_completion');
     expect(available(initialBuilder(empty))).toBe(0); expect(requestOf(initialBuilder(empty), 'gre')).toBeUndefined();
   });
-  test('все темы, выбранные темы и каждая сложность; число ограничено доступным', () => {
+  test('все темы, выбранные темы и каждая сложность; практика ограничена доступным, проверка числом секции', () => {
     const state = initialBuilder(options);
     expect(available(state)).toBe(12); expect(requestOf(state, 'gre')?.count).toBe(10);
     for (const [difficulty, count] of [['easy', 6], ['medium', 4], ['hard', 2]] as const) {
       expect(available({ ...state, form: { ...state.form, difficulty } })).toBe(count);
     }
     const form = { ...state.form, countText: '99', topicIds: ['cause'], difficulty: 'easy' as const, mode: 'check' as const };
-    expect(requestOf({ ...state, form }, 'gre')).toMatchObject({ count: 3, topicIds: ['cause'], difficulty: 'easy', mode: 'check' });
+    expect(requestOf({ ...state, form }, 'gre')).toMatchObject({ count: 12, topicIds: ['cause'], difficulty: 'easy', mode: 'check' });
     expect(requestOf({ ...state, options: { ...options, maxQuestions: 2 }, form }, 'gre')?.count).toBe(2);
     for (const countText of ['', '0', '-1', 'abc']) expect(requestOf({ ...state, form: { ...state.form, countText } }, 'gre')).toBeUndefined();
     expect(requestOf({ ...state, preset: 99 }, 'gre')).toBeUndefined();
@@ -67,10 +67,43 @@ describe('конструктор — поведение Android', () => {
     const oneAgain = { ...none, form: toggleTopic(none, 'contrast') };
     expect(toggleTopic(oneAgain, 'cause').topicIds).toBeUndefined();
   });
+  test('при смене раздела проверка сохраняет размер секции; свой timed-набор важнее общего', () => {
+    const state = initialBuilder(options, 'quant');
+    state.form = { ...state.form, countText: '5', mode: 'check' };
+    expect(requestOf(state, 'gre')).toMatchObject({ section: 'quant', count: 12, mode: 'check' });
+    const request = requestOf(state, 'gre')!;
+    expect(minutes(options, request)).toBe(21);
+    const quantPreset = { kind: 'timed', request: { ...request, count: 15 } };
+    expect(requestOf({ ...state, options: { ...options, presets: [...options.presets, quantPreset] } }, 'gre')?.count).toBe(15);
+  });
+  test('каталог без timed-набора не отправляет больше доступных заданий и максимума сервера', () => {
+    const fallback = trainingOptions({ presets: [], maxQuestions: 3 });
+    const state = initialBuilder(fallback, 'quant');
+    state.form = { ...state.form, countText: '20', mode: 'check' };
+    expect(requestOf(state, 'gre')).toMatchObject({ section: 'quant', count: 3, mode: 'check' });
+    expect(requestOf({ ...state, options: { ...fallback, maxQuestions: 50 } }, 'gre')?.count).toBe(12);
+  });
   test('восстановление набора без фильтров и минуты', () => {
     const request = { exam: 'gre', section: 'verbal', questionTypes: ['text_completion'], count: 3, mode: 'practice' } as const;
     expect(formOf({ ...request, questionTypes: [...request.questionTypes], topicIds: [] }, options).topicIds).toBeUndefined();
     expect(minutes(options, { ...request, questionTypes: [...request.questionTypes] })).toBe(5);
     expect(minutes({ ...options, types: [] }, { ...request, questionTypes: [...request.questionTypes] })).toBe(0);
   });
+});
+
+test('смешанная проверка считает все типы и не отправляет скрытую сложность', () => {
+  const state = initialBuilder(trainingOptions());
+  state.form = { ...state.form, mode: 'check', mixed: true, difficulty: 'hard' };
+  expect(available(state)).toBe(24);
+  expect(requestOf(state, 'gre')).toMatchObject({ questionTypes: ['text_completion', 'sentence_equivalence'] });
+  expect(requestOf(state, 'gre')).not.toHaveProperty('difficulty');
+});
+
+test('восстановленный смешанный набор очищает сложность и не меняет каталог сервера', () => {
+  const options = trainingOptions();
+  const original = { ...options.presets[0]!.request, difficulty: 'hard' as const };
+  const state = initialBuilder({ ...options, presets: [{ kind: 'last', request: original }] });
+  expect(state.form.difficulty).toBeUndefined();
+  expect(requestOf(state, 'gre')).not.toHaveProperty('difficulty');
+  expect(original.difficulty).toBe('hard');
 });

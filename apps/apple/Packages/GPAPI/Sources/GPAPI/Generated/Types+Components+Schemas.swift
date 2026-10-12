@@ -14,7 +14,7 @@ extension Components {
     public enum Schemas {
         /// - Remark: Generated from `#/components/schemas/Error`.
         public struct _Error: Codable, Hashable, Sendable {
-            /// Машинный код: bad_request, unauthorized, forbidden, not_found, too_many_requests, invalid_init_data, invalid_id_token, no_questions, training_finished, internal. Клиент показывает текст по коду, а не message.
+            /// Машинный код: bad_request, unauthorized, forbidden, not_found, too_many_requests, invalid_init_data, invalid_id_token, no_questions, training_finished, report_id_conflict, internal. Клиент показывает текст по коду, а не message.
             ///
             /// - Remark: Generated from `#/components/schemas/Error/code`.
             public var code: Swift.String
@@ -27,7 +27,7 @@ extension Components {
             /// Creates a new `_Error`.
             ///
             /// - Parameters:
-            ///   - code: Машинный код: bad_request, unauthorized, forbidden, not_found, too_many_requests, invalid_init_data, invalid_id_token, no_questions, training_finished, internal. Клиент показывает текст по коду, а не message.
+            ///   - code: Машинный код: bad_request, unauthorized, forbidden, not_found, too_many_requests, invalid_init_data, invalid_id_token, no_questions, training_finished, report_id_conflict, internal. Клиент показывает текст по коду, а не message.
             ///   - message: Для журнала и разработчика, не для экрана
             ///   - requestId:
             public init(
@@ -1632,25 +1632,33 @@ extension Components {
             public var text: Swift.String?
             /// - Remark: Generated from `#/components/schemas/QuestionReport/trainingId`.
             public var trainingId: Swift.String?
+            /// Необязательный UUID жалобы, созданный устройством и сохраняемый для всех повторных отправок. Уникален в пределах пользователя. null недопустим; отсутствие поля сохраняет прежнее поведение.
+            ///
+            /// - Remark: Generated from `#/components/schemas/QuestionReport/reportId`.
+            public var reportId: Swift.String?
             /// Creates a new `QuestionReport`.
             ///
             /// - Parameters:
             ///   - kind: Где ошибка — в задании, в ответе, в разборе, в переводе, другое (макет R17)
             ///   - text:
             ///   - trainingId:
+            ///   - reportId: Необязательный UUID жалобы, созданный устройством и сохраняемый для всех повторных отправок. Уникален в пределах пользователя. null недопустим; отсутствие поля сохраняет прежнее поведение.
             public init(
                 kind: Components.Schemas.QuestionReport.KindPayload,
                 text: Swift.String? = nil,
-                trainingId: Swift.String? = nil
+                trainingId: Swift.String? = nil,
+                reportId: Swift.String? = nil
             ) {
                 self.kind = kind
                 self.text = text
                 self.trainingId = trainingId
+                self.reportId = reportId
             }
             public enum CodingKeys: String, CodingKey {
                 case kind
                 case text
                 case trainingId
+                case reportId
             }
         }
         /// - Remark: Generated from `#/components/schemas/NumericEntry`.

@@ -51,6 +51,13 @@ describe('все строки-функции отвечают текстом н�
     typeof value === 'function' ? [`${prefix}${key}`] : value && typeof value === 'object' ? functionNames(value, `${prefix}${key}.`) : []);
   // Аргументы проверяет TypeScript: у текстов тренировки теперь разные подписи, вызова всех с одним числом недостаточно.
   const samples = (t: Dict): Record<string, string> => ({
+    'training.previous_notice': t.training.previous_notice(1, 3),
+    'training.timeout_text': t.training.timeout_text(2, 3),
+    'training.finish_confirm': t.training.finish_confirm(2),
+    'training.review_flagged': t.training.review_flagged(1),
+    'training.topics_available': t.training.topics_available(3, true),
+    'training.check_hint': t.training.check_hint(t.training.questionsCount(12), 18),
+    'training.topics_done_count': t.training.topics_done_count(1, 3),
     'training.review_all': t.training.review_all(3),
     'training.review_mistakes': t.training.review_mistakes(2),
     'training.review_question': t.training.review_question(1),
@@ -67,6 +74,7 @@ describe('все строки-функции отвечают текстом н�
     'training.overview_back': t.training.overview_back(1),
     'training.overview_item': t.training.overview_item(1, 'X'),
     'training.summary_correct_of': t.training.summary_correct_of(1, 3),
+    'training.summary_of': t.training.summary_of(3),
     'training.summary_of_limit': t.training.summary_of_limit('1 min', 3),
     'training.summary_question': t.training.summary_question('1'),
     'training.summary_questions': t.training.summary_questions('1, 2'),
@@ -96,3 +104,11 @@ describe('все строки-функции отвечают текстом н�
 });
 
 it('длительность недели — часы и минуты без потери времени', () => { expect(dictionaries.ru.home.duration(18)).toBe('18 мин'); expect(dictionaries.ru.home.duration(130)).toBe('2 ч 10 мин'); expect(dictionaries.en.home.duration(18)).toBe('18 min'); expect(dictionaries.en.home.duration(130)).toBe('2 hr 10 min'); });
+
+it('числа в конструкторе склоняются на обоих языках', () => {
+  expect(dictionaries.ru.training.topics_available(1, false)).toBe('Подходит 1 задание');
+  expect(dictionaries.ru.training.topics_done_count(1, 2)).toBe('Готово · 1 тема из 2');
+  expect(dictionaries.ru.training.topics_done_count(3, 4)).toBe('Готово · 3 темы из 4');
+  expect(dictionaries.en.training.topics_available(1, false)).toBe('1 question available');
+  expect(dictionaries.en.training.topics_done_count(1, 1)).toBe('Done · 1 of 1 topic');
+});

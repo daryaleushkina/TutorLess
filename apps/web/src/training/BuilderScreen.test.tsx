@@ -7,7 +7,7 @@ import { trainingRepository } from './repository';
 const boot = async (path = '/training/new', options = trainingOptions()) => {
   const server = fakeServer({ 'GET /api/me': () => json(user()), 'GET /api/trainings/options': () => json(options), 'POST /api/trainings': () => json(trainingSession()) });
   const app = await renderApp({ path });
-  await expect.element(app.screen.getByRole('textbox', { name: 'Вопросов' })).toBeVisible();
+  await expect.element(app.screen.getByRole('heading', { name: 'Новая тренировка' })).toBeVisible();
   return { ...app, server };
 };
 test('с «Тренировка» можно открыть конструктор со всеми полями', async () => {
@@ -15,20 +15,17 @@ test('с «Тренировка» можно открыть конструкто
   const { screen } = await renderApp({ path: '/' });
   await screen.getByRole('link', { name: 'Настроить тренировку' }).click();
   await expect.element(screen.getByRole('heading', { name: 'Новая тренировка' })).toBeVisible();
-  await expect.element(screen.getByRole('textbox', { name: 'Вопросов' })).toHaveValue('10');
+  await expect.element(screen.getByRole('button', { name: '10', exact: true })).toHaveAttribute('aria-pressed', 'true');
 });
 
-test('выбор набора показывает его раздел, типы, число и режим вместо старой формы', async () => {
+test('проверка скрывает количество и отправляет все типы из шторки', async () => {
   const { screen, server } = await boot();
-  await screen.getByRole('button', { name: 'Quant', exact: true }).click();
-  await screen.getByRole('textbox', { name: 'Вопросов' }).fill('5');
-  await screen.getByRole('radio', { name: 'Проверка на время' }).click();
-  await expect.element(screen.getByRole('button', { name: 'Verbal', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await expect.element(screen.getByRole('textbox', { name: 'Вопросов' })).toHaveValue('12');
-  await expect.element(screen.getByRole('button', { name: 'Проверка', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await expect.element(screen.getByRole('combobox', { name: 'Тип' })).toHaveValue('preset');
-  await screen.getByRole('button', { name: /Начать ·/ }).click();
-  await expect.element(screen.getByRole('heading', { name: 'Text Completion' })).toBeVisible();
+  await screen.getByRole('button', { name: 'Проверка', exact: true }).click();
+  await expect.element(screen.getByRole('group', { name: 'Вопросов', exact: true })).not.toBeInTheDocument();
+  await screen.getByRole('button', { name: /^Тип/ }).click();
+  await screen.getByRole('radio', { name: 'Все типы вперемешку', exact: true }).click();
+  await screen.getByRole('button', { name: /^Начать ·/ }).click();
+  await expect.element(screen.getByRole('heading', { name: 'Text Completion' })).toBeInTheDocument();
   expect(await server.requests.find((r) => r.method === 'POST')?.json()).toMatchObject({ exam: 'gre', section: 'verbal', count: 12, mode: 'check', questionTypes: ['text_completion', 'sentence_equivalence'] });
 });
 
@@ -36,38 +33,38 @@ test('повторная загрузка вариантов сохраняет 
   const options = trainingOptions();
   const { screen, queryClient } = await boot('/training/new', options);
   await screen.getByRole('button', { name: 'Quant', exact: true }).click();
-  await screen.getByRole('textbox', { name: 'Вопросов' }).fill('5');
+  await screen.getByRole('button', { name: '5', exact: true }).click();
   await screen.getByRole('button', { name: /Темы и сложность/ }).click();
-  await screen.getByRole('switch', { name: /Контраст/ }).click();
+  await screen.getByRole('checkbox', { name: /Контраст/ }).click();
   await screen.getByRole('button', { name: 'Трудная', exact: true }).click();
   options.types[2]!.topics[0]!.title.ru = 'Обновлённый контраст';
   await queryClient.invalidateQueries({ queryKey: ['training-options'] });
   await expect.element(screen.getByText('Обновлённый контраст')).toBeVisible();
   await expect.element(screen.getByRole('heading', { name: 'Темы и сложность' })).toBeVisible();
-  await expect.element(screen.getByRole('switch', { name: /контраст/i })).not.toBeChecked();
+  await expect.element(screen.getByRole('checkbox', { name: /контраст/i })).toHaveAttribute('aria-checked', 'false');
   await expect.element(screen.getByRole('button', { name: 'Трудная', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await screen.getByRole('button', { name: /Готово ·/ }).click();
-  await expect.element(screen.getByRole('textbox', { name: 'Вопросов' })).toHaveValue('5');
+  await expect.element(screen.getByRole('button', { name: '5', exact: true })).toHaveAttribute('aria-pressed', 'true');
 });
 test('поля, набор и темы меняют запрос; начать сохраняет и даёт единственный вход «Продолжить»', async () => {
   const { screen, server } = await boot();
-  await screen.getByRole('radio', { name: 'Проверка на время' }).click();
-  await expect.element(screen.getByRole('button', { name: 'Начать · 12 вопросов · ~18 мин' })).toBeEnabled();
   await screen.getByRole('button', { name: 'Quant', exact: true }).click();
-  await screen.getByRole('combobox', { name: 'Тип' }).selectOptions('multiple_choice');
-  await screen.getByRole('textbox', { name: 'Вопросов' }).fill('3abc');
+  await screen.getByRole('button', { name: /^Тип/ }).click();
+  await screen.getByRole('radio', { name: 'Multiple Choice', exact: true }).click();
+  await screen.getByRole('button', { name: '5', exact: true }).click();
   await screen.getByRole('button', { name: 'Проверка', exact: true }).click();
-  await expect.element(screen.getByText('Таймер как на экзамене, разбор в конце')).toBeVisible();
-  await screen.getByRole('button', { name: 'Темы и сложность все' }).click();
+  await expect.element(screen.getByText(/На время, как на экзамене/)).toBeVisible();
+  await screen.getByRole('button', { name: /Темы и сложность все/ }).click();
   // Название переключателя включает видимое число заданий, поэтому сравниваем название темы.
-  await screen.getByRole('switch', { name: /Контраст/ }).click();
+  await screen.getByRole('checkbox', { name: /Контраст/ }).click();
   await screen.getByRole('button', { name: 'Средняя', exact: true }).click();
   await screen.getByRole('button', { name: /Готово ·/ }).click();
   await screen.getByRole('button', { name: /Начать ·/ }).click();
   await expect.element(screen.getByRole('heading', { name: 'Text Completion' })).toBeVisible();
   const posted = server.requests.find((r) => r.method === 'POST' && new URL(r.url).pathname === '/api/trainings');
-  expect(await posted?.json()).toEqual({ exam: 'gre', section: 'quant', questionTypes: ['multiple_choice'], count: 2, mode: 'check', topicIds: ['cause'], difficulty: 'medium' });
-  await screen.getByRole('link', { name: 'Закрыть тренировку' }).click();
+  // «Проверка» просит размер секции; если выбранных заданий меньше, сокращает выдачу сервер.
+  expect(await posted?.json()).toEqual({ exam: 'gre', section: 'quant', questionTypes: ['multiple_choice'], count: 12, mode: 'check', topicIds: ['cause'], difficulty: 'medium' });
+  await screen.getByRole('button', { name: 'Закрыть тренировку' }).click();
   await expect.element(screen.getByRole('link', { name: /Продолжить тренировку/ })).toBeVisible();
   expect(screen.getByRole('link', { name: /Продолжить тренировку/ }).elements()).toHaveLength(1);
   await screen.getByRole('link', { name: /Продолжить тренировку/ }).click();
@@ -75,23 +72,23 @@ test('поля, набор и темы меняют запрос; начать �
 });
 test('снять все темы, вернуть их и снять сложность', async () => {
   const { screen } = await boot();
-  await screen.getByRole('button', { name: 'Темы и сложность все' }).click();
-  await screen.getByRole('switch', { name: /Контраст/ }).click(); await screen.getByRole('switch', { name: /Причина/ }).click();
-  await expect.element(screen.getByRole('button', { name: 'Готово · 0 вопросов' })).toBeDisabled();
-  await screen.getByRole('switch', { name: /Контраст/ }).click(); await screen.getByRole('switch', { name: /Причина/ }).click();
+  await screen.getByRole('button', { name: /Темы и сложность все/ }).click();
+  await screen.getByRole('checkbox', { name: /Контраст/ }).click(); await screen.getByRole('checkbox', { name: /Причина/ }).click();
+  await expect.element(screen.getByRole('button', { name: 'Готово · 0 тем из 2' })).toBeDisabled();
+  await screen.getByRole('checkbox', { name: /Контраст/ }).click(); await screen.getByRole('checkbox', { name: /Причина/ }).click();
   await screen.getByRole('button', { name: 'Трудная' }).click(); await screen.getByRole('button', { name: 'Лёгкая' }).click(); await screen.getByRole('button', { name: 'Любая' }).click();
-  await screen.getByRole('button', { name: 'Готово · 12 вопросов' }).click();
-  await screen.getByRole('button', { name: 'Темы и сложность все' }).click(); await screen.getByRole('button', { name: 'Назад' }).click();
+  await screen.getByRole('button', { name: 'Готово · 2 темы из 2' }).click();
+  await screen.getByRole('button', { name: /Темы и сложность все/ }).click(); await screen.getByRole('button', { name: 'Назад' }).click();
   await expect.element(screen.getByRole('heading', { name: 'Новая тренировка' })).toBeVisible();
 });
 test('прошлый набор выбирается сразу, один тип отражается в полях', async () => {
   const options = trainingOptions(); options.presets.push({ kind: 'last', request: { exam: 'gre', section: 'quant', questionTypes: ['multiple_choice'], count: 4, mode: 'practice' } });
   const { screen } = await boot('/training/new', options);
-  await expect.element(screen.getByRole('radio', { name: 'Как в прошлый раз' })).toBeChecked();
-  await screen.getByRole('radio', { name: 'Проверка на время' }).click(); await screen.getByRole('radio', { name: 'Как в прошлый раз' }).click();
-  await expect.element(screen.getByRole('textbox', { name: 'Вопросов' })).toHaveValue('4');
+  await expect.element(screen.getByRole('button', { name: /^Тип/ })).toHaveTextContent('ТипMultiple Choice');
+  await expect.element(screen.getByRole('button', { name: 'Quant', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await screen.getByRole('button', { name: 'Quant', exact: true }).click();
-  await screen.getByRole('combobox', { name: 'Тип' }).selectOptions('multiple_choice');
+  await screen.getByRole('button', { name: /^Тип/ }).click();
+  await screen.getByRole('radio', { name: 'Multiple Choice', exact: true }).click();
   await screen.getByRole('button', { name: 'Практика', exact: true }).click();
   await screen.getByRole('button', { name: 'Назад' }).click(); await expect.element(screen.getByRole('heading', { name: 'Тренировка' })).toBeVisible();
 });
@@ -99,9 +96,10 @@ test('нет заданий — начать нельзя, незаполнен�
   const options = trainingOptions({ presets: [] }); options.types[0]!.topics = [];
   const { screen } = await boot('/training/new?section=verbal&type=text_completion', options);
   await expect.element(screen.getByRole('button', { name: 'Заданий пока нет' })).toBeDisabled();
-  await screen.getByRole('combobox', { name: 'Тип' }).selectOptions('sentence_equivalence');
-  await screen.getByRole('textbox', { name: 'Вопросов' }).fill('');
-  await expect.element(screen.getByRole('button', { name: 'Заданий пока нет' })).toBeDisabled();
+  await screen.getByRole('button', { name: /^Тип/ }).click();
+  await expect.element(screen.getByRole('radio', { name: 'Text Completion', exact: true })).toBeDisabled();
+  await screen.getByRole('radio', { name: 'Sentence Equivalence', exact: true }).click();
+  await expect.element(screen.getByRole('button', { name: /^Начать ·/ })).toBeEnabled();
 });
 for (const [kind, message] of [
   ['no_questions', 'Под этот выбор заданий пока нет — попробуйте другие темы или сложность.'],
@@ -134,14 +132,14 @@ for (const offline of [true, false]) test(`опции недоступны: ${of
   const { screen } = await renderApp({ path: '/training/new' });
   await expect.element(screen.getByText(offline ? 'Нет сети' : 'Не получилось загрузить темы', { exact: true })).toBeVisible();
   failing = false; await screen.getByRole('button', { name: 'Повторить' }).click();
-  await expect.element(screen.getByRole('textbox', { name: 'Вопросов' })).toBeVisible();
+  await expect.element(screen.getByRole('group', { name: 'Вопросов', exact: true })).toBeVisible();
 });
 test('загрузка тем объявлена, затем открывается форма', async () => {
   let release: () => void = () => {}; const held = new Promise<void>((r) => { release = r; });
   fakeServer({ 'GET /api/me': () => json(user()), 'GET /api/trainings/options': async () => { await held; return json(trainingOptions()); } });
   const { screen } = await renderApp({ path: '/training/new' });
   await expect.element(screen.getByRole('status')).toHaveTextContent('Загружаем темы'); release();
-  await expect.element(screen.getByRole('textbox', { name: 'Вопросов' })).toBeVisible();
+  await expect.element(screen.getByRole('group', { name: 'Вопросов', exact: true })).toBeVisible();
 });
 test('нет локальной тренировки — объяснение; позиция сохранилась без сети', async () => {
   fakeServer({ 'GET /api/me': () => json(user()), 'GET /api/trainings/options': () => json(OPTIONS) });
@@ -163,11 +161,24 @@ test('при повторном входе в конструктор сразу 
   fakeServer({ 'GET /api/home': () => json({ ...HOME, lastTraining: last ? { request: last, size: 3 } : null }), 'GET /api/me': () => json(user()), 'GET /api/trainings/options': () => json(trainingOptions({ presets: [...(last ? [{ kind: 'last', request: last }] : []), ...trainingOptions().presets] })),
     'POST /api/trainings': async (req) => { last = schemas.TrainingRequest.parse(await req.json()); return json(trainingSession()); } });
   const { screen } = await renderApp({ path: '/training/new' });
-  await screen.getByRole('textbox', { name: 'Вопросов' }).fill('3');
+  await screen.getByRole('button', { name: '5', exact: true }).click();
   await screen.getByRole('button', { name: /Начать ·/ }).click();
   await expect.element(screen.getByRole('heading', { name: 'Text Completion' })).toBeVisible();
-  await screen.getByRole('link', { name: 'Закрыть тренировку' }).click();
+  await screen.getByRole('button', { name: 'Закрыть тренировку' }).click();
   await screen.getByRole('link', { name: 'Настроить тренировку' }).click();
-  await expect.element(screen.getByRole('radio', { name: 'Как в прошлый раз' })).toBeChecked();
-  await expect.element(screen.getByRole('textbox', { name: 'Вопросов' })).toHaveValue('3');
+  await expect.element(screen.getByRole('button', { name: '5', exact: true })).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('проверка обещает доступное число и время, смешанный набор сбрасывает скрытую сложность', async () => {
+  const { screen, server } = await boot();
+  await screen.getByRole('button', { name: /Темы и сложность все/ }).click();
+  await screen.getByRole('button', { name: 'Трудная', exact: true }).click();
+  await screen.getByRole('button', { name: /Готово ·/ }).click();
+  await screen.getByRole('button', { name: 'Проверка', exact: true }).click();
+  await expect.element(screen.getByRole('button', { name: 'Начать · 2\u00a0вопроса · ~3\u00a0мин', exact: true })).toBeVisible();
+  await screen.getByRole('button', { name: /^Тип/ }).click();
+  await screen.getByRole('radio', { name: 'Все типы вперемешку', exact: true }).click();
+  await screen.getByRole('button', { name: /^Начать ·/ }).click();
+  const posted = server.requests.find((r) => r.method === 'POST' && new URL(r.url).pathname === '/api/trainings');
+  expect(await posted?.json()).not.toHaveProperty('difficulty');
 });

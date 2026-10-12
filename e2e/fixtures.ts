@@ -214,7 +214,8 @@ export async function checkScreen(page: Page, name: string, opts: { mask?: Locat
       const f = footer.getBoundingClientRect();
       if (Math.abs(main.getBoundingClientRect().bottom - f.top) > 1) out.push('main не заканчивается у панели действий');
       if (Math.abs(f.bottom - innerHeight) > 1) out.push('фон панели действий не доходит до нижнего края');
-      if (!footer.contains(document.elementFromPoint(innerWidth / 2, innerHeight - 1))) out.push('под панелью действий видно содержимое');
+      // Шторка живёт в верхнем слое dialog и намеренно закрывает панель сессии.
+      if (!document.querySelector('dialog[open]') && !footer.contains(document.elementFromPoint(innerWidth / 2, innerHeight - 1))) out.push('под панелью действий видно содержимое');
       const content = footer.firstElementChild?.getBoundingClientRect();
       if (content) {
         for (const button of footer.querySelectorAll('button')) {

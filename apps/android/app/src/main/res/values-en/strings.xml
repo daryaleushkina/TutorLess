@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="signin_tagline">GRE® prep that explains every mistake — in Russian and in English.</string>
+    <string name="signin_tagline">Exam-style questions and explanations for every mistake in your language.</string>
     <string name="signin_apple">Sign in with Apple</string>
     <string name="signin_google">Sign in with Google</string>
     <string name="signin_legal">By continuing, you accept the terms and the privacy policy.</string>
@@ -11,7 +11,6 @@
     <string name="signin_too_many">Too many attempts in a row — please wait a minute.</string>
     <string name="signin_failed">Couldn’t sign in. Please try again.</string>
 
-    <string name="tab_today">Today</string>
     <string name="tab_words">Words</string>
     <string name="tab_exam">Exam</string>
     <string name="tab_progress">Progress</string>
@@ -19,65 +18,19 @@
     <string name="section_words">Words</string>
     <string name="section_essay">Essay</string>
 
-    <string name="today_plan">Today’s plan</string>
-    <string name="today_no_steps">No steps for today</string>
-    <string name="today_steps_1">One step</string>
-    <string name="today_steps_2">Two steps</string>
-    <string name="today_steps_3">Three steps</string>
-    <string name="today_steps_4">Four steps</string>
-    <string name="today_steps_5">Five steps</string>
-    <string name="today_steps_6">Six steps</string>
-    <string name="today_steps_7">Seven steps</string>
-    <string name="today_steps_8">Eight steps</string>
-    <string name="today_summary">%1$s · %2$s</string>
-    <string name="today_step_minutes_approx">~%1$d min</string>
-    <string name="today_step_minutes">%1$d min</string>
-    <string name="today_start">Start</string>
-    <string name="today_start_step">Start the step</string>
-    <string name="today_now">Now: %1$s</string>
-    <string name="today_end">That’s all for today.</string>
-    <string name="today_done_title">That’s all for today</string>
-    <string name="today_done_subtitle">Tomorrow there will be a new plan here.</string>
-    <string name="today_loading">Loading today’s plan</string>
-    <string name="today_offline_title">No connection</string>
-    <string name="today_offline_message">Today’s plan will load once you’re back online.</string>
-    <string name="today_failed_title">Couldn’t load the plan</string>
-    <string name="today_failed_message">We already know about the error. Please try again a bit later.</string>
-    <string name="today_retry">Try again</string>
-    <string name="today_stale_offline">No connection — the plan will update by itself once it’s back.</string>
-    <string name="today_stale_failed">Couldn’t update the plan — we’ll show a fresh one as soon as the server responds.</string>
-    <string name="today_needs_network">You need a connection to start. Once it’s back, everything will work.</string>
-    <string name="step_placeholder">The step will start here. Practice and words arrive in the next parts.</string>
 
-    <string name="placeholder_soon">Coming soon</string>
-    <string name="placeholder_words">The dictionary will live here: today’s words, review and search.</string>
-    <string name="placeholder_exam">Practice tests just like the real GRE and scored essays will live here.</string>
-    <string name="progress_empty_title">No practice yet</string>
-    <string name="progress_empty_message">Topics with the most mistakes will appear here — in order, starting with the first to work on.</string>
+    <string name="placeholder_words">Learn, review and find words here.</string>
+    <string name="placeholder_exam">GRE practice exams and essay feedback will be here.</string>
+    <string name="progress_empty_message">Section accuracy, training history and estimated scores will be here.</string>
 
-    <string name="settings">Settings</string>
     <string name="settings_sign_out">Sign out</string>
     <string name="settings_version">Version %1$s</string>
     <string name="navigate_back">Back</string>
 
-    <plurals name="today_minutes">
-        <item quantity="one">%d minute</item>
-        <item quantity="other">%d minutes</item>
-    </plurals>
-    <plurals name="today_minutes_about">
-        <item quantity="one">about %d minute</item>
-        <item quantity="other">about %d minutes</item>
-    </plurals>
-    <plurals name="today_steps">
-        <item quantity="one">%d step</item>
-        <item quantity="other">%d steps</item>
-    </plurals>
 
     <!-- Practice (mockups R1–R17) -->
     <string name="training_new">New practice</string>
-    <string name="training_own">Custom practice</string>
     <string name="training_continue">Continue practice</string>
-    <string name="training_continue_subtitle">%1$s · question %2$d of %3$d</string>
     <string name="training_loading">Loading topics</string>
     <string name="training_offline_title">No connection</string>
     <string name="training_offline_message">Starting a practice needs a connection: the questions download in full, and after that you can go offline.</string>
@@ -85,10 +38,7 @@
     <string name="training_failed_message">We already know about it. Please try again a little later.</string>
     <string name="training_retry">Try again</string>
     <string name="training_missing_title">This practice isn’t on the device</string>
-    <string name="training_missing_message">It may have expired. Start a new one from Today.</string>
-    <string name="builder_preset_last">Same as last time</string>
-    <string name="builder_preset_timed">Timed check</string>
-    <string name="builder_preset_timed_subtitle">%1$s · %2$s · %3$d min, like an exam section</string>
+    <string name="training_missing_message">It may have expired. Start a new training session.</string>
     <string name="builder_section">Section</string>
     <string name="builder_type">Type</string>
     <string name="builder_count">Questions</string>
@@ -96,7 +46,6 @@
     <string name="builder_topics">Topics and difficulty</string>
     <string name="builder_topics_all">all</string>
     <string name="builder_topics_some">%1$d of %2$d</string>
-    <string name="builder_type_soon">soon</string>
     <string name="builder_start">Start · %1$s · ~%2$d min</string>
     <string name="builder_nothing">No questions yet</string>
     <string name="builder_no_questions">No questions match this yet — try other topics or difficulty.</string>
@@ -105,7 +54,6 @@
     <string name="mode_practice">Practice</string>
     <string name="mode_check">Check</string>
     <string name="mode_practice_hint">Explanation after each question, no timer</string>
-    <string name="mode_check_hint">Exam-pace timer, explanations at the end</string>
     <string name="difficulty_any">Any</string>
     <string name="difficulty_easy">Easy</string>
     <string name="difficulty_medium">Medium</string>
@@ -117,7 +65,6 @@
     <string name="question_close">Close practice</string>
     <string name="question_check">Check</string>
     <string name="question_dont_know">Don’t know</string>
-    <string name="question_next">Next · %1$d of %2$d</string>
     <string name="question_result">Results</string>
     <string name="question_skip">Skip</string>
     <string name="question_to_list">To the question list</string>
@@ -127,13 +74,10 @@
     <string name="question_missing_blank">Choose a word for blank %1$s</string>
     <string name="question_missing_blanks">Choose words for blanks %1$s</string>
     <string name="question_pick_one_more">Choose one more answer</string>
-    <string name="question_check_note">Explanations come after the last question</string>
     <string name="question_blank">blank</string>
     <string name="question_correct_mark">correct</string>
     <string name="question_yours_mark">your answer</string>
-    <string name="question_others">Other choices</string>
     <string name="question_progress_description">Question %1$d of %2$d</string>
-    <string name="timer_description">%1$d min %2$d s left, question %3$d of %4$d</string>
     <string name="type_with_note">%1$s · %2$s</string>
     <string name="type_two_blanks">two blanks</string>
     <string name="type_three_blanks">three blanks</string>
@@ -141,7 +85,6 @@
     <string name="explanation_language">Explanation language</string>
     <string name="overview_summary">Answered %1$d of %2$d · marked %3$d</string>
     <string name="overview_finish">Finish</string>
-    <string name="overview_back">To question %1$d</string>
     <string name="overview_answered">answered</string>
     <string name="overview_flagged">marked</string>
     <string name="overview_empty">not answered</string>
@@ -195,9 +138,127 @@
         <item quantity="one">%d mistake</item>
         <item quantity="other">%d mistakes</item>
     </plurals>
-    <string name="keyboard_start">start</string>
-    <string name="keyboard_choose">choose</string>
-    <string name="keyboard_next">next</string>
-    <string name="keyboard_review">select question</string>
     <string name="report_save_failed">Could not save the report. Please try again.</string>
+    <string name="tab_training">Training</string>
+    <string name="profile">Profile</string>
+    <string name="signin_headline">GRE® and TOEFL® without a tutor</string>
+    <string name="placeholder_exam_toefl">TOEFL practice exams with Writing and Speaking feedback will be here.</string>
+    <string name="profile_language">Language</string>
+    <string name="profile_theme">Theme</string>
+    <string name="profile_text_size">Text size</string>
+    <string name="profile_light">Light</string>
+    <string name="profile_dark">Dark</string>
+    <string name="profile_normal">Normal</string>
+    <string name="profile_larger">Larger</string>
+    <string name="profile_subscription">Subscription</string>
+    <string name="profile_identities">Sign-in methods</string>
+    <string name="profile_contact">Contact us</string>
+    <string name="profile_apple">Signed in with Apple</string>
+    <string name="profile_google">Signed in with Google</string>
+    <string name="profile_save_failed">Could not save your choice. Please try again.</string>
+    <string name="exam_pick_title">Which exam are you preparing for?</string>
+    <string name="exam_pick_message">This sets your questions, vocabulary and practice exam. You can change it any time.</string>
+    <string name="exam_gre_goal">Graduate school and PhD</string>
+    <string name="exam_toefl_goal">English for studying</string>
+    <string name="exam_pick_failed">Could not save your choice. Please try again.</string>
+    <string name="exam_change_failed">Could not change your exam. Please try again.</string>
+    <string name="exam_pick_offline">You can choose an exam when the connection returns.</string>
+    <string name="exam_change_note">Each exam keeps its own progress when you switch.</string>
+    <string name="home_offline_title">No connection</string>
+    <string name="home_offline_message">Training will load when the connection returns.</string>
+    <string name="home_failed_title">Could not load training</string>
+    <string name="home_failed_message">We know about the error. Please try again later.</string>
+    <string name="home_retry">Try again</string>
+    <string name="home_stale_offline">No connection — we will update when it returns.</string>
+    <string name="home_stale_failed">Could not update — we will show fresh data when the server responds.</string>
+    <string name="home_continue">Question %1$d of %2$d · %3$s</string>
+    <string name="home_start_meta">%1$s · %2$s%3$s · ~%4$d min</string>
+    <string name="home_first_note">After each answer, get an explanation in your language: why it is correct and where other answers go wrong.</string>
+    <string name="home_last_note">Same as last time</string>
+    <string name="home_configure">Configure training</string>
+    <string name="home_start_offline">A connection is needed to download all questions. You can then continue offline.</string>
+    <string name="home_empty_toefl">Training for all four TOEFL sections will be here.</string>
+    <string name="home_sections">Sections</string>
+    <string name="home_mistakes">Review my mistakes</string>
+    <string name="home_weak">Weak spot: %1$s</string>
+    <string name="home_accuracy">%1$s · %2$d %% correct</string>
+    <string name="home_week">This week</string>
+    <string name="training_start">Start</string>
+    <string name="training_starting">Starting…</string>
+    <string name="home_verbal_types">Text Completion · Sentence Equivalence · Reading Comprehension</string>
+    <string name="home_quant_types">Quantitative Comparison · problems · graphs</string>
+    <string name="home_essay_types">Analyze an Issue · 30 minutes</string>
+    <string name="home_reading_types">Complete the Words · Read in Daily Life · Academic Passage</string>
+    <string name="home_listening_types">Choose a Response · Conversation · Announcement · Academic Talk</string>
+    <string name="home_writing_types">Build a Sentence · Write an Email · Academic Discussion</string>
+    <string name="home_speaking_types">Listen and Repeat · Take an Interview</string>
+    <plurals name="training_minutes">
+        <item quantity="one">%d minute</item>
+        <item quantity="other">%d minutes</item>
+    </plurals>
+    <string name="profile_signout_offline">You can sign out when the connection returns.</string>
+    <string name="profile_signout_failed">Could not sign out. Please try again.</string>
+    <string name="home_correct">correct</string>
+    <string name="home_week_time">%1$s · %2$d min</string>
+    <plurals name="home_days">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    <plurals name="home_answers">
+        <item quantity="one">%d answer</item>
+        <item quantity="other">%d answers</item>
+    </plurals>
+    <plurals name="home_questions">
+        <item quantity="one">%d question</item>
+        <item quantity="other">%d questions</item>
+    </plurals>
+    <plurals name="home_mistakes_count">
+        <item quantity="one">%d question from previous training</item>
+        <item quantity="other">%d questions from previous training</item>
+    </plurals>
+    <string name="builder_starting">Starting…</string>
+    <string name="builder_all_types">All question types</string>
+    <string name="mode_check_section_hint">Timed, like the exam: %1$s for %2$s. Explanations at the end.</string>
+    <string name="question_select_two">Choose two words.</string>
+    <string name="question_select_blanks">Choose one word for each blank.</string>
+    <string name="question_select_one">Choose one answer.</string>
+    <string name="question_previous">Previous question</string>
+    <string name="question_next_plain">Next</string>
+    <string name="question_return">Back to question %1$d</string>
+    <string name="question_past_notice">This is question %1$d. Your answer has been recorded. You stopped at question %2$d.</string>
+    <string name="question_show_explanation">Show explanation</string>
+    <string name="question_all_options">All choices</string>
+    <string name="explanation_title">Explanation</string>
+    <string name="verdict_dont_know">Let’s review it. This question will be added to your mistakes.</string>
+    <string name="check_exit_title">Leave the timed practice?</string>
+    <string name="check_exit_message">Your answers will be saved. The timer will keep running.</string>
+    <string name="check_exit">Leave</string>
+    <string name="check_stay">Stay</string>
+    <string name="check_finish_title">Unanswered: %1$d. Finish?</string>
+    <string name="timeout_title">Time is up</string>
+    <string name="timeout_summary">View result</string>
+    <string name="timeout_message">Answers saved: %1$d of %2$d. You can review the unanswered questions with the rest.</string>
+    <string name="topics_select_all">Select all</string>
+    <string name="topics_clear_all">Clear all</string>
+    <string name="topics_choose_one">Select at least one topic</string>
+    <plurals name="topics_available">
+        <item quantity="one">%1$d question available</item>
+        <item quantity="other">%1$d questions available</item>
+    </plurals>
+    <plurals name="topics_available_short">
+        <item quantity="one">%1$d question available — the practice will have %2$d question</item>
+        <item quantity="other">%1$d questions available — the practice will have %2$d questions</item>
+    </plurals>
+    <string name="review_flagged">Flagged · %1$d</string>
+    <string name="review_no_flagged">No flagged questions</string>
+    <string name="review_next">Next</string>
+    <string name="report_thanks_short">Thank you. We’ll check it.</string>
+    <string name="question_topic">Topic: %1$s</string>
+    <plurals name="timer_minutes_description">
+        <item quantity="one">%1$d minute remaining, question %2$d of %3$d</item>
+        <item quantity="other">%1$d minutes remaining, question %2$d of %3$d</item>
+    </plurals>
+    <string name="timer_less_minute_description">Less than a minute remaining, question %1$d of %2$d</string>
+    <string name="review_slower">%1$s — slower than average</string>
+    <string name="question_selection_limit">Two words selected. Deselect one to choose another.</string>
 </resources>

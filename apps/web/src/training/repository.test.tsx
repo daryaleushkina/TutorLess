@@ -1,4 +1,4 @@
-import { ApiError } from '@greprep/api-client';
+import { ApiError, type QuestionReport } from '@greprep/api-client';
 import { deleteDB } from 'idb';
 import { afterEach, expect, test, vi } from 'vitest';
 import { givenAnswer, savedTraining, trainingOptions, trainingSession } from '../test/training';
@@ -12,7 +12,7 @@ const request = { exam: 'gre', section: 'verbal', questionTypes: ['text_completi
 const make = (name = `queue-test-${crypto.randomUUID()}`, locks: LockManager | null = navigator.locks) => {
   const report = vi.fn(); const store = new TrainingStore(name, report); opened.push({ name, store });
   const api = { options: vi.fn(async () => trainingOptions()), start: vi.fn(async () => trainingSession()), answers: vi.fn(async () => {}),
-    finish: vi.fn(async () => ({ correct: 1, total: 3, unanswered: 2, durationSeconds: 90, review: [] })), report: vi.fn(async () => {}) };
+    finish: vi.fn(async () => ({ correct: 1, total: 3, unanswered: 2, durationSeconds: 90, review: [] })), report: vi.fn(async (_id: string, _body: QuestionReport) => {}) };
   const repo = new TrainingRepository(store, api, report, () => NOW, locks);
   const auto = vi.spyOn(repo, 'requestSync').mockImplementation(() => {});
   return { repo, store, api, report, auto, name };
@@ -28,13 +28,39 @@ const deferred = () => { let resolve = () => {}; const promise = new Promise<voi
 
 const complaint = { kind: 'explanation', text: 'synthetic private complaint', trainingId: trainingSession().id } as const;
 const questionId = trainingSession().items[0]!.question.id;
+test('потерянный ответ жалобы: повтор после открытия содержит тот же reportId и не создаёт дубль', async () => {
+  const m = make(); await m.repo.signedIn('a'); await m.repo.recordReport(questionId, complaint);
+  const pending = (await m.store.reports(m.repo.reportOwner()!))[0]!;
+  const committed = new Map<string, QuestionReport>();
+  const accept = async (_id: string, body: QuestionReport) => {
+    const id = body.reportId ?? crypto.randomUUID();
+    const previous = committed.get(id);
+    if (previous) expect(body).toEqual(previous);
+    committed.set(id, body);
+  };
+  m.api.report.mockImplementationOnce(async (id, body) => { await accept(id, body); throw fail(0, 'network'); });
+  await m.repo.sync();
+  expect(committed.size).toBe(1); expect(await m.store.reports(m.repo.reportOwner()!)).toHaveLength(1);
+  const next = make(m.name); next.api.report.mockImplementation(accept);
+  await next.repo.signedIn('a'); await next.repo.sync(); await next.repo.sync();
+  expect(next.api.report).toHaveBeenCalledExactlyOnceWith(questionId, { ...complaint, reportId: pending.id });
+  expect(committed.size).toBe(1); expect(await next.store.reports(next.repo.reportOwner()!)).toEqual([]);
+});
+
+test('report_id_conflict — постоянная ошибка без повторов и без текста жалобы в диагностике', async () => {
+  const m = make(); await m.repo.signedIn('a'); await m.repo.recordReport(questionId, complaint);
+  m.api.report.mockRejectedValueOnce(new ApiError('server', { status: 409, code: 'report_id_conflict', message: complaint.text }));
+  await m.repo.sync(); await m.repo.sync();
+  expect(m.api.report).toHaveBeenCalledTimes(1); expect(await m.store.reports(m.repo.reportOwner()!)).toEqual([]);
+  expect(m.report).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ message: 'training report rejected: 409' }));
+});
 test('жалоба сохраняется без сети, переживает открытие и отправляется позже', async () => {
   const m = make(); await m.repo.signedIn('a');
   await m.repo.recordReport(questionId, complaint);
   m.api.report.mockRejectedValueOnce(fail(0, 'network'));
   await m.repo.sync();
   const next = make(m.name); await next.repo.signedIn('a'); await next.repo.sync();
-  expect(next.api.report).toHaveBeenCalledExactlyOnceWith(questionId, complaint);
+  expect(next.api.report).toHaveBeenCalledExactlyOnceWith(questionId, expect.objectContaining({ ...complaint, reportId: expect.any(String) }));
   await m.repo.sync(); expect(m.api.report).toHaveBeenCalledTimes(1);
   expect(m.report).not.toHaveBeenCalled();
 });
@@ -51,7 +77,7 @@ for (const status of [403, 408, 429, 500, 503]) test(`жалоба: ${status} ж
   m.api.report.mockRejectedValueOnce(fail(status)); await m.repo.sync();
   expect(m.api.report).toHaveBeenCalledTimes(2);
   await m.repo.sync(); expect(m.api.report).toHaveBeenCalledTimes(3);
-  expect(m.api.report).toHaveBeenLastCalledWith(questionId, complaint);
+  expect(m.api.report).toHaveBeenLastCalledWith(questionId, expect.objectContaining({ ...complaint, reportId: expect.any(String) }));
 });
 test('жалоба: 401 ждёт входа того же человека, выход стирает очередь', async () => {
   const m = make(); await m.repo.signedIn('a'); await m.repo.recordReport(questionId, complaint);
@@ -381,7 +407,7 @@ test('после фонового 401 жалоба записывается пр
   expect(await m.store.reports(owner)).toHaveLength(1);
   await m.repo.sync(); expect(m.api.report).not.toHaveBeenCalled();
   expect(m.report).not.toHaveBeenCalled();
-  await m.repo.signedIn('a'); await m.repo.sync(); expect(m.api.report).toHaveBeenCalledExactlyOnceWith(questionId, complaint);
+  await m.repo.signedIn('a'); await m.repo.sync(); expect(m.api.report).toHaveBeenCalledExactlyOnceWith(questionId, expect.objectContaining({ ...complaint, reportId: expect.any(String) }));
 });
 
 test('смена владельца жалобы не выдаёт ошибку хранилища и не пишет чужую очередь', async () => {

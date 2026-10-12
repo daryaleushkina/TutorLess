@@ -17,7 +17,7 @@ test('повтор своих ошибок отправляет source mistakes 
   const server = fakeServer({ 'GET /api/me': () => json(user()), 'GET /api/home': () => json({ ...history, weakSpot: null }), 'GET /api/trainings/options': () => json(trainingOptions()), 'POST /api/trainings': () => json(trainingSession()) });
   const { screen } = await renderApp({ path: '/' });
   await screen.getByRole('button', { name: /Повторить мои ошибки/ }).click();
-  await expect.element(screen.getByRole('link', { name: 'Закрыть тренировку' })).toBeVisible();
+  await expect.element(screen.getByRole('button', { name: 'Закрыть тренировку' })).toBeVisible();
   expect(await server.requests.find((request) => request.method === 'POST')!.json()).toMatchObject({ exam: 'gre', source: 'mistakes', count: 3, mode: 'practice' });
 });
 
@@ -62,7 +62,7 @@ test('свои ошибки только в Quant: пустой Verbal не ме
     'POST /api/trainings': async (req) => schemas.TrainingRequest.parse(await req.json()).section === 'quant' ? json(trainingSession()) : apiError(409, 'no_questions') });
   const { screen } = await renderApp({ path: '/' });
   await screen.getByRole('button', { name: /Повторить мои ошибки/ }).click();
-  await expect.element(screen.getByRole('link', { name: 'Закрыть тренировку' })).toBeVisible();
+  await expect.element(screen.getByRole('button', { name: 'Закрыть тренировку' })).toBeVisible();
   const posted = server.requests.filter((request) => request.method === 'POST');
   expect(await posted.at(-1)!.json()).toMatchObject({ source: 'mistakes', section: 'quant' });
 });

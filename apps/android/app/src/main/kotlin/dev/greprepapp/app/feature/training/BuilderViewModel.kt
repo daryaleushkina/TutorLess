@@ -25,11 +25,12 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlin.math.ceil
 
-/** С чего открыть конструктор: шаг «Сегодня» знает раздел, иногда и тип. */
+/** С чего открыть конструктор: главная передаёт экзамен, раздел и тип. */
 @Serializable
 data class BuilderPrefill(
     val section: Section,
     val type: QuestionType? = null,
+    val exam: dev.greprepapp.api.models.Exam = dev.greprepapp.api.models.Exam.GRE,
 )
 
 /** Своя сборка конструктора (макет R1): то, что показывают поля. */
@@ -43,6 +44,7 @@ data class BuilderForm(
     val topicIds: Set<String>?,
     /** null — любая. */
     val difficulty: Difficulty?,
+    val mixed: Boolean = false,
 ) {
     val count: Int? get() = countText.toIntOrNull()?.takeIf { it > 0 }
 }
@@ -78,6 +80,7 @@ class BuilderViewModel
                 val form: BuilderForm,
                 /** Выбранный готовый набор (номер в presets); null — своя сборка. */
                 val preset: Int?,
+                val exam: dev.greprepapp.api.models.Exam = dev.greprepapp.api.models.Exam.GRE,
             ) : Content {
                 /** Наборы, которые приложение знает; незнакомые виды сервер может прислать — пропускаем. */
                 val presets: List<TrainingPreset> get() = options.presets.filter { it.kind in KNOWN_PRESETS }
@@ -106,7 +109,7 @@ class BuilderViewModel
             mutableState.update { it.copy(content = Content.Loading) }
             loadJob =
                 viewModelScope.launch {
-                    when (val result = repository.options()) {
+                    when (val result = repository.options(prefill?.exam ?: dev.greprepapp.api.models.Exam.GRE)) {
                         is ApiResult.Ok -> {
                             mutableState.update { it.copy(content = ready(result.value)) }
                         }
@@ -128,7 +131,7 @@ class BuilderViewModel
                     last != null -> formOf(presets[last].request, options)
                     else -> defaultForm(options, Section.VERBAL, null)
                 }
-            return Content.Ready(options = options, form = form, preset = last)
+            return Content.Ready(options = options, form = form, preset = last, exam = prefill?.exam ?: dev.greprepapp.api.models.Exam.GRE)
         }
 
         private fun edit(change: (BuilderForm) -> BuilderForm) {
@@ -143,7 +146,7 @@ class BuilderViewModel
                 val c = s.content as? Content.Ready ?: return@update s
                 val preset = c.presets.getOrNull(index) ?: return@update s
                 // Набор с одним типом показывает себя в полях; «Проверка на время» из нескольких типов — нет.
-                val form = if (preset.request.questionTypes.size == 1) formOf(preset.request, c.options) else c.form
+                val form = formOf(preset.request, c.options)
                 s.copy(content = c.copy(form = form, preset = index), problem = null)
             }
         }
@@ -154,11 +157,15 @@ class BuilderViewModel
                 if (f.section == section) f else defaultForm(c.options, section, null).copy(countText = f.countText, mode = f.mode)
             }
 
-        fun setType(type: QuestionType) = edit { f -> if (f.type == type) f else f.copy(type = type, topicIds = null) }
+        fun setType(type: QuestionType) = edit { it.copy(type = type, topicIds = null, mixed = false) }
+
+        fun setMixed() = edit { it.copy(mixed = it.mode == TrainingMode.CHECK, topicIds = null) }
+
+        fun toggleAllTopics() = edit { it.copy(topicIds = if (it.topicIds?.isEmpty() == true) null else emptySet()) }
 
         fun setCount(text: String) = edit { it.copy(countText = text.filter(Char::isDigit).take(COUNT_DIGITS)) }
 
-        fun setMode(mode: TrainingMode) = edit { it.copy(mode = mode) }
+        fun setMode(mode: TrainingMode) = edit { it.copy(mode = mode, mixed = it.mixed && mode == TrainingMode.CHECK) }
 
         fun setDifficulty(difficulty: Difficulty?) = edit { it.copy(difficulty = difficulty) }
 
@@ -209,7 +216,8 @@ class BuilderViewModel
             const val PRESET_LAST = "last"
             const val PRESET_TIMED = "timed"
             val KNOWN_PRESETS = setOf(PRESET_LAST, PRESET_TIMED)
-            private const val DEFAULT_COUNT = 10
+            val PRACTICE_COUNTS = listOf(5, 10, 15, 20)
+            private const val DEFAULT_COUNT = TrainingDefaults.PRACTICE_QUESTIONS
             private const val COUNT_DIGITS = 2
             private const val SECONDS_PER_MINUTE = 60.0
 
@@ -219,9 +227,9 @@ class BuilderViewModel
                 form: BuilderForm,
             ): List<TrainingTopic> =
                 options.types
-                    .firstOrNull { it.questionType == form.type }
-                    ?.topics
-                    .orEmpty()
+                    .filter { it.section == form.section && (form.mixed || it.questionType == form.type) }
+                    .flatMap { it.topics }
+                    .distinctBy { it.id }
 
             /** Сколько заданий подходит под темы и сложность. */
             fun available(
@@ -241,21 +249,46 @@ class BuilderViewModel
 
             /** Запрос «Начать»: выбранный набор как есть или своя сборка; null — начать нельзя. */
             fun requestOf(c: Content.Ready): TrainingRequest? {
-                c.preset?.let { return c.presets.getOrNull(it)?.request }
                 val f = c.form
                 val count = f.count ?: return null
                 val questions = minOf(count, available(c.options, f), c.options.maxQuestions)
                 if (questions < 1) return null
                 return TrainingRequest(
-                    exam = CURRENT_EXAM,
+                    exam = c.exam,
                     section = f.section,
-                    questionTypes = setOf(f.type),
-                    count = questions,
+                    questionTypes =
+                        if (f.mixed) {
+                            c.options.types
+                                .filter {
+                                    it.section == f.section && it.topics.isNotEmpty()
+                                }.map { it.questionType }
+                                .toSet()
+                        } else {
+                            setOf(f.type)
+                        },
+                    count =
+                        if (f.mode ==
+                            TrainingMode.CHECK
+                        ) {
+                            minOf(checkCount(c.options, f.section), available(c.options, f), c.options.maxQuestions)
+                        } else {
+                            questions
+                        },
                     mode = f.mode,
                     topicIds = f.topicIds?.toList(),
                     difficulty = f.difficulty,
                 )
             }
+
+            /** Серверный набор секции — источник количества, иначе первая секция GRE. */
+            fun checkCount(
+                options: TrainingOptions,
+                section: Section,
+            ): Int =
+                options.presets
+                    .firstOrNull { it.kind == PRESET_TIMED && it.request.section == section }
+                    ?.request
+                    ?.count ?: TrainingDefaults.GRE_SECTION_QUESTIONS
 
             /** «~12 мин» на кнопке: темп экзамена по разделу. */
             fun minutes(
@@ -271,13 +304,21 @@ class BuilderViewModel
                 section: Section,
                 type: QuestionType?,
             ): BuilderForm {
-                val inSection = options.types.filter { it.section == section }
+                val offered =
+                    options.types.filter { type ->
+                        type.topics.any {
+                            it.available.easy + it.available.medium + it.available.hard >
+                                0
+                        }
+                    }
+                val actualSection = offered.firstOrNull { it.section == section }?.section ?: offered.firstOrNull()?.section ?: section
+                val inSection = offered.filter { it.section == actualSection }
                 val chosen =
                     type?.takeIf { t -> inSection.any { it.questionType == t } }
                         ?: inSection.firstOrNull { it.topics.isNotEmpty() }?.questionType
                         ?: inSection.firstOrNull()?.questionType
                         ?: if (section == Section.QUANT) QuestionType.QUANTITATIVE_COMPARISON else QuestionType.TEXT_COMPLETION
-                return BuilderForm(section, chosen, DEFAULT_COUNT.toString(), TrainingMode.PRACTICE, null, null)
+                return BuilderForm(actualSection, chosen, DEFAULT_COUNT.toString(), TrainingMode.PRACTICE, null, null)
             }
 
             private fun formOf(
@@ -286,10 +327,18 @@ class BuilderViewModel
             ): BuilderForm {
                 val base = defaultForm(options, request.section, request.questionTypes.firstOrNull())
                 return base.copy(
-                    countText = request.count.toString(),
+                    countText =
+                        if (request.mode == TrainingMode.PRACTICE &&
+                            request.count !in PRACTICE_COUNTS
+                        ) {
+                            DEFAULT_COUNT.toString()
+                        } else {
+                            request.count.toString()
+                        },
                     mode = request.mode,
                     topicIds = request.topicIds?.takeIf { it.isNotEmpty() }?.toSet(),
                     difficulty = request.difficulty,
+                    mixed = request.mode == TrainingMode.CHECK && request.questionTypes.size > 1,
                 )
             }
         }

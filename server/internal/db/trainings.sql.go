@@ -186,6 +186,35 @@ func (q *Queries) GetLastTrainingRequest(ctx context.Context, arg GetLastTrainin
 	return i, err
 }
 
+const getQuestionReport = `-- name: GetQuestionReport :one
+SELECT question_id, training_id, kind, text FROM question_reports
+WHERE user_id = $1 AND report_id = $2
+`
+
+type GetQuestionReportParams struct {
+	UserID   *uuid.UUID
+	ReportID *uuid.UUID
+}
+
+type GetQuestionReportRow struct {
+	QuestionID uuid.UUID
+	TrainingID *uuid.UUID
+	Kind       string
+	Text       *string
+}
+
+func (q *Queries) GetQuestionReport(ctx context.Context, arg GetQuestionReportParams) (GetQuestionReportRow, error) {
+	row := q.db.QueryRow(ctx, getQuestionReport, arg.UserID, arg.ReportID)
+	var i GetQuestionReportRow
+	err := row.Scan(
+		&i.QuestionID,
+		&i.TrainingID,
+		&i.Kind,
+		&i.Text,
+	)
+	return i, err
+}
+
 const getTopicSection = `-- name: GetTopicSection :one
 SELECT section FROM topics WHERE id = $1
 `
@@ -226,8 +255,10 @@ func (q *Queries) GetTraining(ctx context.Context, arg GetTrainingParams) (Train
 	return i, err
 }
 
-const insertQuestionReport = `-- name: InsertQuestionReport :exec
-INSERT INTO question_reports (user_id, question_id, training_id, kind, text) VALUES ($1, $2, $3, $4, $5)
+const insertQuestionReport = `-- name: InsertQuestionReport :execrows
+INSERT INTO question_reports (user_id, question_id, training_id, kind, text, report_id)
+VALUES ($1, $2, $3, $4, $5, $6)
+ON CONFLICT (user_id, report_id) DO NOTHING
 `
 
 type InsertQuestionReportParams struct {
@@ -236,17 +267,23 @@ type InsertQuestionReportParams struct {
 	TrainingID *uuid.UUID
 	Kind       string
 	Text       *string
+	ReportID   *uuid.UUID
 }
 
-func (q *Queries) InsertQuestionReport(ctx context.Context, arg InsertQuestionReportParams) error {
-	_, err := q.db.Exec(ctx, insertQuestionReport,
+// Без report_id NULL не конфликтует; одновременные повторы с ключом вставят только одну запись.
+func (q *Queries) InsertQuestionReport(ctx context.Context, arg InsertQuestionReportParams) (int64, error) {
+	result, err := q.db.Exec(ctx, insertQuestionReport,
 		arg.UserID,
 		arg.QuestionID,
 		arg.TrainingID,
 		arg.Kind,
 		arg.Text,
+		arg.ReportID,
 	)
-	return err
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const listTrainingItems = `-- name: ListTrainingItems :many

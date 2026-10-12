@@ -10,6 +10,9 @@ case "${1:-iphone}" in
   iphone-ios18) name="GrePrep iPhone iOS 18"; type="iPhone-16-Pro"; runtime="iOS-18-0" ;;
   *) echo "simulator.sh: unknown device $1" >&2; exit 2 ;;
 esac
+# Свой набор устройств для заданий агентов (GP_SIM_SET=agent): гейт и задание, идущие одновременно, не ставят
+# приложение на один и тот же симулятор — иначе установка одного роняет UI-тесты другого (12.10.2026).
+[ -n "${GP_SIM_SET:-}" ] && name="$name · $GP_SIM_SET"
 udid="$(xcrun simctl list devices --json | /usr/bin/python3 -c '
 import json, sys
 name, runtime = sys.argv[1], "com.apple.CoreSimulator.SimRuntime." + sys.argv[2]
@@ -20,4 +23,9 @@ for d in json.load(sys.stdin)["devices"].get(runtime, []):
 if [ -z "$udid" ]; then
   udid="$(xcrun simctl create "$name" "com.apple.CoreSimulator.SimDeviceType.$type" "com.apple.CoreSimulator.SimRuntime.$runtime")"
 fi
+# Без звука (просьба Даши 12.10.2026): щелчки клавиатуры и звук блокировки в UI-тестах слышны на весь Мак.
+# Пишем прямо в настройки устройства — так работает и до загрузки симулятора.
+prefs="$HOME/Library/Developer/CoreSimulator/Devices/$udid/data/Library/Preferences/com.apple.preferences.sounds"
+defaults write "$prefs" keyboard-audio -bool false
+defaults write "$prefs" lock-audio -bool false
 echo "$udid"

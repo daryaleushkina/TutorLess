@@ -67,7 +67,7 @@ fun AppRoot(
                     SignInScreen(reason = root.reason, showsDevelopmentSignIn = config.devSignInAvailable)
                 }
                 entry<RootKey.Main> {
-                    MainScreen(appVersion = config.appVersion, onSignOut = session::signOut)
+                    MainScreen(appVersion = config.appVersion, onSignOut = session::didSignOut)
                 }
             },
     )

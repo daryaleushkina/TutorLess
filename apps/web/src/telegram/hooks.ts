@@ -39,6 +39,8 @@ export function useTrainingSwipes(active: boolean): void {
   }, [active]);
 }
 
+const backButtonOwners = new Set<symbol>();
+
 export function useBackButton(onBack: (() => void) | null): void {
   const handler = useRef(onBack);
   useLayoutEffect(() => {
@@ -50,14 +52,18 @@ export function useBackButton(onBack: (() => void) | null): void {
     const backButton = telegramRuntime()?.backButton;
     if (!backButton) return;
     if (!visible) {
-      backButton.hide.ifAvailable();
+      // Родитель сессии и шторка меняются в одном кадре: отсутствие своего обработчика не скрывает чужую кнопку.
+      if (!backButtonOwners.size) backButton.hide.ifAvailable();
       return;
     }
+    const owner = Symbol();
+    backButtonOwners.add(owner);
     backButton.show.ifAvailable();
     const sub = backButton.onClick.ifAvailable(() => handler.current?.());
     return () => {
       if (sub.ok) sub.data();
-      backButton.hide.ifAvailable();
+      backButtonOwners.delete(owner);
+      if (!backButtonOwners.size) backButton.hide.ifAvailable();
     };
   }, [visible]);
 }

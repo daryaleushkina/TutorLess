@@ -19,12 +19,12 @@ test('без сети ответы и итог локальны, после во
 test('наши кнопки действий и одна системная кнопка назад на вопросе и итоге', async ({ miniApp: page }) => {
   await startSession(page);
   await expect(page.locator('#tg-mock-back')).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Закрыть тренировку' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Закрыть тренировку' })).toHaveCount(0);
   await actionButtonsFit(page);
   for (let position = 0; position < 3; position++) {
     await page.getByRole('button', { name: 'Не знаю', exact: true }).click();
     await actionButtonsFit(page);
-    await page.getByRole('button', { name: position < 2 ? new RegExp(`Дальше · ${position + 2} из`) : 'Итог', exact: position === 2 }).click();
+    await page.getByRole('button', { name: position < 2 ? 'Дальше' : 'К итогу', exact: position === 2 }).click();
   }
   await expect(page.getByRole('heading', { name: '0 из 3 верно' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Готово', exact: true })).toHaveCount(0);
@@ -40,7 +40,7 @@ test('итог: пара нижних кнопок помещается', async 
   await startSession(page);
   for (let position = 0; position < 3; position++) {
     await page.getByRole('button', { name: 'Не знаю', exact: true }).click();
-    await page.getByRole('button', { name: position < 2 ? new RegExp(`Дальше · ${position + 2} из`) : 'Итог', exact: position === 2 }).click();
+    await page.getByRole('button', { name: position < 2 ? 'Дальше' : 'К итогу', exact: position === 2 }).click();
   }
   await expect(page.getByRole('heading', { name: '0 из 3 верно' })).toBeVisible();
   await actionButtonsFit(page);

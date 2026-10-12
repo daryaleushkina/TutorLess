@@ -19,12 +19,15 @@ export const storedTrainingSchema = z.object({
   drafts: z.record(z.string(), z.array(z.string())).optional(),
   unsent: z.array(z.number().int().nonnegative()),
   position: z.number().int().nonnegative(),
+  practiceReturnPosition: z.number().int().nonnegative().optional(),
   finish: schemas.TrainingFinish.optional(),
   finishSent: z.boolean(),
+  timeoutSeen: z.boolean().optional(),
 }).refine((t) => t.position < t.session.items.length &&
   t.session.items.every((item, index) => item.position === index) &&
   Object.entries(t.answers).every(([key, answer]) => key === String(answer.position) && answer.position < t.session.items.length) &&
   Object.keys(t.drafts ?? {}).every((key) => t.session.items.some((item) => String(item.position) === key)) &&
+  (t.practiceReturnPosition === undefined || t.session.mode === 'practice' && t.practiceReturnPosition < t.session.items.length) &&
   t.unsent.every((position) => t.answers[String(position)] !== undefined), 'invalid stored positions');
 
 export type StoredTraining = z.infer<typeof storedTrainingSchema>;

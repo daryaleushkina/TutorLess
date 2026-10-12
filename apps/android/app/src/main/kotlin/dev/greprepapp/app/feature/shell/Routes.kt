@@ -3,10 +3,8 @@ package dev.greprepapp.app.feature.shell
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.navigation3.runtime.NavKey
-import dev.greprepapp.api.models.QuestionType
 import dev.greprepapp.app.R
 import dev.greprepapp.app.core.session.SignOutReason
-import dev.greprepapp.app.feature.today.TodayPlan
 import dev.greprepapp.app.feature.training.BuilderPrefill
 import kotlinx.serialization.Serializable
 
@@ -52,14 +50,7 @@ sealed interface MainRoute : NavKey {
     data class ReviewItem(
         val trainingId: String,
         val position: Int,
-    ) : MainRoute
-
-    @Serializable
-    data class Report(
-        val trainingId: String,
-        val position: Int,
-        val questionId: String,
-        val questionType: QuestionType,
+        val positions: List<Int> = emptyList(),
     ) : MainRoute
 }
 
@@ -71,36 +62,28 @@ fun MutableList<NavKey>.popUnlessRoot() {
     if (size > 1) removeAt(lastIndex)
 }
 
-/** Разделы: «Сегодня · Слова · Экзамен · Прогресс» (PRODUCT.md, «Навигация»); эссе — в «Экзамене». */
+/** Вкладки: у каждой свой корень и независимая история Navigation 3. */
 enum class AppTab(
     @param:StringRes val label: Int,
     @param:DrawableRes val icon: Int,
-    @param:DrawableRes val selectedIcon: Int,
     val tag: String,
 ) {
-    Today(R.string.tab_today, R.drawable.ic_tab_today, R.drawable.ic_tab_today_selected, "tab.today"),
-    Words(R.string.tab_words, R.drawable.ic_tab_words, R.drawable.ic_tab_words_selected, "tab.words"),
-    Exam(R.string.tab_exam, R.drawable.ic_tab_exam, R.drawable.ic_tab_exam_selected, "tab.exam"),
-    Progress(R.string.tab_progress, R.drawable.ic_tab_progress, R.drawable.ic_tab_progress_selected, "tab.progress"),
+    Training(R.string.tab_training, R.drawable.ic_tab_training, "tab.training"),
+    Words(R.string.tab_words, R.drawable.ic_tab_words, "tab.words"),
+    Exam(R.string.tab_exam, R.drawable.ic_tab_exam, "tab.exam"),
+    Progress(R.string.tab_progress, R.drawable.ic_tab_progress, "tab.progress"),
 }
 
 @Serializable
-sealed interface TodayRoute : NavKey {
+sealed interface TabRoute : NavKey {
     @Serializable
-    data object Root : TodayRoute
+    data class Root(
+        val tab: AppTab,
+    ) : TabRoute
 
-    /** Шаг ленты без своего экрана (слова — следующая часть, ROADMAP §5); тренировки — MainRoute. */
+    // Ключ включает вкладку: четыре профиля не делят сохранённое состояние и модели.
     @Serializable
-    data class Step(
-        val step: TodayPlan.Step,
-    ) : TodayRoute
-}
-
-@Serializable
-sealed interface ProgressRoute : NavKey {
-    @Serializable
-    data object Root : ProgressRoute
-
-    @Serializable
-    data object Settings : ProgressRoute
+    data class Settings(
+        val tab: AppTab,
+    ) : TabRoute
 }

@@ -4,7 +4,7 @@ import { startSession } from '../training';
 test('кнопка над безопасной зоной; последнее поле не прячется под панелью', async ({ miniApp: page }) => {
   await page.getByRole('link', { name: 'Настроить тренировку' }).click();
   const footer = page.locator('footer[data-shell="telegram"]');
-  await expect(footer.getByRole('button', { name: /^Начать ·/ })).toBeVisible();
+  await expect(footer.getByRole('button', { name: /^(Начать ·|Начинаем…)/ })).toBeVisible();
   await page.evaluate(() => {
     document.documentElement.style.setProperty('--tg-viewport-content-safe-area-inset-bottom', '16px');
   });
@@ -19,7 +19,7 @@ test('кнопка над безопасной зоной; последнее п
   const last = page.getByRole('button', { name: /Темы и сложность/ });
   expect((await last.boundingBox())!.y + (await last.boundingBox())!.height).toBeLessThanOrEqual((await footer.boundingBox())!.y);
   await expect(page.locator('#tg-mock-bar')).toHaveCount(0);
-  await footer.getByRole('button', { name: /^Начать ·/ }).click();
+  await footer.getByRole('button', { name: /^(Начать ·|Начинаем…)/ }).click();
   await expect(page.getByRole('heading', { name: 'Text Completion' })).toBeVisible();
   const events = await page.evaluate(() => {
     const mock: unknown = Reflect.get(window, '__tgMock');
@@ -42,7 +42,7 @@ test('запрос блокирует кнопку, показывает заг�
     await route.fulfill({ status: 400, json: { code: 'no_questions', message: 'Synthetic failure' } });
   });
   try {
-    const button = page.getByRole('button', { name: /^Начать ·/ });
+    const button = page.getByRole('button', { name: /^(Начать ·|Начинаем…)/ });
     await button.click();
     await expect(button).toBeDisabled();
     await expect(button).toHaveAttribute('aria-busy', 'true');
@@ -72,7 +72,7 @@ test('клавиатура iOS: visualViewport уменьшается и сдв�
   }).toBe(true);
   await expect(button).toBeVisible();
   const inputBounds = await page.getByRole('textbox', { name: 'Что не так' }).boundingBox();
-  const mainBounds = await page.locator('main').boundingBox();
+  const mainBounds = await page.getByRole('dialog').boundingBox();
   expect(inputBounds!.y).toBeGreaterThanOrEqual(mainBounds!.y);
   expect(inputBounds!.y + inputBounds!.height).toBeLessThanOrEqual(mainBounds!.y + mainBounds!.height);
   await page.evaluate(() => {
@@ -81,7 +81,7 @@ test('клавиатура iOS: visualViewport уменьшается и сдв�
     Object.defineProperties(visible, { height: { configurable: true, value: innerHeight }, offsetTop: { configurable: true, value: 0 } });
     visible.dispatchEvent(new Event('resize')); visible.dispatchEvent(new Event('scroll'));
   });
-  await expect.poll(() => page.locator('footer').evaluate((element) => element.getBoundingClientRect().bottom)).toBe(await page.evaluate(() => innerHeight));
+  await expect.poll(() => page.getByRole('dialog').evaluate((element) => element.getBoundingClientRect().bottom)).toBe(await page.evaluate(() => innerHeight));
 });
 
 test('клавиатура Android: уменьшение окна сохраняет нашу кнопку и прокрутку', async ({ miniApp: page }) => {
@@ -91,5 +91,5 @@ test('клавиатура Android: уменьшение окна сохраня
   await page.setViewportSize({ width: 390, height: 440 });
   await expect.poll(() => page.getByRole('button', { name: 'Отправить', exact: true }).evaluate((element) => element.getBoundingClientRect().bottom)).toBeLessThanOrEqual(440);
   await expect(page.getByRole('textbox', { name: 'Что не так' })).toBeFocused();
-  await checkScreen(page, 'training-report-keyboard');
+  await checkScreen(page, 'training-b-report-keyboard');
 });

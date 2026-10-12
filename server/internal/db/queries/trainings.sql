@@ -115,8 +115,15 @@ SELECT EXISTS (
 -- name: TrainingHasQuestion :one
 SELECT EXISTS (SELECT 1 FROM training_items WHERE training_id = $1 AND question_id = $2);
 
--- name: InsertQuestionReport :exec
-INSERT INTO question_reports (user_id, question_id, training_id, kind, text) VALUES ($1, $2, $3, $4, $5);
+-- name: GetQuestionReport :one
+SELECT question_id, training_id, kind, text FROM question_reports
+WHERE user_id = $1 AND report_id = $2;
+
+-- Без report_id NULL не конфликтует; одновременные повторы с ключом вставят только одну запись.
+-- name: InsertQuestionReport :execrows
+INSERT INTO question_reports (user_id, question_id, training_id, kind, text, report_id)
+VALUES ($1, $2, $3, $4, $5, $6)
+ON CONFLICT (user_id, report_id) DO NOTHING;
 
 -- Набор для разработки (greprep seed-dev) и тестов; в бой контент приходит через админку.
 -- name: UpsertTopic :exec

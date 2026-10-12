@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -62,6 +63,7 @@ import dev.greprepapp.api.models.QuestionType
 import dev.greprepapp.app.R
 import dev.greprepapp.app.ui.EmptyState
 import dev.greprepapp.app.ui.NestedScreen
+import dev.greprepapp.app.ui.StatusLine
 import dev.greprepapp.app.ui.label
 import dev.greprepapp.design.Gp
 import dev.greprepapp.design.GpPrimaryButton
@@ -79,11 +81,29 @@ fun ReviewScreen(
     onOpen: (Int) -> Unit,
     modifier: Modifier = Modifier,
     onReport: (ReportTarget) -> Unit = {},
+    onOpenPositions: ((Int, List<Int>) -> Unit)? = null,
+    onTopicStarted: (String) -> Unit = {},
     viewModel: ReviewViewModel =
         hiltViewModel<ReviewViewModel, ReviewViewModel.Factory>(key = trainingId) { it.create(trainingId) },
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    ReviewContent(state = state, onBack = onBack, onOpen = onOpen, onReport = onReport, modifier = modifier)
+    val topicStart by viewModel.topicStart.collectAsStateWithLifecycle()
+    LaunchedEffect(topicStart.started) {
+        topicStart.started?.let {
+            viewModel.consumeStarted()
+            onTopicStarted(it)
+        }
+    }
+    ReviewContent(
+        state = state,
+        onBack = onBack,
+        onOpen = onOpen,
+        onReport = onReport,
+        modifier = modifier,
+        onOpenPositions = onOpenPositions,
+        onTopic = viewModel::startTopic,
+        topicStart = topicStart,
+    )
 }
 
 @Composable
@@ -93,6 +113,9 @@ fun ReviewContent(
     onOpen: (Int) -> Unit,
     modifier: Modifier = Modifier,
     onReport: (ReportTarget) -> Unit = {},
+    onOpenPositions: ((Int, List<Int>) -> Unit)? = null,
+    onTopic: (String) -> Unit = {},
+    topicStart: SessionViewModel.RepeatState = SessionViewModel.RepeatState(),
 ) {
     val ready = state as? ReviewViewModel.UiState.Ready
     val title =
@@ -105,7 +128,7 @@ fun ReviewContent(
         when (state) {
             ReviewViewModel.UiState.Loading -> Box(Modifier.fillMaxSize())
             ReviewViewModel.UiState.Missing -> MissingTraining(padding, onBack)
-            is ReviewViewModel.UiState.Ready -> ReviewPanes(state, padding, onOpen, onReport)
+            is ReviewViewModel.UiState.Ready -> ReviewPanes(state, padding, onOpen, onReport, onOpenPositions, onTopic, topicStart)
         }
     }
 }
@@ -131,10 +154,10 @@ private fun outcome(
     training: StoredTraining,
     position: Int,
 ): Outcome {
-    val chosen = training.answer(position)?.optionIds.orEmpty()
+    val response = training.answer(position)?.response ?: emptyResponse(training.question(position))
     return when {
-        chosen.isEmpty() -> Outcome.Unanswered
-        TrainingRules.isCorrect(training.question(position), chosen) -> Outcome.Correct
+        response.isEmpty -> Outcome.Unanswered
+        response.isCorrect(training.question(position)) -> Outcome.Correct
         else -> Outcome.Wrong
     }
 }
@@ -145,12 +168,30 @@ private fun ReviewPanes(
     padding: PaddingValues,
     onOpen: (Int) -> Unit,
     onReport: (ReportTarget) -> Unit,
+    onOpenPositions: ((Int, List<Int>) -> Unit)?,
+    onTopic: (String) -> Unit,
+    topicStart: SessionViewModel.RepeatState,
 ) {
-    var onlyMistakes by rememberSaveable(state.training.id) { mutableStateOf(false) }
+    var filter by rememberSaveable(state.training.id) { mutableStateOf(0) }
     var selected by rememberSaveable(state.training.id) { mutableStateOf(0) }
     val shown =
         state.training.session.items
-            .filter { !onlyMistakes || outcome(state.training, it.position) != Outcome.Correct }
+            .filter {
+                when (filter) {
+                    1 -> {
+                        outcome(state.training, it.position) != Outcome.Correct
+                    }
+
+                    2 -> {
+                        state.training.answer(it.position)?.flagged ==
+                            true
+                    }
+
+                    else -> {
+                        true
+                    }
+                }
+            }
     val position = selected.takeIf { chosen -> shown.any { it.position == chosen } } ?: shown.firstOrNull()?.position
     val wide = Gp.isWide
     TrainingKeyboard(onKey = { key ->
@@ -170,16 +211,36 @@ private fun ReviewPanes(
             ReviewList(
                 state,
                 if (wide) PaddingValues() else padding,
-                onlyMistakes,
-                { onlyMistakes = it },
+                filter,
+                { filter = it },
                 position,
-                { if (wide) selected = it else onOpen(it) },
+                {
+                    if (wide) {
+                        selected = it
+                    } else if (onOpenPositions !=
+                        null
+                    ) {
+                        onOpenPositions(it, shown.map { item -> item.position })
+                    } else {
+                        onOpen(it)
+                    }
+                },
                 wide,
             )
         }
         if (wide) {
             TrainingSplit(padding, "review", left = list, right = {
-                if (position != null) ReviewQuestion(state.training, position, { onReport(state.training.reportTarget(position)) })
+                if (position !=
+                    null
+                ) {
+                    ReviewQuestion(
+                        state.training,
+                        position,
+                        { translation -> onReport(state.training.reportTarget(position).copy(translationAllowed = translation)) },
+                        onTopic = onTopic,
+                        topicStart = topicStart,
+                    )
+                }
             }, leftScrollable = false)
         } else {
             list()
@@ -191,8 +252,8 @@ private fun ReviewPanes(
 private fun ReviewList(
     state: ReviewViewModel.UiState.Ready,
     padding: PaddingValues,
-    onlyMistakes: Boolean,
-    onFilter: (Boolean) -> Unit,
+    filter: Int,
+    onFilter: (Int) -> Unit,
     selected: Int?,
     onOpen: (Int) -> Unit,
     wide: Boolean,
@@ -200,10 +261,16 @@ private fun ReviewList(
     val training = state.training
     val result = state.result
     val mistakes = training.session.items.filter { outcome(training, it.position) != Outcome.Correct }
-    val shown = if (onlyMistakes) mistakes else training.session.items
+    val flagged = training.session.items.filter { training.answer(it.position)?.flagged == true }
+    val shown =
+        when (filter) {
+            1 -> mistakes
+            2 -> flagged
+            else -> training.session.items
+        }
     val english = LocalConfiguration.current.locales[0].language == "en"
     val scroll = rememberLazyListState()
-    LaunchedEffect(selected, onlyMistakes, wide) {
+    LaunchedEffect(selected, filter, wide) {
         // На телефоне rememberLazyListState восстанавливает позицию после возврата из вопроса.
         if (wide) {
             val index = shown.indexOfFirst { it.position == selected }
@@ -246,16 +313,30 @@ private fun ReviewList(
                             listOf(
                                 stringResource(R.string.review_all, training.total),
                                 stringResource(R.string.review_mistakes, mistakes.size),
+                                stringResource(R.string.review_flagged, flagged.size),
                             ),
-                        selected = if (onlyMistakes) 1 else 0,
-                        onSelect = { onFilter(it == 1) },
-                        tags = listOf("review.filter.all", "review.filter.mistakes"),
+                        selected = filter,
+                        onSelect = onFilter,
+                        tags = listOf("review.filter.all", "review.filter.mistakes", "review.filter.flagged"),
                     )
-                    if (wide) KeyHint("↑ / ↓", stringResource(R.string.keyboard_review))
                 }
             }
             if (shown.isEmpty()) {
-                item(key = "none") { Text(stringResource(R.string.review_no_mistakes), style = Gp.type.body, color = Gp.colors.text) }
+                item(key = "none") {
+                    Text(
+                        stringResource(
+                            if (filter ==
+                                2
+                            ) {
+                                R.string.review_no_flagged
+                            } else {
+                                R.string.review_no_mistakes
+                            },
+                        ),
+                        style = Gp.type.body,
+                        color = Gp.colors.text,
+                    )
+                }
             }
             items(shown, key = { it.position }) { item ->
                 ReviewRow(
@@ -263,6 +344,8 @@ private fun ReviewList(
                     number = item.position + 1,
                     type = item.question.questionType,
                     topic = item.question.topicTitle.pick(english),
+                    elapsedMs = training.answer(item.position)?.elapsedMs ?: 0,
+                    flagged = training.answer(item.position)?.flagged == true,
                     outcome = outcome(training, item.position),
                     onClick = { onOpen(item.position) },
                 )
@@ -310,6 +393,8 @@ private fun ReviewRow(
     number: Int,
     type: QuestionType,
     topic: String,
+    elapsedMs: Int,
+    flagged: Boolean,
     outcome: Outcome,
     onClick: () -> Unit,
 ) {
@@ -355,8 +440,14 @@ private fun ReviewRow(
         }
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(GpSpace.s2)) {
             Text(text = typeLabel, style = Gp.type.answer.copy(localeList = English), color = colors.text)
-            Text(text = topic, style = Gp.type.meta, color = colors.text2)
+            Text(
+                text = state + if (flagged) " · " + stringResource(R.string.overview_flagged) else "",
+                style = Gp.type.meta,
+                color = colors.text2,
+            )
         }
+        MarkDot(outcome == Outcome.Correct, if (outcome == Outcome.Correct) colors.right else colors.wrong)
+        Text("%d:%02d".format(elapsedMs / 60_000, elapsedMs / 1000 % 60), style = Gp.type.meta, color = colors.text2)
         Icon(
             painter = painterResource(R.drawable.ic_chevron_right),
             contentDescription = null,
@@ -374,15 +465,35 @@ fun ReviewItemScreen(
     onBack: () -> Unit,
     onReport: (ReportTarget) -> Unit,
     modifier: Modifier = Modifier,
+    positions: List<Int> = emptyList(),
+    onSummary: () -> Unit = onBack,
+    onTopicStarted: (String) -> Unit = {},
     viewModel: ReviewViewModel =
         hiltViewModel<ReviewViewModel, ReviewViewModel.Factory>(key = trainingId) { it.create(trainingId) },
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val topicStart by viewModel.topicStart.collectAsStateWithLifecycle()
+    LaunchedEffect(topicStart.started) {
+        topicStart.started?.let {
+            viewModel.consumeStarted()
+            onTopicStarted(it)
+        }
+    }
     ReviewItemContent(
         state = state,
         position = position,
         onBack = onBack,
-        onReport = { (state as? ReviewViewModel.UiState.Ready)?.training?.let { onReport(it.reportTarget(position)) } },
+        onReport = {},
+        onReportPosition = {
+            p,
+            translation,
+            ->
+            (state as? ReviewViewModel.UiState.Ready)?.training?.let { onReport(it.reportTarget(p).copy(translationAllowed = translation)) }
+        },
+        positions = positions,
+        onTopic = viewModel::startTopic,
+        topicStart = topicStart,
+        onSummary = onSummary,
         modifier = modifier,
     )
 }
@@ -394,79 +505,130 @@ fun ReviewItemContent(
     onBack: () -> Unit,
     onReport: () -> Unit,
     modifier: Modifier = Modifier,
+    positions: List<Int> = emptyList(),
+    onSummary: () -> Unit = onBack,
+    onReportPosition: ((Int, Boolean) -> Unit)? = null,
+    onTopic: (String) -> Unit = {},
+    topicStart: SessionViewModel.RepeatState = SessionViewModel.RepeatState(),
 ) {
+    val training = (state as? ReviewViewModel.UiState.Ready)?.training
+    val order =
+        positions.ifEmpty {
+            training
+                ?.session
+                ?.items
+                ?.map { it.position }
+                .orEmpty()
+        }
+    var current by rememberSaveable(position) { mutableStateOf(position) }
+    val index = order.indexOf(current)
     val systemEnglish = LocalConfiguration.current.locales[0].language == "en"
     var english by rememberSaveable { mutableStateOf(systemEnglish) }
-    var whyNotOpen by rememberSaveable { mutableStateOf(false) }
-    NestedScreen(
-        title = stringResource(R.string.review_question, position + 1),
-        onBack = onBack,
+    var whyNotOpen by rememberSaveable(current) { mutableStateOf(false) }
+
+    fun next() {
+        if (index < order.lastIndex) current = order[index + 1] else onSummary()
+    }
+
+    fun previous() {
+        if (index > 0) current = order[index - 1]
+    }
+    val report = { if (onReportPosition != null) onReportPosition(current, english != systemEnglish) else onReport() }
+    androidx.compose.material3.Scaffold(
         modifier = modifier,
-    ) { padding ->
-        when (state) {
-            ReviewViewModel.UiState.Loading -> {
-                Box(Modifier.fillMaxSize())
+        containerColor = Gp.colors.bg,
+        topBar = {
+            Row(Modifier.fillMaxWidth().statusBarsPadding(), verticalAlignment = Alignment.CenterVertically) {
+                androidx.compose.material3.IconButton(onClick = onBack) {
+                    Icon(painterResource(R.drawable.ic_close), stringResource(R.string.summary_all_answers))
+                }
+                Text(stringResource(R.string.review_question, current + 1), style = Gp.type.sessionCount, modifier = Modifier.weight(1f))
+                androidx.compose.material3.IconButton(
+                    onClick = ::previous,
+                    enabled = index > 0,
+                    modifier = Modifier.testTag("reviewItem.previous"),
+                ) {
+                    Icon(painterResource(R.drawable.ic_arrow_back), stringResource(R.string.question_previous))
+                }
+                androidx.compose.material3.IconButton(
+                    onClick = ::next,
+                    enabled = index < order.lastIndex,
+                    modifier = Modifier.testTag("reviewItem.next"),
+                ) {
+                    Icon(painterResource(R.drawable.ic_chevron_right), stringResource(R.string.review_next))
+                }
             }
-
-            ReviewViewModel.UiState.Missing -> {
-                MissingTraining(padding, onBack)
-            }
-
-            is ReviewViewModel.UiState.Ready -> {
-                val training = state.training
-                val question = training.question(position.coerceIn(0, training.total - 1))
-                val section = training.session.section.study()
-                val answer = training.answer(position)
-                Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.TopCenter) {
-                    Column(
-                        modifier =
-                            Modifier
-                                .widthIn(max = GpLayout.contentMax + GpLayout.gutter * 2)
-                                .fillMaxWidth()
-                                .verticalScroll(rememberScrollState())
-                                .padding(horizontal = GpLayout.gutter, vertical = GpSpace.s8)
-                                .testTag("reviewItem"),
-                        verticalArrangement = Arrangement.spacedBy(GpSpace.s20),
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = question.typeLabel(),
-                                style = Gp.type.meta,
-                                color = section.ink(Gp.colors),
-                                modifier = Modifier.weight(1f),
-                            )
-                            TextButton(onClick = onReport, modifier = Modifier.testTag("question.report")) {
-                                Text(stringResource(R.string.question_report), style = Gp.type.caption, color = Gp.colors.text2)
-                            }
-                        }
-                        when (question.questionType) {
-                            QuestionType.QUANTITATIVE_COMPARISON -> {
-                                Quantities(question)
-                            }
-
-                            QuestionType.MULTIPLE_CHOICE -> {
-                                Text(
-                                    question.prompt,
-                                    style = (if (Gp.isWide) Gp.type.qTextWide else Gp.type.qText).copy(localeList = English),
-                                    color = Gp.colors.text,
-                                )
-                            }
-
-                            else -> {
-                                PromptText(question = question, selection = question.answer)
-                            }
-                        }
-                        RevealedOptions(question, answer?.optionIds.orEmpty())
-                        ExplanationPanel(
-                            question = question,
-                            answer = answer,
-                            english = english,
-                            whyNotOpen = whyNotOpen,
-                            onLanguage = { english = it },
-                            onToggleWhyNot = { whyNotOpen = !whyNotOpen },
-                            modifier = Modifier.padding(bottom = GpSpace.s32),
+        },
+        bottomBar = {
+            BottomActions {
+                if (index == order.lastIndex) {
+                    GpPrimaryButton(
+                        stringResource(R.string.timeout_summary),
+                        onSummary,
+                        modifier = Modifier.fillMaxWidth().testTag("reviewItem.summary"),
+                    )
+                } else {
+                    Row(horizontalArrangement = Arrangement.spacedBy(GpSpace.s12)) {
+                        dev.greprepapp.design.GpSecondaryButton(
+                            stringResource(R.string.timeout_summary),
+                            onSummary,
+                            modifier = Modifier.testTag("reviewItem.summary"),
+                        )
+                        GpPrimaryButton(
+                            stringResource(R.string.review_next),
+                            ::next,
+                            modifier = Modifier.weight(1f).testTag("reviewItem.forward"),
                         )
                     }
+                }
+            }
+        },
+    ) { padding ->
+        if (training == null) {
+            MissingTraining(padding, onBack)
+            return@Scaffold
+        }
+        val question = training.question(current)
+        val answer = training.answer(current)
+        val q: @Composable () -> Unit = {
+            AnswerVerdict(question, answer, english)
+            if (training.isCheck) {
+                val elapsed = answer?.elapsedMs ?: 0
+                val time = "%d:%02d".format(elapsed / 60_000, elapsed / 1000 % 60)
+                val average = training.answers.values.sumOf { it.elapsedMs.toLong() } / training.total
+                Text(if (elapsed > average) stringResource(R.string.review_slower, time) else time, style = Gp.type.meta)
+            }
+            QuestionContent(question, answer?.response ?: emptyResponse(question), revealed = true)
+        }
+        val explanation: @Composable () -> Unit = {
+            ExplanationPanel(
+                question,
+                answer,
+                english,
+                whyNotOpen,
+                { english = it },
+                { whyNotOpen = !whyNotOpen },
+                onTopic = { onTopic(question.topicId) },
+                topicStarting = topicStart.starting,
+            )
+            topicStart.problem?.let { StatusLine(R.drawable.ic_error, startProblemText(it), Modifier.testTag("topic.problem")) }
+            LinkText(stringResource(R.string.question_report), report, Modifier.testTag("question.report"))
+        }
+        val swipe = Modifier.reviewSwipe(onNext = ::next, onPrevious = ::previous)
+        Box(Modifier.fillMaxSize().then(swipe).testTag("reviewItem")) {
+            if (Gp.isWide) {
+                TrainingSplit(padding, "reviewItem", q, explanation)
+            } else {
+                Column(
+                    Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                        .verticalScroll(rememberScrollState())
+                        .padding(GpLayout.gutter),
+                    verticalArrangement = Arrangement.spacedBy(GpSpace.s20),
+                ) {
+                    q()
+                    explanation()
                 }
             }
         }
@@ -478,7 +640,9 @@ fun ReviewItemContent(
 private fun ReviewQuestion(
     training: StoredTraining,
     position: Int,
-    onReport: () -> Unit,
+    onReport: (Boolean) -> Unit,
+    onTopic: (String) -> Unit,
+    topicStart: SessionViewModel.RepeatState,
 ) {
     val systemEnglish = LocalConfiguration.current.locales[0].language == "en"
     var english by rememberSaveable(training.id, position) { mutableStateOf(systemEnglish) }
@@ -494,29 +658,13 @@ private fun ReviewQuestion(
                 color = Gp.colors.text,
                 modifier = Modifier.weight(1f),
             )
-            TextButton(onClick = onReport, modifier = Modifier.testTag("question.report")) {
+            TextButton(onClick = { onReport(english != systemEnglish) }, modifier = Modifier.testTag("question.report")) {
                 Text(stringResource(R.string.question_report), style = Gp.type.caption, color = Gp.colors.text2)
             }
         }
+        AnswerVerdict(question, answer, english)
         Text(question.typeLabel(), style = Gp.type.meta, color = section.ink(Gp.colors))
-        when (question.questionType) {
-            QuestionType.QUANTITATIVE_COMPARISON -> {
-                Quantities(question)
-            }
-
-            QuestionType.MULTIPLE_CHOICE -> {
-                Text(
-                    question.prompt,
-                    style = (if (Gp.isWide) Gp.type.qTextWide else Gp.type.qText).copy(localeList = English),
-                    color = Gp.colors.text,
-                )
-            }
-
-            else -> {
-                PromptText(question, question.answer)
-            }
-        }
-        RevealedOptions(question, answer?.optionIds.orEmpty())
+        QuestionContent(question, answer?.response ?: emptyResponse(question), revealed = true)
         ExplanationPanel(
             question = question,
             answer = answer,
@@ -524,8 +672,11 @@ private fun ReviewQuestion(
             whyNotOpen = whyNotOpen,
             onLanguage = { english = it },
             onToggleWhyNot = { whyNotOpen = !whyNotOpen },
+            onTopic = { onTopic(question.topicId) },
+            topicStarting = topicStart.starting,
             modifier = Modifier.padding(bottom = GpSpace.s32),
         )
+        topicStart.problem?.let { StatusLine(R.drawable.ic_error, startProblemText(it), Modifier.testTag("topic.problem")) }
     }
 }
 
@@ -538,10 +689,18 @@ fun ReportScreen(
     typeLabel: String,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    translationAllowed: Boolean = false,
+    onSent: () -> Unit = {},
     viewModel: ReportViewModel =
         hiltViewModel<ReportViewModel, ReportViewModel.Factory>(key = "$trainingId/$position") { it.create(questionId, trainingId) },
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    LaunchedEffect(state.sent) {
+        if (state.sent) {
+            viewModel.prepareNextReport()
+            onSent()
+        }
+    }
     ReportContent(
         state = state,
         position = position,
@@ -550,6 +709,7 @@ fun ReportScreen(
         onText = viewModel::setText,
         onSend = viewModel::send,
         onBack = onBack,
+        translationAllowed = translationAllowed,
         modifier = modifier,
     )
 }
@@ -573,9 +733,12 @@ fun ReportContent(
     onSend: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    translationAllowed: Boolean = true,
 ) {
     val colors = Gp.colors
-    NestedScreen(title = stringResource(R.string.report_title), onBack = onBack, modifier = modifier) { padding ->
+    TrainingSheet(onDismiss = onBack, tag = "report.sheet") {
+        Text(stringResource(R.string.report_title), style = Gp.type.h2)
+        val padding = PaddingValues()
         if (state.sent) {
             EmptyState(
                 title = stringResource(R.string.report_thanks),
@@ -584,17 +747,16 @@ fun ReportContent(
                 onAction = onBack,
                 modifier = Modifier.padding(padding).testTag("report.sent"),
             )
-            return@NestedScreen
+            return@TrainingSheet
         }
-        Column(modifier = Modifier.fillMaxSize().padding(padding).imePadding()) {
-            Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+        Column(modifier = Modifier.fillMaxWidth().padding(padding).imePadding()) {
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
                 Column(
                     modifier =
                         Modifier
                             .widthIn(max = GpLayout.contentMax + GpLayout.gutter * 2)
                             .fillMaxWidth()
-                            .verticalScroll(rememberScrollState())
-                            .padding(horizontal = GpLayout.gutter, vertical = GpSpace.s8)
+                            .padding(vertical = GpSpace.s8)
                             .testTag("report"),
                     verticalArrangement = Arrangement.spacedBy(GpSpace.s16),
                 ) {
@@ -612,7 +774,7 @@ fun ReportContent(
                         horizontalArrangement = Arrangement.spacedBy(GpSpace.s8),
                         verticalArrangement = Arrangement.spacedBy(GpSpace.s8),
                     ) {
-                        REPORT_KINDS.forEach { (kind, label) ->
+                        REPORT_KINDS.filter { translationAllowed || it.first != QuestionReport.Kind.TRANSLATION }.forEach { (kind, label) ->
                             FilterChip(
                                 selected = state.kind == kind,
                                 onClick = { onKind(kind) },
@@ -635,6 +797,16 @@ fun ReportContent(
                         onValueChange = onText,
                         label = { Text(stringResource(R.string.report_text)) },
                         minLines = 3,
+                        supportingText = {
+                            Text(
+                                "${state.text.codePointCount(0, state.text.length)} / ${QuestionReportLimits.TEXT_CODE_POINTS}",
+                                style = Gp.type.caption,
+                            )
+                        },
+                        keyboardOptions =
+                            androidx.compose.foundation.text.KeyboardOptions(
+                                capitalization = androidx.compose.ui.text.input.KeyboardCapitalization.Sentences,
+                            ),
                         textStyle = Gp.type.body,
                         colors =
                             OutlinedTextFieldDefaults.colors(
@@ -675,7 +847,7 @@ fun ReportContent(
                 GpPrimaryButton(
                     text = stringResource(R.string.report_send),
                     onClick = onSend,
-                    enabled = state.kind != null,
+                    enabled = state.canSend,
                     busy = state.sending,
                     modifier = Modifier.fillMaxWidth().testTag("report.send"),
                 )

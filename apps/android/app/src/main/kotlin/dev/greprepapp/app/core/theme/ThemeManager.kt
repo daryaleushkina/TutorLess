@@ -20,6 +20,7 @@ import javax.inject.Singleton
 data class ThemeState(
     val theme: AppTheme = AppTheme.Dark,
     val restoring: Boolean = true,
+    val largeText: Boolean = false,
 )
 
 @Singleton
@@ -54,17 +55,25 @@ class ThemeManager
                             reporter.report("theme restore failed: ${failure.javaClass.simpleName}", route = DataStoreThemeStore.ROUTE)
                             AppTheme.Dark
                         }
-                    mutableState.value = ThemeState(theme, restoring = false)
+                    mutableState.value = ThemeState(theme, restoring = false, largeText = withContext(io) { store.loadLargeText() })
                 }
             }
         }
+
+        suspend fun largeText(large: Boolean) =
+            withContext(scope.coroutineContext) {
+                lock.withLock {
+                    withContext(io) { store.saveLargeText(large) }
+                    mutableState.value = mutableState.value.copy(largeText = large)
+                }
+            }
 
         /** Сначала диск: при отказе новый выбор не появляется в кадре и не теряется после перезапуска. */
         suspend fun select(theme: AppTheme) =
             withContext(scope.coroutineContext) {
                 lock.withLock {
                     withContext(io) { store.save(theme) }
-                    mutableState.value = ThemeState(theme, restoring = false)
+                    mutableState.value = mutableState.value.copy(theme = theme, restoring = false)
                 }
             }
     }

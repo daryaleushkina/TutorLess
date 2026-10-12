@@ -12,14 +12,14 @@ test('главная начинает тренировку, внутри сес�
 
 test('каждая вкладка возвращает к своему экрану и сохраняет форму конструктора', async ({ miniApp: page }) => {
   await page.getByRole('link', { name: /^Quant/ }).click();
-  await page.getByRole('textbox', { name: 'Вопросов' }).fill('5');
+  await page.getByRole('button', { name: '5', exact: true }).click();
   await navLink(page, 'Слова').click();
   await expect(page.getByText('Здесь будут слова: учить, повторять и искать.')).toBeVisible();
   await navLink(page, 'Экзамен').click();
   await expect(page.getByText('Здесь будут пробные экзамены GRE и эссе с оценкой.')).toBeVisible();
   await navLink(page, 'Тренировка').click();
   await expect(page).toHaveURL(/\/training\/new\?section=quant$/);
-  await expect(page.getByRole('textbox', { name: 'Вопросов' })).toHaveValue('5');
+  await expect(page.getByRole('button', { name: '5', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await page.locator('#tg-mock-back').click();
   await expect(page.getByRole('heading', { name: 'Тренировка', exact: true })).toBeVisible();
 });

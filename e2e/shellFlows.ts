@@ -84,7 +84,7 @@ export async function repeatRealMistake(page: Page) {
   const session = await startSession(page, 'practice', 1);
   await pick(page, session.items[0]!.question, true);
   await page.getByRole('button', { name: 'Проверить', exact: true }).click();
-  await page.getByRole('button', { name: 'Итог', exact: true }).click();
+  await page.getByRole('button', { name: 'К итогу', exact: true }).click();
   await expect(page.getByRole('heading', { name: '0 из 1 верно', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Готово', exact: true }).click();
   const repeat = page.getByRole('button', { name: /Повторить мои ошибки/ });

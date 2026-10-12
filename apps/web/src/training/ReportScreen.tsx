@@ -1,18 +1,20 @@
 import type { QuestionReport } from '@greprep/api-client';
 import { Link, useNavigate, useParams, useSearch } from '@tanstack/react-router';
-import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { BackIcon } from '../components/icons';
+import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { StatusScreen } from '../components/StatusScreen';
 import { useI18n } from '../i18n/i18n';
 import { TrainingAction } from './Action';
-import { FocusFooter } from '../layout/AppLayout';
 import { SessionFooter } from './SessionFooter';
 import { TYPE_LABELS } from './builder';
 import { REPORT_TEXT_MAX, type ReportDraft, type StoredTraining } from './model';
-import { ReadTraining, TrainingHeading } from './ReadTraining';
+import { ReadTraining } from './ReadTraining';
 import { trainingRepository } from './repository';
 import { TrainingMissingError, TrainingOwnerChangedError } from './store';
 import styles from './Training.module.css';
+import { TrainingSheet } from './TrainingSheet';
+import { QuestionPrompt } from './QuestionContent';
+import { clearReportFeedback, reportSavedFeedback } from './TrainingFeedback';
 
 const KINDS = ['question', 'answer', 'explanation', 'translation', 'other'] as const;
 const COUNTER_WARNING = REPORT_TEXT_MAX * 0.9;
@@ -34,17 +36,17 @@ const failureKind = (error: unknown): Failure => error instanceof TrainingOwnerC
   error instanceof TrainingMissingError ? 'missing' : error instanceof DOMException && error.name === 'QuotaExceededError' ? 'quota' : 'storage';
 
 export function ReportScreen() {
+  useEffect(clearReportFeedback, []);
   const { trainingId, position } = useParams({ from: '/app/training/$trainingId/report/$position' });
-  const { returnTo } = useSearch({ from: '/app/training/$trainingId/report/$position' });
+  const { returnTo, filter, language } = useSearch({ from: '/app/training/$trainingId/report/$position' });
   const navigate = useNavigate();
   const { t } = useI18n();
-  const back = () => void (returnTo === 'review' ? navigate({ to: '/training/$trainingId/review/$position', params: { trainingId, position } }) : navigate({ to: '/training/$trainingId', params: { trainingId } }));
+  const back = () => void (returnTo === 'review' ? navigate({ to: '/training/$trainingId/review/$position', params: { trainingId, position }, search: { filter, language } }) : navigate({ to: '/training/$trainingId', params: { trainingId }, search: { language } }));
   const cancelRef = useRef<() => void>(back);
   const cancel = () => cancelRef.current();
-  const link = returnTo === 'review' ? <Link to="/training/$trainingId/review/$position" params={{ trainingId, position }} className={styles.back} onClick={(event) => { if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return; event.preventDefault(); cancel(); }}><BackIcon />{t.back}</Link> :
-    <Link to="/training/$trainingId" params={{ trainingId }} className={styles.back} onClick={(event) => { if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return; event.preventDefault(); cancel(); }}><BackIcon />{t.back}</Link>;
-  return <ReadTraining id={trainingId} back={link} onBack={cancel}>
-    {(training) => <ReportForm key={`${trainingId}/${position}`} training={training} position={position} onBack={back} cancelRef={cancelRef} />}
+  const fallbackBack = returnTo === 'review' ? <Link to="/training/$trainingId/review/$position" params={{ trainingId, position }} search={{ filter, language }} className={styles.back}><BackIcon />{t.back}</Link> : <Link to="/training/$trainingId" params={{ trainingId }} search={{ language }} className={styles.back}><BackIcon />{t.back}</Link>;
+  return <ReadTraining id={trainingId} back={fallbackBack} backInContent backButton="fallback" onBack={cancel}>
+    {(training) => <>{training.session.items[position ?? -1] && <QuestionPrompt question={training.session.items[position!]!.question} selection={training.answers[String(position)]?.optionIds ?? []} />}<TrainingSheet title={t.training.question_report} onClose={cancel}><ReportForm key={`${trainingId}/${position}`} training={training} position={position} onBack={back} cancelRef={cancelRef} /></TrainingSheet></>}
   </ReadTraining>;
 }
 
@@ -58,7 +60,8 @@ function ReportForm({ training, position: index, onBack, cancelRef }: {
 function ReportFields({ training, index, onBack, cancelRef, draft }: {
   training: StoredTraining; index: number | null; onBack: () => void; cancelRef: RefObject<() => void>; draft?: ReportDraft;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const { language } = useSearch({ from: '/app/training/$trainingId/report/$position' });
   const [kind, setKind] = useState<QuestionReport['kind'] | undefined>(draft?.kind);
   const [text, setText] = useState(draft?.text ?? '');
   const [saved, setSaved] = useState(Boolean(draft));
@@ -100,7 +103,7 @@ function ReportFields({ training, index, onBack, cancelRef, draft }: {
     return () => { cancelRef.current = onBack; };
   }, [cancelRef, index, onBack, owner, training.session.id]);
   const send = async () => {
-    if (sending.current || !kind || !item || index === null) return;
+    if (sending.current || !kind || kind === 'other' && !text.trim() || !item || index === null) return;
     sending.current = true; setBusy(true); setFailed(undefined);
     try {
       const trimmed = text.trim();
@@ -108,21 +111,16 @@ function ReportFields({ training, index, onBack, cancelRef, draft }: {
       // «Назад» уже очистил черновик. Поздний ответ очереди не стирает ввод повторно открытой формы.
       if (!cancelling.current) trainingRepository.discardReportDraft(training.session.id, index, owner);
       setSent(true); setText(''); setSaved(false);
+      if (!cancelling.current) { reportSavedFeedback(); onBack(); }
     } catch (error) { setFailed(failureKind(error)); }
     finally { sending.current = false; setBusy(false); }
   };
   if (!item || index === null) return <StatusScreen title={copy.training_missing_title} text={copy.training_missing_message} />;
-  if (sent) return <>
-    <TrainingHeading>{copy.report_thanks}</TrainingHeading>
-    <p role="status">{copy.report_saved}</p><p className={styles.note}>{copy.report_note}</p>
-    <FocusFooter><SessionFooter><TrainingAction text={copy.report_back} disabled={false} onClick={onBack} /></SessionFooter></FocusFooter>
-  </>;
   return <>
-    <TrainingHeading>{copy.question_report}</TrainingHeading>
     <p className={styles.note}>{copy.report_context(index + 1, TYPE_LABELS[item.question.questionType])}</p>
-    <form className={styles.reportForm} onSubmit={(event) => { event.preventDefault(); void send(); }}>
+    <form className={styles.reportForm} data-viewport-scroll onSubmit={(event) => { event.preventDefault(); void send(); }}>
       <fieldset className={styles.reportKinds} disabled={busy}><legend>{copy.report_kind}</legend>
-        <div className={styles.chips}>{KINDS.map((value) => <button key={value} type="button" aria-pressed={kind === value} onClick={() => { setKind(value); persist({ kind: value, text }); }}>{copy[`report_kind_${value}`]}</button>)}</div>
+        <div className={styles.chips}>{KINDS.filter((value) => value !== 'translation' || language !== undefined && language !== locale).map((value) => <button key={value} type="button" aria-pressed={kind === value} onClick={() => { setKind(value); persist({ kind: value, text }); }}>{copy[`report_kind_${value}`]}</button>)}</div>
       </fieldset>
       <label className={styles.reportField} htmlFor="report-text"><span className={styles.reportFieldHeading}><span id="report-label">{copy.report_text}</span>
         <span id="report-count" className={styles.note} aria-live={count >= COUNTER_WARNING ? 'polite' : 'off'}>{copy.report_limit(count, REPORT_TEXT_MAX)}</span>
@@ -150,7 +148,7 @@ function ReportFields({ training, index, onBack, cancelRef, draft }: {
       {truncated && <p id="report-truncated" role="status" className={styles.note}>{copy.report_truncated(REPORT_TEXT_MAX)}</p>}
       <p className={styles.note}>{copy.report_note}</p>
       {failed && <p role="alert">{failed === 'quota' ? copy.report_failed : failed === 'owner' ? copy.report_session_changed : failed === 'missing' ? copy.report_training_missing : copy.report_storage_failed}</p>}
-      <FocusFooter><SessionFooter><TrainingAction text={copy.report_send} onClick={() => void send()} disabled={!kind || busy} busy={busy} /></SessionFooter></FocusFooter>
+      <SessionFooter><TrainingAction text={copy.report_send} onClick={() => void send()} disabled={!kind || busy || kind === 'other' && !text.trim()} busy={busy} /></SessionFooter>
     </form>
   </>;
 }

@@ -18,4 +18,9 @@ class TrainingRulesTest {
             )
         assertEquals(0, TrainingRules.durationSeconds(training))
     }
+
+    @Test fun anUnboundedMultipleChoiceStillRequiresAnAnswer() {
+        val question = Fixtures.mc.copy(selectCount = 0)
+        assertEquals(false, Response.Options().isComplete(question))
+    }
 }
