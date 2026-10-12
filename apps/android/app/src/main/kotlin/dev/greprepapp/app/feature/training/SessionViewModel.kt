@@ -271,7 +271,7 @@ class SessionViewModel
             val session = s.training.session
             val request =
                 TrainingRequest(
-                    exam = session.exam ?: CURRENT_EXAM,
+                    exam = session.exam ?: dev.greprepapp.api.models.Exam.GRE,
                     section = session.section,
                     questionTypes = session.questionTypes.toSet(),
                     count = TrainingRules.repeatCount(result.review.sumOf { it.mistakes }),

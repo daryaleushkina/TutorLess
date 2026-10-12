@@ -25,11 +25,12 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlin.math.ceil
 
-/** С чего открыть конструктор: шаг «Сегодня» знает раздел, иногда и тип. */
+/** С чего открыть конструктор: главная передаёт экзамен, раздел и тип. */
 @Serializable
 data class BuilderPrefill(
     val section: Section,
     val type: QuestionType? = null,
+    val exam: dev.greprepapp.api.models.Exam = dev.greprepapp.api.models.Exam.GRE,
 )
 
 /** Своя сборка конструктора (макет R1): то, что показывают поля. */
@@ -78,6 +79,7 @@ class BuilderViewModel
                 val form: BuilderForm,
                 /** Выбранный готовый набор (номер в presets); null — своя сборка. */
                 val preset: Int?,
+                val exam: dev.greprepapp.api.models.Exam = dev.greprepapp.api.models.Exam.GRE,
             ) : Content {
                 /** Наборы, которые приложение знает; незнакомые виды сервер может прислать — пропускаем. */
                 val presets: List<TrainingPreset> get() = options.presets.filter { it.kind in KNOWN_PRESETS }
@@ -106,7 +108,7 @@ class BuilderViewModel
             mutableState.update { it.copy(content = Content.Loading) }
             loadJob =
                 viewModelScope.launch {
-                    when (val result = repository.options()) {
+                    when (val result = repository.options(prefill?.exam ?: dev.greprepapp.api.models.Exam.GRE)) {
                         is ApiResult.Ok -> {
                             mutableState.update { it.copy(content = ready(result.value)) }
                         }
@@ -128,7 +130,7 @@ class BuilderViewModel
                     last != null -> formOf(presets[last].request, options)
                     else -> defaultForm(options, Section.VERBAL, null)
                 }
-            return Content.Ready(options = options, form = form, preset = last)
+            return Content.Ready(options = options, form = form, preset = last, exam = prefill?.exam ?: dev.greprepapp.api.models.Exam.GRE)
         }
 
         private fun edit(change: (BuilderForm) -> BuilderForm) {
@@ -247,7 +249,7 @@ class BuilderViewModel
                 val questions = minOf(count, available(c.options, f), c.options.maxQuestions)
                 if (questions < 1) return null
                 return TrainingRequest(
-                    exam = CURRENT_EXAM,
+                    exam = c.exam,
                     section = f.section,
                     questionTypes = setOf(f.type),
                     count = questions,

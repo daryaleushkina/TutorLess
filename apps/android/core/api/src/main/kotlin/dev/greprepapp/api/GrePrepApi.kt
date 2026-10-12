@@ -3,7 +3,6 @@ package dev.greprepapp.api
 import dev.greprepapp.api.apis.AccountApi
 import dev.greprepapp.api.apis.AuthApi
 import dev.greprepapp.api.apis.PublicApi
-import dev.greprepapp.api.apis.TodayApi
 import dev.greprepapp.api.apis.TrainingsApi
 import kotlinx.serialization.json.Json
 import okhttp3.HttpUrl
@@ -45,7 +44,6 @@ class GrePrepApi(
 
     val auth: AuthApi = retrofit.create()
     val account: AccountApi = retrofit.create()
-    val today: TodayApi = retrofit.create()
     val public: PublicApi = retrofit.create()
     val trainings: TrainingsApi = retrofit.create()
 }

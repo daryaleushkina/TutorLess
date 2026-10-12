@@ -6,7 +6,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.IntoSet
 import dev.greprepapp.app.core.session.PersonalData
-import dev.greprepapp.app.feature.today.TodayCache
+import dev.greprepapp.app.feature.shell.ShellCache
 import dev.greprepapp.app.feature.training.TrainingStore
 
 /**
@@ -18,7 +18,7 @@ import dev.greprepapp.app.feature.training.TrainingStore
 interface PersonalDataModule {
     @Binds
     @IntoSet
-    fun todayIsPersonal(cache: TodayCache): PersonalData
+    fun shellIsPersonal(cache: ShellCache): PersonalData
 
     @Binds
     @IntoSet

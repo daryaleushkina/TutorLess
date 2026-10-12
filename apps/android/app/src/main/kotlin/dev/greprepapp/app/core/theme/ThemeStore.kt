@@ -12,6 +12,10 @@ import java.io.IOException
 enum class AppTheme { Dark, Light }
 
 interface ThemeStore {
+    suspend fun loadLargeText(): Boolean
+
+    suspend fun saveLargeText(large: Boolean)
+
     suspend fun load(): AppTheme
 
     /** Ошибка записи возвращается вызывающему: экран настройки сможет оставить прежнее значение. */
@@ -22,6 +26,26 @@ class DataStoreThemeStore(
     private val dataStore: DataStore<Preferences>,
     private val reporter: ClientErrorReporter,
 ) : ThemeStore {
+    override suspend fun loadLargeText(): Boolean =
+        try {
+            dataStore.data.first()[LargeText] ?: false
+        } catch (failure: java.io.IOException) {
+            reporter.report("text size read failed: ${failure.javaClass.simpleName}", route = ROUTE)
+            false
+        }
+
+    override suspend fun saveLargeText(large: Boolean) {
+        try {
+            dataStore.edit { it[LargeText] = large }
+        } catch (
+            failure: java.io.IOException,
+        ) {
+            writeFailed(failure)
+        } catch (failure: SecurityException) {
+            writeFailed(failure)
+        }
+    }
+
     override suspend fun load(): AppTheme =
         try {
             when (dataStore.data.first()[Choice]) {
@@ -67,6 +91,9 @@ class DataStoreThemeStore(
     }
 
     companion object {
+        internal val LargeText =
+            androidx.datastore.preferences.core
+                .booleanPreferencesKey("largeText")
         internal val Choice = stringPreferencesKey("theme")
         const val ROUTE = "theme"
     }

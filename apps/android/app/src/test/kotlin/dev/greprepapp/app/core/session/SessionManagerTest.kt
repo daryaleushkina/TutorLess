@@ -2,7 +2,6 @@ package dev.greprepapp.app.core.session
 
 import dev.greprepapp.app.testing.MainDispatcherRule
 import dev.greprepapp.app.testing.TestGraph
-import dev.greprepapp.app.testing.starterPlan
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -108,16 +107,16 @@ class SessionManagerTest {
             val graph = graph(token = "a")
             graph.session.signOut()
             advanceUntilIdle()
-            val written = graph.session.writeIfCurrent(id = 1) { graph.cache.save(starterPlan) }
+            val written = graph.session.writeIfCurrent(id = 1) { graph.cache.connect("previous", "previous") }
             assertEquals(false, written)
-            assertNull(graph.cache.load())
+            assertNull(graph.cache.load("previous"))
         }
 
     @Test
     fun signInStoresTokenAndForgetsThePreviousPerson() =
         runTest(main.dispatcher) {
             val graph = graph(token = null)
-            graph.cache.save(starterPlan)
+            graph.cache.connect("previous", "previous")
             graph.session.didSignIn(
                 "fresh",
                 dev.greprepapp.app.testing
@@ -126,7 +125,7 @@ class SessionManagerTest {
             )
             assertEquals("fresh", graph.tokens.token)
             assertEquals("fresh", graph.holder.token)
-            assertNull("план прошлого человека стёрт", graph.cache.load())
+            assertNull("кэш прошлого человека стёрт", graph.cache.load("previous"))
             assertTrue(graph.session.state.value is SessionState.SignedIn)
         }
 
@@ -151,13 +150,13 @@ class SessionManagerTest {
     fun signOutWipesTheDeviceFirstAndTellsTheServer() =
         runTest(main.dispatcher) {
             val graph = graph(token = "mine")
-            graph.cache.save(starterPlan)
+            graph.cache.connect("previous", "previous")
             graph.session.signOut()
             advanceUntilIdle()
             assertEquals(SessionState.SignedOut(null), graph.session.state.value)
             assertNull(graph.tokens.token)
             assertNull(graph.holder.token)
-            assertNull(graph.cache.load())
+            assertNull(graph.cache.load("previous"))
             assertEquals(listOf("mine"), graph.serverSignOuts)
         }
 

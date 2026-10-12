@@ -98,9 +98,9 @@ class TabletTrainingFlowTest {
         waitFor("signin.dev.name")
         compose.onNodeWithTag("signin.dev.name").performTextInput("tablet")
         click("signin.dev.submit")
-        waitFor("today.plan")
-        compose.onNodeWithTag("today.plan").performScrollToNode(hasTestTag("today.newTraining"))
-        click("today.newTraining")
+        waitFor("training.home")
+        compose.onNodeWithTag("shell.scroll").performScrollToNode(hasTestTag("home.configure"))
+        click("home.configure")
         waitFor("builder.start")
     }
 

@@ -38,7 +38,7 @@ class TrainingRepositoryTest {
 
     private val request =
         TrainingRequest(
-            exam = CURRENT_EXAM,
+            exam = dev.greprepapp.api.models.Exam.GRE,
             section = Section.VERBAL,
             questionTypes = setOf(QuestionType.TEXT_COMPLETION),
             count = 2,
@@ -264,17 +264,22 @@ class TrainingRepositoryTest {
         }
 
     @Test
-    fun ownerConfirmationDoesNotEraseThePlanThatJustArrivedFromTheServer() =
+    fun ownerConfirmationKeepsTheSameAccountsShellCache() =
         runTest(main.dispatcher) {
             val g = TestGraph(this, main.dispatcher, folder.root, token = "token-1")
             val gate = CompletableDeferred<Unit>()
             g.ownerGate = gate
             g.trainings
             g.settle()
-            g.cache.save(dev.greprepapp.app.testing.starterPlan)
+            g.cache.connect(
+                dev.greprepapp.app.testing
+                    .session()
+                    .user.id,
+                "token-1",
+            )
             gate.complete(Unit)
             g.settle()
-            org.junit.Assert.assertNotNull(g.cache.load())
+            org.junit.Assert.assertNotNull(g.cache.load("token-1"))
         }
 
     @Test

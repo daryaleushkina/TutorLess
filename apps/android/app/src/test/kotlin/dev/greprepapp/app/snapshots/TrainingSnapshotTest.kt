@@ -4,7 +4,6 @@ import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
 import dev.greprepapp.api.models.QuestionType
 import dev.greprepapp.api.models.Section
 import dev.greprepapp.app.feature.shell.MainScaffold
-import dev.greprepapp.app.feature.today.TodayContent
 import dev.greprepapp.app.feature.training.ContinueTraining
 import dev.greprepapp.app.snapshots.TrainingScreens.Session
 import org.junit.Test
@@ -88,20 +87,6 @@ class TrainingSnapshotTest(
     @Config(qualifiers = "ru-w360dp-h800dp-160dpi")
     fun questionTimedFontScale130On360dp() =
         snap("training-question-timed-360-font-130", systemFontScale = 1.3f) { Session(TrainingScreens.qcTimed) }
-
-    @Test
-    fun todayWithStartedTraining() =
-        snap("today-continue") {
-            MainScaffold(appVersion = "0.1.0 (1)", onSignOut = {}) {
-                TodayContent(
-                    state = starter,
-                    onRefresh = {},
-                    onSelect = {},
-                    continueTraining =
-                        ContinueTraining("t", Section.VERBAL, listOf(QuestionType.TEXT_COMPLETION), position = 3, total = 10),
-                )
-            }
-        }
 
     @Test
     fun reportSaveFailed() = snap("training-report-save-failed") { TrainingScreens.Report(failed = true) }
