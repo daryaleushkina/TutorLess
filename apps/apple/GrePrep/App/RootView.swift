@@ -16,7 +16,7 @@ struct RootView: View {
                 }
             }
         }
-        .tint(Color(.accent))
+        .tint(Color(.text))
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 app.retrySessionIfNeeded()

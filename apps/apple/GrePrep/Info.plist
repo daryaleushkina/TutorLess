@@ -4,6 +4,11 @@
      Отладочная сборка берёт Info-Debug.plist: там ещё разрешён http до своего Мака. -->
 <plist version="1.0">
 <dict>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>bgDark</string>
+	</dict>
 	<key>GPAPIBaseURL</key>
 	<string>$(GP_API_BASE_URL)</string>
 	<key>GPAppleSignInEnabled</key>

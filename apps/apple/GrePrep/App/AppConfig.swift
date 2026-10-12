@@ -5,7 +5,7 @@ struct AppConfig: Sendable {
     let apiBaseURL: URL
     let clientKind: ClientKindValue
     let appVersion: String
-    /// Telegram и Google — системное окно браузера (OIDC с PKCE). Пусто — аккаунтов у провайдера ещё нет.
+    /// Google — системное окно браузера (OIDC с PKCE). Пусто — аккаунтов у провайдера ещё нет.
     let webProviders: [WebProvider: WebProviderConfig]
     /// «Вход с Apple» работает только в сборке, подписанной аккаунтом разработчика с этим правом (#6).
     let appleSignInEnabled: Bool
@@ -65,11 +65,10 @@ struct AppConfig: Sendable {
 
 /// Провайдеры, которые входят через системное окно браузера.
 enum WebProvider: String, CaseIterable, Sendable {
-    case telegram, google
+    case google
 
     var infoPrefix: String {
         switch self {
-        case .telegram: "GPOIDCTelegram"
         case .google: "GPOIDCGoogle"
         }
     }

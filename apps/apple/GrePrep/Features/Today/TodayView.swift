@@ -28,8 +28,8 @@ struct TodayView: View {
             screen
                 .safeAreaInset(edge: .top) {
                     if app.trainings.reviewClosed {
-                        Text("Эта тренировка больше не хранится на устройстве.").gpText(GPType.footnote)
-                            .foregroundStyle(Color(.textSecondary)).padding(GPSpace.s12)
+                        Text("Эта тренировка больше не хранится на устройстве.").gpText(\.meta)
+                            .foregroundStyle(Color(.text2)).padding(GPSpace.s12)
                             .accessibilityIdentifier("today.reviewClosed")
                     }
                 }
@@ -59,12 +59,12 @@ struct TodayView: View {
         switch model.content {
         case .loading:
             TodayLoadingView()
-                .background { SectionGlow(section: nil) }
+                .background(Color(.bg).ignoresSafeArea())
         case let .unavailable(problem):
             TodayUnavailableView(problem: problem, isRetrying: model.isRefreshing) {
                 Task { await model.refresh() }
             }
-            .background { SectionGlow(section: nil) }
+            .background(Color(.bg).ignoresSafeArea())
         case let .plan(plan):
             planView(plan)
         }
@@ -74,9 +74,9 @@ struct TodayView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 Text(verbatim: TodaySummary.string(for: plan))
-                    .gpText(GPType.subhead)
+                    .gpText(\.meta)
                     .monospacedDigit()
-                    .foregroundStyle(Color(.textSecondary))
+                    .foregroundStyle(Color(.text2))
                     .accessibilityIdentifier("today.summary")
                 if let stale = model.staleReason {
                     StaleNotice(reason: stale)
@@ -88,16 +88,16 @@ struct TodayView: View {
                     } label: {
                         HStack(spacing: GPSpace.s12) {
                             VStack(alignment: .leading, spacing: GPSpace.s4) {
-                                Text("Продолжить тренировку").gpText(GPType.headline)
-                                Text(verbatim: TrainingCopy.continuation(training)).gpText(GPType.subhead)
-                                    .foregroundStyle(StudySection(training.session.section).color)
+                                Text("Продолжить тренировку").gpText(\.h3)
+                                Text(verbatim: TrainingCopy.continuation(training)).gpText(\.meta)
+                                    .foregroundStyle(StudySection(training.session.section).ink)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
                             Spacer(minLength: GPSpace.s8)
-                            Image(systemName: "chevron.forward").foregroundStyle(Color(.textSecondary))
-                        }.frame(minHeight: GPSize.rowTall).padding(GPSpace.s16)
-                            .background(Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.xxl))
-                            .contentShape(RoundedRectangle(cornerRadius: GPRadius.xxl))
+                            Image(systemName: "chevron.forward").foregroundStyle(Color(.text3))
+                        }.frame(minHeight: GPSize.tapTarget).padding(GPSpace.s16)
+                            .background(Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.l))
+                            .contentShape(RoundedRectangle(cornerRadius: GPRadius.l))
                     }.buttonStyle(PressScaleStyle()).padding(.top, GPSpace.s20)
                         .accessibilityIdentifier("today.continueTraining")
                 }
@@ -106,7 +106,7 @@ struct TodayView: View {
                 Button {
                     onTraining(.builder(nil))
                 } label: {
-                    Text("Своя тренировка").gpText(GPType.callout)
+                    Text("Своя тренировка").gpText(\.button)
                         .frame(maxWidth: .infinity, minHeight: GPSize.button)
                         .background(Color(.surface), in: Capsule())
                 }.buttonStyle(.plain).padding(.top, GPSpace.s32)
@@ -125,7 +125,7 @@ struct TodayView: View {
         }
         .scrollBounceBehavior(.basedOnSize)
         .refreshable { await model.refresh() }
-        .background { SectionGlow(section: plan.current?.section) }
+        .background(Color(.bg).ignoresSafeArea())
     }
 
     /// Новую сессию без сети не начать (PRODUCT.md, «Operating Context»): вместо перехода — объяснение у шага.
@@ -158,8 +158,8 @@ private struct StaleNotice: View {
                 systemName: reason == .offline
                     ? "wifi.slash" : "exclamationmark.arrow.trianglehead.2.clockwise.rotate.90")
         }
-        .gpText(GPType.subhead)
-        .foregroundStyle(Color(.textSecondary))
+        .gpText(\.meta)
+        .foregroundStyle(Color(.text2))
         .accessibilityIdentifier("today.stale")
     }
 }
@@ -171,8 +171,8 @@ private struct TodayLoadingView: View {
             ProgressView()
                 .controlSize(.regular)
             Text("Загружаем план на сегодня")
-                .gpText(GPType.subhead)
-                .foregroundStyle(Color(.textSecondary))
+                .gpText(\.meta)
+                .foregroundStyle(Color(.text2))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .accessibilityElement(children: .combine)
@@ -197,7 +197,7 @@ private struct TodayUnavailableView: View {
             } icon: {
                 Image(systemName: problem == .offline ? "wifi.slash" : "exclamationmark.triangle")
             }
-            .gpText(GPType.title3)
+            .gpText(\.h2)
         } description: {
             switch problem {
             case .offline: Text("План на сегодня загрузится, когда появится сеть.")
@@ -209,10 +209,10 @@ private struct TodayUnavailableView: View {
                 Text("Повторить")
                     .opacity(isRetrying ? 0 : 1)
                     .overlay {
-                        if isRetrying { ProgressView().tint(Color(.onAccent)) }
+                        if isRetrying { BusyIndicator() }
                     }
             }
-            .buttonStyle(PrimaryCapsuleStyle())
+            .buttonStyle(PrimaryCapsuleStyle(isBusy: isRetrying))
             .fixedSize()
             .disabled(isRetrying)
             .accessibilityIdentifier("today.retry")

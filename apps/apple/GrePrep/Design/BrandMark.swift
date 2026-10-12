@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Знак — та же лента шагов, что в приложении (макет T4-SignIn): три узла на нити и строки шагов.
 /// Это рисунок, а не раскладка: координаты — в его собственной сетке 30 × 30 (как path в SVG макета), рамку
-/// задаёт токен GPSize.brandGlyph.
+/// задаёт токен GPSpace.s32.
 struct BrandMark: View {
     var body: some View {
         Canvas { context, size in

@@ -75,7 +75,7 @@ private struct TrainingSessionContent: View {
             Group {
                 if let s = model.screen {
                     content(s, wide: wide)
-                        .background { SectionGlow(section: StudySection(s.training.session.section)) }
+                        .background(Color(.bg).ignoresSafeArea())
                         .navigationTitle(
                             s.result == nil
                                 ? Text(verbatim: TrainingText.sectionLabel(s.training.session.section)) : Text("Итог")
@@ -106,6 +106,7 @@ private struct TrainingSessionContent: View {
                     .background(Color(.bg))
                 }
             }
+            .environment(\.gpWideLayout, wide)
         }
         #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
@@ -170,57 +171,67 @@ private struct TrainingSessionContent: View {
     }
 
     private func content(_ s: SessionModel.Screen, wide: Bool) -> some View {
-        ScrollView {
-            Group {
-                if let result = s.result {
-                    VStack(alignment: .leading, spacing: GPSpace.s24) {
-                        SessionSummary(screen: s, result: result, wide: wide)
-                        Button("Все ответы и разборы") { review = true }
-                            .gpText(GPType.callout).frame(minHeight: GPSize.tapTarget)
-                            .accessibilityIdentifier("summary.review")
-                    }.frame(maxWidth: GPLayout.contentMax, alignment: .leading)
-                } else if wide && (s.revealed || s.training.isCheck) {
-                    HStack(alignment: .top, spacing: GPSpace.s32) {
-                        SessionQuestion(screen: s, onSelect: model.select, onReport: { reportPosition = s.position })
+        let twoColumns = wide && s.result == nil && (s.revealed || s.training.isCheck)
+        let columnWidth = twoColumns ? GPLayout.sessionMax : GPLayout.contentMax
+        return VStack(spacing: 0) {
+            ScrollView {
+                Group {
+                    if let result = s.result {
+                        VStack(alignment: .leading, spacing: GPSpace.s24) {
+                            SessionSummary(screen: s, result: result, wide: wide)
+                            Button("Все ответы и разборы") { review = true }
+                                .gpText(\.button).frame(minHeight: GPSize.tapTarget)
+                                .accessibilityIdentifier("summary.review")
+                        }.frame(maxWidth: GPLayout.contentMax, alignment: .leading)
+                    } else if twoColumns {
+                        HStack(alignment: .top, spacing: GPSpace.s32) {
+                            SessionQuestion(
+                                screen: s, onSelect: model.select, onReport: { reportPosition = s.position }
+                            )
                             .frame(maxWidth: GPLayout.contentMax)
-                        Group {
-                            if s.revealed {
-                                SessionExplanation(model: model, screen: s)
-                            } else {
-                                SessionOverview(model: model, screen: s)
+                            Group {
+                                if s.revealed {
+                                    SessionExplanation(model: model, screen: s)
+                                } else {
+                                    SessionOverview(model: model, screen: s)
+                                }
                             }
-                        }.frame(maxWidth: GPLayout.contentMax / 2)
-                    }.frame(maxWidth: GPLayout.contentMax * 1.5, alignment: .top)
-                } else if model.overview {
-                    SessionOverview(model: model, screen: s).frame(maxWidth: GPLayout.contentMax)
-                } else {
-                    VStack(alignment: .leading, spacing: GPSpace.s24) {
-                        SessionQuestion(screen: s, onSelect: model.select, onReport: { reportPosition = s.position })
-                        if s.revealed { SessionExplanation(model: model, screen: s) }
-                    }.frame(maxWidth: GPLayout.contentMax)
-                }
-            }.padding(GPLayout.gutter).frame(maxWidth: .infinity, alignment: .top)
-        }.scrollBounceBehavior(.basedOnSize)
-            .safeAreaInset(edge: .bottom) {
-                actions(s).frame(maxWidth: GPLayout.contentMax).padding(.horizontal, GPLayout.gutter)
-                    .padding(.vertical, GPSpace.s12).frame(maxWidth: .infinity).background(Color(.bg))
-            }
-            // Новый вопрос начинается сверху; разбор добавляется рядом с условием без принудительной прокрутки.
-            .id(s.result != nil ? "summary" : model.overview ? "overview" : "question-\(s.position)")
+                            // временно: роли нет, вопрос техлиду (11.10.2026)
+                            .frame(maxWidth: GPLayout.contentMax / 2)
+                        }.frame(maxWidth: GPLayout.sessionMax, alignment: .top)
+                    } else if model.overview {
+                        SessionOverview(model: model, screen: s).frame(maxWidth: GPLayout.contentMax)
+                    } else {
+                        VStack(alignment: .leading, spacing: GPSpace.s24) {
+                            SessionQuestion(
+                                screen: s, onSelect: model.select, onReport: { reportPosition = s.position })
+                            if s.revealed { SessionExplanation(model: model, screen: s) }
+                        }.frame(maxWidth: GPLayout.contentMax)
+                    }
+                }.padding(GPLayout.gutter).frame(maxWidth: .infinity, alignment: .top)
+            }.scrollBounceBehavior(.basedOnSize)
+                .accessibilityIdentifier("session.content")
+            actions(s).frame(maxWidth: columnWidth).padding(
+                .horizontal, GPLayout.gutter
+            )
+            .padding(.vertical, GPSpace.s12).frame(maxWidth: .infinity).background(Color(.bg))
+        }
+        // Новый вопрос начинается сверху; разбор добавляется рядом с условием без принудительной прокрутки.
+        .id(s.result != nil ? "summary" : model.overview ? "overview" : "question-\(s.position)")
     }
 
     private func actions(_ s: SessionModel.Screen) -> some View {
         VStack(spacing: GPSpace.s8) {
             if let problem = model.repeatProblem {
-                Text(problem.message).gpText(GPType.footnote).foregroundStyle(Color(.textSecondary))
+                Text(problem.message).gpText(\.meta).foregroundStyle(Color(.text2))
                     .accessibilityIdentifier("summary.problem")
             }
             if s.result == nil, !s.revealed, !model.overview {
                 if s.training.isCheck {
-                    Text("Разбор — после последнего вопроса").gpText(GPType.footnote).foregroundStyle(
-                        Color(.textSecondary))
+                    Text("Разбор — после последнего вопроса").gpText(\.meta).foregroundStyle(
+                        Color(.text2))
                 } else if let note = TrainingText.missing(s) {
-                    Text(verbatim: note).gpText(GPType.footnote).foregroundStyle(Color(.textSecondary))
+                    Text(verbatim: note).gpText(\.meta).foregroundStyle(Color(.text2))
                         .accessibilityIdentifier("session.note")
                 }
             }
@@ -235,7 +246,7 @@ private struct TrainingSessionContent: View {
                     } else {
                         Text("\(s.selectionKeys) — выбрать · Enter — проверить / дальше · → — дальше")
                     }
-                }.gpText(GPType.key).foregroundStyle(Color(.textSecondary)).accessibilityIdentifier("session.keys")
+                }.gpText(\.caption).foregroundStyle(Color(.text3)).accessibilityIdentifier("session.keys")
             }
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: GPSpace.s12) { buttons(s) }
@@ -258,10 +269,11 @@ private struct TrainingSessionContent: View {
                         "Повторить · \(TrainingCopy.questions(TrainingRules.repeatCount(result.review.reduce(0) { $0 + $1.mistakes })))"
                     )
                     .opacity(model.startingRepeat ? 0 : 1).overlay {
-                        if model.startingRepeat { ProgressView().tint(Color(.onAccent)) }
+                        if model.startingRepeat { BusyIndicator() }
                     }
-                }.buttonStyle(PrimaryCapsuleStyle()).disabled(model.startingRepeat).accessibilityIdentifier(
-                    "summary.repeat")
+                }.buttonStyle(PrimaryCapsuleStyle(isBusy: model.startingRepeat)).disabled(model.startingRepeat)
+                    .accessibilityIdentifier(
+                        "summary.repeat")
             }
         } else if model.overview {
             secondary(
@@ -286,10 +298,9 @@ private struct TrainingSessionContent: View {
 
     private func secondary(_ title: LocalizedStringKey, id: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Text(title).gpText(GPType.callout).fixedSize(horizontal: false, vertical: true)
+            Text(title).gpText(\.button).fixedSize(horizontal: false, vertical: true)
         }
-        .buttonStyle(.bordered).buttonBorderShape(.capsule).controlSize(.large)
-        .frame(minHeight: GPSize.button).accessibilityIdentifier(id)
+        .buttonStyle(SecondaryCapsuleStyle()).accessibilityIdentifier(id)
     }
 
     private func primary() {
@@ -315,13 +326,17 @@ struct SessionProgress: View {
     var body: some View {
         HStack(spacing: GPSpace.s8) {
             if let remaining = screen.remaining {
-                Image(systemName: "timer").accessibilityHidden(true)
-                Text(verbatim: String(format: "%d:%02d", remaining / 60, remaining % 60)).gpText(GPType.timer)
-                    .accessibilityLabel("Осталось \(remaining / 60) минут \(remaining % 60) секунд")
-                    .accessibilityIdentifier("session.timer")
+                HStack(spacing: GPSpace.s6) {
+                    Image(systemName: "timer").accessibilityHidden(true)
+                    Text(verbatim: String(format: "%d:%02d", remaining / 60, remaining % 60))
+                        .accessibilityLabel("Осталось \(remaining / 60) минут \(remaining % 60) секунд")
+                        .accessibilityIdentifier("session.timer")
+                }.gpText(\.meta).foregroundStyle(Color(.text2))
+                    .padding(.horizontal, GPSpace.s12).padding(.vertical, GPSpace.s6)
+                    .background(Color(.surface2), in: Capsule())
             }
-            Text("\(screen.position + 1) из \(screen.training.total)").gpText(GPType.footnote)
-                .foregroundStyle(Color(.textSecondary)).accessibilityLabel(
+            Text("\(screen.position + 1) из \(screen.training.total)").gpText(\.sessionCount)
+                .foregroundStyle(Color(.text2)).accessibilityLabel(
                     "Вопрос \(screen.position + 1) из \(screen.training.total)"
                 )
                 .accessibilityIdentifier("session.progress")
@@ -335,13 +350,14 @@ struct SessionOverview: View {
     private var section: StudySection { StudySection(screen.training.session.section) }
     var body: some View {
         VStack(alignment: .leading, spacing: GPSpace.s16) {
-            Text("Все вопросы").gpText(GPType.title3).accessibilityAddTraits(.isHeader)
+            Text("Все вопросы").gpText(\.h2).accessibilityAddTraits(.isHeader)
             let answered = screen.answeredCount
             let flagged = screen.training.answers.values.filter(\.flagged).count
-            Text("Отвечено \(answered) из \(screen.training.total) · отмечено \(flagged)").gpText(GPType.subhead)
-                .foregroundStyle(Color(.textSecondary)).accessibilityIdentifier("overview.status")
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: GPSize.rowTall), spacing: GPSpace.s8)], spacing: GPSpace.s8)
-            {
+            Text("Отвечено \(answered) из \(screen.training.total) · отмечено \(flagged)").gpText(\.meta)
+                .foregroundStyle(Color(.text2)).accessibilityIdentifier("overview.status")
+            LazyVGrid(
+                columns: [GridItem(.adaptive(minimum: GPSize.tapTarget), spacing: GPSpace.s8)], spacing: GPSpace.s8
+            ) {
                 ForEach(0..<screen.training.total, id: \.self) { index in
                     let answer = screen.training.answers[index]
                     let answered = screen.isAnswered(index)
@@ -350,21 +366,21 @@ struct SessionOverview: View {
                         model.goTo(index)
                     } label: {
                         VStack(spacing: GPSpace.s4) {
-                            Text(index + 1, format: .number).gpText(GPType.headline)
+                            Text(index + 1, format: .number).gpText(\.h3)
                             if flagged {
-                                Image(systemName: "flag.fill").gpText(GPType.key)
+                                Image(systemName: "flag.fill").gpText(\.caption)
                             } else if answered {
-                                Image(systemName: "checkmark").gpText(GPType.key)
+                                Image(systemName: "checkmark").gpText(\.caption)
                             }
-                        }.frame(maxWidth: .infinity, minHeight: GPSize.rowTall).padding(.vertical, GPSpace.s4)
-                            .foregroundStyle(answered ? section.color : Color(.text))
+                        }.frame(maxWidth: .infinity, minHeight: GPSize.tapTarget).padding(.vertical, GPSpace.s4)
+                            .foregroundStyle(answered ? section.ink : Color(.text))
                             .background(
                                 answered ? section.tint : Color(.surface),
-                                in: RoundedRectangle(cornerRadius: GPRadius.lg)
+                                in: RoundedRectangle(cornerRadius: GPRadius.m)
                             )
                             .overlay {
                                 if screen.position == index {
-                                    RoundedRectangle(cornerRadius: GPRadius.lg).stroke(
+                                    RoundedRectangle(cornerRadius: GPRadius.m).stroke(
                                         section.color, lineWidth: GPSize.hairline)
                                 }
                             }
@@ -391,16 +407,17 @@ struct SessionSummary: View {
     var body: some View {
         VStack(alignment: .leading, spacing: GPSpace.s24) {
             HStack(alignment: .firstTextBaseline, spacing: GPSpace.s12) {
-                Text(result.correct, format: .number).gpText(wide ? GPType.displayWide : GPType.display)
-                    .accessibilityIdentifier("summary.correct")
-                Text(verbatim: TrainingCopy.correctOf(result.total)).gpText(GPType.title3)
+                Text(result.correct, format: .number).gpText(wide ? \.numXxlWide : \.numXxl)
+                    .foregroundStyle(section.ink).accessibilityIdentifier("summary.correct")
+                Text(verbatim: TrainingCopy.correctOf(result.total)).gpText(wide ? \.numLabelWide : \.numLabel)
+                    .foregroundStyle(Color(.text2))
             }.accessibilityElement(children: .combine)
-            Text(verbatim: summaryLine).gpText(GPType.subhead).foregroundStyle(Color(.textSecondary))
+            Text(verbatim: summaryLine).gpText(\.meta).foregroundStyle(Color(.text2))
             if screen.training.finish?.timedOut == true {
                 Label("Время вышло — неотвеченные не считаются ошибками темы.", systemImage: "timer").gpText(
-                    GPType.subhead)
+                    \.meta)
                 if result.unanswered > 0 {
-                    Text("Не успел · \(TrainingCopy.questions(result.unanswered))").gpText(GPType.body)
+                    Text("Не успел · \(TrainingCopy.questions(result.unanswered))").gpText(\.body)
                         .accessibilityIdentifier("summary.unanswered")
                 }
             }
@@ -410,22 +427,22 @@ struct SessionSummary: View {
                         ? LocalizedStringKey("Ошибок нет, но не успели \(TrainingCopy.questions(result.unanswered)).")
                         : "Без ошибок — повторять нечего."
                 )
-                .gpText(GPType.body).accessibilityIdentifier("summary.noMistakes")
+                .gpText(\.body).accessibilityIdentifier("summary.noMistakes")
             } else {
-                Text("Что повторить").gpText(GPType.title3).accessibilityAddTraits(.isHeader)
+                Text("Что повторить").gpText(\.h2).accessibilityAddTraits(.isHeader)
                 ForEach(result.review, id: \.topicId) { topic in
                     HStack(alignment: .top, spacing: GPSpace.s12) {
                         Circle().fill(section.color).frame(width: GPSpace.s8, height: GPSpace.s8).padding(
                             .top, GPSpace.s8
                         ).accessibilityHidden(true)
                         VStack(alignment: .leading, spacing: GPSpace.s4) {
-                            Text(verbatim: topic.title.localized).gpText(GPType.headline)
+                            Text(verbatim: topic.title.localized).gpText(\.h3)
                             let places = TrainingCopy.positions(topic.positions)
                             let location =
                                 topic.positions.count == 1
                                 ? String(localized: "вопрос \(places)") : String(localized: "вопросы \(places)")
                             Text("\(TrainingCopy.mistakes(topic.mistakes)) · \(location)")
-                                .gpText(GPType.subhead).foregroundStyle(Color(.textSecondary))
+                                .gpText(\.meta).foregroundStyle(Color(.text2))
                         }
                     }.accessibilityElement(children: .combine)
                 }
