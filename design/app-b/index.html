@@ -1941,7 +1941,16 @@ document.addEventListener('click', (e) => {
     return;
   }
   const opt = e.target.closest('.frame .opt');
-  if (opt) { opt.closest('.opt-group').querySelectorAll('.opt').forEach(o => o.setAttribute('aria-checked', String(o === opt))); return; }
+  if (opt) {
+    // После проверки варианты не меняются; квадраты — несколько ответов, овалы — один в своей группе.
+    if (opt.disabled) return;
+    if (opt.getAttribute('role') === 'checkbox') { opt.setAttribute('aria-checked', String(opt.getAttribute('aria-checked') !== 'true')); return; }
+    const group = opt.closest('.opt-group, .opt-list, [role="radiogroup"]') || opt.parentElement;
+    group.querySelectorAll('.opt').forEach(o => o.setAttribute('aria-checked', String(o === opt)));
+    return;
+  }
+  const sent = e.target.closest('.frame .sent');
+  if (sent) { sent.closest('.passage').querySelectorAll('.sent').forEach(s => s.setAttribute('aria-pressed', String(s === sent))); return; }
   const lang = e.target.closest('.frame [data-lang-set]');
   if (lang) {
     const app = lang.closest('.app');
