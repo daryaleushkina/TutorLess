@@ -225,7 +225,7 @@ private fun ContinueRow(
                 Text(
                     text = stringResource(R.string.training_continue_subtitle, what, active.position + 1, active.total),
                     style = Gp.type.meta,
-                    color = section.color(colors),
+                    color = section.ink(colors),
                 )
             }
             Icon(

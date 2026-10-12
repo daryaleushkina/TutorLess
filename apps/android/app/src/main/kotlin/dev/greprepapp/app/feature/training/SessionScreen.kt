@@ -344,7 +344,7 @@ private fun QuestionHeading(
         Text(
             text = question.typeLabel(),
             style = Gp.type.meta,
-            color = section.color(Gp.colors),
+            color = section.ink(Gp.colors),
             modifier = Modifier.weight(1f),
         )
         TextButton(onClick = onReport, modifier = Modifier.testTag("question.report")) {
@@ -553,7 +553,7 @@ private fun SessionHeader(
                     Icon(
                         painter = painterResource(if (s.flagged) R.drawable.ic_flag_filled else R.drawable.ic_flag),
                         contentDescription = stringResource(if (s.flagged) R.string.question_unflag else R.string.question_flag),
-                        tint = if (s.flagged) section.color(Gp.colors) else Gp.colors.text,
+                        tint = if (s.flagged) section.ink(Gp.colors) else Gp.colors.text,
                     )
                 }
                 IconButton(onClick = actions.onOverview, modifier = Modifier.testTag("question.overview")) {
@@ -872,9 +872,9 @@ private fun OverviewCell(
     val description = stringResource(R.string.overview_item, position + 1, state)
     Surface(
         onClick = onClick,
-        color = if (isAnswered) colors.accentSoft else colors.surface,
+        color = if (isAnswered) colors.surface2 else colors.surface,
         shape = CircleShape,
-        border = BorderStroke(GpSize.hairline, if (position == s.position) colors.accent else colors.line),
+        border = BorderStroke(GpSize.hairline, if (position == s.position) colors.text else colors.line),
         modifier = Modifier.size(GpSize.button).semantics { contentDescription = description }.testTag("overview.$position"),
     ) {
         Box(contentAlignment = Alignment.Center) {
@@ -887,7 +887,7 @@ private fun OverviewCell(
                 Icon(
                     painter = painterResource(R.drawable.ic_flag_filled),
                     contentDescription = null,
-                    tint = colors.accent,
+                    tint = colors.text,
                     modifier = Modifier.align(Alignment.TopEnd).size(GpSpace.s14),
                 )
             }
@@ -947,7 +947,7 @@ private fun SummaryPane(
                 Text(
                     text = result.correct.toString(),
                     style = (if (Gp.isWide) Gp.type.numXxlWide else Gp.type.numXxl).copy(fontFeatureSettings = "tnum"),
-                    color = colors.text,
+                    color = section.ink(colors),
                     modifier = Modifier.testTag("summary.correct"),
                 )
                 Text(
@@ -1048,7 +1048,7 @@ private fun summaryLine(
     }
 }
 
-/** Ссылка-действие — accent без подчёркивания; высота касания сохраняется (DESIGN.md, «Primary»). */
+/** Ссылка-действие — цветом текста; томатный остаётся у главной кнопки (DESIGN.md). */
 @Composable
 fun LinkText(
     text: String,
@@ -1062,7 +1062,7 @@ fun LinkText(
                 .clickable(role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.CenterStart,
     ) {
-        Text(text = text, style = Gp.type.action, color = Gp.colors.accent)
+        Text(text = text, style = Gp.type.action, color = Gp.colors.text)
     }
 }
 

@@ -1,4 +1,4 @@
-// Дизайн-система на Compose: токены «Ночной студии» берутся из design/tokens/generated/android как есть (без копии —
+// Дизайн-система на Compose: токены стиля B берутся из design/tokens/generated/android как есть (без копии —
 // правится только источник design/tokens/src), поверх — тема, вшитые шрифты и общие элементы.
 plugins {
     alias(libs.plugins.android.library)

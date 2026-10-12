@@ -33,19 +33,20 @@ import greprep.design.GpRadius
 import greprep.design.GpThemeTokens
 import greprep.design.GpTypography
 
-/** Веса берутся из оси wght: тонкие цифры имеют настоящий рисунок 200/300, а не синтез системы. */
-val GeologicaFamily: FontFamily =
+/** Каждому весу, включая 650, соответствует точное значение оси wght переменного Onest. */
+val OnestFamily: FontFamily =
     FontFamily(
-        geologica(FontWeight.W200),
-        geologica(FontWeight.W300),
-        geologica(FontWeight.W400),
-        geologica(FontWeight.W500),
-        geologica(FontWeight.W600),
+        onest(FontWeight.W400),
+        onest(FontWeight.W500),
+        onest(FontWeight.W600),
+        onest(FontWeight(650)),
+        onest(FontWeight.W700),
+        onest(FontWeight.W800),
     )
 
-private fun geologica(weight: FontWeight) =
+private fun onest(weight: FontWeight) =
     Font(
-        resId = R.font.geologica_variable,
+        resId = R.font.onest_variable,
         weight = weight,
         variationSettings = FontVariation.Settings(FontVariation.weight(weight.weight)),
     )
@@ -60,13 +61,13 @@ val MathFamily: FontFamily =
     )
 
 private val LocalGpColors = staticCompositionLocalOf { GpDarkColors }
-private val LocalGpType = staticCompositionLocalOf { GpTypography.dark(GeologicaFamily, PlexMonoFamily) }
+private val LocalGpType = staticCompositionLocalOf { GpTypography.dark(OnestFamily, PlexMonoFamily) }
 
-// Контекст ночного режима несёт весь связанный набор: вес и свечение не могут разойтись с выбором темы.
+// Цвета и типографика переключаются вместе с выбранной темой приложения.
 private val LocalGpDark = staticCompositionLocalOf { GpDarkTheme }
 private val LocalGpWide = staticCompositionLocalOf { false }
 
-/** Доступ к токенам внутри темы: `Gp.colors.text`, `Gp.type.body`, `Gp.theme.glow`. */
+/** Доступ к токенам внутри темы: `Gp.colors.text`, `Gp.type.body`, `Gp.isDark`. */
 object Gp {
     val colors: GpColors
         @Composable @ReadOnlyComposable
@@ -91,7 +92,7 @@ object Gp {
 }
 
 /**
- * «Ночная студия» поверх Material 3. Тема приходит из хранилища приложения; цвета, тонкие веса и свечение
+ * Стиль B поверх Material 3. Тема приходит из хранилища приложения; цвета и типографика
  * переключаются вместе. largeText — множитель поверх системного масштаба, а не замена ему.
  */
 @Composable
@@ -104,7 +105,7 @@ fun GpTheme(
     val theme = if (darkTheme) GpDarkTheme else GpLightTheme
     val type =
         remember(darkTheme) {
-            if (darkTheme) GpTypography.dark(GeologicaFamily, PlexMonoFamily) else GpTypography.light(GeologicaFamily, PlexMonoFamily)
+            if (darkTheme) GpTypography.dark(OnestFamily, PlexMonoFamily) else GpTypography.light(OnestFamily, PlexMonoFamily)
         }
     val density = LocalDensity.current
     val scaled = if (largeText) Density(density.density, density.fontScale * GpTypography.TEXT_SCALE_LARGE) else density
@@ -143,34 +144,34 @@ private val gpShapes =
         extraLarge = RoundedCornerShape(GpRadius.l),
     )
 
-/** Слои Material — наши поверхности; индикатор выбранного пункта — accent-soft. */
+/** Томатный — у главной кнопки; остальные выбранные элементы используют цвет текста и поверхности. */
 internal fun GpColors.toMaterial(dark: Boolean): ColorScheme {
     val base = if (dark) darkColorScheme() else lightColorScheme()
     return base.copy(
-        primary = accent,
-        onPrimary = onAccent,
-        primaryFixed = accent,
-        primaryFixedDim = accent,
-        onPrimaryFixed = onAccent,
-        onPrimaryFixedVariant = onAccent,
-        primaryContainer = accentSoft,
-        onPrimaryContainer = accent,
-        secondary = accent,
-        onSecondary = onAccent,
-        secondaryFixed = accent,
-        secondaryFixedDim = accent,
-        onSecondaryFixed = onAccent,
-        onSecondaryFixedVariant = onAccent,
-        secondaryContainer = accentSoft,
-        onSecondaryContainer = accent,
-        tertiary = verbal,
+        primary = text,
+        onPrimary = bg,
+        primaryFixed = text,
+        primaryFixedDim = text2,
+        onPrimaryFixed = bg,
+        onPrimaryFixedVariant = bg,
+        primaryContainer = surface2,
+        onPrimaryContainer = text,
+        secondary = text,
+        onSecondary = bg,
+        secondaryFixed = text,
+        secondaryFixedDim = text2,
+        onSecondaryFixed = bg,
+        onSecondaryFixedVariant = bg,
+        secondaryContainer = surface2,
+        onSecondaryContainer = text,
+        tertiary = verbalInk,
         onTertiary = bg,
         tertiaryFixed = verbal,
         tertiaryFixedDim = verbal,
         onTertiaryFixed = bg,
         onTertiaryFixedVariant = bg,
         tertiaryContainer = verbalSoft,
-        onTertiaryContainer = verbal,
+        onTertiaryContainer = verbalInk,
         background = bg,
         onBackground = text,
         surface = surface,
@@ -181,7 +182,7 @@ internal fun GpColors.toMaterial(dark: Boolean): ColorScheme {
         surfaceContainerLow = navBg,
         surfaceContainer = surface,
         surfaceContainerHigh = surface2,
-        surfaceContainerHighest = surface2,
+        surfaceContainerHighest = surface3,
         surfaceBright = surface2,
         surfaceDim = bg,
         inverseSurface = text,

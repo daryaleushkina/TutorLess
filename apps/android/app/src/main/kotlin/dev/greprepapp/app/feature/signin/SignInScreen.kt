@@ -144,7 +144,7 @@ fun SignInContent(
 private fun Header() {
     Column(verticalArrangement = Arrangement.spacedBy(GpSpace.s20)) {
         Surface(
-            color = Gp.colors.accentSoft,
+            color = Gp.colors.surface2,
             shape = RoundedCornerShape(GpRadius.l),
             modifier = Modifier.size(GpSize.sideCard),
         ) {
@@ -152,7 +152,7 @@ private fun Header() {
                 Icon(
                     painter = painterResource(DesignR.drawable.ic_brand_mark),
                     contentDescription = null,
-                    tint = Gp.colors.accent,
+                    tint = Gp.colors.text,
                     modifier = Modifier.size(GpSize.iconButton),
                 )
             }

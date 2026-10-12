@@ -292,7 +292,7 @@ private fun Presets(
                 RadioButton(
                     selected = selected,
                     onClick = null,
-                    colors = RadioButtonDefaults.colors(selectedColor = Gp.colors.accent, unselectedColor = Gp.colors.text3),
+                    colors = RadioButtonDefaults.colors(selectedColor = Gp.colors.text, unselectedColor = Gp.colors.text3),
                 )
             }
         }
@@ -596,7 +596,7 @@ private fun TopicsContent(
                     Checkbox(
                         checked = checked,
                         onCheckedChange = null,
-                        colors = CheckboxDefaults.colors(checkedColor = Gp.colors.accent, checkmarkColor = Gp.colors.onAccent),
+                        colors = CheckboxDefaults.colors(checkedColor = Gp.colors.text, checkmarkColor = Gp.colors.bg),
                     )
                 }
             }

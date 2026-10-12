@@ -219,7 +219,15 @@ private fun ReviewList(
         ) {
             item(key = "head") {
                 Column(verticalArrangement = Arrangement.spacedBy(GpSpace.s16), modifier = Modifier.padding(bottom = GpSpace.s12)) {
-                    val numberStyle = (if (wide) Gp.type.numMWide else Gp.type.numL).toSpanStyle().merge(SpanStyle(color = Gp.colors.text))
+                    val numberStyle =
+                        (if (wide) Gp.type.numMWide else Gp.type.numL).toSpanStyle().merge(
+                            SpanStyle(
+                                color =
+                                    training.session.section
+                                        .study()
+                                        .ink(Gp.colors),
+                            ),
+                        )
                     val scoreLabel = pluralStringResource(R.plurals.summary_correct_of, result.total, result.total)
                     Text(
                         text =
@@ -320,7 +328,7 @@ private fun ReviewRow(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .background(if (selected) colors.accentSoft else androidx.compose.ui.graphics.Color.Transparent)
+                .background(if (selected) colors.surface2 else androidx.compose.ui.graphics.Color.Transparent)
                 .clickable(role = Role.Button, onClick = onClick)
                 .heightIn(min = GpSize.opt)
                 .padding(vertical = GpSpace.s8)
@@ -424,7 +432,7 @@ fun ReviewItemContent(
                             Text(
                                 text = question.typeLabel(),
                                 style = Gp.type.meta,
-                                color = section.color(Gp.colors),
+                                color = section.ink(Gp.colors),
                                 modifier = Modifier.weight(1f),
                             )
                             TextButton(onClick = onReport, modifier = Modifier.testTag("question.report")) {
@@ -490,7 +498,7 @@ private fun ReviewQuestion(
                 Text(stringResource(R.string.question_report), style = Gp.type.caption, color = Gp.colors.text2)
             }
         }
-        Text(question.typeLabel(), style = Gp.type.meta, color = section.color(Gp.colors))
+        Text(question.typeLabel(), style = Gp.type.meta, color = section.ink(Gp.colors))
         when (question.questionType) {
             QuestionType.QUANTITATIVE_COMPARISON -> {
                 Quantities(question)
@@ -615,8 +623,8 @@ fun ReportContent(
                                     FilterChipDefaults.filterChipColors(
                                         containerColor = if (Gp.isDark) colors.surface2 else colors.surface,
                                         labelColor = colors.text,
-                                        selectedContainerColor = colors.accentSoft,
-                                        selectedLabelColor = colors.accent,
+                                        selectedContainerColor = colors.surface2,
+                                        selectedLabelColor = colors.text,
                                     ),
                                 modifier = Modifier.heightIn(min = GpSize.tapTarget).testTag("report.kind.${kind.value}"),
                             )

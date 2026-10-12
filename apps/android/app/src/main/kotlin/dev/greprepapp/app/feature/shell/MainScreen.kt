@@ -275,23 +275,23 @@ private fun NavBackStack<NavKey>.popToRoot() {
     while (size > 1) removeLastOrNull()
 }
 
-/** Активная вкладка — accent на accentSoft; невыбранная — text3 снизу, text2 на рейке. */
+/** Активная вкладка — цветом текста на surface2; невыбранная — text3 снизу, text2 на рейке. */
 @Composable
 private fun navigationColors() =
     NavigationSuiteDefaults.itemColors(
         navigationBarItemColors =
             NavigationBarItemDefaults.colors(
-                selectedIconColor = Gp.colors.accent,
-                selectedTextColor = Gp.colors.accent,
-                indicatorColor = Gp.colors.accentSoft,
+                selectedIconColor = Gp.colors.text,
+                selectedTextColor = Gp.colors.text,
+                indicatorColor = Gp.colors.surface2,
                 unselectedIconColor = Gp.colors.text3,
                 unselectedTextColor = Gp.colors.text3,
             ),
         navigationRailItemColors =
             NavigationRailItemDefaults.colors(
-                selectedIconColor = Gp.colors.accent,
-                selectedTextColor = Gp.colors.accent,
-                indicatorColor = Gp.colors.accentSoft,
+                selectedIconColor = Gp.colors.text,
+                selectedTextColor = Gp.colors.text,
+                indicatorColor = Gp.colors.surface2,
                 unselectedIconColor = Gp.colors.text2,
                 unselectedTextColor = Gp.colors.text2,
             ),

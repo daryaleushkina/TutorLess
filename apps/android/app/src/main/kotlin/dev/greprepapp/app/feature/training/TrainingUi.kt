@@ -127,8 +127,8 @@ fun richText(text: String): AnnotatedString =
 enum class OptionMark { None, Selected, Correct, Wrong }
 
 /**
- * Вариант ответа (компонент answer-option): строка на плотной поверхности; выбранный — акцентная подложка и
- * обводка; после проверки — «верный» цветом right с галочкой и «ваш ответ» оранжевым с крестиком (DESIGN.md,
+ * Вариант ответа (компонент answer-option): строка на плотной поверхности; выбранный — спокойная подложка и
+ * обводка цветом текста; после проверки — «верный» цветом right с галочкой и «ваш ответ» оранжевым с крестиком (DESIGN.md,
  * «Правило двух цветов ответа»).
  */
 @Composable
@@ -141,10 +141,10 @@ fun OptionRow(
     onClick: (() -> Unit)? = null,
 ) {
     val colors = Gp.colors
-    val accent = colors.accent
+    val selectionColor = colors.text
     val container =
         when (mark) {
-            OptionMark.Selected -> colors.accentSoft
+            OptionMark.Selected -> colors.surface2
             OptionMark.Correct -> colors.rightSoft
             else -> colors.surface
         }
@@ -172,7 +172,7 @@ fun OptionRow(
     Surface(
         color = container,
         shape = RoundedCornerShape(GpRadius.m),
-        border = if (mark == OptionMark.Selected) BorderStroke(GpSize.hairline, accent) else null,
+        border = if (mark == OptionMark.Selected) BorderStroke(GpSize.hairline, selectionColor) else null,
         modifier = modifier.fillMaxWidth().then(clickable).testTag("option.${option.id}"),
     ) {
         Row(
@@ -180,7 +180,7 @@ fun OptionRow(
             horizontalArrangement = Arrangement.spacedBy(GpSpace.s12),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (letter != null) LetterBadge(letter, mark, accent)
+            if (letter != null) LetterBadge(letter, mark, selectionColor)
             Text(
                 text = option.text,
                 style =
@@ -201,12 +201,12 @@ fun OptionRow(
 private fun LetterBadge(
     letter: String,
     mark: OptionMark,
-    accent: Color,
+    selectionColor: Color,
 ) {
     val colors = Gp.colors
     val (bg, fg) =
         when (mark) {
-            OptionMark.Selected -> accent to colors.onAccent
+            OptionMark.Selected -> selectionColor to colors.bg
             OptionMark.Correct -> colors.surface to colors.right
             else -> colors.surface2 to colors.text2
         }
@@ -218,7 +218,7 @@ private fun LetterBadge(
     }
 }
 
-/** Вариант пропуска Text Completion (макет R5): компактная капсула, выбранная — акцентная подложка. */
+/** Вариант пропуска Text Completion (макет R5): компактная капсула, выбранная — спокойная подложка. */
 @Composable
 fun OptionChip(
     option: QuestionOption,
@@ -229,9 +229,9 @@ fun OptionChip(
     val colors = Gp.colors
     val interaction = remember { MutableInteractionSource() }
     Surface(
-        color = if (selected) colors.accentSoft else colors.surface,
+        color = if (selected) colors.surface2 else colors.surface,
         shape = RoundedCornerShape(GpRadius.m),
-        border = if (selected) BorderStroke(GpSize.hairline, colors.accent) else null,
+        border = if (selected) BorderStroke(GpSize.hairline, colors.text) else null,
         modifier =
             modifier
                 .pressScale(interaction)
@@ -289,7 +289,7 @@ fun PromptText(
     modifier: Modifier = Modifier,
 ) {
     val colors = Gp.colors
-    val accent = colors.accent
+    val selectionColor = colors.text
     val blank = stringResource(R.string.question_blank)
     val parts = question.prompt.split(BLANK)
     val many = question.groups.size > 1
@@ -309,7 +309,7 @@ fun PromptText(
                         ?.options
                         ?.firstOrNull { it.id in selection }
                 if (many && chosen != null) {
-                    withStyle(SpanStyle(color = accent, fontWeight = Gp.type.opt.fontWeight)) { append(chosen.text) }
+                    withStyle(SpanStyle(color = selectionColor, fontWeight = Gp.type.opt.fontWeight)) { append(chosen.text) }
                 } else {
                     withStyle(SpanStyle(textDecoration = TextDecoration.Underline, color = colors.text2)) { append(BLANK_GAP) }
                 }
@@ -536,7 +536,7 @@ private fun LanguageSwitch(
 }
 
 /**
- * Сегменты на surface2: выбранный — surface, в тёмной теме accentSoft с текстом accent.
+ * Сегменты на surface2: выбранный — surface с текстом text в обеих темах.
  * Капсула без рамок и галочки (DESIGN.md, «Сегменты»).
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -558,8 +558,8 @@ fun SegmentedChoice(
                 border = androidx.compose.foundation.BorderStroke(0.dp, Color.Transparent),
                 colors =
                     SegmentedButtonDefaults.colors(
-                        activeContainerColor = if (Gp.isDark) colors.accentSoft else colors.surface,
-                        activeContentColor = if (Gp.isDark) colors.accent else colors.text,
+                        activeContainerColor = colors.surface,
+                        activeContentColor = colors.text,
                         activeBorderColor = Color.Transparent,
                         inactiveContainerColor = colors.surface2,
                         inactiveContentColor = colors.text2,

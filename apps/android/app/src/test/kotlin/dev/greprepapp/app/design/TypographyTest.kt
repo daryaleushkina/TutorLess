@@ -13,10 +13,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import dev.greprepapp.app.testing.createAppComposeRule
-import dev.greprepapp.design.GeologicaFamily
 import dev.greprepapp.design.Gp
 import dev.greprepapp.design.GpTheme
 import dev.greprepapp.design.MathFamily
+import dev.greprepapp.design.OnestFamily
 import dev.greprepapp.design.PlexMonoFamily
 import greprep.design.GpDarkColors
 import greprep.design.GpDarkTheme
@@ -41,14 +41,13 @@ class TypographyTest(
     @get:Rule val compose = createAppComposeRule()
 
     @Test
-    fun everyRoleRendersWithItsBundledFamilyAndThematicWeight() {
+    fun everyRoleRendersWithItsBundledFamilyAndStyleBWeight() {
         val styles = linkedMapOf<String, TextStyle>()
         val resolved = mutableListOf<Typeface>()
         compose.setContent {
             GpTheme(darkTheme = dark) {
                 assertSame(if (dark) GpDarkColors else GpLightColors, Gp.colors)
                 assertSame(if (dark) GpDarkTheme else GpLightTheme, Gp.theme)
-                assertEquals(if (dark) FontWeight.W200 else FontWeight.W300, Gp.theme.thin)
                 // Все роли, включая будущие экраны: новая роль автоматически попадает в проверку.
                 Gp.type.javaClass.declaredFields.filter { it.type == TextStyle::class.java }.forEach { field ->
                     field.isAccessible = true
@@ -64,12 +63,16 @@ class TypographyTest(
                 }
             }
         }
-        assertEquals(GeologicaFamily, layout("material · Пример").layoutInput.style.fontFamily)
-        assertTrue(styles.keys.containsAll(ThinRoles))
+        assertEquals(OnestFamily, layout("material · Пример").layoutInput.style.fontFamily)
+        assertTrue(styles.keys.containsAll(DisplayRoles))
         styles.forEach { (name, style) ->
-            val expected: FontFamily = if (name == "ipa") PlexMonoFamily else GeologicaFamily
+            val expected: FontFamily = if (name == "ipa") PlexMonoFamily else OnestFamily
             assertEquals(name, expected, layout("$name · Пример 123").layoutInput.style.fontFamily)
-            if (name in ThinRoles) assertEquals(name, if (dark) FontWeight.W200 else FontWeight.W300, style.fontWeight)
+            if (name in DisplayRoles) assertEquals(name, FontWeight.W800, style.fontWeight)
+        }
+        listOf("sectionName", "answer").forEach { assertEquals(it, FontWeight(650), styles.getValue(it).fontWeight) }
+        listOf("sectionStat", "sectionStatWide", "statValue").forEach {
+            assertEquals(it, FontWeight.W700, styles.getValue(it).fontWeight)
         }
         resolved.forEach { assertNotEquals("шрифт не подменился системным", Typeface.DEFAULT, it) }
     }
@@ -88,6 +91,8 @@ class TypographyTest(
                         androidx.compose.ui.graphics.Color.Transparent.value
                             .toLong()
                 val scheme = MaterialTheme.colorScheme
+                assertEquals(Gp.colors.text, scheme.primary)
+                assertEquals(Gp.colors.verbalInk, scheme.onTertiaryContainer)
                 scheme.javaClass.declaredFields.filter { it.type == java.lang.Long.TYPE }.forEach { field ->
                     field.isAccessible = true
                     assertTrue("Material ${field.name} должен быть токеном", field.getLong(scheme) in tokenColors)
@@ -117,20 +122,29 @@ class TypographyTest(
     }
 
     companion object {
-        private val ThinRoles =
+        private val DisplayRoles =
             setOf(
-                "sectionStat",
-                "sectionStatWide",
                 "sessionCount",
                 "sessionCountWide",
                 "scoreNum",
                 "scoreNumWide",
-                "statValue",
                 "examName",
                 "examNameWide",
                 "headword",
                 "headwordWide",
                 "weekCount",
+                "numS",
+                "numSWide",
+                "numM",
+                "numMWide",
+                "numL",
+                "numLWide",
+                "numXl",
+                "numXlWide",
+                "numXxl",
+                "numXxlWide",
+                "numCompact",
+                "numCompactWide",
             )
 
         @JvmStatic

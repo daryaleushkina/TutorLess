@@ -67,7 +67,7 @@ fun GpSecondaryButton(
                 disabledContainerColor = colors.surface2,
                 disabledContentColor = colors.text3,
             ),
-        contentPadding = PaddingValues(horizontal = GpSpace.s24),
+        contentPadding = PaddingValues(horizontal = GpSpace.s20),
         modifier =
             modifier
                 .defaultMinSize(minHeight = GpSize.button)
@@ -103,12 +103,11 @@ fun GpPrimaryButton(
                 disabledContainerColor = if (busy) colors.accent else colors.surface2,
                 disabledContentColor = if (busy) colors.onAccent else colors.text3,
             ),
-        contentPadding = PaddingValues(horizontal = GpSpace.s24),
+        contentPadding = PaddingValues(horizontal = GpSpace.s20),
         modifier =
             modifier
                 .defaultMinSize(minHeight = GpSize.button)
-                .pressScale(interaction)
-                .primaryGlow(enabled || busy),
+                .pressScale(interaction),
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(

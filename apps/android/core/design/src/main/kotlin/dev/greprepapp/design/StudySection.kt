@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import greprep.design.GpColors
 
-/** Раздел подготовки и его цвета: метка и мягкая подложка (DESIGN.md, «Цвета разделов»). */
+/** Цвет метки, контрастный цвет текста и мягкая подложка раздела (DESIGN.md). */
 enum class StudySection(
     @param:DrawableRes val icon: Int,
 ) {
@@ -27,6 +27,15 @@ enum class StudySection(
             Essay -> colors.essay
         }
 
+    /** Базовая палитра остаётся у меток; подписи и цифры используют контрастную пару. */
+    fun ink(colors: GpColors): Color =
+        when (this) {
+            Verbal -> colors.verbalInk
+            Quant -> colors.quantInk
+            Words -> colors.wordsInk
+            Essay -> colors.essayInk
+        }
+
     fun soft(colors: GpColors): Color =
         when (this) {
             Verbal -> colors.verbalSoft
@@ -36,7 +45,7 @@ enum class StudySection(
         }
 }
 
-/** Плоский фон: единственный свет на экране принадлежит главной кнопке. */
+/** Спокойный фон в выбранной теме, без декоративных слоёв. */
 @Composable
 fun SectionBackground(
     modifier: Modifier = Modifier,

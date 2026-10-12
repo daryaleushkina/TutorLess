@@ -215,7 +215,7 @@ private fun CurrentStepCard(
             Text(
                 text = step.section.label(),
                 style = Gp.type.eyebrow,
-                color = step.section.color(colors),
+                color = step.section.ink(colors),
             )
             GpPrimaryButton(
                 text = stringResource(R.string.today_start),
@@ -266,7 +266,7 @@ private fun QuietStep(
                     style = Gp.type.opt,
                     color = colors.text,
                 )
-                Text(text = step.section.label(), style = Gp.type.meta, color = step.section.color(colors))
+                Text(text = step.section.label(), style = Gp.type.meta, color = step.section.ink(colors))
             }
             Minutes(step)
         }
