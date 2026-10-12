@@ -45,3 +45,4 @@ tools/dev/backlog.sh           # пересобрать это зеркало
 - [#41](https://github.com/daryaleushkina/TutorLess/issues/41) Apple: снимок training-report-failed-ipad-dark нестабилен — фон системной кнопки «Отмена»
 - [#42](https://github.com/daryaleushkina/TutorLess/issues/42) Вход через Telegram на сайте и в приложениях: убрать (решение Даши 10.10.2026)
 - [#43](https://github.com/daryaleushkina/TutorLess/issues/43) Android: конструктор на 320 dp при шрифте 200 % — «Тип» рвётся на буквы, кнопка «Начать» обрезана
+- [#44](https://github.com/daryaleushkina/TutorLess/issues/44) Токены тени и затемнения для стиля B (шторка, всплывающее окно)
