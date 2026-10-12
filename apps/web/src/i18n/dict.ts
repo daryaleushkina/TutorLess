@@ -22,10 +22,17 @@ function en(one: string, other: string): Plural {
   return (n) => (enRules.select(n) === 'one' ? one : other).replace('#', String(n));
 }
 
+const topicCountRu = ru({ one: '# тема', few: '# темы', many: '# тем', other: '# темы' });
+const availableCountRu = ru({ one: '# задание', few: '# задания', many: '# заданий', other: '# задания' });
+const questionCountRu = ru({ one: '# вопроса', few: '# вопросов', many: '# вопросов', other: '# вопроса' });
+const availableCountEn = en('# question available', '# questions available');
+const questionCountEn = en('# question', '# questions');
+const topicCountEn = en('# topic', '# topics');
+
 const trainingRu = {
   review_next: 'Следующий',
   report_toast: 'Спасибо — проверим и поправим',
-  topics_title: 'Темы', builder_starting: 'Начинаем…', topics_done_count: (selected: number, total: number) => `Готово · ${selected} тем из ${total}`,
+  topics_title: 'Темы', builder_starting: 'Начинаем…', topics_done_count: (selected: number, total: number) => `Готово · ${topicCountRu(selected)} из ${total}`,
   question_return: 'Вернуться', instruction_two: 'Выберите два слова.', instruction_blanks: 'Выберите по одному слову для каждого пропуска.', instruction_one: 'Выберите один ответ.',
   answer_yours: 'Ваш ответ', answer_correct: 'Верный ответ', all_options: 'Все варианты', hide_options: 'Свернуть варианты',
   explanation_title: 'Разбор', verdict_dont_know: 'Разберём', dont_know_note: 'Задание попадёт в «Повторить мои ошибки»',
@@ -33,11 +40,11 @@ const trainingRu = {
   previous_notice: (position: number, current: number) => `Это вопрос ${position} — ответ уже засчитан, изменить его нельзя. Вы остановились на вопросе ${current}.`,
   timeout_title: 'Время вышло', timeout_text: (answered: number, total: number) => `Ответы сохранены: ${answered} из ${total}. Остальные засчитаны как без ответа — их разберём вместе со всеми.`,
   to_summary: 'К итогу', continue_check: 'Продолжить', finish_confirm: (count: number) => `Без ответа: ${count}. Завершить?`,
-  exit_check: 'Выйти из проверки?', exit_practice: 'Выйти из тренировки?', exit_save: 'Ответы сохранятся.', exit_action: 'Выйти',
+  exit_check: 'Выйти из проверки?', exit_practice: 'Выйти из тренировки?', exit_save: 'Ответы сохранятся, время продолжит идти', exit_action: 'Выйти',
   review_flagged: (count: number) => `Отмеченные · ${count}`, review_no_flagged: 'Отмеченных вопросов нет.',
   review_time: 'Время на вопрос', review_slow: 'дольше среднего',
   types_mixed: 'Все типы вперемешку', topics_clear: 'Снять все', topics_select: 'Выбрать все', topics_empty: 'Выберите хотя бы одну тему',
-  topics_available: (count: number, shortened: boolean) => `Подходит ${count} заданий${shortened ? ` — тренировка будет из ${count} вопросов` : ''}`,
+  topics_available: (count: number, shortened: boolean) => `Подходит ${availableCountRu(count)}${shortened ? ` — тренировка будет из ${questionCountRu(count)}` : ''}`,
   check_hint: (count: string, minutes: number) => `На время, как на экзамене: ${minutes} мин на ${count}, разбор — в конце.`,
   question_offline: 'Нет сети — ответы сохранятся и уйдут сами.',
   question_report: 'Сообщить об ошибке', summary_all_answers: 'Все ответы и разборы',
@@ -131,7 +138,7 @@ const trainingRu = {
 const trainingEn = {
   review_next: 'Next',
   report_toast: 'Thank you — we’ll check and fix it',
-  topics_title: 'Topics', builder_starting: 'Starting…', topics_done_count: (selected: number, total: number) => `Done · ${selected} of ${total} topics`,
+  topics_title: 'Topics', builder_starting: 'Starting…', topics_done_count: (selected: number, total: number) => `Done · ${selected} of ${topicCountEn(total)}`,
   question_return: 'Return', instruction_two: 'Choose two words.', instruction_blanks: 'Choose one word for each blank.', instruction_one: 'Choose one answer.',
   answer_yours: 'Your answer', answer_correct: 'Correct answer', all_options: 'All options', hide_options: 'Hide options',
   explanation_title: 'Explanation', verdict_dont_know: 'Let’s work through it', dont_know_note: 'Added to “Repeat my mistakes”',
@@ -139,11 +146,11 @@ const trainingEn = {
   previous_notice: (position: number, current: number) => `This is question ${position}. Your answer has been recorded and cannot be changed. You stopped at question ${current}.`,
   timeout_title: 'Time is up', timeout_text: (answered: number, total: number) => `${answered} of ${total} answers saved. The rest count as unanswered; you can review them all.`,
   to_summary: 'View results', continue_check: 'Continue', finish_confirm: (count: number) => `${count} unanswered. Finish?`,
-  exit_check: 'Leave the check?', exit_practice: 'Leave the practice?', exit_save: 'Your answers will be saved.', exit_action: 'Leave',
+  exit_check: 'Leave the check?', exit_practice: 'Leave the practice?', exit_save: 'Your answers will be saved and the timer will keep running', exit_action: 'Leave',
   review_flagged: (count: number) => `Flagged · ${count}`, review_no_flagged: 'No flagged questions.',
   review_time: 'Time per question', review_slow: 'longer than average',
   types_mixed: 'All types mixed', topics_clear: 'Clear all', topics_select: 'Select all', topics_empty: 'Choose at least one topic',
-  topics_available: (count: number, shortened: boolean) => `${count} questions available${shortened ? ` — your practice will have ${count} questions` : ''}`,
+  topics_available: (count: number, shortened: boolean) => `${availableCountEn(count)}${shortened ? ` — your practice will have ${questionCountEn(count)}` : ''}`,
   check_hint: (count: string, minutes: number) => `Exam pace: ${minutes} minutes for ${count}, explanations at the end.`,
   question_offline: 'No connection — answers will be saved and sent automatically.',
   question_report: 'Report a mistake', summary_all_answers: 'All answers and explanations',

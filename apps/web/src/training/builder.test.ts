@@ -90,3 +90,20 @@ describe('конструктор — поведение Android', () => {
     expect(minutes({ ...options, types: [] }, { ...request, questionTypes: [...request.questionTypes] })).toBe(0);
   });
 });
+
+test('смешанная проверка считает все типы и не отправляет скрытую сложность', () => {
+  const state = initialBuilder(trainingOptions());
+  state.form = { ...state.form, mode: 'check', mixed: true, difficulty: 'hard' };
+  expect(available(state)).toBe(24);
+  expect(requestOf(state, 'gre')).toMatchObject({ questionTypes: ['text_completion', 'sentence_equivalence'] });
+  expect(requestOf(state, 'gre')).not.toHaveProperty('difficulty');
+});
+
+test('восстановленный смешанный набор очищает сложность и не меняет каталог сервера', () => {
+  const options = trainingOptions();
+  const original = { ...options.presets[0]!.request, difficulty: 'hard' as const };
+  const state = initialBuilder({ ...options, presets: [{ kind: 'last', request: original }] });
+  expect(state.form.difficulty).toBeUndefined();
+  expect(requestOf(state, 'gre')).not.toHaveProperty('difficulty');
+  expect(original.difficulty).toBe('hard');
+});

@@ -61,6 +61,7 @@ test('конструктор и темы тренировки', async ({ site: p
   await page.getByRole('radio', { name: 'Text Completion', exact: true }).click();
   await page.getByRole('button', { name: /Темы и сложность/ }).click();
   await expect(page.getByRole('heading', { name: 'Темы и сложность' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Готово · 3 темы из 3', exact: true })).toBeVisible();
   await checkScreen(page, 'training-b-topics');
   await page.getByRole('button', { name: /^Готово ·/ }).click();
   await page.getByRole('button', { name: /^(Начать ·|Начинаем…)/ }).click();

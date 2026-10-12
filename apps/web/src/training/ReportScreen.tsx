@@ -1,5 +1,6 @@
 import type { QuestionReport } from '@greprep/api-client';
-import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
+import { Link, useNavigate, useParams, useSearch } from '@tanstack/react-router';
+import { BackIcon } from '../components/icons';
 import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { StatusScreen } from '../components/StatusScreen';
 import { useI18n } from '../i18n/i18n';
@@ -43,7 +44,8 @@ export function ReportScreen() {
   const back = () => void (returnTo === 'review' ? navigate({ to: '/training/$trainingId/review/$position', params: { trainingId, position }, search: { filter, language } }) : navigate({ to: '/training/$trainingId', params: { trainingId }, search: { language } }));
   const cancelRef = useRef<() => void>(back);
   const cancel = () => cancelRef.current();
-  return <ReadTraining id={trainingId} back={null} backButton={false} onBack={cancel}>
+  const fallbackBack = returnTo === 'review' ? <Link to="/training/$trainingId/review/$position" params={{ trainingId, position }} search={{ filter, language }} className={styles.back}><BackIcon />{t.back}</Link> : <Link to="/training/$trainingId" params={{ trainingId }} search={{ language }} className={styles.back}><BackIcon />{t.back}</Link>;
+  return <ReadTraining id={trainingId} back={fallbackBack} backInContent backButton="fallback" onBack={cancel}>
     {(training) => <>{training.session.items[position ?? -1] && <QuestionPrompt question={training.session.items[position!]!.question} selection={training.answers[String(position)]?.optionIds ?? []} />}<TrainingSheet title={t.training.question_report} onClose={cancel}><ReportForm key={`${trainingId}/${position}`} training={training} position={position} onBack={back} cancelRef={cancelRef} /></TrainingSheet></>}
   </ReadTraining>;
 }

@@ -299,7 +299,7 @@ export class TrainingRepository {
       }
     }
     for (const pending of await this.store.reports(owner)) {
-      const outcome = await this.send(owner, generation, () => this.api.report(pending.questionId, pending.report),
+      const outcome = await this.send(owner, generation, () => this.api.report(pending.questionId, { ...pending.report, reportId: pending.id }),
         () => this.store.removeReport(owner, pending.id), 'training report');
       if (outcome === 'stop') return;
     }

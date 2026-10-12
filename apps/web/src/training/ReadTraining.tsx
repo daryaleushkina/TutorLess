@@ -12,16 +12,17 @@ import { TrainingFeedback } from './TrainingFeedback';
 
 /** Глубокая ссылка не обходит состояние сессии: разбор доступен только после её окончания. */
 export function ReadTraining({ id, finishedOnly = false, wide = false, backButton = true, backInContent = false, back, onBack, children }: {
-  id: string; finishedOnly?: boolean; wide?: boolean; backButton?: boolean; backInContent?: boolean; back: ReactNode; onBack: () => void; children: (training: StoredTraining) => ReactNode;
+  id: string; finishedOnly?: boolean; wide?: boolean; backButton?: boolean | 'fallback'; backInContent?: boolean; back: ReactNode; onBack: () => void; children: (training: StoredTraining) => ReactNode;
 }) {
   const { t } = useI18n();
   const { shell } = useShell();
   const training = useStoredTraining(id);
   const storage = useTrainingStorage();
-  useBackButton(shell === 'telegram' && backButton ? onBack : null);
+  const ready = storage === 'ready' && !training.isPending && Boolean(training.data && (!finishedOnly || training.data.finish));
+  useBackButton(shell === 'telegram' && (backButton === true || backButton === 'fallback' && !ready) ? onBack : null);
   return <FocusLayout training wide={wide} session>
     <div className={`${styles.screen} ${styles.readTraining}`} data-shell={shell} data-wide={wide} data-section={training.data?.session.section}>
-      {shell === 'site' && (!backInContent || storage !== 'ready' || !training.data || finishedOnly && !training.data.finish) && back}
+      {shell === 'site' && (!backInContent || !ready) && back}
       <TrainingFeedback />
       {storage === 'blocked' ? <TrainingStorageBlocked /> : storage === 'unavailable' ? <StatusScreen title={t.training.training_storage_title} text={t.training.training_storage_message} /> :
         training.isPending ? <p role="status">{t.home.loading}</p> : !training.data || finishedOnly && !training.data.finish ?

@@ -59,7 +59,7 @@ function ActiveSession({ incoming }: { incoming: StoredTraining }) {
   const [pastExplanation, setPastExplanation] = useState(false);
   useEffect(() => { setPastExplanation(false); }, [s.position]);
   const close = () => { if (s.checkMode && !s.training.finish) setConfirmation('exit'); else void navigate({ to: '/' }); };
-  useBackButton(shell === 'telegram' && !s.overview && !confirmation ? close : null);
+  useBackButton(shell === 'telegram' && (s.training.finish || !s.overview && !confirmation) ? close : null);
   const total = s.training.session.items.length;
   const last = s.position === total - 1;
   const primary = s.browsingPast ? text.overview_back(s.returnPosition + 1) : s.overview ? text.overview_finish : s.checkMode ? last ? text.question_to_list : s.selection.length ? text.question_next(s.position + 2, total) : text.question_skip : s.revealed ? last ? text.question_result : text.question_next(s.position + 2, total) : text.question_check;
@@ -135,7 +135,7 @@ function ActiveSession({ incoming }: { incoming: StoredTraining }) {
           <h1 ref={heading} tabIndex={-1} className={styles.questionType}>{TYPE_LABELS[s.question.questionType]}{typeNote && ` · ${typeNote}`}</h1>
           {!s.revealed && <p className={styles.note} role={s.selectionLimit ? 'status' : undefined}>{answerFormat(s.question)?.instruction(s.question, text)}</p>}
           <QuestionPrompt question={s.question} selection={s.revealed ? s.question.answer : s.selection} revealed={s.revealed} />
-          <Options question={s.question} selection={s.selection} revealed={s.revealed} compact={s.browsingPast} onSelect={s.select} />
+          <Options key={s.question.id} question={s.question} selection={s.selection} revealed={s.revealed} compact={s.browsingPast} onSelect={s.select} />
         </section>
         {s.browsingPast && !pastExplanation && <button className={styles.textButton} onClick={() => setPastExplanation(true)}>{text.show_explanation}</button>}
         {s.revealed && (!s.browsingPast || pastExplanation) && <Explanation question={s.question} chosen={s.answer?.optionIds ?? []} language={language} onLanguage={(language) => { setLanguage(language); void navigate({ to: '/training/$trainingId', params: { trainingId: s.training.session.id }, search: { language }, replace: true }); }} />}

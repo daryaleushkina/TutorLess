@@ -169,7 +169,7 @@
 .offlineNotice svg { width: var(--size-icon-sm); height: var(--size-icon-sm); flex: none; }
 .sheetDialog { position: fixed; inset: auto 0 0; margin: 0; width: 100%; max-width: none; max-height: calc(var(--app-height) - var(--app-inset-top)); padding: 0; overflow: auto; color: var(--color-text); background: var(--color-bg); border: var(--size-hairline) solid var(--color-line); border-radius: var(--radius-l) var(--radius-l) 0 0; }
 .sheetDialog::backdrop { background: rgb(from var(--color-on-accent) r g b / var(--opacity-disabled)); }
-.sheetBody { padding: var(--space-20) var(--layout-gutter) calc(var(--space-24) + var(--app-inset-bottom)); display: grid; gap: var(--space-20); }
+.sheetBody { padding: var(--space-20) calc(var(--layout-gutter) + var(--app-inset-right)) calc(var(--space-24) + var(--app-inset-bottom)) calc(var(--layout-gutter) + var(--app-inset-left)); display: grid; gap: var(--space-20); }
 .sheetHeading { display: flex; align-items: center; justify-content: space-between; gap: var(--space-12); }
 .sheetHeading h2 { font: var(--font-h2); letter-spacing: var(--tracking-h2); }
 .timeout { display: flex; flex-direction: column; gap: var(--space-16); align-items: center; justify-content: center; min-height: 100%; text-align: center; }
@@ -181,7 +181,7 @@
   .session[data-shell='site'] .questionLayout:not(:has(.explanation)) { max-width: var(--layout-content-max); margin-inline: auto; width: 100%; }
   .explanation { border: 0; padding: 0; }
   .sheetDialog { inset: 0; margin: auto; max-width: var(--layout-content-max); border-radius: var(--radius-l); max-height: calc(var(--app-height) - var(--space-48)); }
-  .sheetBody { padding: var(--space-24); }
+  .sheetBody { padding: var(--space-24) calc(var(--space-24) + var(--app-inset-right)) var(--space-24) calc(var(--space-24) + var(--app-inset-left)); }
   .sessionFooter[data-shell='site'] { border-top: var(--size-hairline) solid var(--color-line); }
   .sessionFooter[data-shell='site'] .footerContent { justify-items: end; }
   .sessionFooter[data-shell='site'] .actions { justify-content: flex-end; }
@@ -200,7 +200,7 @@
 
 .iconAction { width: var(--size-button); padding: 0; }
 .iconAction svg { width: var(--size-icon); height: var(--size-icon); }
-.feedback { position: fixed; z-index: 2; bottom: calc(var(--app-inset-bottom) + var(--size-button) + var(--space-32)); left: var(--layout-gutter); right: var(--layout-gutter); max-width: var(--layout-content-max); margin-inline: auto; padding: var(--space-12) var(--space-16); border-radius: var(--radius-m); background: var(--color-text); color: var(--color-bg); font: var(--font-meta); text-align: center; }
+.feedback { position: fixed; z-index: 2; bottom: calc(var(--app-inset-bottom) + var(--size-button) + var(--space-32)); left: calc(var(--layout-gutter) + var(--app-inset-left)); right: calc(var(--layout-gutter) + var(--app-inset-right)); max-width: var(--layout-content-max); margin-inline: auto; padding: var(--space-12) var(--space-16); border-radius: var(--radius-m); background: var(--color-text); color: var(--color-bg); font: var(--font-meta); text-align: center; }
 @media (min-width: 900px) {
   [data-builder] .sessionFooter { padding: 0; }
   [data-builder] .sessionFooter { border-top: 0; }

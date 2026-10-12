@@ -104,3 +104,11 @@ describe('все строки-функции отвечают текстом н�
 });
 
 it('длительность недели — часы и минуты без потери времени', () => { expect(dictionaries.ru.home.duration(18)).toBe('18 мин'); expect(dictionaries.ru.home.duration(130)).toBe('2 ч 10 мин'); expect(dictionaries.en.home.duration(18)).toBe('18 min'); expect(dictionaries.en.home.duration(130)).toBe('2 hr 10 min'); });
+
+it('числа в конструкторе склоняются на обоих языках', () => {
+  expect(dictionaries.ru.training.topics_available(1, false)).toBe('Подходит 1 задание');
+  expect(dictionaries.ru.training.topics_done_count(1, 2)).toBe('Готово · 1 тема из 2');
+  expect(dictionaries.ru.training.topics_done_count(3, 4)).toBe('Готово · 3 темы из 4');
+  expect(dictionaries.en.training.topics_available(1, false)).toBe('1 question available');
+  expect(dictionaries.en.training.topics_done_count(1, 1)).toBe('Done · 1 of 1 topic');
+});

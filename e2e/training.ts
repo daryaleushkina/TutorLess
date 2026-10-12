@@ -347,7 +347,14 @@ export async function stableTrainingScreens(page: Page, capture = true) {
   await page.getByRole('button', { name: 'Готово', exact: true }).click();
   const check = await startSession(page, 'check', 50);
   await page.getByRole('button', { name: 'Отметить, чтобы вернуться' }).click();
-  if (capture) await checkScreen(page, 'training-b-timed');
+  if (capture) {
+    await checkScreen(page, 'training-b-timed');
+    if (new URL(page.url()).pathname.startsWith('/tg/')) await trainingBack(page);
+    else await page.getByRole('button', { name: 'Закрыть тренировку', exact: true }).click();
+    await expect(page.getByRole('dialog', { name: 'Выйти из проверки?', exact: true })).toBeVisible();
+    await checkScreen(page, 'training-b-exit');
+    await page.getByRole('button', { name: 'Продолжить', exact: true }).click();
+  }
   await page.getByRole('button', { name: 'Пропустить', exact: true }).click();
   await pick(page, check.items[1]!.question);
   await page.getByRole('button', { name: 'Вопросы', exact: true }).click();

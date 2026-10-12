@@ -71,7 +71,9 @@ function ReadyBuilder({ options }: { options: TrainingOptions }) {
   const multipleTypes = form.mode === 'check' && form.mixed;
   const selectedTopics = topicsOf(state);
   const request = requestOf(state, exam);
-  const countLabel = text.questionsCount(request?.count ?? available(state));
+  const totalAvailable = available(state);
+  const displayRequest = request && { ...request, count: Math.min(request.count, totalAvailable) };
+  const countLabel = text.questionsCount(displayRequest?.count ?? totalAvailable);
   const edit = (change: (form: BuilderForm) => BuilderForm) => {
     setState((previous) => ({ ...previous, form: change(previous.form), preset: undefined }));
     setProblem(null);
@@ -95,7 +97,6 @@ function ReadyBuilder({ options }: { options: TrainingOptions }) {
   };
 
   const topicCount = form.topicIds?.length ?? selectedTopics.length;
-  const totalAvailable = available(state);
   return <FocusLayout tabs={!topics} training><div className={styles.screen} data-shell={shell} data-builder>
     {shell === 'site' && <button type="button" className={styles.back} onClick={back}><BackIcon />{t.back}</button>}
     <h1 className={styles.title}>{topics ? text.builder_topics : text.training_new}</h1>
@@ -127,18 +128,18 @@ function ReadyBuilder({ options }: { options: TrainingOptions }) {
         </div></div>}
         <div className={styles.modeRow}><div className={styles.row}><span>{text.builder_mode}</span><div role="group" aria-label={text.builder_mode} className={styles.segments}>
           {schemas.TrainingMode.options.map((mode) => <button type="button" key={mode} disabled={busy} aria-pressed={form.mode === mode} onClick={() => edit((f) => ({ ...f, mode, mixed: mode === 'check' ? f.mixed : false }))}>{text[`mode_${mode}`]}</button>)}
-        </div></div><p className={styles.note}>{form.mode === 'check' && request ? text.check_hint(text.questionsCount(request.count), minutes(options, request)) : text.mode_practice_hint}</p></div>
+        </div></div><p className={styles.note}>{form.mode === 'check' && request ? text.check_hint(countLabel, minutes(options, displayRequest!)) : text.mode_practice_hint}</p></div>
         <button type="button" className={styles.row} disabled={busy || selectedTopics.length === 0 || multipleTypes} onClick={() => setTopics(true)}><span>{text.builder_topics}</span><span className={styles.value}><span className={styles.note}>{form.topicIds === undefined ? text.builder_topics_all : text.builder_topics_some(topicCount, selectedTopics.length)} · {form.difficulty ? text[`difficulty_${form.difficulty}`].toLocaleLowerCase(locale) : text.difficulty_any.toLocaleLowerCase(locale)}</span><ChevronRightIcon /></span></button>
       </div></div>
       {(!online || problem) && <p role="alert" className={styles.note}>{!online || problem === 'offline' ? text.builder_start_offline : problem === 'noQuestions' ? text.builder_no_questions : text.builder_start_failed}</p>}
       {storage === 'blocked' && <TrainingStorageBlocked heading="h2" />}
       {storage === 'unavailable' && <p role="alert" className={styles.note}>{text.training_storage_title}</p>}
       {!request && <p role="status" className={styles.note}>{text.builder_nothing}</p>}
-      <FocusFooter inlineOnWide><SessionFooter><TrainingAction text={busy ? text.builder_starting : request ? text.builder_start(countLabel, minutes(options, request)) : text.builder_nothing} disabled={!request || !online || storage !== 'ready'} busy={busy} onClick={() => void start()} /></SessionFooter></FocusFooter>
+      <FocusFooter inlineOnWide><SessionFooter><TrainingAction text={busy ? text.builder_starting : request ? text.builder_start(countLabel, minutes(options, displayRequest!)) : text.builder_nothing} disabled={!request || !online || storage !== 'ready'} busy={busy} onClick={() => void start()} /></SessionFooter></FocusFooter>
     </>}
     {typesOpen && <TrainingSheet title={text.builder_type} onClose={() => setTypesOpen(false)}><div role="radiogroup" aria-label={text.builder_type} className={styles.options}>
       {options.types.filter((type) => type.section === form.section).map((type) => <button key={type.questionType} role="radio" aria-checked={!multipleTypes && form.type === type.questionType} className={styles.option} disabled={type.topics.length === 0} onClick={() => { edit((f) => ({ ...f, type: type.questionType, topicIds: undefined, mixed: false })); setTypesOpen(false); }}><span className={styles.choiceIndicator} aria-hidden="true" /><span lang="en">{TYPE_LABELS[type.questionType]}</span></button>)}
-      {form.mode === 'check' && <button role="radio" className={styles.option} aria-checked={Boolean(multipleTypes)} onClick={() => { edit((f) => ({ ...f, mixed: true, topicIds: undefined })); setTypesOpen(false); }}><span className={styles.choiceIndicator} aria-hidden="true" />{text.types_mixed}</button>}
+      {form.mode === 'check' && <button role="radio" className={styles.option} aria-checked={Boolean(multipleTypes)} onClick={() => { edit((f) => ({ ...f, mixed: true, topicIds: undefined, difficulty: undefined })); setTypesOpen(false); }}><span className={styles.choiceIndicator} aria-hidden="true" />{text.types_mixed}</button>}
     </div></TrainingSheet>}
   </div></FocusLayout>;
 }

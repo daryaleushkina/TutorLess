@@ -152,7 +152,7 @@ test('B: выход из проверки — подтверждение; отм
   await screen.getByRole('radio', { name: 'A', exact: true }).click();
   await screen.getByRole('button', { name: 'Закрыть тренировку', exact: true }).click();
   await expect.element(screen.getByRole('dialog', { name: 'Выйти из проверки?' })).toBeVisible();
-  await expect.element(screen.getByText('Ответы сохранятся.')).toBeVisible();
+  await expect.element(screen.getByText('Ответы сохранятся, время продолжит идти')).toBeVisible();
   await userEvent.keyboard('{Escape}');
   await expect.element(screen.getByRole('radio', { name: 'A', exact: true })).toHaveAttribute('aria-checked', 'true');
   await screen.getByRole('button', { name: 'Закрыть тренировку', exact: true }).click();
@@ -223,4 +223,17 @@ test('B: на компьютере старт под конструктором,
     await page.viewport(390, 844);
     await expect.poll(() => Boolean(screen.getByRole('button', { name: /^Начать ·/ }).element().closest('main'))).toBe(false);
   } finally { await page.viewport(390, 844); }
+});
+
+test('«Все варианты» прошлого вопроса не переносится на следующий засчитанный вопрос', async () => {
+  const { screen } = await boot(storedTraining(trainingSession(), Date.now()));
+  for (let i = 0; i < 2; i++) {
+    await screen.getByRole('button', { name: 'Не знаю', exact: true }).click();
+    await screen.getByRole('button', { name: 'Дальше', exact: true }).click();
+  }
+  await screen.getByRole('button', { name: 'Предыдущий вопрос', exact: true }).click();
+  await screen.getByRole('button', { name: 'Все варианты', exact: true }).click();
+  await expect.element(screen.getByRole('button', { name: 'Свернуть варианты', exact: true })).toBeVisible();
+  await screen.getByRole('button', { name: 'Предыдущий вопрос', exact: true }).click();
+  await expect.element(screen.getByRole('button', { name: 'Все варианты', exact: true })).toBeVisible();
 });

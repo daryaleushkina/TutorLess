@@ -77,7 +77,7 @@ test('снять все темы, вернуть их и снять сложно
   await expect.element(screen.getByRole('button', { name: 'Готово · 0 тем из 2' })).toBeDisabled();
   await screen.getByRole('checkbox', { name: /Контраст/ }).click(); await screen.getByRole('checkbox', { name: /Причина/ }).click();
   await screen.getByRole('button', { name: 'Трудная' }).click(); await screen.getByRole('button', { name: 'Лёгкая' }).click(); await screen.getByRole('button', { name: 'Любая' }).click();
-  await screen.getByRole('button', { name: 'Готово · 2 тем из 2' }).click();
+  await screen.getByRole('button', { name: 'Готово · 2 темы из 2' }).click();
   await screen.getByRole('button', { name: /Темы и сложность все/ }).click(); await screen.getByRole('button', { name: 'Назад' }).click();
   await expect.element(screen.getByRole('heading', { name: 'Новая тренировка' })).toBeVisible();
 });
@@ -167,4 +167,18 @@ test('при повторном входе в конструктор сразу 
   await screen.getByRole('button', { name: 'Закрыть тренировку' }).click();
   await screen.getByRole('link', { name: 'Настроить тренировку' }).click();
   await expect.element(screen.getByRole('button', { name: '5', exact: true })).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('проверка обещает доступное число и время, смешанный набор сбрасывает скрытую сложность', async () => {
+  const { screen, server } = await boot();
+  await screen.getByRole('button', { name: /Темы и сложность все/ }).click();
+  await screen.getByRole('button', { name: 'Трудная', exact: true }).click();
+  await screen.getByRole('button', { name: /Готово ·/ }).click();
+  await screen.getByRole('button', { name: 'Проверка', exact: true }).click();
+  await expect.element(screen.getByRole('button', { name: 'Начать · 2\u00a0вопроса · ~3\u00a0мин', exact: true })).toBeVisible();
+  await screen.getByRole('button', { name: /^Тип/ }).click();
+  await screen.getByRole('radio', { name: 'Все типы вперемешку', exact: true }).click();
+  await screen.getByRole('button', { name: /^Начать ·/ }).click();
+  const posted = server.requests.find((r) => r.method === 'POST' && new URL(r.url).pathname === '/api/trainings');
+  expect(await posted?.json()).not.toHaveProperty('difficulty');
 });

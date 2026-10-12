@@ -108,3 +108,21 @@ for (const route of ['', '/review', '/report/0']) test(`блокировка х�
   if (route.startsWith('/report')) await expect.element(screen.getByRole('textbox', { name: 'Что не так' })).toBeVisible();
   else await expect.element(screen.getByRole('heading', { level: 1 })).toBeVisible();
 });
+
+for (const state of ['missing', 'loading', 'unavailable', 'blocked'] as const) test(`жалоба на сайте: ссылка «Назад» при состоянии ${state}`, async () => {
+  fakeServer({ 'GET /api/me': () => json(user()), 'GET /api/trainings/options': () => json(OPTIONS) });
+  let release = () => {};
+  if (state === 'loading') {
+    const held = new Promise<void>((resolve) => { release = resolve; });
+    vi.spyOn(trainingRepository, 'get').mockImplementation(async () => { await held; return undefined; });
+  }
+  if (state === 'unavailable' || state === 'blocked') vi.spyOn(trainingRepository.store, 'signIn').mockRejectedValueOnce(state === 'blocked' ? new TrainingStorageBlockedError() : new Error('fixture storage unavailable'));
+  const id = trainingSession().id;
+  const { screen, router } = await renderApp({ path: `/training/${id}/report/0?language=invalid&filter=invalid` });
+  try {
+    const label = state === 'loading' ? 'Загружаем тренировку' : state === 'unavailable' ? 'Нет места на устройстве' : state === 'blocked' ? 'Обновляем тренировки' : 'Тренировки нет на устройстве';
+    await expect.element(screen.getByText(label, { exact: true })).toBeVisible();
+    await screen.getByRole('link', { name: 'Назад', exact: true }).click(); release();
+    await expect.poll(() => router.state.location.pathname).toBe(`/training/${id}`);
+  } finally { release(); }
+});
