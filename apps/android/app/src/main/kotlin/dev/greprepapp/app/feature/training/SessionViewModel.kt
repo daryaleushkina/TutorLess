@@ -10,7 +10,9 @@ import dev.greprepapp.api.models.Question
 import dev.greprepapp.api.models.TrainingMode
 import dev.greprepapp.api.models.TrainingRequest
 import dev.greprepapp.app.core.Ticker
+import greprep.design.GpMotion
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -57,7 +59,12 @@ class SessionViewModel
             val whyNotOpen: Boolean,
             /** Отметки «вернуться», нажатые сейчас: на диск они попадают чуть позже. */
             val flags: Map<Int, Boolean> = emptyMap(),
+            val frontier: Int = position,
+            val pastExplanation: Boolean = false,
+            val selectionLimitHit: Boolean = false,
         ) {
+            val browsingPast: Boolean get() = !training.isCheck && position < frontier
+
             fun flaggedAt(position: Int): Boolean = flags[position] ?: (training.answer(position)?.flagged == true)
 
             val question: Question get() = training.question(position)
@@ -99,11 +106,17 @@ class SessionViewModel
             val whyNotOpen: Boolean = false,
             val now: Long = 0,
             val flags: Map<Int, Boolean> = emptyMap(),
+            val frontier: Int? = null,
+            val drafts: Map<Int, List<String>> = emptyMap(),
+            val pastExplanation: Boolean = false,
+            val selectionLimitHit: Boolean = false,
         )
 
         private val local = MutableStateFlow(Local(now = clock.millis()))
         private var shownAt = clock.millis()
+        private var visitBaseMs = 0
         private var timer: Job? = null
+        private var limitFeedback: Job? = null
 
         /** Повтор по «Что повторить» начался — экран переходит к нему (consumeRepeat). */
         private val repeatState = MutableStateFlow(RepeatState())
@@ -134,6 +147,9 @@ class SessionViewModel
                 english = l.english,
                 whyNotOpen = l.whyNotOpen,
                 flags = l.flags,
+                frontier = l.frontier ?: training.position,
+                pastExplanation = l.pastExplanation,
+                selectionLimitHit = l.selectionLimitHit,
             )
         }
 
@@ -144,6 +160,7 @@ class SessionViewModel
                 val position = training.position.coerceIn(0, training.total - 1)
                 local.update { it.copy(position = position, selection = initialSelection(training, position)) }
                 shownAt = clock.millis()
+                visitBaseMs = training.answer(position)?.elapsedMs ?: 0
                 if (training.isCheck && !training.isFinished) startTimer()
             }
         }
@@ -164,6 +181,7 @@ class SessionViewModel
                         if (training.isFinished) {
                             timer?.cancel()
                         } else if (TrainingRules.remainingSeconds(training, now) == 0) {
+                            saveVisitTime()
                             repository.recordFinish(trainingId, timedOut = true)
                         }
                     }
@@ -176,13 +194,40 @@ class SessionViewModel
          */
         private fun screen(): Screen? = repository.trainings.value[trainingId]?.let { build(it, local.value) }
 
-        private fun elapsed(): Int = (clock.millis() - shownAt).toInt().coerceAtLeast(0)
+        private fun elapsed(): Int {
+            val training = screen()?.training
+            val limit = training?.session?.timeLimitSeconds
+            val end =
+                if (training?.isCheck == true &&
+                    limit != null
+                ) {
+                    minOf(clock.millis(), training.startedAtMillis + limit * 1000L)
+                } else {
+                    clock.millis()
+                }
+            return (visitBaseMs + (end - shownAt).coerceAtLeast(0)).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
+        }
+
+        fun saveVisitTime() {
+            val s = screen() ?: return
+            if (s.training.isCheck && !s.training.isFinished) save(s.position, s.selection, s.flagged)
+        }
 
         fun select(optionId: String) {
             val s = screen() ?: return
             if (s.training.isFinished || s.revealed) return
+            if (s.question.selectCount > 1 && optionId !in s.selection && s.selection.size >= s.question.selectCount) {
+                local.update { it.copy(selectionLimitHit = true) }
+                limitFeedback?.cancel()
+                limitFeedback =
+                    viewModelScope.launch {
+                        delay(GpMotion.REVEAL.toLong())
+                        local.update { it.copy(selectionLimitHit = false) }
+                    }
+                return
+            }
             val next = TrainingRules.toggle(s.question, s.selection, optionId)
-            local.update { it.copy(selection = next) }
+            local.update { it.copy(selection = next, selectionLimitHit = false) }
             // «Проверка» сохраняет выбор сразу: закрыл приложение — ответ не потерялся.
             if (s.training.isCheck) save(s.position, next, flagged = s.flagged)
         }
@@ -225,6 +270,7 @@ class SessionViewModel
             // В «Практике» дальше — только после разбора: пропуска там нет, есть «Не знаю».
             if (!s.training.isCheck && !s.revealed) return
             when {
+                s.browsingPast -> go(s.frontier)
                 !s.isLast -> go(s.position + 1)
                 s.training.isCheck -> local.update { it.copy(overview = true) }
                 else -> finish()
@@ -233,33 +279,48 @@ class SessionViewModel
 
         fun previous() {
             val s = screen() ?: return
-            if (s.position > 0 && s.training.isCheck) go(s.position - 1)
+            if (s.position > 0) go(s.position - 1)
         }
 
         fun goTo(position: Int) = go(position)
 
         private fun go(position: Int) {
-            val training = screen()?.training ?: return
+            val current = screen() ?: return
+            val training = current.training
             if (position !in 0 until training.total) return
+            if (!training.isCheck && position > current.frontier && !current.revealed) return
+            saveVisitTime()
+            val drafts = local.value.drafts + (current.position to current.selection)
+            val frontier = if (training.isCheck) position else maxOf(current.frontier, position)
             shownAt = clock.millis()
+            visitBaseMs = training.answer(position)?.elapsedMs ?: 0
             local.update {
                 it.copy(
                     position = position,
-                    selection = initialSelection(training, position),
+                    selection = training.answer(position)?.optionIds ?: drafts[position].orEmpty(),
+                    frontier = frontier,
+                    drafts = drafts,
+                    pastExplanation = false,
+                    selectionLimitHit = false,
                     overview = false,
                     whyNotOpen = false,
                 )
             }
-            repository.recordPosition(trainingId, position)
+            if (training.isCheck || position == frontier) repository.recordPosition(trainingId, position)
         }
 
         fun openOverview() = local.update { it.copy(overview = true) }
 
         fun closeOverview() = local.update { it.copy(overview = false) }
 
-        fun finish() = repository.recordFinish(trainingId, timedOut = false)
+        fun finish() {
+            saveVisitTime()
+            repository.recordFinish(trainingId, timedOut = false)
+        }
 
         fun setEnglish(english: Boolean) = local.update { it.copy(english = english) }
+
+        fun showPastExplanation() = local.update { it.copy(pastExplanation = true) }
 
         fun toggleWhyNot() = local.update { it.copy(whyNotOpen = !it.whyNotOpen) }
 
@@ -278,6 +339,16 @@ class SessionViewModel
                     mode = TrainingMode.PRACTICE,
                     topicIds = result.review.map { it.topicId },
                 )
+            startRepeat(request)
+        }
+
+        fun repeatTopic(topicId: String) {
+            val training = screen()?.training ?: return
+            val request = topicPracticeRequest(training, topicId) ?: return
+            if (!repeatState.value.starting) startRepeat(request)
+        }
+
+        private fun startRepeat(request: TrainingRequest) {
             repeatState.value = RepeatState(starting = true)
             viewModelScope.launch {
                 repeatState.value =

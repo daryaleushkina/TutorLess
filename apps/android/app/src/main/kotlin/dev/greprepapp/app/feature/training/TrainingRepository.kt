@@ -90,7 +90,9 @@ class TrainingRepository
         val active: Flow<StoredTraining?> =
             trainings
                 .map { all ->
-                    all.values.filterNot { it.isFinished || isExpired(it) }.maxByOrNull { it.startedAtMillis }
+                    all.values
+                        .filterNot { it.isFinished || isExpired(it) }
+                        .maxWithOrNull(compareBy<StoredTraining> { it.startedAtMillis }.thenBy { it.creationOrder })
                 }.distinctUntilChanged()
 
         /** «Проверка», у которой вышло время, пока экрана не было: её закончит ближайшая отправка. */
@@ -138,7 +140,15 @@ class TrainingRepository
                     val saved =
                         edits.withLock {
                             write(id) {
-                                store.put(stored)
+                                store.put(
+                                    stored.copy(
+                                        creationOrder =
+                                            (
+                                                store.trainings.value.values
+                                                    .maxOfOrNull { it.creationOrder } ?: 0
+                                            ) + 1,
+                                    ),
+                                )
                                 prune()
                             }
                         }
@@ -290,10 +300,14 @@ class TrainingRepository
             val all = store.trainings.value.values
             all
                 .filter { it.isFinished && it.isSynced }
-                .sortedByDescending { it.startedAtMillis }
+                .sortedWith(compareByDescending<StoredTraining> { it.startedAtMillis }.thenByDescending { it.creationOrder })
                 .drop(KEEP_FINISHED)
                 .forEach { store.remove(it.id) }
-            val unfinished = all.filterNot { it.isFinished }.sortedByDescending { it.startedAtMillis }
+            // Порядок запуска хранится в файле: порядок карты после чтения файлов не гарантирован.
+            val unfinished =
+                all
+                    .filterNot { it.isFinished }
+                    .sortedWith(compareByDescending<StoredTraining> { it.startedAtMillis }.thenByDescending { it.creationOrder })
             unfinished.drop(1).filter { it.unsent.isEmpty() }.forEach { store.remove(it.id) }
         }
 

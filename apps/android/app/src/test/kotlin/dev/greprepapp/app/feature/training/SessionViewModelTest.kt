@@ -11,6 +11,7 @@ import dev.greprepapp.app.testing.TestGraph
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -213,10 +214,45 @@ class SessionViewModelTest {
         }
 
     @Test
+    fun checkTracksSkippedTimeAndAddsTimeAcrossVisits() =
+        runTest(main.dispatcher) {
+            val vm = open(TrainingMode.CHECK)
+            graph.clock.now = graph.clock.now.plusSeconds(20)
+            vm.next()
+            advanceUntilIdle()
+            assertEquals(
+                20_000,
+                vm.screen.training
+                    .answer(0)
+                    ?.elapsedMs,
+            )
+            graph.clock.now = graph.clock.now.plusSeconds(10)
+            vm.previous()
+            advanceUntilIdle()
+            graph.clock.now = graph.clock.now.plusSeconds(5)
+            vm.select("A")
+            advanceUntilIdle()
+            assertEquals(
+                25_000,
+                vm.screen.training
+                    .answer(0)
+                    ?.elapsedMs,
+            )
+            assertEquals(
+                10_000,
+                vm.screen.training
+                    .answer(1)
+                    ?.elapsedMs,
+            )
+        }
+
+    @Test
     fun checkEndsByItselfWhenTimeRunsOut() =
         runTest(main.dispatcher) {
             val vm = open(TrainingMode.CHECK)
-            graph.clock.now = graph.clock.now.plusSeconds(2L * 90 + 1)
+            val start = graph.clock.now
+            advanceTimeBy(181_000)
+            graph.clock.now = start.plusMillis(testScheduler.currentTime)
             graph.ticker.tick()
             advanceUntilIdle()
             assertEquals(0, vm.screen.remainingSeconds)
@@ -290,6 +326,26 @@ class SessionViewModelTest {
                 )
                 vm.viewModelScope.cancel()
             }
+        }
+
+    @Test
+    fun practiceBackKeepsTheUnsubmittedSelectionAndReturnsToTheFrontier() =
+        runTest(main.dispatcher) {
+            val vm = open()
+            vm.dontKnow()
+            advanceUntilIdle()
+            vm.next()
+            vm.select("A")
+            advanceUntilIdle()
+            vm.previous()
+            advanceUntilIdle()
+            assertEquals("назад — к уже отвеченному вопросу", 0, vm.screen.position)
+            assertTrue(vm.screen.revealed)
+            vm.next()
+            advanceUntilIdle()
+            assertEquals(1, vm.screen.position)
+            assertEquals(listOf("A"), vm.screen.selection)
+            assertFalse(vm.screen.revealed)
         }
 
     @Test

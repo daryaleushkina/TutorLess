@@ -19,6 +19,42 @@ class TrainingStoreTest {
     private val training = StoredTraining(Fixtures.session(Fixtures.tc1, Fixtures.se), startedAtMillis = 1L, position = 1)
 
     @Test
+    fun reportIdentitySurvivesReloadAndLegacyMigration() {
+        val store = TrainingStore(folder.root)
+        store.putReports(listOf(PendingReport("q-1", QuestionReport(QuestionReport.Kind.QUESTION))))
+        val id =
+            store.reports.value
+                .single()
+                .reportId
+        java.util.UUID.fromString(id)
+        val again = TrainingStore(folder.root)
+        again.load()
+        assertEquals(
+            id,
+            again.reports.value
+                .single()
+                .reportId,
+        )
+        val file = File(folder.root, "trainings/reports.json")
+        file.writeText("""[{"questionId":"legacy","report":{"kind":"question"}}]""")
+        val migrated = TrainingStore(folder.root)
+        migrated.load()
+        val legacyId =
+            migrated.reports.value
+                .single()
+                .reportId
+        java.util.UUID.fromString(legacyId)
+        val restored = TrainingStore(folder.root)
+        restored.load()
+        assertEquals(
+            legacyId,
+            restored.reports.value
+                .single()
+                .reportId,
+        )
+    }
+
+    @Test
     fun missingAndCorruptOwnersAdoptExistingTrainingsAndReports() {
         for (corrupt in listOf(false, true)) {
             val directory = folder.newFolder()

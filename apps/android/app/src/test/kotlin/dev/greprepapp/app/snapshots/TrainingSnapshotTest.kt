@@ -1,10 +1,8 @@
 package dev.greprepapp.app.snapshots
 
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
-import dev.greprepapp.api.models.QuestionType
-import dev.greprepapp.api.models.Section
-import dev.greprepapp.app.feature.shell.MainScaffold
-import dev.greprepapp.app.feature.training.ContinueTraining
 import dev.greprepapp.app.snapshots.TrainingScreens.Session
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -12,88 +10,80 @@ import org.robolectric.ParameterizedRobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
-/** Снимки тренировки на телефоне в обеих темах (макеты R1–R17); как записать и сверить — ScreenSnapshotTest. */
+/** Каждое состояние B: обе темы и настройка «Крупнее». */
 @RunWith(ParameterizedRobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(qualifiers = "ru-" + RobolectricDeviceQualifiers.MediumPhone)
 class TrainingSnapshotTest(
     theme: String,
+    private val large: Boolean,
 ) : SnapshotBase(theme) {
-    @Test
-    fun builder() = snap("training-builder") { TrainingScreens.Builder() }
+    @Test fun screen0() = snap("b-r1" + if (large) "-large" else "", large = large) { TrainingScreens.Builder() }
 
-    @Test
-    fun builderCustom() = snap("training-builder-custom") { TrainingScreens.Builder(TrainingScreens.builderCustom) }
+    @Test fun screen1() =
+        snap("b-r1-custom" + if (large) "-large" else "", large = large) {
+            TrainingScreens.Builder(TrainingScreens.builderCustom)
+        }
 
-    @Test
-    fun builderOffline() = snap("training-builder-offline") { TrainingScreens.Builder(TrainingScreens.builderOffline) }
+    @Test fun screen2() = snap("b-r2" + if (large) "-large" else "", large = large) { TrainingScreens.Builder(TrainingScreens.topics) }
 
-    @Test
-    fun topics() = snap("training-topics") { TrainingScreens.Builder(TrainingScreens.topics) }
+    @Test fun screen3() = snap("b-r3" + if (large) "-large" else "", large = large) { Session(TrainingScreens.tcSelected) }
 
-    @Test
-    fun questionSelected() = snap("training-question-selected") { Session(TrainingScreens.tcSelected) }
+    @Test fun screen4() = snap("b-r4" + if (large) "-large" else "", large = large) { Session(TrainingScreens.tcWrong) }
 
-    @Test
-    fun questionWrong() = snap("training-question-wrong") { Session(TrainingScreens.tcWrong) }
+    @Test fun screen5() = snap("b-r4-dk" + if (large) "-large" else "", large = large) { Session(TrainingScreens.dontKnow) }
 
-    @Test
-    fun questionThreeBlanks() = snap("training-question-three-blanks") { Session(TrainingScreens.tc3Partial) }
+    @Test fun screen6() = snap("b-r5" + if (large) "-large" else "", large = large) { Session(TrainingScreens.tc3Partial) }
 
-    @Test
-    fun questionEquivalenceCorrect() = snap("training-question-se-correct") { Session(TrainingScreens.seCorrect) }
+    @Test fun screen7() = snap("b-r6-question" + if (large) "-large" else "", large = large) { Session(TrainingScreens.seSelected) }
 
-    @Test
-    fun questionTimed() = snap("training-question-timed") { Session(TrainingScreens.qcTimed) }
+    @Test fun screen8() = snap("b-r6" + if (large) "-large" else "", large = large) { Session(TrainingScreens.seCorrect) }
 
-    @Test
-    fun overview() = snap("training-overview") { Session(TrainingScreens.overview) }
+    @Test fun screen9() = snap("b-r9" + if (large) "-large" else "", large = large) { Session(TrainingScreens.qcPractice) }
 
-    @Test
-    fun summary() = snap("training-summary") { Session(TrainingScreens.summary) }
+    @Test fun screen10() = snap("b-single-choice" + if (large) "-large" else "", large = large) { Session(TrainingScreens.mcSelected) }
 
-    @Test
-    fun summaryPerfect() = snap("training-summary-perfect") { Session(TrainingScreens.summaryPerfect) }
+    @Test fun screen11() = snap("b-r14" + if (large) "-large" else "", large = large) { Session(TrainingScreens.qcTimed) }
 
-    @Test
-    fun summaryTimedOut() = snap("training-summary-timed-out") { Session(TrainingScreens.summaryTimedOut) }
+    @Test fun screen12() = snap("b-r14-list" + if (large) "-large" else "", large = large) { Session(TrainingScreens.overview) }
 
-    @Test
-    fun review() = snap("training-review") { TrainingScreens.Review() }
+    @Test fun screen13() = snap("b-r14-timeout" + if (large) "-large" else "", large = large) { Session(TrainingScreens.summaryTimedOut) }
 
-    @Test
-    fun reviewItem() = snap("training-review-item") { TrainingScreens.ReviewItem() }
+    @Test fun screen14() = snap("b-r15" + if (large) "-large" else "", large = large) { Session(TrainingScreens.summary) }
 
-    @Test
-    fun report() = snap("training-report") { TrainingScreens.Report() }
+    @Test fun screen15() = snap("b-r15-perfect" + if (large) "-large" else "", large = large) { Session(TrainingScreens.summaryPerfect) }
 
-    @Test
-    fun reportSent() = snap("training-report-sent") { TrainingScreens.Report(sent = true) }
+    @Test fun screen16() = snap("b-r16" + if (large) "-large" else "", large = large) { TrainingScreens.Review() }
 
-    @Test
-    fun sessionMissing() =
-        snap("training-session-missing") { Session(dev.greprepapp.app.feature.training.SessionViewModel.UiState.Missing) }
+    @Test fun screen17() = snap("b-r19" + if (large) "-large" else "", large = large) { TrainingScreens.ReviewItem() }
 
-    @Test
-    fun builderNoQuestions() = snap("training-builder-no-questions") { TrainingScreens.Builder(TrainingScreens.builderNoQuestions) }
+    @Test fun screen18() = snap("b-r20" + if (large) "-large" else "", large = large) { Session(TrainingScreens.past) }
 
-    @Test
-    fun questionWrongLargeText() = snap("training-question-wrong-large", large = true) { Session(TrainingScreens.tcWrong) }
+    @Test fun screen19() = snap("b-r17" + if (large) "-large" else "", large = large) { TrainingScreens.Report() }
 
-    @Test
-    fun builderFontScale130() = snap("training-builder-font-130", systemFontScale = 1.3f) { TrainingScreens.Builder() }
+    @Test fun screen20() = snap("b-r17-failed" + if (large) "-large" else "", large = large) { TrainingScreens.Report(failed = true) }
 
-    @Test
-    @Config(qualifiers = "ru-w360dp-h800dp-160dpi")
-    fun questionTimedFontScale130On360dp() =
-        snap("training-question-timed-360-font-130", systemFontScale = 1.3f) { Session(TrainingScreens.qcTimed) }
+    @Test fun screen21() =
+        snap("b-builder-offline" + if (large) "-large" else "", large = large) {
+            TrainingScreens.Builder(TrainingScreens.builderOffline)
+        }
 
-    @Test
-    fun reportSaveFailed() = snap("training-report-save-failed") { TrainingScreens.Report(failed = true) }
+    @Test fun screen22() =
+        snap("b-builder-empty" + if (large) "-large" else "", large = large) {
+            TrainingScreens.Builder(TrainingScreens.builderNoQuestions)
+        }
+
+    @Test fun typeSheet() =
+        snap(
+            "b-r1-types" + if (large) "-large" else "",
+            large = large,
+            beforeCapture = { compose.onNodeWithTag("builder.type").performClick() },
+        ) { TrainingScreens.Builder() }
 
     companion object {
         @JvmStatic
-        @ParameterizedRobolectricTestRunner.Parameters(name = "{0}")
-        fun themes() = listOf(arrayOf("light"), arrayOf("dark"))
+        @ParameterizedRobolectricTestRunner.Parameters(name = "{0}-large={1}")
+        fun themes() =
+            listOf(arrayOf<Any>("light", false), arrayOf<Any>("dark", false), arrayOf<Any>("light", true), arrayOf<Any>("dark", true))
     }
 }

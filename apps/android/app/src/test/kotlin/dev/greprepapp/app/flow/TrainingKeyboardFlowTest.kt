@@ -31,6 +31,18 @@ class TrainingKeyboardFlowTest {
     @get:Rule val compose = createAppComposeRule()
 
     @Test
+    fun keyboardFocusDoesNotMergeTheQuestionIntoTheWholeScreen() {
+        compose.setContent {
+            GpTheme {
+                TrainingKeyboard(onKey = { false }) {
+                    Text("Вопрос", modifier = Modifier.testTag("prompt"))
+                }
+            }
+        }
+        compose.onNodeWithTag("prompt").assertExists()
+    }
+
+    @Test
     fun focusedMaterialButtonReceivesEnterBeforeTheScreenShortcut() {
         val focus = FocusRequester()
         lateinit var input: InputModeManager

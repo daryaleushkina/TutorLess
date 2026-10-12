@@ -51,6 +51,7 @@ sealed interface MainRoute : NavKey {
     data class ReviewItem(
         val trainingId: String,
         val position: Int,
+        val positions: List<Int> = emptyList(),
     ) : MainRoute
 
     @Serializable

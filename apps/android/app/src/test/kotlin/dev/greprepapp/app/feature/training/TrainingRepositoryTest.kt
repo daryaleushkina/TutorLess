@@ -54,6 +54,28 @@ class TrainingRepositoryTest {
     private suspend fun TestGraph.started(): String = (trainings.start(request) as StartResult.Started).trainingId
 
     @Test
+    fun newestPracticeSurvivesStartingAtTheSameClockInstant() =
+        runTest(main.dispatcher) {
+            val g = graph()
+            g.trainingsApi.start = Reply.Ok(Fixtures.session(Fixtures.tc1, id = "first"))
+            g.started()
+            g.trainingsApi.start = Reply.Ok(Fixtures.session(Fixtures.tc1, id = "second"))
+            g.started()
+            advanceUntilIdle()
+            assertTrue(
+                "новая сессия не должна удаляться уборкой старых",
+                g.trainingStore.trainings.value
+                    .containsKey("second"),
+            )
+            assertEquals(
+                "second",
+                g.trainings.active
+                    .first()
+                    ?.id,
+            )
+        }
+
+    @Test
     fun expiredSessionKeepsAnswersAndReportsUntilTheSamePersonReturns() =
         runTest(main.dispatcher) {
             val g = graph()

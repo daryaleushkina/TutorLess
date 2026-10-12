@@ -58,9 +58,6 @@
     <string name="training_retry">Повторить</string>
     <string name="training_missing_title">Тренировки нет на устройстве</string>
     <string name="training_missing_message">Она могла устареть. Начните новую тренировку.</string>
-    <string name="builder_preset_last">Как в прошлый раз</string>
-    <string name="builder_preset_timed">Проверка на время</string>
-    <string name="builder_preset_timed_subtitle">%1$s · %2$s · %3$d мин, как секция экзамена</string>
     <string name="builder_section">Раздел</string>
     <string name="builder_type">Тип</string>
     <string name="builder_count">Вопросов</string>
@@ -68,7 +65,6 @@
     <string name="builder_topics">Темы и сложность</string>
     <string name="builder_topics_all">все</string>
     <string name="builder_topics_some">%1$d из %2$d</string>
-    <string name="builder_type_soon">скоро</string>
     <string name="builder_start">Начать · %1$s · ~%2$d мин</string>
     <string name="builder_nothing">Заданий пока нет</string>
     <string name="builder_no_questions">Под этот выбор заданий пока нет — попробуйте другие темы или сложность.</string>
@@ -77,7 +73,6 @@
     <string name="mode_practice">Практика</string>
     <string name="mode_check">Проверка</string>
     <string name="mode_practice_hint">Разбор после каждого вопроса, без таймера</string>
-    <string name="mode_check_hint">Таймер как на экзамене, разбор в конце</string>
     <string name="difficulty_any">Любая</string>
     <string name="difficulty_easy">Лёгкая</string>
     <string name="difficulty_medium">Средняя</string>
@@ -89,7 +84,6 @@
     <string name="question_close">Закрыть тренировку</string>
     <string name="question_check">Проверить</string>
     <string name="question_dont_know">Не знаю</string>
-    <string name="question_next">Дальше · %1$d из %2$d</string>
     <string name="question_result">Итог</string>
     <string name="question_skip">Пропустить</string>
     <string name="question_to_list">К списку вопросов</string>
@@ -99,13 +93,10 @@
     <string name="question_missing_blank">Осталось выбрать слово для пропуска %1$s</string>
     <string name="question_missing_blanks">Осталось выбрать слова для пропусков %1$s</string>
     <string name="question_pick_one_more">Выберите ещё один ответ</string>
-    <string name="question_check_note">Разбор — после последнего вопроса</string>
     <string name="question_blank">пропуск</string>
     <string name="question_correct_mark">верный</string>
     <string name="question_yours_mark">ваш ответ</string>
-    <string name="question_others">Остальные варианты</string>
     <string name="question_progress_description">Вопрос %1$d из %2$d</string>
-    <string name="timer_description">Осталось %1$d мин %2$d с, вопрос %3$d из %4$d</string>
     <string name="type_with_note">%1$s · %2$s</string>
     <string name="type_two_blanks">два пропуска</string>
     <string name="type_three_blanks">три пропуска</string>
@@ -113,7 +104,6 @@
     <string name="explanation_language">Язык разбора</string>
     <string name="overview_summary">Отвечено %1$d из %2$d · отмечено %3$d</string>
     <string name="overview_finish">Закончить</string>
-    <string name="overview_back">К вопросу %1$d</string>
     <string name="overview_answered">отвечен</string>
     <string name="overview_flagged">отмечен</string>
     <string name="overview_empty">без ответа</string>
@@ -196,10 +186,6 @@
         <item quantity="many">%d ошибок</item>
         <item quantity="other">%d ошибки</item>
     </plurals>
-    <string name="keyboard_start">начать</string>
-    <string name="keyboard_choose">выбрать</string>
-    <string name="keyboard_next">дальше</string>
-    <string name="keyboard_review">выбрать вопрос</string>
     <string name="report_save_failed">Не удалось сохранить жалобу. Попробуйте ещё раз.</string>
     <string name="tab_training">Тренировка</string>
     <string name="profile">Профиль</string>
@@ -284,4 +270,54 @@
         <item quantity="few">%d задания из прошлых тренировок</item>
         <item quantity="other">%d заданий из прошлых тренировок</item>
     </plurals>
+    <string name="builder_starting">Начинаем…</string>
+    <string name="builder_all_types">Все типы вперемешку</string>
+    <string name="mode_check_section_hint">На время, как на экзамене: %1$s на %2$s, разбор — в конце.</string>
+    <string name="question_select_two">Выберите два слова.</string>
+    <string name="question_select_blanks">Выберите по одному слову для каждого пропуска.</string>
+    <string name="question_select_one">Выберите один ответ.</string>
+    <string name="question_previous">Предыдущий вопрос</string>
+    <string name="question_next_plain">Дальше</string>
+    <string name="question_return">К вопросу %1$d</string>
+    <string name="question_past_notice">Это вопрос %1$d — ответ уже засчитан, изменить его нельзя. Вы остановились на вопросе %2$d.</string>
+    <string name="question_show_explanation">Показать разбор</string>
+    <string name="question_all_options">Все варианты</string>
+    <string name="explanation_title">Разбор</string>
+    <string name="verdict_dont_know">Разберём. Задание попадёт в «Повторить мои ошибки».</string>
+    <string name="check_exit_title">Выйти из проверки?</string>
+    <string name="check_exit_message">Ответы сохранятся, время продолжит идти.</string>
+    <string name="check_exit">Выйти</string>
+    <string name="check_stay">Остаться</string>
+    <string name="check_finish_title">Без ответа: %1$d. Завершить?</string>
+    <string name="timeout_title">Время вышло</string>
+    <string name="timeout_summary">К итогу</string>
+    <string name="timeout_message">Ответы сохранены: %1$d из %2$d. Остальные засчитаны как без ответа — их разберём вместе со всеми.</string>
+    <string name="topics_select_all">Выбрать все</string>
+    <string name="topics_clear_all">Снять все</string>
+    <string name="topics_choose_one">Выберите хотя бы одну тему</string>
+    <plurals name="topics_available">
+        <item quantity="one">Подходит %1$d задание</item>
+        <item quantity="few">Подходит %1$d задания</item>
+        <item quantity="many">Подходит %1$d заданий</item>
+        <item quantity="other">Подходит %1$d заданий</item>
+    </plurals>
+    <plurals name="topics_available_short">
+        <item quantity="one">Подходит %1$d задание — тренировка будет из %2$d вопроса</item>
+        <item quantity="few">Подходит %1$d задания — тренировка будет из %2$d вопросов</item>
+        <item quantity="many">Подходит %1$d заданий — тренировка будет из %2$d вопросов</item>
+        <item quantity="other">Подходит %1$d заданий — тренировка будет из %2$d вопросов</item>
+    </plurals>
+    <string name="review_flagged">Отмеченные · %1$d</string>
+    <string name="review_no_flagged">Отмеченных вопросов нет</string>
+    <string name="review_next">Следующий</string>
+    <string name="report_thanks_short">Спасибо — проверим и поправим</string>
+    <string name="question_topic">Тема: %1$s</string>
+    <plurals name="timer_minutes_description">
+        <item quantity="one">Осталось %1$d мин, вопрос %2$d из %3$d</item>
+        <item quantity="few">Осталось %1$d мин, вопрос %2$d из %3$d</item>
+        <item quantity="many">Осталось %1$d мин, вопрос %2$d из %3$d</item>
+        <item quantity="other">Осталось %1$d мин, вопрос %2$d из %3$d</item>
+    </plurals>
+    <string name="timer_less_minute_description">Осталось меньше минуты, вопрос %1$d из %2$d</string>
+    <string name="review_slower">%1$s — дольше среднего</string>
 </resources>

@@ -29,6 +29,8 @@ data class StoredTraining(
     val finishSent: Boolean = false,
     /** Сервер подтвердил, что тренировки больше нет: новые локальные действия не оживляют её очередь. */
     val rejected: Boolean = false,
+    /** Порядок запуска на устройстве сохраняется и при совпадении часов, и после перезапуска. */
+    val creationOrder: Long = 0,
 ) {
     val id: String get() = session.id
     val total: Int get() = session.items.size

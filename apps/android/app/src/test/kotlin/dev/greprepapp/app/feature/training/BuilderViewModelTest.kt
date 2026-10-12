@@ -71,7 +71,7 @@ class BuilderViewModelTest {
             assertEquals(0, vm.ready.preset)
             assertEquals(Section.QUANT, vm.ready.form.section)
             assertEquals(TrainingMode.CHECK, vm.ready.form.mode)
-            assertEquals(Fixtures.lastPreset.request, BuilderViewModel.requestOf(vm.ready))
+            assertEquals(Fixtures.lastPreset.request.copy(count = 12), BuilderViewModel.requestOf(vm.ready))
 
             val fromStep = builder(prefill = BuilderPrefill(Section.VERBAL), presets = listOf(Fixtures.lastPreset))
             assertNull(fromStep.ready.preset)
@@ -79,13 +79,26 @@ class BuilderViewModelTest {
         }
 
     @Test
-    fun timedPresetKeepsTheFieldsAndStartsAsIs() =
+    fun aShortLastPracticeUsesTheSupportedCountChoice() =
+        runTest(main.dispatcher) {
+            val vm =
+                builder(
+                    presets =
+                        listOf(
+                            Fixtures.lastPreset.copy(request = Fixtures.lastPreset.request.copy(mode = TrainingMode.PRACTICE, count = 7)),
+                        ),
+                )
+            assertEquals("10", vm.ready.form.countText)
+        }
+
+    @Test
+    fun timedPresetUpdatesTheFieldsAndStartsAsIs() =
         runTest(main.dispatcher) {
             val vm = builder(presets = listOf(Fixtures.timedPreset))
-            val before = vm.ready.form
             vm.selectPreset(0)
-            assertEquals(before, vm.ready.form)
-            assertEquals(Fixtures.timedPreset.request, BuilderViewModel.requestOf(vm.ready))
+            assertEquals(TrainingMode.CHECK, vm.ready.form.mode)
+            assertTrue(vm.ready.form.mixed)
+            assertEquals(Fixtures.timedPreset.request.copy(topicIds = null), BuilderViewModel.requestOf(vm.ready))
             vm.setCount("5")
             assertNull("правка поля — своя сборка", vm.ready.preset)
         }

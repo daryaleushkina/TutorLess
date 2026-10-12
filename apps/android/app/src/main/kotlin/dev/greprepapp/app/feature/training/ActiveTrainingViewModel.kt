@@ -28,6 +28,7 @@ data class ReportTarget(
     val position: Int,
     val questionId: String,
     val questionType: QuestionType,
+    val translationAllowed: Boolean = false,
 )
 
 fun StoredTraining.reportTarget(position: Int): ReportTarget {

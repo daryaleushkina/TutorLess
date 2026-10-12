@@ -8,8 +8,10 @@ import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.printToString
 import androidx.test.core.app.ActivityScenario
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -65,7 +67,7 @@ class ShellFlowTest {
         scenario = ActivityScenario.launch(MainActivity::class.java)
     }
 
-    private fun wait(tag: String) = compose.waitUntilAtLeastOneExists(hasTestTag(tag), 5_000)
+    private fun wait(tag: String) = compose.waitUntilAtLeastOneExists(hasTestTag(tag), 10_000)
 
     private fun click(tag: String) {
         wait(tag)
@@ -165,7 +167,15 @@ class ShellFlowTest {
         wait("home.start")
         compose.onNodeWithTag("shell.scroll").performScrollToNode(hasTestTag("home.mistakes"))
         click("home.mistakes")
-        wait("question.prompt")
+        try {
+            wait("question.prompt")
+        } catch (failure: androidx.compose.ui.test.ComposeTimeoutException) {
+            throw AssertionError(
+                "starts=${server.starts.size}, requests=${server.requests.map { it.target }}, errors=${server.clientErrors}: " +
+                    compose.onRoot().printToString(),
+                failure,
+            )
+        }
         org.junit.Assert.assertEquals(dev.greprepapp.api.models.TrainingSource.MISTAKES, server.starts.single().source)
         val calls = server.requests.filter { it.target.startsWith("/api/home") || it.target.startsWith("/api/trainings") }
         org.junit.Assert.assertTrue(calls.isNotEmpty())

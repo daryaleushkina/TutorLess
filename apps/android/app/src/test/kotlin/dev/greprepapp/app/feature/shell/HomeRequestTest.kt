@@ -42,6 +42,24 @@ class HomeRequestTest {
         assertEquals(request.copy(source = null, count = 4), actual)
     }
 
+    @Test fun lastCheckStartsWithTheSectionCount() {
+        val state = ShellFixtures.history
+        val last = state.home!!.lastTraining!!
+        val actual =
+            state
+                .copy(
+                    home =
+                        state.home.copy(
+                            lastTraining =
+                                last.copy(
+                                    request = last.request.copy(mode = dev.greprepapp.api.models.TrainingMode.CHECK),
+                                    propertySize = 4,
+                                ),
+                        ),
+                ).startRequest()!!
+        assertEquals(12, actual.count)
+    }
+
     @Test fun firstTrainingRespectsServerMaximum() {
         val state = ShellFixtures.first
         assertEquals(3, state.copy(options = state.options!!.copy(maxQuestions = 3)).startRequest()!!.count)
