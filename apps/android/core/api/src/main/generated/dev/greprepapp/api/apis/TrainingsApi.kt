@@ -10,6 +10,7 @@ import kotlinx.serialization.Serializable
 import dev.greprepapp.api.models.AnswerBatch
 import dev.greprepapp.api.models.Error
 import dev.greprepapp.api.models.Exam
+import dev.greprepapp.api.models.Home
 import dev.greprepapp.api.models.QuestionReport
 import dev.greprepapp.api.models.QuestionType
 import dev.greprepapp.api.models.TrainingFinish
@@ -33,6 +34,22 @@ interface TrainingsApi {
      */
     @POST("api/trainings/{trainingId}/finish")
     suspend fun finishTraining(@Path("trainingId") trainingId: kotlin.String, @Body trainingFinish: TrainingFinish): Response<TrainingSummary>
+
+    /**
+     * GET api/home
+     * Данные главной тренировки выбранного экзамена
+     * Только данные текущего пользователя и exam. Определения — решение техлида 11.10.2026. Ответы — сохранённые позиции training_items с answeredAt: повторная отправка и изменение ответа в «Проверке» не создают ещё одну попытку. «Не знаю» и пустой отправленный ответ считаются неверными; позиции без answeredAt не считаются. История учитывает и начатые, и завершённые тренировки, включая задания, впоследствии снятые с публикации. Нет доступа к тренировкам — 403 forbidden.
+     * Responses:
+     *  - 200: Статистика и параметры для запуска тренировки
+     *  - 0: Любая ошибка — машинный код, текст для журнала, id запроса
+     *
+     * @param exam 
+     * @param tz IANA-зона клиента из базы зон сервера, включая UTC; неизвестная зона или Local — 400 bad_request
+     * @param types Типы заданий, которые клиент умеет показывать. Если последний запрос содержит тип вне списка, lastTraining — null. Статистика разделов, ошибок и слабого типа от списка не зависит.
+     * @return [Home]
+     */
+    @GET("api/home")
+    suspend fun getHome(@Query("exam") exam: Exam, @Query("tz") tz: kotlin.String, @Query("types") types: @JvmSuppressWildcards kotlin.collections.List<QuestionType>): Response<Home>
 
     /**
      * GET api/trainings/{trainingId}
@@ -81,7 +98,7 @@ interface TrainingsApi {
     /**
      * POST api/trainings
      * Начать тренировку — сессия со всеми заданиями и разборами сразу
-     * Всё нужное для сессии приходит одним ответом, чтобы начатая тренировка дожила без сети (PRODUCT.md, «Operating Context»). Задания — только проверенные, сначала те, что человек ещё не решал. Нет ни одного подходящего — 409 no_questions. Нет доступа к тренировкам — 403 forbidden.
+     * Всё нужное для сессии приходит одним ответом, чтобы начатая тренировка дожила без сети (PRODUCT.md, «Operating Context»). Задания — только проверенные, сначала те, что человек ещё не решал. source&#x3D;mistakes оставляет только задания с последним неверным ответом самого человека, сохраняя фильтры exam, section, questionTypes, topicIds и difficulty. Нет ни одного подходящего — 409 no_questions. Нет доступа к тренировкам — 403 forbidden.
      * Responses:
      *  - 201: Сессия создана
      *  - 0: Любая ошибка — машинный код, текст для журнала, id запроса

@@ -38,6 +38,11 @@ type env struct {
 
 func newEnv(t *testing.T, mutate func(*config.Config)) *env {
 	t.Helper()
+	return newEnvWithClock(t, mutate, time.Now)
+}
+
+func newEnvWithClock(t *testing.T, mutate func(*config.Config), now func() time.Time) *env {
+	t.Helper()
 	pool := testdb.New(t)
 	cfg := config.Config{
 		Env:             config.EnvTest,
@@ -48,12 +53,17 @@ func newEnv(t *testing.T, mutate func(*config.Config)) *env {
 		SessionIdle:     30 * 24 * time.Hour,
 		SessionAbsolute: 180 * 24 * time.Hour,
 	}
+	// SQL проверяет срок сессии по реальным часам: прошлый календарь теста не должен протухать.
+	if offset := time.Since(now()); offset > 0 {
+		cfg.SessionIdle += offset
+		cfg.SessionAbsolute += offset
+	}
 	if mutate != nil {
 		mutate(&cfg)
 	}
 	log := slog.New(slog.DiscardHandler)
 	oidc := auth.NewOIDC(nil, cfg.Telegram, cfg.Apple, cfg.Google)
-	h, err := Handler(cfg, pool, oidc, log, time.Now)
+	h, err := Handler(cfg, pool, oidc, log, now)
 	if err != nil {
 		t.Fatal(err)
 	}

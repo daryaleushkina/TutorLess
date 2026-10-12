@@ -35,7 +35,10 @@ cleanup() {
   if [ -n "$server_pid" ]; then kill "$server_pid" 2>/dev/null || true; fi
   # Ошибка основного шага сохраняется, а неудачное выключение своего делает красным и успешный прогон.
   if ! sim_cleanup; then cleanup_status=1; fi
-  rm -rf "$work"
+  if rm -rf "$work"; then :; else
+    removal_status=$?
+    if [ "$cleanup_status" -eq 0 ]; then cleanup_status="$removal_status"; fi
+  fi
   exit "$cleanup_status"
 }
 trap cleanup EXIT
@@ -65,10 +68,12 @@ build_step() {
   name="$1"
   shift
   log="$work/$name.log"
-  if ! xb 1500 "$@" >"$log" 2>&1; then
+  if xb 1500 "$@" >"$log" 2>&1; then return 0; else
+    step_status=$?
+    case "$step_status" in ''|*[!0-9]*) step_status=1 ;; esac
     grep -E 'error:|warning:' "$log" | grep -v UnusedImportAccess | head -40 >&2
-    echo "gate: Apple — сборка «$name» не прошла" >&2
-    exit 1
+    echo "gate: Apple — сборка «${name}» не прошла" >&2
+    exit "$step_status"
   fi
 }
 
@@ -77,10 +82,12 @@ run_tests() {
   name="$1"
   shift
   log="$work/$name.log"
-  if ! xb 1500 -collect-test-diagnostics never "$@" >"$log" 2>&1; then
+  if xb 1500 -collect-test-diagnostics never "$@" >"$log" 2>&1; then :; else
+    step_status=$?
+    case "$step_status" in ''|*[!0-9]*) step_status=1 ;; esac
     grep -E '✘|error:|failed|does not match|Test run with|Executed' "$log" | grep -v UnusedImportAccess | head -60 >&2
     echo "gate: Apple — $name красный" >&2
-    exit 1
+    exit "$step_status"
   fi
   grep -E 'Test run with|Executed [0-9]+ tests?' "$log" | tail -2 >&2
 }
