@@ -149,7 +149,7 @@ type Handler interface {
 	// тренировкам — 403 forbidden.
 	//
 	// POST /api/trainings
-	StartTraining(ctx context.Context, req *TrainingRequest) (*TrainingSession, error)
+	StartTraining(ctx context.Context, req *TrainingRequest, params StartTrainingParams) (*TrainingSession, error)
 	// SubmitTrainingAnswers implements submitTrainingAnswers operation.
 	//
 	// Повторная отправка безопасна: ответ на позицию

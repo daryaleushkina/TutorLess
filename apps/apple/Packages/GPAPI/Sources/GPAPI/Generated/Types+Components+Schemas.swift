@@ -832,7 +832,7 @@ extension Components {
                 case title
             }
         }
-        /// Первый срез тренировок — задания с выбором ответа (решение Даши 06.10.2026): Text Completion (1–3 пропуска), Sentence Equivalence (два ответа из шести), Quantitative Comparison, обычный выбор в математике. Reading Comprehension, ввод числа и несколько верных — следующими срезами.
+        /// Типы GRE (решение Даши 12.10.2026). multiple_choice и multiple_choice_multi бывают в Quant и Reading Comprehension; select_in_passage — в Verbal, numeric_entry — в Quant.
         ///
         /// - Remark: Generated from `#/components/schemas/QuestionType`.
         @frozen public enum QuestionType: String, Codable, Hashable, Sendable, CaseIterable {
@@ -1218,18 +1218,26 @@ extension Components {
             public var quantityA: Swift.String?
             /// - Remark: Generated from `#/components/schemas/Question/quantityB`.
             public var quantityB: Swift.String?
-            /// Группа — один пропуск Text Completion; у остальных типов одна группа
+            /// Группа — пропуск TC; одна у выбора вариантов, пусто у числа и выбора предложения
             ///
             /// - Remark: Generated from `#/components/schemas/Question/groups`.
             public var groups: [Components.Schemas.OptionGroup]
-            /// Сколько вариантов выбрать в группе (Sentence Equivalence — 2)
+            /// Число требуемых вариантов; 0 — все подходящие (multi), число или предложение
             ///
             /// - Remark: Generated from `#/components/schemas/Question/selectCount`.
             public var selectCount: Swift.Int
-            /// Верные варианты. Приходит вместе с заданием: проверка без сети идёт на устройстве; сервер проверяет ответ сам и статистику клиенту не доверяет.
+            /// Верные варианты или один id предложения; у numeric_entry пусто. Приходит вместе с заданием: проверка без сети идёт на устройстве; сервер проверяет ответ сам и статистику клиенту не доверяет.
             ///
             /// - Remark: Generated from `#/components/schemas/Question/answer`.
             public var answer: [Swift.String]
+            /// - Remark: Generated from `#/components/schemas/Question/numericEntry`.
+            public var numericEntry: Components.Schemas.NumericEntry?
+            /// - Remark: Generated from `#/components/schemas/Question/numericAnswer`.
+            public var numericAnswer: Components.Schemas.NumericAnswer?
+            /// - Remark: Generated from `#/components/schemas/Question/passage`.
+            public var passage: Components.Schemas.Passage?
+            /// - Remark: Generated from `#/components/schemas/Question/figure`.
+            public var figure: Components.Schemas.DataFigure?
             /// - Remark: Generated from `#/components/schemas/Question/explanation`.
             public var explanation: Components.Schemas.Explanation
             /// Creates a new `Question`.
@@ -1245,9 +1253,13 @@ extension Components {
             ///   - condition: Условие над величинами Quantitative Comparison (например, «0 < x < 1»)
             ///   - quantityA:
             ///   - quantityB:
-            ///   - groups: Группа — один пропуск Text Completion; у остальных типов одна группа
-            ///   - selectCount: Сколько вариантов выбрать в группе (Sentence Equivalence — 2)
-            ///   - answer: Верные варианты. Приходит вместе с заданием: проверка без сети идёт на устройстве; сервер проверяет ответ сам и статистику клиенту не доверяет.
+            ///   - groups: Группа — пропуск TC; одна у выбора вариантов, пусто у числа и выбора предложения
+            ///   - selectCount: Число требуемых вариантов; 0 — все подходящие (multi), число или предложение
+            ///   - answer: Верные варианты или один id предложения; у numeric_entry пусто. Приходит вместе с заданием: проверка без сети идёт на устройстве; сервер проверяет ответ сам и статистику клиенту не доверяет.
+            ///   - numericEntry:
+            ///   - numericAnswer:
+            ///   - passage:
+            ///   - figure:
             ///   - explanation:
             public init(
                 id: Swift.String,
@@ -1263,6 +1275,10 @@ extension Components {
                 groups: [Components.Schemas.OptionGroup],
                 selectCount: Swift.Int,
                 answer: [Swift.String],
+                numericEntry: Components.Schemas.NumericEntry? = nil,
+                numericAnswer: Components.Schemas.NumericAnswer? = nil,
+                passage: Components.Schemas.Passage? = nil,
+                figure: Components.Schemas.DataFigure? = nil,
                 explanation: Components.Schemas.Explanation
             ) {
                 self.id = id
@@ -1278,6 +1294,10 @@ extension Components {
                 self.groups = groups
                 self.selectCount = selectCount
                 self.answer = answer
+                self.numericEntry = numericEntry
+                self.numericAnswer = numericAnswer
+                self.passage = passage
+                self.figure = figure
                 self.explanation = explanation
             }
             public enum CodingKeys: String, CodingKey {
@@ -1294,6 +1314,10 @@ extension Components {
                 case groups
                 case selectCount
                 case answer
+                case numericEntry
+                case numericAnswer
+                case passage
+                case figure
                 case explanation
             }
         }
@@ -1301,11 +1325,15 @@ extension Components {
         public struct GivenAnswer: Codable, Hashable, Sendable {
             /// - Remark: Generated from `#/components/schemas/GivenAnswer/position`.
             public var position: Swift.Int
-            /// Пусто — не ответил (пропустил или «Не знаю»)
+            /// Варианты ответа; пусто у числа, предложения и пропуска
             ///
             /// - Remark: Generated from `#/components/schemas/GivenAnswer/optionIds`.
             public var optionIds: [Swift.String]
-            /// «Не знаю» в «Практике» — для «что повторить» это ошибка; только с пустым optionIds
+            /// - Remark: Generated from `#/components/schemas/GivenAnswer/numericAnswer`.
+            public var numericAnswer: Components.Schemas.NumericAnswer?
+            /// - Remark: Generated from `#/components/schemas/GivenAnswer/sentenceId`.
+            public var sentenceId: Swift.String?
+            /// «Не знаю» — ошибка для повторения; только без вариантов, числа и предложения
             ///
             /// - Remark: Generated from `#/components/schemas/GivenAnswer/dontKnow`.
             public var dontKnow: Swift.Bool
@@ -1321,14 +1349,18 @@ extension Components {
             ///
             /// - Parameters:
             ///   - position:
-            ///   - optionIds: Пусто — не ответил (пропустил или «Не знаю»)
-            ///   - dontKnow: «Не знаю» в «Практике» — для «что повторить» это ошибка; только с пустым optionIds
+            ///   - optionIds: Варианты ответа; пусто у числа, предложения и пропуска
+            ///   - numericAnswer:
+            ///   - sentenceId:
+            ///   - dontKnow: «Не знаю» — ошибка для повторения; только без вариантов, числа и предложения
             ///   - flagged: Отметка «вернуться» в «Проверке»
             ///   - answeredAt:
             ///   - elapsedMs:
             public init(
                 position: Swift.Int,
                 optionIds: [Swift.String],
+                numericAnswer: Components.Schemas.NumericAnswer? = nil,
+                sentenceId: Swift.String? = nil,
                 dontKnow: Swift.Bool,
                 flagged: Swift.Bool,
                 answeredAt: Foundation.Date,
@@ -1336,6 +1368,8 @@ extension Components {
             ) {
                 self.position = position
                 self.optionIds = optionIds
+                self.numericAnswer = numericAnswer
+                self.sentenceId = sentenceId
                 self.dontKnow = dontKnow
                 self.flagged = flagged
                 self.answeredAt = answeredAt
@@ -1344,6 +1378,8 @@ extension Components {
             public enum CodingKeys: String, CodingKey {
                 case position
                 case optionIds
+                case numericAnswer
+                case sentenceId
                 case dontKnow
                 case flagged
                 case answeredAt
@@ -1615,6 +1651,230 @@ extension Components {
                 case kind
                 case text
                 case trainingId
+            }
+        }
+        /// - Remark: Generated from `#/components/schemas/NumericEntry`.
+        public struct NumericEntry: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/NumericEntry/format`.
+            @frozen public enum FormatPayload: String, Codable, Hashable, Sendable, CaseIterable {
+                case number = "number"
+                case fraction = "fraction"
+            }
+            /// - Remark: Generated from `#/components/schemas/NumericEntry/format`.
+            public var format: Components.Schemas.NumericEntry.FormatPayload
+            /// Округлить итог до этого числа знаков, половину от нуля; ключ хранит исходное точное значение
+            ///
+            /// - Remark: Generated from `#/components/schemas/NumericEntry/decimalPlaces`.
+            public var decimalPlaces: Swift.Int?
+            /// Creates a new `NumericEntry`.
+            ///
+            /// - Parameters:
+            ///   - format:
+            ///   - decimalPlaces: Округлить итог до этого числа знаков, половину от нуля; ключ хранит исходное точное значение
+            public init(
+                format: Components.Schemas.NumericEntry.FormatPayload,
+                decimalPlaces: Swift.Int? = nil
+            ) {
+                self.format = format
+                self.decimalPlaces = decimalPlaces
+            }
+            public enum CodingKeys: String, CodingKey {
+                case format
+                case decimalPlaces
+            }
+        }
+        /// Ровно number либо numerator вместе с denominator, согласно NumericEntry.format. Десятичная точка, необязательный минус; экспонента, пробелы, NaN и бесконечность запрещены. Компоненты дроби — целые, знаменатель ненулевой. Проверка по точному рациональному значению.
+        ///
+        /// - Remark: Generated from `#/components/schemas/NumericAnswer`.
+        public struct NumericAnswer: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/NumericAnswer/number`.
+            public var number: Swift.String?
+            /// - Remark: Generated from `#/components/schemas/NumericAnswer/numerator`.
+            public var numerator: Swift.String?
+            /// - Remark: Generated from `#/components/schemas/NumericAnswer/denominator`.
+            public var denominator: Swift.String?
+            /// Creates a new `NumericAnswer`.
+            ///
+            /// - Parameters:
+            ///   - number:
+            ///   - numerator:
+            ///   - denominator:
+            public init(
+                number: Swift.String? = nil,
+                numerator: Swift.String? = nil,
+                denominator: Swift.String? = nil
+            ) {
+                self.number = number
+                self.numerator = numerator
+                self.denominator = denominator
+            }
+            public enum CodingKeys: String, CodingKey {
+                case number
+                case numerator
+                case denominator
+            }
+        }
+        /// - Remark: Generated from `#/components/schemas/PassageSentence`.
+        public struct PassageSentence: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/PassageSentence/id`.
+            public var id: Swift.String
+            /// - Remark: Generated from `#/components/schemas/PassageSentence/text`.
+            public var text: Swift.String
+            /// Creates a new `PassageSentence`.
+            ///
+            /// - Parameters:
+            ///   - id:
+            ///   - text:
+            public init(
+                id: Swift.String,
+                text: Swift.String
+            ) {
+                self.id = id
+                self.text = text
+            }
+            public enum CodingKeys: String, CodingKey {
+                case id
+                case text
+            }
+        }
+        /// - Remark: Generated from `#/components/schemas/PassageParagraph`.
+        public struct PassageParagraph: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/PassageParagraph/sentences`.
+            public var sentences: [Components.Schemas.PassageSentence]
+            /// Creates a new `PassageParagraph`.
+            ///
+            /// - Parameters:
+            ///   - sentences:
+            public init(sentences: [Components.Schemas.PassageSentence]) {
+                self.sentences = sentences
+            }
+            public enum CodingKeys: String, CodingKey {
+                case sentences
+            }
+        }
+        /// - Remark: Generated from `#/components/schemas/Passage`.
+        public struct Passage: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/Passage/id`.
+            public var id: Swift.String
+            /// - Remark: Generated from `#/components/schemas/Passage/paragraphs`.
+            public var paragraphs: [Components.Schemas.PassageParagraph]
+            /// Creates a new `Passage`.
+            ///
+            /// - Parameters:
+            ///   - id:
+            ///   - paragraphs:
+            public init(
+                id: Swift.String,
+                paragraphs: [Components.Schemas.PassageParagraph]
+            ) {
+                self.id = id
+                self.paragraphs = paragraphs
+            }
+            public enum CodingKeys: String, CodingKey {
+                case id
+                case paragraphs
+            }
+        }
+        /// - Remark: Generated from `#/components/schemas/DataSeries`.
+        public struct DataSeries: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/DataSeries/id`.
+            public var id: Swift.String
+            /// - Remark: Generated from `#/components/schemas/DataSeries/label`.
+            public var label: Swift.String
+            /// - Remark: Generated from `#/components/schemas/DataSeries/values`.
+            public var values: [Swift.Double]
+            /// Creates a new `DataSeries`.
+            ///
+            /// - Parameters:
+            ///   - id:
+            ///   - label:
+            ///   - values:
+            public init(
+                id: Swift.String,
+                label: Swift.String,
+                values: [Swift.Double]
+            ) {
+                self.id = id
+                self.label = label
+                self.values = values
+            }
+            public enum CodingKeys: String, CodingKey {
+                case id
+                case label
+                case values
+            }
+        }
+        /// Одна запись на несколько вопросов; клиент рисует в своей теме, description содержит данные для доступности
+        ///
+        /// - Remark: Generated from `#/components/schemas/DataFigure`.
+        public struct DataFigure: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/DataFigure/id`.
+            public var id: Swift.String
+            /// - Remark: Generated from `#/components/schemas/DataFigure/kind`.
+            @frozen public enum KindPayload: String, Codable, Hashable, Sendable, CaseIterable {
+                case bar = "bar"
+                case line = "line"
+                case table = "table"
+            }
+            /// - Remark: Generated from `#/components/schemas/DataFigure/kind`.
+            public var kind: Components.Schemas.DataFigure.KindPayload
+            /// - Remark: Generated from `#/components/schemas/DataFigure/title`.
+            public var title: Swift.String
+            /// - Remark: Generated from `#/components/schemas/DataFigure/xLabel`.
+            public var xLabel: Swift.String
+            /// - Remark: Generated from `#/components/schemas/DataFigure/yLabel`.
+            public var yLabel: Swift.String
+            /// - Remark: Generated from `#/components/schemas/DataFigure/unit`.
+            public var unit: Swift.String
+            /// - Remark: Generated from `#/components/schemas/DataFigure/categories`.
+            public var categories: [Swift.String]
+            /// - Remark: Generated from `#/components/schemas/DataFigure/series`.
+            public var series: [Components.Schemas.DataSeries]
+            /// - Remark: Generated from `#/components/schemas/DataFigure/description`.
+            public var description: Swift.String
+            /// Creates a new `DataFigure`.
+            ///
+            /// - Parameters:
+            ///   - id:
+            ///   - kind:
+            ///   - title:
+            ///   - xLabel:
+            ///   - yLabel:
+            ///   - unit:
+            ///   - categories:
+            ///   - series:
+            ///   - description:
+            public init(
+                id: Swift.String,
+                kind: Components.Schemas.DataFigure.KindPayload,
+                title: Swift.String,
+                xLabel: Swift.String,
+                yLabel: Swift.String,
+                unit: Swift.String,
+                categories: [Swift.String],
+                series: [Components.Schemas.DataSeries],
+                description: Swift.String
+            ) {
+                self.id = id
+                self.kind = kind
+                self.title = title
+                self.xLabel = xLabel
+                self.yLabel = yLabel
+                self.unit = unit
+                self.categories = categories
+                self.series = series
+                self.description = description
+            }
+            public enum CodingKeys: String, CodingKey {
+                case id
+                case kind
+                case title
+                case xLabel
+                case yLabel
+                case unit
+                case categories
+                case series
+                case description
             }
         }
     }

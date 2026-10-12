@@ -17,18 +17,29 @@ SELECT count(*)::integer AS mistakes FROM (
   SELECT DISTINCT ON (i.question_id) i.correct
   FROM trainings tr JOIN training_items i ON i.training_id = tr.id
   JOIN questions q ON q.id = i.question_id AND q.status = 'approved'
-  WHERE tr.user_id = $1 AND tr.exam_id = $2 AND i.answered_at IS NOT NULL
+  WHERE tr.user_id = $1 AND tr.exam_id = $2 AND i.answered_at IS NOT NULL AND q.question_type = ANY ($3::text[])
+  AND ($4::boolean OR q.passage_id IS NULL)
+  AND ($5::boolean OR q.figure_id IS NULL)
   ORDER BY i.question_id, i.answered_at DESC, tr.started_at DESC, tr.id DESC
 ) latest WHERE NOT correct
 `
 
 type CountHomeMistakesParams struct {
-	UserID uuid.UUID
-	ExamID string
+	UserID         uuid.UUID
+	ExamID         string
+	SupportedTypes []string
+	WithPassage    bool
+	WithFigure     bool
 }
 
 func (q *Queries) CountHomeMistakes(ctx context.Context, arg CountHomeMistakesParams) (int, error) {
-	row := q.db.QueryRow(ctx, countHomeMistakes, arg.UserID, arg.ExamID)
+	row := q.db.QueryRow(ctx, countHomeMistakes,
+		arg.UserID,
+		arg.ExamID,
+		arg.SupportedTypes,
+		arg.WithPassage,
+		arg.WithFigure,
+	)
 	var mistakes int
 	err := row.Scan(&mistakes)
 	return mistakes, err
@@ -36,27 +47,41 @@ func (q *Queries) CountHomeMistakes(ctx context.Context, arg CountHomeMistakesPa
 
 const getHomeLastTraining = `-- name: GetHomeLastTraining :one
 SELECT (tr.request || jsonb_build_object('exam', tr.exam_id))::jsonb AS request,
-       (SELECT count(*)::integer FROM training_items i WHERE i.training_id = tr.id) AS size
+       (SELECT count(*)::integer FROM training_items i WHERE i.training_id = tr.id) AS size,
+  NOT EXISTS (SELECT 1 FROM training_items i JOIN questions q ON q.id = i.question_id
+    WHERE i.training_id = tr.id AND NOT (q.question_type = ANY ($3::text[])
+  AND ($4::boolean OR q.passage_id IS NULL)
+  AND ($5::boolean OR q.figure_id IS NULL))) AS compatible
 FROM trainings tr
 WHERE tr.user_id = $1 AND tr.exam_id = $2
 ORDER BY tr.started_at DESC, tr.id DESC LIMIT 1
 `
 
 type GetHomeLastTrainingParams struct {
-	UserID uuid.UUID
-	ExamID string
+	UserID         uuid.UUID
+	ExamID         string
+	SupportedTypes []string
+	WithPassage    bool
+	WithFigure     bool
 }
 
 type GetHomeLastTrainingRow struct {
-	Request []byte
-	Size    int
+	Request    []byte
+	Size       int
+	Compatible bool
 }
 
 // Последняя начатая сессия и её фактический размер, в том числе до первого ответа.
 func (q *Queries) GetHomeLastTraining(ctx context.Context, arg GetHomeLastTrainingParams) (GetHomeLastTrainingRow, error) {
-	row := q.db.QueryRow(ctx, getHomeLastTraining, arg.UserID, arg.ExamID)
+	row := q.db.QueryRow(ctx, getHomeLastTraining,
+		arg.UserID,
+		arg.ExamID,
+		arg.SupportedTypes,
+		arg.WithPassage,
+		arg.WithFigure,
+	)
 	var i GetHomeLastTrainingRow
-	err := row.Scan(&i.Request, &i.Size)
+	err := row.Scan(&i.Request, &i.Size, &i.Compatible)
 	return i, err
 }
 
@@ -109,17 +134,23 @@ FROM trainings tr
 JOIN training_items i ON i.training_id = tr.id
 JOIN questions q ON q.id = i.question_id
 WHERE tr.user_id = $1 AND tr.exam_id = $2
-  AND i.answered_at >= $3::timestamptz AND i.answered_at <= $4::timestamptz
+  AND q.question_type = ANY ($3::text[])
+  AND ($4::boolean OR q.passage_id IS NULL)
+  AND ($5::boolean OR q.figure_id IS NULL)
+  AND i.answered_at >= $6::timestamptz AND i.answered_at <= $7::timestamptz
 GROUP BY q.question_type, tr.section
 HAVING count(*) >= 10 AND count(*) FILTER (WHERE i.correct) * 10 < count(*) * 7
 ORDER BY accuracy, q.question_type LIMIT 1
 `
 
 type GetHomeWeakSpotParams struct {
-	UserID uuid.UUID
-	ExamID string
-	Since  time.Time
-	Until  time.Time
+	UserID         uuid.UUID
+	ExamID         string
+	SupportedTypes []string
+	WithPassage    bool
+	WithFigure     bool
+	Since          time.Time
+	Until          time.Time
 }
 
 type GetHomeWeakSpotRow struct {
@@ -132,6 +163,9 @@ func (q *Queries) GetHomeWeakSpot(ctx context.Context, arg GetHomeWeakSpotParams
 	row := q.db.QueryRow(ctx, getHomeWeakSpot,
 		arg.UserID,
 		arg.ExamID,
+		arg.SupportedTypes,
+		arg.WithPassage,
+		arg.WithFigure,
 		arg.Since,
 		arg.Until,
 	)

@@ -40,11 +40,29 @@ dependencies {
 }
 
 val contract = rootProject.layout.projectDirectory.file("../../api/openapi.yaml")
+// Enum должен совпадать с реализованным интерфейсом: новые экраны подключаются отдельной задачей.
+val nativeContract = layout.buildDirectory.file("contract/openapi.yaml")
+val prepareNativeContract =
+    tasks.register<Exec>("prepareNativeContract") {
+        inputs.file(contract)
+        inputs.file(rootProject.layout.projectDirectory.file("../../api/native-question-types.json"))
+        inputs.file(rootProject.layout.projectDirectory.file("../../tools/dev/native-contract.py"))
+        outputs.file(nativeContract)
+        commandLine(
+            "python3",
+            rootProject.layout.projectDirectory
+                .file("../../tools/dev/native-contract.py")
+                .asFile,
+            contract.asFile,
+            nativeContract.get().asFile,
+            "android",
+        )
+    }
 val rawOutput = layout.buildDirectory.dir("openapi")
 
 openApiGenerate {
     generatorName.set("kotlin")
-    inputSpec.set(contract)
+    inputSpec.set(nativeContract)
     outputDir.set(rawOutput)
     cleanupOutput.set(true)
     packageName.set("dev.greprepapp.api")
@@ -68,6 +86,8 @@ openApiGenerate {
     // ответов и токеном в заголовке. CollectionFormats — на него ссылаются интерфейсы.
     globalProperties.set(mapOf("apis" to "", "models" to "", "supportingFiles" to "CollectionFormats.kt"))
 }
+
+tasks.named("openApiGenerate") { dependsOn(prepareNativeContract) }
 
 tasks.register<Sync>("generateApi") {
     group = "build setup"

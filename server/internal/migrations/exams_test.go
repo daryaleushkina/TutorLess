@@ -28,7 +28,7 @@ func TestExamsRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := p.Down(ctx); err != nil {
+	if _, err := p.DownTo(ctx, 2); err != nil {
 		t.Fatalf("initial Down to version 2: %v", err)
 	}
 	exec := func(query string) {
@@ -49,7 +49,7 @@ func TestExamsRoundTrip(t *testing.T) {
 		VALUES ('00000000-0000-4000-8000-000000000003', 0, '00000000-0000-4000-8000-000000000002', ARRAY['A'], now(), 1000, true)`)
 	up := func() {
 		t.Helper()
-		if res, err := p.Up(ctx); err != nil || len(res) != 1 {
+		if res, err := p.UpTo(ctx, 3); err != nil || len(res) != 1 {
 			t.Fatalf("Up: %d migrations, %v", len(res), err)
 		}
 	}

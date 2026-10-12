@@ -60,6 +60,10 @@ func (s *Service) GetHome(ctx context.Context, params api.GetHomeParams) (*api.H
 	if err != nil {
 		return nil, err
 	}
+	caps, err := clientCapabilities(params.XTrainingCapabilities)
+	if err != nil {
+		return nil, err
+	}
 	// Local — настройка процесса, а не зона клиента; пустое имя LoadLocation трактует как UTC.
 	if params.Tz == "" || params.Tz == "Local" {
 		return nil, apperr.Invalid("unknown time zone", nil)
@@ -80,7 +84,7 @@ func (s *Service) GetHome(ctx context.Context, params api.GetHomeParams) (*api.H
 		q := s.q.WithTx(tx)
 		result.LastTraining = api.NilLastTraining{Null: true}
 		result.WeakSpot = api.NilWeakSpot{Null: true}
-		last, err := q.GetHomeLastTraining(qctx, db.GetHomeLastTrainingParams{UserID: p.user.ID, ExamID: string(params.Exam)})
+		last, err := q.GetHomeLastTraining(qctx, db.GetHomeLastTrainingParams{UserID: p.user.ID, ExamID: string(params.Exam), SupportedTypes: caps.strings(), WithPassage: caps.Passage, WithFigure: caps.Figure})
 		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 			return fmt.Errorf("home last training: %w", err)
 		}
@@ -88,7 +92,7 @@ func (s *Service) GetHome(ctx context.Context, params api.GetHomeParams) (*api.H
 			var request api.TrainingRequest
 			if err := request.UnmarshalJSON(last.Request); err != nil {
 				s.log.LogAttrs(ctx, slog.LevelError, "home last training request", slog.String("request_id", httpx.FromContext(ctx).ID), slog.String("error", err.Error()))
-			} else if supportsAll(params.Types, request.QuestionTypes) {
+			} else if last.Compatible && supportsAll(caps.narrowed(params.Types).Types, request.QuestionTypes) {
 				result.LastTraining.SetTo(api.LastTraining{Request: request, Size: last.Size})
 			}
 		}
@@ -100,11 +104,11 @@ func (s *Service) GetHome(ctx context.Context, params api.GetHomeParams) (*api.H
 		for _, section := range sections {
 			result.Sections = append(result.Sections, api.SectionStats{Section: api.Section(section.Section), Total: section.Total, Correct: section.Correct})
 		}
-		result.Mistakes, err = q.CountHomeMistakes(qctx, db.CountHomeMistakesParams{UserID: p.user.ID, ExamID: string(params.Exam)})
+		result.Mistakes, err = q.CountHomeMistakes(qctx, db.CountHomeMistakesParams{UserID: p.user.ID, ExamID: string(params.Exam), SupportedTypes: caps.strings(), WithPassage: caps.Passage, WithFigure: caps.Figure})
 		if err != nil {
 			return fmt.Errorf("home mistakes: %w", err)
 		}
-		weak, err := q.GetHomeWeakSpot(qctx, db.GetHomeWeakSpotParams{UserID: p.user.ID, ExamID: string(params.Exam), Since: now.Add(-weakSpotWindow), Until: now})
+		weak, err := q.GetHomeWeakSpot(qctx, db.GetHomeWeakSpotParams{UserID: p.user.ID, ExamID: string(params.Exam), Since: now.Add(-weakSpotWindow), Until: now, SupportedTypes: caps.strings(), WithPassage: caps.Passage, WithFigure: caps.Figure})
 		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 			return fmt.Errorf("home weak spot: %w", err)
 		}

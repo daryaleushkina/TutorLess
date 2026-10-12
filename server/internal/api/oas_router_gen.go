@@ -33,7 +33,7 @@ var (
 		"POST": "Authorization,Content-Type",
 	}
 	rn8AllowedHeaders = map[string]string{
-		"GET": "Authorization",
+		"GET": "Authorization,X-Training-Capabilities",
 	}
 	rn9AllowedHeaders = map[string]string{
 		"GET": "Authorization",
@@ -51,19 +51,19 @@ var (
 		"GET": "Authorization",
 	}
 	rn28AllowedHeaders = map[string]string{
-		"POST": "Authorization,Content-Type",
+		"POST": "Authorization,Content-Type,X-Training-Capabilities",
 	}
 	rn13AllowedHeaders = map[string]string{
-		"GET": "Authorization",
+		"GET": "Authorization,X-Training-Capabilities",
 	}
 	rn2AllowedHeaders = map[string]string{
-		"GET": "Authorization",
+		"GET": "Authorization,X-Training-Capabilities",
 	}
 	rn30AllowedHeaders = map[string]string{
-		"POST": "Authorization,Content-Type",
+		"POST": "Authorization,Content-Type,X-Training-Capabilities",
 	}
 	rn3AllowedHeaders = map[string]string{
-		"POST": "Authorization,Content-Type",
+		"POST": "Authorization,Content-Type,X-Training-Capabilities",
 	}
 )
 

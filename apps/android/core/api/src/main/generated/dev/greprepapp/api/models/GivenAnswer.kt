@@ -23,6 +23,7 @@
 
 package dev.greprepapp.api.models
 
+import dev.greprepapp.api.models.NumericAnswer
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -32,11 +33,13 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param position 
- * @param optionIds Пусто — не ответил (пропустил или «Не знаю»)
- * @param dontKnow «Не знаю» в «Практике» — для «что повторить» это ошибка; только с пустым optionIds
+ * @param optionIds Варианты ответа; пусто у числа, предложения и пропуска
+ * @param dontKnow «Не знаю» — ошибка для повторения; только без вариантов, числа и предложения
  * @param flagged Отметка «вернуться» в «Проверке»
  * @param answeredAt 
  * @param elapsedMs 
+ * @param numericAnswer 
+ * @param sentenceId 
  */
 @Serializable
 
@@ -45,11 +48,11 @@ data class GivenAnswer (
     @SerialName(value = "position")
     val position: kotlin.Int,
 
-    /* Пусто — не ответил (пропустил или «Не знаю») */
+    /* Варианты ответа; пусто у числа, предложения и пропуска */
     @SerialName(value = "optionIds")
     val optionIds: kotlin.collections.List<kotlin.String>,
 
-    /* «Не знаю» в «Практике» — для «что повторить» это ошибка; только с пустым optionIds */
+    /* «Не знаю» — ошибка для повторения; только без вариантов, числа и предложения */
     @SerialName(value = "dontKnow")
     val dontKnow: kotlin.Boolean,
 
@@ -61,7 +64,13 @@ data class GivenAnswer (
     val answeredAt: kotlin.String,
 
     @SerialName(value = "elapsedMs")
-    val elapsedMs: kotlin.Int
+    val elapsedMs: kotlin.Int,
+
+    @SerialName(value = "numericAnswer")
+    val numericAnswer: NumericAnswer? = null,
+
+    @SerialName(value = "sentenceId")
+    val sentenceId: kotlin.String? = null
 
 ) {
 

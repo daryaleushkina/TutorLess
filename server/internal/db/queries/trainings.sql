@@ -3,14 +3,20 @@
 SELECT t.section, q.question_type, t.id AS topic_id, t.title_ru, t.title_en, q.difficulty, count(*)::integer AS available
 FROM questions q
 JOIN topics t ON t.id = q.topic_id
-WHERE q.status = 'approved' AND t.exam_id = $1
+WHERE q.status = 'approved' AND t.exam_id = sqlc.arg(exam_id) AND q.question_type = ANY (sqlc.arg(supported_types)::text[])
+  AND (sqlc.arg(with_passage)::boolean OR q.passage_id IS NULL)
+  AND (sqlc.arg(with_figure)::boolean OR q.figure_id IS NULL)
 GROUP BY t.section, q.question_type, t.id, t.title_ru, t.title_en, t.position, q.difficulty
 ORDER BY t.position, t.id;
 
 -- name: GetLastTrainingRequest :one
 -- Старый сервер после миграции ещё пишет JSON без exam; источником истины остаётся столбец строки.
-SELECT (request || jsonb_build_object('exam', exam_id))::jsonb AS request
-FROM trainings WHERE user_id = $1 AND exam_id = $2 ORDER BY started_at DESC, id DESC LIMIT 1;
+SELECT (request || jsonb_build_object('exam', exam_id))::jsonb AS request,
+  NOT EXISTS (SELECT 1 FROM training_items i JOIN questions q ON q.id = i.question_id
+    WHERE i.training_id = trainings.id AND NOT (q.question_type = ANY (sqlc.arg(supported_types)::text[])
+  AND (sqlc.arg(with_passage)::boolean OR q.passage_id IS NULL)
+  AND (sqlc.arg(with_figure)::boolean OR q.figure_id IS NULL))) AS compatible
+FROM trainings WHERE user_id = sqlc.arg(user_id) AND exam_id = sqlc.arg(exam_id) ORDER BY started_at DESC, id DESC LIMIT 1;
 
 -- Подбор заданий: только проверенные, сначала те, что человек ещё не видел, внутри — случайно. Виденное —
 -- по тренировкам самого человека (индекс по user_id), а не по всем показам задания всем людям.
@@ -37,6 +43,8 @@ WHERE q.status = 'approved'
   AND t.exam_id = sqlc.arg(exam_id)
   AND t.section = sqlc.arg(section)
   AND q.question_type = ANY (sqlc.arg(question_types)::text[])
+  AND (sqlc.arg(with_passage)::boolean OR q.passage_id IS NULL)
+  AND (sqlc.arg(with_figure)::boolean OR q.figure_id IS NULL)
   AND (cardinality(sqlc.arg(topic_ids)::text[]) = 0 OR q.topic_id = ANY (sqlc.arg(topic_ids)::text[]))
   AND (sqlc.narg(difficulty)::text IS NULL OR q.difficulty = sqlc.narg(difficulty)::text)
 ORDER BY s.question_id IS NOT NULL, random()
@@ -62,11 +70,14 @@ SELECT * FROM trainings WHERE id = $1 AND user_id = $2 FOR UPDATE;
 
 -- name: ListTrainingItems :many
 SELECT i.position, i.question_id, i.option_ids, i.dont_know, i.flagged, i.answered_at, i.elapsed_ms, i.correct,
-       q.question_type, q.difficulty, q.body, q.answer, q.explanation,
+       q.question_type, q.difficulty, q.body, q.answer, q.explanation, q.numeric_answer AS question_numeric_answer,
+       p.body AS passage, f.body AS figure, i.numeric_answer, i.sentence_id,
        t.id AS topic_id, t.section, t.title_ru, t.title_en
 FROM training_items i
 JOIN questions q ON q.id = i.question_id
 JOIN topics t ON t.id = q.topic_id
+LEFT JOIN question_passages p ON p.id = q.passage_id
+LEFT JOIN question_figures f ON f.id = q.figure_id
 WHERE i.training_id = $1
 ORDER BY i.position;
 
@@ -75,6 +86,8 @@ ORDER BY i.position;
 -- name: SaveTrainingAnswer :execrows
 UPDATE training_items
 SET option_ids = sqlc.arg(option_ids),
+    numeric_answer = sqlc.narg(numeric_answer),
+    sentence_id = sqlc.narg(sentence_id),
     dont_know = sqlc.arg(dont_know),
     flagged = sqlc.arg(flagged),
     answered_at = sqlc.arg(answered_at),
@@ -112,11 +125,12 @@ ON CONFLICT (id) DO UPDATE SET section = excluded.section, title_ru = excluded.t
   title_en = excluded.title_en, position = excluded.position, exam_id = excluded.exam_id;
 
 -- name: UpsertQuestion :exec
-INSERT INTO questions (id, question_type, topic_id, difficulty, status, body, answer, explanation)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+INSERT INTO questions (id, question_type, topic_id, difficulty, status, body, answer, explanation, numeric_answer, passage_id, figure_id)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 ON CONFLICT (id) DO UPDATE SET question_type = excluded.question_type, topic_id = excluded.topic_id,
   difficulty = excluded.difficulty, status = excluded.status, body = excluded.body, answer = excluded.answer,
-  explanation = excluded.explanation, updated_at = now();
+  explanation = excluded.explanation, numeric_answer = excluded.numeric_answer,
+  passage_id = excluded.passage_id, figure_id = excluded.figure_id, updated_at = now();
 
 -- name: GetTopicSection :one
 SELECT section FROM topics WHERE id = $1;
@@ -130,3 +144,11 @@ SELECT (COALESCE(EXISTS (
   WHERE t.id = ANY (sqlc.arg(topic_ids)::text[])
     AND t.exam_id = sqlc.arg(exam_id) AND t.section = sqlc.arg(section)
 ) = cardinality(sqlc.arg(topic_ids)::text[]), false))::boolean AS valid;
+
+-- name: UpsertPassage :exec
+INSERT INTO question_passages(id, body) VALUES($1, $2)
+ON CONFLICT(id) DO UPDATE SET body = excluded.body;
+
+-- name: UpsertFigure :exec
+INSERT INTO question_figures(id, body) VALUES($1, $2)
+ON CONFLICT(id) DO UPDATE SET body = excluded.body;

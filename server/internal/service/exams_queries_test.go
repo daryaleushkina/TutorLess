@@ -86,7 +86,7 @@ func TestExamQueriesAndCapabilities(t *testing.T) {
 		t.Errorf("options: %d queries, want 2", got)
 	}
 	counter.reset()
-	_, err = s.StartTraining(ctx, &api.TrainingRequest{Exam: api.ExamGre, Section: api.SectionVerbal, QuestionTypes: []api.QuestionType{api.QuestionTypeTextCompletion}, Count: 1, Mode: api.TrainingModePractice})
+	_, err = s.StartTraining(ctx, &api.TrainingRequest{Exam: api.ExamGre, Section: api.SectionVerbal, QuestionTypes: []api.QuestionType{api.QuestionTypeTextCompletion}, Count: 1, Mode: api.TrainingModePractice}, api.StartTrainingParams{})
 	if err != nil {
 		t.Fatal(err)
 	}
