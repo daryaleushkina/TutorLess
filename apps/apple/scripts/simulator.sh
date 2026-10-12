@@ -10,6 +10,9 @@ case "${1:-iphone}" in
   iphone-ios18) name="GrePrep iPhone iOS 18"; type="iPhone-16-Pro"; runtime="iOS-18-0" ;;
   *) echo "simulator.sh: unknown device $1" >&2; exit 2 ;;
 esac
+# Свой набор устройств для заданий агентов (GP_SIM_SET=agent): гейт и задание, идущие одновременно, не ставят
+# приложение на один и тот же симулятор — иначе установка одного роняет UI-тесты другого (12.10.2026).
+[ -n "${GP_SIM_SET:-}" ] && name="$name · $GP_SIM_SET"
 udid="$(xcrun simctl list devices --json | /usr/bin/python3 -c '
 import json, sys
 name, runtime = sys.argv[1], "com.apple.CoreSimulator.SimRuntime." + sys.argv[2]
