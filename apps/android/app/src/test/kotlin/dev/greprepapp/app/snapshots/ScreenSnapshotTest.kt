@@ -42,6 +42,24 @@ import org.robolectric.annotation.GraphicsMode
 class ScreenSnapshotTest(
     theme: String,
 ) : SnapshotBase(theme) {
+    @Test fun rcMulti() =
+        snap("b-r7-multi", large = false, beforeCapture = {
+            compose.onNodeWithTag("reading.question").performClick()
+        }) { NewTrainingScreens.Screen("r7-multi") }
+
+    @Test fun rcMultiLarge() =
+        snap("b-r7-multi-large", large = true, beforeCapture = {
+            compose.onNodeWithTag("reading.question").performClick()
+        }) { NewTrainingScreens.Screen("r7-multi") }
+
+    @Test fun rcMultiReview() = snap("b-r7-multi-review", large = false) { NewTrainingScreens.Screen("r7-multi-review") }
+
+    @Test fun rcMultiReviewLarge() = snap("b-r7-multi-review-large", large = true) { NewTrainingScreens.Screen("r7-multi-review") }
+
+    @Test fun numericLengthError() = snap("b-r11-long", large = false) { NewTrainingScreens.Screen("r11-long") }
+
+    @Test fun numericLengthErrorLarge() = snap("b-r11-long-large", large = true) { NewTrainingScreens.Screen("r11-long") }
+
     @Test fun newType0() =
         snap("b-r7", large = false, beforeCapture = {
             compose.onNodeWithTag("reading.question").performClick()

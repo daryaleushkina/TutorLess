@@ -97,6 +97,29 @@ class NewResponseLayoutFlowTest(
         assertTextsFit()
     }
 
+    @Test fun lengthErrorAndNumberFieldFitAtLargeFontSizes() {
+        show(Q.number)
+        compose.onNodeWithTag("numeric.number").performTextInput("2".repeat(129))
+        compose
+            .onNodeWithTag("numeric.error")
+            .performScrollTo()
+            .assertIsDisplayed()
+            .assertTextContains("128", substring = true)
+        compose.onNodeWithTag("question.check", useUnmergedTree = true).assertIsNotEnabled()
+        assertFieldAboveActions("numeric.number")
+        assertTextsFit()
+    }
+
+    @Test fun readingMultiCheckboxesAndPromptFitAtLargeFontSizes() {
+        show(Q.rcMulti)
+        compose.onNodeWithTag("reading.question").performClick()
+        listOf("A", "C").forEach { id ->
+            compose.onNodeWithTag("option.$id").performScrollTo().performClick()
+        }
+        compose.onNodeWithTag("question.check", useUnmergedTree = true).assertIsEnabled()
+        assertTextsFit()
+    }
+
     @Test fun decimalFieldAcceptsExternalValuesAndLabelsStayWhole() {
         val inject = show(Q.number)
         compose.onNodeWithTag("numeric.number").performScrollTo().performTextInput("22,5")

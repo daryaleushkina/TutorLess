@@ -53,8 +53,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.toggleableState
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -188,6 +191,19 @@ fun OptionRow(
             OptionMark.Wrong -> stringResource(R.string.question_yours_mark)
             else -> null
         }
+    val answerState =
+        if (multiple && onClick == null) {
+            stringResource(
+                when {
+                    mark == OptionMark.Wrong -> R.string.question_selected_wrong
+                    mark == OptionMark.Correct && chosen -> R.string.question_selected_correct
+                    mark == OptionMark.Correct -> R.string.question_omitted_correct
+                    else -> R.string.question_not_selected
+                },
+            )
+        } else {
+            markText
+        }
     val clickable =
         if (onClick != null) {
             Modifier.pressScale(interaction).then(
@@ -210,7 +226,13 @@ fun OptionRow(
                 },
             )
         } else {
-            Modifier.semantics(mergeDescendants = true) { if (markText != null) stateDescription = markText }
+            Modifier.semantics(mergeDescendants = true) {
+                if (answerState != null) stateDescription = answerState
+                if (multiple) {
+                    role = Role.Checkbox
+                    toggleableState = if (chosen) ToggleableState.On else ToggleableState.Off
+                }
+            }
         }
     Surface(
         color = container,

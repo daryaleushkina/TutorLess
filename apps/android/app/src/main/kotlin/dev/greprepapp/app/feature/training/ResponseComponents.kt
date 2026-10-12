@@ -221,7 +221,7 @@ internal object NumericResponseComponent : ResponseComponent {
         return value.number ?: "${value.numerator}/${value.denominator}"
     }
 
-    private const val MAX_NUMERIC_LENGTH = 128
+    const val MAX_NUMERIC_LENGTH = 128
     private const val MAX_DECIMAL_PLACES = 12
     private val DECIMAL = Regex("-?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)")
     private val INTEGER = Regex("-?[0-9]+")

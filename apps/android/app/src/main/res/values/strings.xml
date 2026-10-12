@@ -30,6 +30,7 @@
     <string name="numeric_fraction_hint">Сверху — числитель, снизу — знаменатель</string>
     <string name="numeric_invalid_number">Так число не записать: одна запятая или точка, минус — только впереди.</string>
     <string name="numeric_invalid_integer">Введите целое число. Минус — только впереди.</string>
+    <string name="numeric_too_long">Не больше 128 символов в поле. Сократите запись числа.</string>
     <string name="numeric_zero_denominator">Знаменатель не может быть нулём</string>
     <string name="reading_text">Текст</string>
     <string name="reading_question">Вопрос</string>
@@ -129,6 +130,10 @@
     <string name="question_blank">пропуск</string>
     <string name="question_correct_mark">верный</string>
     <string name="question_yours_mark">ваш ответ</string>
+    <string name="question_selected_correct">выбран, верный</string>
+    <string name="question_omitted_correct">не выбран, верный</string>
+    <string name="question_selected_wrong">выбран, неверный</string>
+    <string name="question_not_selected">не выбран</string>
     <string name="question_progress_description">Вопрос %1$d из %2$d</string>
     <string name="type_with_note">%1$s · %2$s</string>
     <string name="type_two_blanks">два пропуска</string>

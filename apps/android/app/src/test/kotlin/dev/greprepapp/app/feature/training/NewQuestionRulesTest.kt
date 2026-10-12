@@ -62,6 +62,9 @@ class NewQuestionRulesTest {
         assertEquals(R.string.numeric_zero_denominator, numericDraftError(NewQuestionFixtures.fraction, "", "9", "0"))
         assertEquals(null, numericDraftError(NewQuestionFixtures.fraction, "", "9", "15"))
         assertEquals(null, numericDraftError(NewQuestionFixtures.fraction, "", "-", ""))
+        assertEquals(R.string.numeric_too_long, numericDraftError(NewQuestionFixtures.number, "2".repeat(129), "", ""))
+        assertEquals(R.string.numeric_too_long, numericDraftError(NewQuestionFixtures.fraction, "", "2".repeat(129), "3"))
+        assertEquals(R.string.numeric_too_long, numericDraftError(NewQuestionFixtures.fraction, "", "3", "2".repeat(129)))
     }
 }
 

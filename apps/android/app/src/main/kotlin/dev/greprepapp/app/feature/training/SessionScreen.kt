@@ -567,8 +567,8 @@ private fun QuestionBody(
 internal fun PlainPrompt(question: Question) {
     Text(
         text =
-            if (question.questionType ==
-                QuestionType.MULTIPLE_CHOICE_MULTI
+            if (question.section ==
+                dev.greprepapp.api.models.Section.QUANT
             ) {
                 mathText(question.prompt)
             } else {

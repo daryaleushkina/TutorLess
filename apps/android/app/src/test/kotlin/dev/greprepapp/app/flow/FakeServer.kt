@@ -16,6 +16,7 @@ import mockwebserver3.Dispatcher
 import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
 import mockwebserver3.RecordedRequest
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -87,8 +88,11 @@ class FakeServer {
     val answers = CopyOnWriteArrayList<AnswerBatch>()
     val finishes = CopyOnWriteArrayList<TrainingFinish>()
     val reports = CopyOnWriteArrayList<QuestionReport>()
+    private val trainings = ConcurrentHashMap<String, TrainingSession>()
 
     val url get() = server.url("/")
+
+    fun close() = server.close()
 
     init {
         server.dispatcher =
@@ -272,12 +276,25 @@ class FakeServer {
 
             path == "/api/trainings" -> {
                 starts += ApiJson.decodeFromString(TrainingRequest.serializer(), body)
-                json(201, ApiJson.encodeToString(TrainingSession.serializer(), nextSession))
+                val training = nextSession
+                trainings[training.id] = training
+                json(201, ApiJson.encodeToString(TrainingSession.serializer(), training))
             }
 
             path.endsWith("/answers") -> {
-                answers += ApiJson.decodeFromString(AnswerBatch.serializer(), body)
-                MockResponse.Builder().code(204).build()
+                val batch = ApiJson.decodeFromString(AnswerBatch.serializer(), body)
+                val training = trainings[path.removePrefix("/api/trainings/").substringBefore('/')] ?: nextSession
+                if (batch.answers.any { answer ->
+                        training.items.firstOrNull { it.position == answer.position }?.question?.let {
+                            !acceptsAnswer(it, answer)
+                        } ?: true
+                    }
+                ) {
+                    error(400, "bad_answer")
+                } else {
+                    answers += batch
+                    MockResponse.Builder().code(204).build()
+                }
             }
 
             path.endsWith("/finish") -> {

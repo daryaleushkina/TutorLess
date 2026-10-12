@@ -23,6 +23,7 @@
     <string name="numeric_fraction_hint">Numerator above, denominator below</string>
     <string name="numeric_invalid_number">Use one comma or decimal point, with a minus sign only at the start.</string>
     <string name="numeric_invalid_integer">Enter an integer, with a minus sign only at the start.</string>
+    <string name="numeric_too_long">Use no more than 128 characters per field. Shorten the number.</string>
     <string name="numeric_zero_denominator">The denominator cannot be zero</string>
     <string name="reading_text">Passage</string>
     <string name="reading_question">Question</string>
@@ -105,6 +106,10 @@
     <string name="question_blank">blank</string>
     <string name="question_correct_mark">correct</string>
     <string name="question_yours_mark">your answer</string>
+    <string name="question_selected_correct">selected, correct</string>
+    <string name="question_omitted_correct">not selected, correct</string>
+    <string name="question_selected_wrong">selected, incorrect</string>
+    <string name="question_not_selected">not selected</string>
     <string name="question_progress_description">Question %1$d of %2$d</string>
     <string name="type_with_note">%1$s · %2$s</string>
     <string name="type_two_blanks">two blanks</string>

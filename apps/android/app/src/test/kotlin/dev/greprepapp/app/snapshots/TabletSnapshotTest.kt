@@ -38,6 +38,18 @@ import org.robolectric.annotation.GraphicsMode
 class TabletSnapshotTest(
     theme: String,
 ) : SnapshotBase(theme) {
+    @Test fun rcMulti() = snap("tablet-b-r7-multi", large = false) { NewTrainingScreens.Screen("r7-multi") }
+
+    @Test fun rcMultiLarge() = snap("tablet-b-r7-multi-large", large = true) { NewTrainingScreens.Screen("r7-multi") }
+
+    @Test fun rcMultiReview() = snap("tablet-b-r7-multi-review", large = false) { NewTrainingScreens.Screen("r7-multi-review") }
+
+    @Test fun rcMultiReviewLarge() = snap("tablet-b-r7-multi-review-large", large = true) { NewTrainingScreens.Screen("r7-multi-review") }
+
+    @Test fun numericLengthError() = snap("tablet-b-r11-long", large = false) { NewTrainingScreens.Screen("r11-long") }
+
+    @Test fun numericLengthErrorLarge() = snap("tablet-b-r11-long-large", large = true) { NewTrainingScreens.Screen("r11-long") }
+
     @Test fun newType0() = snap("tablet-b-r7", large = false) { NewTrainingScreens.Screen("r7") }
 
     @Test fun newType0Large() = snap("tablet-b-r7-large", large = true) { NewTrainingScreens.Screen("r7") }

@@ -24,6 +24,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
@@ -87,6 +92,10 @@ internal fun NumericResponse(
         val next = if (candidate.isComplete(question)) candidate else Response.Options()
         emitted = next
         onEdit { ResponseChange(next) }
+    }
+    // После выгрузки процесса поле восстанавливается раньше новой ViewModel: возвращаем ей черновик.
+    LaunchedEffect(question.id) {
+        if (!revealed && response.isEmpty && listOf(number, numerator, denominator).any { it.isNotEmpty() }) publish()
     }
     val errorId = numericDraftError(question, number, numerator, denominator)
     val errorText = errorId?.let { stringResource(it) }
@@ -218,11 +227,17 @@ private fun NumericField(
             value,
             onValueChange,
             modifier =
-                modifier.fillMaxWidth().testTag(tag).semantics {
-                    contentDescription = label
-                    if (errorText != null) error(errorText)
-                    if (mark != null) stateDescription = mark
-                },
+                modifier
+                    .fillMaxWidth()
+                    .testTag(tag)
+                    .onKeyEvent {
+                        // TextField обрабатывает KeyDown; его KeyUp тоже принадлежит полю, а не навигации.
+                        !readOnly && it.type == KeyEventType.KeyUp && it.key in listOf(Key.DirectionLeft, Key.DirectionRight)
+                    }.semantics {
+                        contentDescription = label
+                        if (errorText != null) error(errorText)
+                        if (mark != null) stateDescription = mark
+                    },
             readOnly = readOnly,
             singleLine = true,
             isError = errorText != null,
@@ -263,7 +278,11 @@ internal fun numericDraftError(
     numerator: String,
     denominator: String,
 ): Int? =
-    if (question.numericEntry?.format == NumericEntry.Format.NUMBER) {
+    if ((if (question.numericEntry?.format == NumericEntry.Format.NUMBER) listOf(number) else listOf(numerator, denominator))
+            .any { it.length > NumericResponseComponent.MAX_NUMERIC_LENGTH }
+    ) {
+        R.string.numeric_too_long
+    } else if (question.numericEntry?.format == NumericEntry.Format.NUMBER) {
         if (number in listOf("", "-", ".", ",", "-.", "-,") ||
             Response.Numeric(NumericAnswer(number = number.replace(',', '.'))).isComplete(question)
         ) {

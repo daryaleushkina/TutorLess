@@ -7,6 +7,8 @@ import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.assertTextEquals
@@ -66,6 +68,8 @@ class NewQuestionTypesFlowTest {
     @Inject lateinit var network: FakeNetwork
 
     @Inject lateinit var store: TrainingStore
+
+    @Inject lateinit var clock: dev.greprepapp.app.testing.MutableClock
     private var scenario: ActivityScenario<MainActivity>? = null
 
     @Before fun setUp() = hilt.inject()
@@ -244,9 +248,80 @@ class NewQuestionTypesFlowTest {
         click("question.check")
         waitFor("explanation")
         compose.onNodeWithTag("explanation.verdict").assertTextContains("Неверно", substring = true)
-        compose.onNodeWithTag("option.C").assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "ваш ответ"))
-        compose.onNodeWithTag("option.A").assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "верный"))
-        compose.onNodeWithTag("option.B").assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "верный"))
+        compose
+            .onNodeWithTag(
+                "option.C",
+            ).assertIsOn()
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "выбран, неверный"))
+        compose
+            .onNodeWithTag(
+                "option.A",
+            ).assertIsOff()
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "не выбран, верный"))
+        compose
+            .onNodeWithTag(
+                "option.B",
+            ).assertIsOn()
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "выбран, верный"))
+    }
+
+    @Test fun readingMultiKeepsTextAndOffersCheckboxesAndAnExplanation() {
+        start(Q.rcMulti)
+        click("reading.question")
+        click("option.A")
+        click("option.C")
+        compose.onNodeWithTag("option.A").assertIsOn()
+        compose.onNodeWithTag("option.C").assertIsOn()
+        click("reading.text")
+        compose.onNodeWithTag("passage").assertIsDisplayed()
+        click("reading.question")
+        click("question.check")
+        waitFor("explanation")
+        compose.onNodeWithTag("explanation.verdict").assertTextContains("Верно", substring = true)
+        click("reading.text")
+        compose.onNodeWithTag("passage").assertIsDisplayed()
+        click("reading.question")
+        compose.onNodeWithTag("explanation").performScrollTo().assertIsDisplayed()
+        click("question.next")
+        waitFor("summary")
+        compose.onNodeWithTag("summary.correct").assertTextEquals("1")
+    }
+
+    @Test fun longNumericPasteExplainsTheLengthLimit() {
+        start(Q.number)
+        compose.onNodeWithTag("numeric.number").performTextInput("2".repeat(129))
+        compose.onNodeWithTag("numeric.error").assertTextContains("128", substring = true)
+        compose.onNodeWithTag("question.check", useUnmergedTree = true).assertIsNotEnabled()
+        compose.onNodeWithTag("numeric.number").performTextReplacement("22,5")
+        compose.onNodeWithTag("numeric.error").assertDoesNotExist()
+        checkAndNext()
+        waitFor("summary")
+        compose.onNodeWithTag("summary.correct").assertTextEquals("1")
+    }
+
+    @Test fun skippingEmptySentenceAndNumberDeliversFlagsAndVisitTime() {
+        start(Q.sentence, Q.number, check = true)
+        clock.now = clock.now.plusSeconds(3)
+        click("question.flag")
+        click("question.next")
+        waitFor("numeric.number")
+        clock.now = clock.now.plusSeconds(5)
+        click("question.flag")
+        click("question.next")
+        click("overview.finish")
+        click("overview.confirm.finish")
+        waitFor("summary")
+        compose.waitUntil(10_000) { server.finishes.size == 1 }
+        val answers = server.answers.flatMap { it.answers }.associateBy { it.position }
+        assertEquals(setOf(0, 1), answers.keys)
+        listOf(3000, 5000).forEachIndexed { position, elapsed ->
+            val answer = answers.getValue(position)
+            assertTrue(answer.flagged)
+            assertEquals(elapsed, answer.elapsedMs)
+            assertEquals(null, answer.numericAnswer)
+            assertEquals(null, answer.sentenceId)
+        }
+        assertTrue(server.clientErrors.isEmpty())
     }
 
     @Test fun dontKnowAfterBadNumericPasteClearsTheDraftInTheExplanation() {

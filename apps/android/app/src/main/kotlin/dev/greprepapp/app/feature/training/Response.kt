@@ -56,8 +56,8 @@ data class RecordedAnswer(
             flagged,
             answeredAt,
             elapsedMs,
-            numericAnswer = (response as? Response.Numeric)?.value,
-            sentenceId = (response as? Response.Sentence)?.sentenceId,
+            numericAnswer = (response as? Response.Numeric)?.takeUnless { it.isEmpty }?.value,
+            sentenceId = (response as? Response.Sentence)?.sentenceId?.takeIf { it.isNotBlank() },
         )
 }
 

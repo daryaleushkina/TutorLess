@@ -20,8 +20,8 @@ args = parser.parse_args()
 if args.new_types:
     REPORT = REPORT / "new-types"
     MOCKUPS = REPORT / "mockups"
-    SCREENS = ["r7", "r7-text", "r7-review", "r8", "r8-correct", "r8-wrong", "r10", "r10-checked", "r11", "r11-bad", "r11-correct", "r11b"]
-MOCKUP_SOURCE = {"r7-review": "r7", "r8-correct": "r8", "r8-wrong": "r8", "r10-checked": "r10", "r11-correct": "r11"}
+    SCREENS = ["r7", "r7-text", "r7-review", "r7-multi", "r7-multi-review", "r8", "r8-correct", "r8-wrong", "r10", "r10-checked", "r11", "r11-bad", "r11-long", "r11-correct", "r11b"]
+MOCKUP_SOURCE = {"r7-review": "r7", "r7-multi": "r7", "r7-multi-review": "r7", "r8-correct": "r8", "r8-wrong": "r8", "r10-checked": "r10", "r11-long": "r11-bad", "r11-correct": "r11"}
 FONT = ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial.ttf", 20)
 LABEL_HEIGHT = 36
 WIDTH = 300
@@ -79,7 +79,8 @@ for tablet in (False, True):
         for label, path in panels(screen, tablet):
             relative = Path(os.path.relpath(path, REPORT))
             cells.append(f'<figure><figcaption>{escape(label)}</figcaption><a href="{relative}"><img src="{relative}" loading="lazy"></a></figure>')
-        rows.append(f'<section><h2>{screen.upper()} · {"планшет" if tablet else "телефон"}</h2><div class="row">{"".join(cells)}</div></section>')
+        note = '<p>RC multi: раскладка R7, флажки и состояния ответа R10; текст из общих примеров договора.</p>' if screen.startswith("r7-multi") else ''
+        rows.append(f'<section><h2>{screen.upper()} · {"планшет" if tablet else "телефон"}</h2>{note}<div class="row">{"".join(cells)}</div></section>')
 (REPORT / "comparison.html").write_text('<!doctype html><html lang="ru"><meta charset="utf-8"><title>Android B — сверка с макетами</title><style>body{font:16px system-ui;background:#e9e7ee;color:#181323;margin:24px}.row{display:flex;gap:16px;overflow:auto}figure{margin:0;flex:0 0 300px}figcaption{margin-bottom:12px}img{width:300px;height:auto}section{margin-bottom:40px}</style><h1>Android B — сверка с макетами</h1>' + ''.join(rows) + '</html>', encoding="utf-8")
 print("\n".join(str(REPORT / name) for name in pages))
 print(REPORT / "comparison.html")

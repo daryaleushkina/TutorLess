@@ -14,6 +14,8 @@ import dev.greprepapp.api.models.Section
 
 /** Только тестовые состояния макетов R7–R11b; ожидания арифметики читаются из общих примеров договора. */
 object NewQuestionFixtures {
+    val rcMulti = questionTypeExamples().first { it.name == "reading_multi_correct" }.question
+
     val passage =
         Passage(
             "deep-ocean",
