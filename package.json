@@ -12,6 +12,7 @@
     "test": "vitest run",
     "coverage": "vitest run --coverage",
     "e2e": "playwright test",
+    "e2e:browsers": "node tools/dev/e2e-browsers.ts",
     "tokens": "pnpm --filter @greprep/tokens build"
   },
   "packageManager": "pnpm@12.10.0",

@@ -27,6 +27,7 @@ import type {
 import {
   ExamList,
   Health,
+  Home,
   ReviewQueue,
   Session,
   Today,
@@ -42,8 +43,10 @@ import type {
   DevSignIn,
   Error,
   ExamChoice,
+  GetHomeParams,
   GetTrainingOptionsParams,
   IdTokenSignIn,
+  LocaleChoice,
   QuestionReport,
   TelegramMiniAppSignIn,
   TrainingFinish,
@@ -713,6 +716,213 @@ export function useGetMe<TData = Awaited<ReturnType<typeof getMe>>, TError = Err
 
 
 
+export const getSetLocaleUrl = () => {
+
+
+
+
+  return `/api/me/locale`
+}
+
+/**
+ * @summary Сменить язык аккаунта для всех устройств
+ */
+export const setLocale = async (localeChoice: LocaleChoice, options?: Parameters<typeof http>[1]): Promise<User> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return http<User>(getSetLocaleUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(localeChoice),
+    schema: User
+  }
+);}
+
+
+
+
+
+export const getSetLocaleMutationKey = () => ['setLocale'] as const;
+
+export const getSetLocaleMutationOptions = <TError = ErrorType<Error>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setLocale>>, TError,SetLocaleMutationVariables, TContext>, request?: SecondParameter<typeof http>}
+): UseMutationOptions<Awaited<ReturnType<typeof setLocale>>, TError,SetLocaleMutationVariables, TContext> => {
+
+const mutationKey = getSetLocaleMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setLocale>>, SetLocaleMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  setLocale(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetLocaleMutationResult = NonNullable<Awaited<ReturnType<typeof setLocale>>>
+    export type SetLocaleMutationBody = LocaleChoice
+    export type SetLocaleMutationError = ErrorType<Error>
+    export type SetLocaleMutationVariables = {data: LocaleChoice}
+
+    /**
+ * @summary Сменить язык аккаунта для всех устройств
+ */
+export const useSetLocale = <TError = ErrorType<Error>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setLocale>>, TError,SetLocaleMutationVariables, TContext>, request?: SecondParameter<typeof http>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof setLocale>>,
+        TError,
+        SetLocaleMutationVariables,
+        TContext
+      > => {
+      return useMutation(getSetLocaleMutationOptions(options), queryClient);
+    }
+
+export const getGetHomeUrl = (params: GetHomeParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    const explodeParameters = ["types"];
+
+    if (Array.isArray(value) && explodeParameters.includes(key)) {
+      value.forEach((v) => {
+        normalizedParams.append(key, v === null ? 'null' : String(v));
+      });
+      return;
+    }
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/home?${stringifiedParams}` : `/api/home`
+}
+
+/**
+ * Только данные текущего пользователя и exam. Определения — решение техлида 11.10.2026. Ответы — сохранённые позиции training_items с answeredAt: повторная отправка и изменение ответа в «Проверке» не создают ещё одну попытку. «Не знаю» и пустой отправленный ответ считаются неверными; позиции без answeredAt не считаются. История учитывает и начатые, и завершённые тренировки, включая задания, впоследствии снятые с публикации. Нет доступа к тренировкам — 403 forbidden.
+ * @summary Данные главной тренировки выбранного экзамена
+ */
+export const getHome = async (params: GetHomeParams, options?: Parameters<typeof http>[1]): Promise<Home> => {
+
+  return http<Home>(getGetHomeUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+    ,
+    schema: Home
+  }
+);}
+
+
+
+
+
+export const getGetHomeQueryKey = (params?: GetHomeParams,) => {
+    return [
+    `/api/home`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetHomeQueryOptions = <TData = Awaited<ReturnType<typeof getHome>>, TError = ErrorType<Error>>(params: GetHomeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHome>>, TError, TData>>, request?: SecondParameter<typeof http>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetHomeQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getHome>>> = ({ signal }) => getHome(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getHome>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetHomeQueryResult = NonNullable<Awaited<ReturnType<typeof getHome>>>
+export type GetHomeQueryError = ErrorType<Error>
+
+
+export function useGetHome<TData = Awaited<ReturnType<typeof getHome>>, TError = ErrorType<Error>>(
+ params: GetHomeParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHome>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getHome>>,
+          TError,
+          Awaited<ReturnType<typeof getHome>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof http>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetHome<TData = Awaited<ReturnType<typeof getHome>>, TError = ErrorType<Error>>(
+ params: GetHomeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHome>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getHome>>,
+          TError,
+          Awaited<ReturnType<typeof getHome>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof http>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetHome<TData = Awaited<ReturnType<typeof getHome>>, TError = ErrorType<Error>>(
+ params: GetHomeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHome>>, TError, TData>>, request?: SecondParameter<typeof http>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Данные главной тренировки выбранного экзамена
+ */
+
+export function useGetHome<TData = Awaited<ReturnType<typeof getHome>>, TError = ErrorType<Error>>(
+ params: GetHomeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHome>>, TError, TData>>, request?: SecondParameter<typeof http>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetHomeQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
 export const getGetExamsUrl = () => {
 
 
@@ -1133,7 +1343,7 @@ export const getStartTrainingUrl = () => {
 }
 
 /**
- * Всё нужное для сессии приходит одним ответом, чтобы начатая тренировка дожила без сети (PRODUCT.md, «Operating Context»). Задания — только проверенные, сначала те, что человек ещё не решал. Нет ни одного подходящего — 409 no_questions. Нет доступа к тренировкам — 403 forbidden.
+ * Всё нужное для сессии приходит одним ответом, чтобы начатая тренировка дожила без сети (PRODUCT.md, «Operating Context»). Задания — только проверенные, сначала те, что человек ещё не решал. source=mistakes оставляет только задания с последним неверным ответом самого человека, сохраняя фильтры exam, section, questionTypes, topicIds и difficulty. Нет ни одного подходящего — 409 no_questions. Нет доступа к тренировкам — 403 forbidden.
  * @summary Начать тренировку — сессия со всеми заданиями и разборами сразу
  */
 export const startTraining = async (trainingRequest: TrainingRequest, options?: Parameters<typeof http>[1]): Promise<TrainingSession> => {

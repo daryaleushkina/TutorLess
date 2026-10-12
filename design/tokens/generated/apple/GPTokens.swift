@@ -1,6 +1,6 @@
 // Сгенерировано design/tokens/build.mjs из design/tokens/src — руками не править.
 // Цвета — в GPColors.xcassets (Color(.text), Color(.text2)…), внешний вид выбирает система.
-// Для тонких ролей и свечения вместе с ним выбирайте GPType.light/dark и GPThemeTokens.light/dark.
+// GPType.light/dark и GPThemeTokens.light/dark сохранены для совместимости; веса совпадают, свечение нулевое.
 import SwiftUI
 
 /// Отступы и промежутки, pt.
@@ -27,9 +27,9 @@ public enum GPSpace {
 /// Радиусы скругления, pt. full — капсула: используйте Capsule().
 public enum GPRadius {
     /// Малые элементы: --r-s.
-    public static let s: CGFloat = 10
+    public static let s: CGFloat = 12
     /// Варианты ответа и средние карточки: --r-m.
-    public static let m: CGFloat = 16
+    public static let m: CGFloat = 18
     /// Карточки и сгруппированные списки: --r-l.
     public static let l: CGFloat = 24
     /// Кнопки и переключатель экзамена: пилюля.
@@ -41,7 +41,7 @@ public enum GPSize {
     /// Минимум для нажатия.
     public static let tapTarget: CGFloat = 44
     /// Кнопка действия .frame .btn.
-    public static let button: CGFloat = 52
+    public static let button: CGFloat = 54
     /// Переключатель экзамена.
     public static let examSwitch: CGFloat = 40
     /// Строка раздела.
@@ -49,17 +49,17 @@ public enum GPSize {
     /// Карточка второго плана.
     public static let sideCard: CGFloat = 60
     /// Вариант ответа.
-    public static let opt: CGFloat = 52
+    public static let opt: CGFloat = 54
     /// Иконка .ic.
     public static let icon: CGFloat = 22
     /// Малая иконка .ic-sm.
-    public static let iconSm: CGFloat = 16
+    public static let iconSm: CGFloat = 18
     /// Круглая кнопка с иконкой.
     public static let iconButton: CGFloat = 44
     /// Точка цвета раздела.
-    public static let sectionMark: CGFloat = 10
+    public static let sectionMark: CGFloat = 9
     /// Полоса продвижения сессии.
-    public static let sessionBar: CGFloat = 3
+    public static let sessionBar: CGFloat = 4
     /// Строка навигации на широком экране.
     public static let navItemWide: CGFloat = 46
     /// Разделители и тонкие рамки.
@@ -69,19 +69,19 @@ public enum GPSize {
 /// Раскладка, pt. breakpointWide — граница компактной и широкой раскладки.
 public enum GPLayout {
     /// Боковые поля .frame .main на телефоне.
-    public static let gutter: CGFloat = 22
+    public static let gutter: CGFloat = 20
     /// Боковые поля .frame .main на компьютере.
-    public static let gutterWide: CGFloat = 64
+    public static let gutterWide: CGFloat = 56
     /// Верхнее поле основного содержимого.
-    public static let mainTop: CGFloat = 12
+    public static let mainTop: CGFloat = 0
     /// Верхнее поле основного содержимого на компьютере.
     public static let mainTopWide: CGFloat = 44
     /// Место под нижнюю навигацию.
-    public static let mainBottomNav: CGFloat = 96
+    public static let mainBottomNav: CGFloat = 112
     /// Нижнее поле навигации.
-    public static let navBottom: CGFloat = 28
+    public static let navBottom: CGFloat = 30
     /// Ширина боковой навигации.
-    public static let sidebarWidth: CGFloat = 232
+    public static let sidebarWidth: CGFloat = 248
     /// Максимальная ширина слова и его разбора.
     public static let contentMax: CGFloat = 720
     /// Граница широкой раскладки каталога.
@@ -129,7 +129,7 @@ public struct GPTextStyle: Sendable {
     public let fontFamily: String
 }
 
-/// Свечение: параметры каталога, pt. spread сохраняется отдельно для отрисовки расширенного слоя.
+/// Параметры тени, pt. В стиле B glow прозрачен и имеет нулевые размеры.
 public struct GPShadow: Sendable {
     public let color: Color
     public let offsetX: CGFloat
@@ -138,25 +138,25 @@ public struct GPShadow: Sendable {
     public let spread: CGFloat
 }
 
-/// Тематический вес и свечение: выбираются одновременно с внешним видом цветов.
+/// Совместимость с прежними темами: thin устарел и равен 800, glow устарел и нулевой.
 public struct GPThemeTokens: Sendable {
     public let thin: Font.Weight
     public let glow: GPShadow
 
     public static let light = GPThemeTokens(
-        thin: .light,
-        glow: GPShadow(color: Color(.sRGB, red: 0.2314, green: 0.2471, blue: 0.6902, opacity: 0.4), offsetX: 0, offsetY: 10, blur: 28, spread: -8)
+        thin: .heavy,
+        glow: GPShadow(color: Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 0), offsetX: 0, offsetY: 0, blur: 0, spread: 0)
     )
 
     public static let dark = GPThemeTokens(
-        thin: .ultraLight,
-        glow: GPShadow(color: Color(.sRGB, red: 0.3608, green: 0.8118, blue: 1, opacity: 0.5), offsetX: 0, offsetY: 10, blur: 32, spread: -6)
+        thin: .heavy,
+        glow: GPShadow(color: Color(.sRGB, red: 0, green: 0, blue: 0, opacity: 0), offsetX: 0, offsetY: 0, blur: 0, spread: 0)
     )
 }
 
-/// Роли Geologica; IPA — IBM Plex Mono. Wide — та же роль в широкой раскладке (iPad, Mac).
+/// Роли Onest; IPA — IBM Plex Mono. Wide — та же роль в широкой раскладке (iPad, Mac).
 public struct GPType: Sendable {
-    public static let fontFamily = "Geologica"
+    public static let fontFamily = "Onest"
     public static let monoFontFamily = "IBM Plex Mono"
     public static let mathFontFamily = "Source Serif 4"
     public static let mathFontFallbacks = ["Georgia", "serif"]
@@ -166,87 +166,95 @@ public struct GPType: Sendable {
     }
     /// Настройка «Крупнее»: множитель размера поверх Dynamic Type.
     public static let textScaleLarge: CGFloat = 1.125
-    /// Основной текст .frame.
+    /// Профиль .frame из design/app-b/index.html.
     public let body: GPTextStyle
-    /// Заголовок экрана .frame .h1.
+    /// Профиль .h1 из design/app-b/index.html.
     public let h1: GPTextStyle
+    /// Профиль .h1 из design/app-b/index.html.
     public let h1Wide: GPTextStyle
-    /// Заголовок карточки .frame .h2.
+    /// Профиль .h2 из design/app-b/index.html.
     public let h2: GPTextStyle
-    /// Подзаголовок .frame .h3.
+    /// Профиль .h3 из design/app-b/index.html.
     public let h3: GPTextStyle
     /// Подпись над заголовком; также legend и rel-label.
     public let eyebrow: GPTextStyle
     /// Вводный текст .lead.
     public let lead: GPTextStyle
-    /// Текст кнопки .frame .btn.
+    /// Профиль .btn из design/app-b/index.html.
     public let button: GPTextStyle
-    /// Переключатель экзамена.
+    /// Профиль .exam-switch из design/app-b/index.html.
     public let examSwitch: GPTextStyle
-    /// Заголовок карточки тренировки.
+    /// Профиль .start-title из design/app-b/index.html.
     public let startTitle: GPTextStyle
+    /// Профиль .start-title из design/app-b/index.html.
     public let startTitleWide: GPTextStyle
     /// Подписи start-meta, session-meta, q-instr.
     public let meta: GPTextStyle
-    /// Название раздела.
+    /// Профиль .row-body b из design/app-b/index.html.
     public let sectionName: GPTextStyle
     /// section-types, section-stat small, score-note.
     public let caption: GPTextStyle
-    /// Тонкие цифры статистики раздела.
+    /// Профиль .stat b из design/app-b/index.html.
     public let sectionStat: GPTextStyle
+    /// Профиль .stat b из design/app-b/index.html.
     public let sectionStatWide: GPTextStyle
-    /// Тонкий счётчик сессии.
+    /// Крупный профиль Onest 800; имя сохранено для совместимости со шкалой платформ.
     public let sessionCount: GPTextStyle
+    /// Крупный профиль Onest 800; имя сохранено для совместимости со шкалой платформ.
     public let sessionCountWide: GPTextStyle
-    /// Итоговое правило .frame .q-text; базовые 19/1.55 переопределены.
+    /// Профиль .q-text из design/app-b/index.html.
     public let qText: GPTextStyle
+    /// Профиль .q-text из design/app-b/index.html.
     public let qTextWide: GPTextStyle
-    /// Вариант ответа .frame .opt.
+    /// Профиль .opt из design/app-b/index.html.
     public let opt: GPTextStyle
-    /// Ответ .frame .ans.
+    /// Профиль .ans из design/app-b/index.html.
     public let answer: GPTextStyle
-    /// Текст разбора .explain-body.
+    /// Профиль .explain-body из design/app-b/index.html.
     public let explainBody: GPTextStyle
-    /// Ссылка на тему .topic-link; чип .chip.
+    /// Профиль .link-row из design/app-b/index.html.
     public let action: GPTextStyle
-    /// Переключатель языка разбора.
+    /// Профиль .seg button из design/app-b/index.html.
     public let seg: GPTextStyle
-    /// Подпись балла.
+    /// Профиль .x-label из design/app-b/index.html.
     public let scoreLabel: GPTextStyle
-    /// Тонкий балл прогресса.
+    /// Профиль .metric-num из design/app-b/index.html.
     public let scoreNum: GPTextStyle
+    /// Профиль .metric-num из design/app-b/index.html.
     public let scoreNumWide: GPTextStyle
-    /// Тонкие цифры точности и истории .acc-val, .hist-res.
+    /// Профиль .stat b из design/app-b/index.html.
     public let statValue: GPTextStyle
-    /// Заголовок выбора экзамена.
+    /// Профиль .h2 из design/app-b/index.html.
     public let examTitle: GPTextStyle
+    /// Профиль .h2 из design/app-b/index.html.
     public let examTitleWide: GPTextStyle
-    /// Псевдоним num-s для совместимости платформ; значения задаёт общая ступень.
+    /// Профиль .exam-tile из design/app-b/index.html.
     public let examName: GPTextStyle
-    /// Псевдоним num-s-wide для совместимости платформ; значения задаёт общая ступень.
+    /// Профиль .exam-tile из design/app-b/index.html.
     public let examNameWide: GPTextStyle
     /// Псевдоним num-m для совместимости платформ; значения задаёт общая ступень.
     public let headword: GPTextStyle
     /// Псевдоним num-l-wide для совместимости платформ; значения задаёт общая ступень.
     public let headwordWide: GPTextStyle
-    /// Значение слова на английском.
+    /// Профиль .sense-en из design/app-b/index.html.
     public let senseEn: GPTextStyle
-    /// Метаданные слова.
+    /// Профиль .word-meta из design/app-b/index.html.
     public let wordMeta: GPTextStyle
-    /// Пример употребления.
+    /// Профиль .example из design/app-b/index.html.
     public let example: GPTextStyle
-    /// Подпись нижней навигации.
+    /// Профиль .nav-item из design/app-b/index.html.
     public let navLabel: GPTextStyle
+    /// Профиль .nav-item из design/app-b/index.html.
     public let navLabelWide: GPTextStyle
     /// Транскрипция: IBM Plex Mono.
     public let ipa: GPTextStyle
-    /// Тонкий счётчик недели на компьютере.
+    /// Профиль .week b из design/app-b/index.html.
     public let weekCount: GPTextStyle
     /// Подпись крупного результата: основной и компактный итоги тренировки.
     public let numLabel: GPTextStyle
     /// Подпись основного результата на широком экране.
     public let numLabelWide: GPTextStyle
-    /// Единица счёта: число слов на старте и в итоге изучения.
+    /// Профиль .today-num span из design/app-b/index.html.
     public let numUnit: GPTextStyle
     /// Заголовок задания слов: перевод в нескольких упражнениях.
     public let promptTitle: GPTextStyle
@@ -262,7 +270,7 @@ public struct GPType: Sendable {
     public let inputDisplay: GPTextStyle
     /// Компактный заголовок прогресса: на телефоне совпадает с h1.
     public let h1Compact: GPTextStyle
-    /// Компактный заголовок на широких экранах G1 и G6.
+    /// Профиль .h1 из design/app-b/index.html.
     public let h1CompactWide: GPTextStyle
     /// .frame .l-ctw-text в screens/l.css.
     public let completeWordsText: GPTextStyle
@@ -272,120 +280,120 @@ public struct GPType: Sendable {
     public let sentenceAssembly: GPTextStyle
     /// .frame .l-frame в screens/l.css; широкая раскладка от 900 px.
     public let sentenceAssemblyWide: GPTextStyle
-    /// Малое крупное число или короткое слово.
+    /// Крупный профиль Onest 800; имя сохранено для совместимости со шкалой платформ.
     public let numS: GPTextStyle
-    /// Малое крупное число или короткое слово. Широкий профиль.
+    /// Крупный профиль Onest 800; имя сохранено для совместимости со шкалой платформ.
     public let numSWide: GPTextStyle
-    /// Среднее крупное число или слово.
+    /// Профиль .headword из design/app-b/index.html.
     public let numM: GPTextStyle
-    /// Среднее крупное число или слово. Широкий профиль.
+    /// Профиль .headword из design/app-b/index.html.
     public let numMWide: GPTextStyle
-    /// Крупная статистика, компактный итог и обратный отсчёт.
+    /// Профиль .today-num b из design/app-b/index.html.
     public let numL: GPTextStyle
-    /// Крупная статистика, компактный итог и обратный отсчёт. Широкий профиль.
+    /// Профиль .today-num b из design/app-b/index.html.
     public let numLWide: GPTextStyle
-    /// Баллы и итог изучения слов.
+    /// Профиль .x-num из design/app-b/index.html.
     public let numXl: GPTextStyle
-    /// Баллы и итог изучения слов. Широкий профиль.
+    /// Профиль .x-num из design/app-b/index.html.
     public let numXlWide: GPTextStyle
-    /// Основное число итогового экрана.
+    /// Профиль .sum-num из design/app-b/index.html.
     public let numXxl: GPTextStyle
-    /// Основное число итогового экрана. Широкий профиль.
+    /// Профиль .sum-num из design/app-b/index.html.
     public let numXxlWide: GPTextStyle
-    /// Промежуточное малое число, которое не попало в роли ядра.
+    /// Крупный профиль Onest 800; имя сохранено для совместимости со шкалой платформ.
     public let numCompact: GPTextStyle
-    /// Широкий промежуточный профиль малого числа.
+    /// Крупный профиль Onest 800; имя сохранено для совместимости со шкалой платформ.
     public let numCompactWide: GPTextStyle
-    /// Слово-заголовок, не попавшее в крупную числовую шкалу.
+    /// Крупный профиль Onest 800; имя сохранено для совместимости со шкалой платформ.
     public let wordTitle: GPTextStyle
-    /// Широкий профиль слова-заголовка вне числовой шкалы.
+    /// Крупный профиль Onest 800; имя сохранено для совместимости со шкалой платформ.
     public let wordTitleWide: GPTextStyle
 
     public static let light = GPType(theme: .light)
     public static let dark = GPType(theme: .dark)
 
     private init(theme: GPThemeTokens) {
-        body = GPTextStyle(size: 16, lineHeight: 23.2, weight: .regular, tracking: -0.005, relativeTo: .body, fontFamily: "Geologica")
-        h1 = GPTextStyle(size: 34, lineHeight: 39.1, weight: .semibold, tracking: -0.03, relativeTo: .largeTitle, fontFamily: "Geologica")
-        h1Wide = GPTextStyle(size: 44, lineHeight: 50.6, weight: .semibold, tracking: -0.03, relativeTo: .largeTitle, fontFamily: "Geologica")
-        h2 = GPTextStyle(size: 19, lineHeight: 23.75, weight: .semibold, tracking: -0.015, relativeTo: .title3, fontFamily: "Geologica")
-        h3 = GPTextStyle(size: 16, lineHeight: 20.8, weight: .semibold, tracking: -0.01, relativeTo: .headline, fontFamily: "Geologica")
-        eyebrow = GPTextStyle(size: 13, lineHeight: 18.85, weight: .medium, tracking: 0, relativeTo: .caption, fontFamily: "Geologica")
-        lead = GPTextStyle(size: 17, lineHeight: 24.65, weight: .regular, tracking: -0.005, relativeTo: .body, fontFamily: "Geologica")
-        button = GPTextStyle(size: 16, lineHeight: 23.2, weight: .semibold, tracking: 0.005, relativeTo: .headline, fontFamily: "Geologica")
-        examSwitch = GPTextStyle(size: 14, lineHeight: 20.3, weight: .semibold, tracking: 0.02, relativeTo: .subheadline, fontFamily: "Geologica")
-        startTitle = GPTextStyle(size: 30, lineHeight: 34.5, weight: .semibold, tracking: -0.03, relativeTo: .largeTitle, fontFamily: "Geologica")
-        startTitleWide = GPTextStyle(size: 44, lineHeight: 50.6, weight: .semibold, tracking: -0.035, relativeTo: .largeTitle, fontFamily: "Geologica")
-        meta = GPTextStyle(size: 14, lineHeight: 20.3, weight: .regular, tracking: -0.005, relativeTo: .footnote, fontFamily: "Geologica")
-        sectionName = GPTextStyle(size: 17, lineHeight: 24.65, weight: .semibold, tracking: -0.01, relativeTo: .headline, fontFamily: "Geologica")
-        caption = GPTextStyle(size: 13, lineHeight: 18.85, weight: .regular, tracking: -0.005, relativeTo: .caption, fontFamily: "Geologica")
-        sectionStat = GPTextStyle(size: 24, lineHeight: 25.2, weight: theme.thin, tracking: -0.02, relativeTo: .title2, fontFamily: "Geologica")
-        sectionStatWide = GPTextStyle(size: 28, lineHeight: 29.4, weight: theme.thin, tracking: -0.02, relativeTo: .title2, fontFamily: "Geologica")
-        sessionCount = GPTextStyle(size: 22, lineHeight: 31.9, weight: theme.thin, tracking: -0.02, relativeTo: .title3, fontFamily: "Geologica")
-        sessionCountWide = GPTextStyle(size: 26, lineHeight: 37.7, weight: theme.thin, tracking: -0.02, relativeTo: .title3, fontFamily: "Geologica")
-        qText = GPTextStyle(size: 20, lineHeight: 32, weight: .regular, tracking: -0.01, relativeTo: .body, fontFamily: "Geologica")
-        qTextWide = GPTextStyle(size: 24, lineHeight: 38.4, weight: .regular, tracking: -0.01, relativeTo: .body, fontFamily: "Geologica")
-        opt = GPTextStyle(size: 17, lineHeight: 24.65, weight: .medium, tracking: -0.005, relativeTo: .body, fontFamily: "Geologica")
-        answer = GPTextStyle(size: 15, lineHeight: 21.75, weight: .medium, tracking: -0.005, relativeTo: .callout, fontFamily: "Geologica")
-        explainBody = GPTextStyle(size: 15, lineHeight: 23.25, weight: .regular, tracking: -0.005, relativeTo: .body, fontFamily: "Geologica")
-        action = GPTextStyle(size: 15, lineHeight: 21.75, weight: .medium, tracking: -0.005, relativeTo: .callout, fontFamily: "Geologica")
-        seg = GPTextStyle(size: 13, lineHeight: 18.85, weight: .semibold, tracking: -0.005, relativeTo: .caption, fontFamily: "Geologica")
-        scoreLabel = GPTextStyle(size: 13, lineHeight: 18.85, weight: .medium, tracking: -0.005, relativeTo: .caption, fontFamily: "Geologica")
-        scoreNum = GPTextStyle(size: 32, lineHeight: 32, weight: theme.thin, tracking: -0.04, relativeTo: .largeTitle, fontFamily: "Geologica")
-        scoreNumWide = GPTextStyle(size: 44, lineHeight: 44, weight: theme.thin, tracking: -0.04, relativeTo: .largeTitle, fontFamily: "Geologica")
-        statValue = GPTextStyle(size: 18, lineHeight: 26.1, weight: theme.thin, tracking: -0.02, relativeTo: .body, fontFamily: "Geologica")
-        examTitle = GPTextStyle(size: 36, lineHeight: 41.4, weight: .semibold, tracking: -0.03, relativeTo: .largeTitle, fontFamily: "Geologica")
-        examTitleWide = GPTextStyle(size: 48, lineHeight: 55.2, weight: .semibold, tracking: -0.03, relativeTo: .largeTitle, fontFamily: "Geologica")
-        examName = GPTextStyle(size: 48, lineHeight: 48, weight: theme.thin, tracking: -0.04, relativeTo: .largeTitle, fontFamily: "Geologica")
-        examNameWide = GPTextStyle(size: 60, lineHeight: 60, weight: theme.thin, tracking: -0.04, relativeTo: .largeTitle, fontFamily: "Geologica")
-        headword = GPTextStyle(size: 56, lineHeight: 56, weight: theme.thin, tracking: -0.04, relativeTo: .largeTitle, fontFamily: "Geologica")
-        headwordWide = GPTextStyle(size: 88, lineHeight: 88, weight: theme.thin, tracking: -0.04, relativeTo: .largeTitle, fontFamily: "Geologica")
-        senseEn = GPTextStyle(size: 20, lineHeight: 28, weight: .regular, tracking: -0.01, relativeTo: .body, fontFamily: "Geologica")
-        wordMeta = GPTextStyle(size: 15, lineHeight: 21.75, weight: .regular, tracking: -0.005, relativeTo: .callout, fontFamily: "Geologica")
-        example = GPTextStyle(size: 17, lineHeight: 24.65, weight: .regular, tracking: -0.005, relativeTo: .body, fontFamily: "Geologica")
-        navLabel = GPTextStyle(size: 11, lineHeight: 15.95, weight: .medium, tracking: -0.005, relativeTo: .caption2, fontFamily: "Geologica")
-        navLabelWide = GPTextStyle(size: 15, lineHeight: 21.75, weight: .medium, tracking: -0.005, relativeTo: .caption2, fontFamily: "Geologica")
+        body = GPTextStyle(size: 16, lineHeight: 23.2, weight: .regular, tracking: 0, relativeTo: .body, fontFamily: "Onest")
+        h1 = GPTextStyle(size: 34, lineHeight: 35.36, weight: .heavy, tracking: -0.035, relativeTo: .largeTitle, fontFamily: "Onest")
+        h1Wide = GPTextStyle(size: 44, lineHeight: 45.76, weight: .heavy, tracking: -0.035, relativeTo: .largeTitle, fontFamily: "Onest")
+        h2 = GPTextStyle(size: 22, lineHeight: 25.3, weight: .heavy, tracking: -0.025, relativeTo: .title3, fontFamily: "Onest")
+        h3 = GPTextStyle(size: 17, lineHeight: 22.1, weight: .bold, tracking: -0.01, relativeTo: .headline, fontFamily: "Onest")
+        eyebrow = GPTextStyle(size: 13, lineHeight: 18.85, weight: .medium, tracking: 0, relativeTo: .caption, fontFamily: "Onest")
+        lead = GPTextStyle(size: 17, lineHeight: 24.65, weight: .regular, tracking: -0.005, relativeTo: .body, fontFamily: "Onest")
+        button = GPTextStyle(size: 16.5, lineHeight: 23.925, weight: .bold, tracking: -0.01, relativeTo: .headline, fontFamily: "Onest")
+        examSwitch = GPTextStyle(size: 15, lineHeight: 21.75, weight: .bold, tracking: -0.005, relativeTo: .subheadline, fontFamily: "Onest")
+        startTitle = GPTextStyle(size: 28, lineHeight: 29.4, weight: .heavy, tracking: -0.035, relativeTo: .largeTitle, fontFamily: "Onest")
+        startTitleWide = GPTextStyle(size: 34, lineHeight: 35.7, weight: .heavy, tracking: -0.035, relativeTo: .largeTitle, fontFamily: "Onest")
+        meta = GPTextStyle(size: 14, lineHeight: 20.3, weight: .regular, tracking: -0.005, relativeTo: .footnote, fontFamily: "Onest")
+        sectionName = GPTextStyle(size: 16.5, lineHeight: 23.925, weight: .semibold, tracking: -0.01, relativeTo: .headline, fontFamily: "Onest")
+        caption = GPTextStyle(size: 13, lineHeight: 18.85, weight: .regular, tracking: -0.005, relativeTo: .caption, fontFamily: "Onest")
+        sectionStat = GPTextStyle(size: 16, lineHeight: 23.2, weight: .bold, tracking: 0, relativeTo: .title2, fontFamily: "Onest")
+        sectionStatWide = GPTextStyle(size: 16, lineHeight: 23.2, weight: .bold, tracking: 0, relativeTo: .title2, fontFamily: "Onest")
+        sessionCount = GPTextStyle(size: 22, lineHeight: 31.9, weight: .heavy, tracking: -0.04, relativeTo: .title3, fontFamily: "Onest")
+        sessionCountWide = GPTextStyle(size: 26, lineHeight: 37.7, weight: .heavy, tracking: -0.04, relativeTo: .title3, fontFamily: "Onest")
+        qText = GPTextStyle(size: 20, lineHeight: 32.4, weight: .regular, tracking: -0.005, relativeTo: .body, fontFamily: "Onest")
+        qTextWide = GPTextStyle(size: 20, lineHeight: 32.4, weight: .regular, tracking: -0.005, relativeTo: .body, fontFamily: "Onest")
+        opt = GPTextStyle(size: 17, lineHeight: 24.65, weight: .medium, tracking: 0, relativeTo: .body, fontFamily: "Onest")
+        answer = GPTextStyle(size: 15, lineHeight: 21.75, weight: .semibold, tracking: 0, relativeTo: .callout, fontFamily: "Onest")
+        explainBody = GPTextStyle(size: 16, lineHeight: 25.28, weight: .regular, tracking: 0, relativeTo: .body, fontFamily: "Onest")
+        action = GPTextStyle(size: 15, lineHeight: 21.75, weight: .semibold, tracking: 0, relativeTo: .callout, fontFamily: "Onest")
+        seg = GPTextStyle(size: 13, lineHeight: 18.85, weight: .bold, tracking: 0.02, relativeTo: .caption, fontFamily: "Onest")
+        scoreLabel = GPTextStyle(size: 14, lineHeight: 20.3, weight: .semibold, tracking: 0, relativeTo: .caption, fontFamily: "Onest")
+        scoreNum = GPTextStyle(size: 30, lineHeight: 31.5, weight: .heavy, tracking: -0.04, relativeTo: .largeTitle, fontFamily: "Onest")
+        scoreNumWide = GPTextStyle(size: 30, lineHeight: 31.5, weight: .heavy, tracking: -0.04, relativeTo: .largeTitle, fontFamily: "Onest")
+        statValue = GPTextStyle(size: 16, lineHeight: 23.2, weight: .bold, tracking: 0, relativeTo: .body, fontFamily: "Onest")
+        examTitle = GPTextStyle(size: 22, lineHeight: 25.3, weight: .heavy, tracking: -0.025, relativeTo: .largeTitle, fontFamily: "Onest")
+        examTitleWide = GPTextStyle(size: 22, lineHeight: 25.3, weight: .heavy, tracking: -0.025, relativeTo: .largeTitle, fontFamily: "Onest")
+        examName = GPTextStyle(size: 16, lineHeight: 23.2, weight: .heavy, tracking: -0.02, relativeTo: .largeTitle, fontFamily: "Onest")
+        examNameWide = GPTextStyle(size: 16, lineHeight: 23.2, weight: .heavy, tracking: -0.02, relativeTo: .largeTitle, fontFamily: "Onest")
+        headword = GPTextStyle(size: 52, lineHeight: 50.96, weight: .heavy, tracking: -0.045, relativeTo: .largeTitle, fontFamily: "Onest")
+        headwordWide = GPTextStyle(size: 52, lineHeight: 50.96, weight: .heavy, tracking: -0.045, relativeTo: .largeTitle, fontFamily: "Onest")
+        senseEn = GPTextStyle(size: 18, lineHeight: 26.1, weight: .regular, tracking: 0, relativeTo: .body, fontFamily: "Onest")
+        wordMeta = GPTextStyle(size: 15, lineHeight: 21.75, weight: .regular, tracking: 0, relativeTo: .callout, fontFamily: "Onest")
+        example = GPTextStyle(size: 15.5, lineHeight: 22.475, weight: .regular, tracking: 0, relativeTo: .body, fontFamily: "Onest")
+        navLabel = GPTextStyle(size: 11.5, lineHeight: 16.675, weight: .semibold, tracking: 0.005, relativeTo: .caption2, fontFamily: "Onest")
+        navLabelWide = GPTextStyle(size: 15.5, lineHeight: 22.475, weight: .semibold, tracking: 0.005, relativeTo: .caption2, fontFamily: "Onest")
         ipa = GPTextStyle(size: 14, lineHeight: 20.3, weight: .regular, tracking: -0.005, relativeTo: .footnote, fontFamily: "IBM Plex Mono")
-        weekCount = GPTextStyle(size: 28, lineHeight: 40.6, weight: theme.thin, tracking: -0.03, relativeTo: .title2, fontFamily: "Geologica")
-        numLabel = GPTextStyle(size: 20, lineHeight: 24, weight: .medium, tracking: -0.015, relativeTo: .title2, fontFamily: "Geologica")
-        numLabelWide = GPTextStyle(size: 28, lineHeight: 33.6, weight: .medium, tracking: -0.015, relativeTo: .title2, fontFamily: "Geologica")
-        numUnit = GPTextStyle(size: 22, lineHeight: 31.9, weight: .semibold, tracking: -0.015, relativeTo: .title3, fontFamily: "Geologica")
-        promptTitle = GPTextStyle(size: 24, lineHeight: 30, weight: .semibold, tracking: -0.015, relativeTo: .title2, fontFamily: "Geologica")
-        promptTitleWide = GPTextStyle(size: 30, lineHeight: 34.5, weight: .semibold, tracking: -0.03, relativeTo: .title2, fontFamily: "Geologica")
-        inputCompact = GPTextStyle(size: 17, lineHeight: 17, weight: .medium, tracking: 0, relativeTo: .body, fontFamily: "Geologica")
-        inputCompactWide = GPTextStyle(size: 19, lineHeight: 19, weight: .medium, tracking: 0, relativeTo: .body, fontFamily: "Geologica")
-        inputLetter = GPTextStyle(size: 26, lineHeight: 37.7, weight: .medium, tracking: -0.0031, relativeTo: .title2, fontFamily: "Geologica")
-        inputDisplay = GPTextStyle(size: 26, lineHeight: 31.2, weight: .medium, tracking: 0.01, relativeTo: .title2, fontFamily: "Geologica")
-        h1Compact = GPTextStyle(size: 34, lineHeight: 39.1, weight: .semibold, tracking: -0.03, relativeTo: .largeTitle, fontFamily: "Geologica")
-        h1CompactWide = GPTextStyle(size: 40, lineHeight: 46, weight: .semibold, tracking: -0.03, relativeTo: .largeTitle, fontFamily: "Geologica")
-        completeWordsText = GPTextStyle(size: 18, lineHeight: 38.7, weight: .regular, tracking: -0.005, relativeTo: .body, fontFamily: "Geologica")
-        completeWordsTextWide = GPTextStyle(size: 22, lineHeight: 48.4, weight: .regular, tracking: -0.005, relativeTo: .body, fontFamily: "Geologica")
-        sentenceAssembly = GPTextStyle(size: 20, lineHeight: 46, weight: .regular, tracking: -0.004, relativeTo: .body, fontFamily: "Geologica")
-        sentenceAssemblyWide = GPTextStyle(size: 24, lineHeight: 55.2, weight: .regular, tracking: -0.0033, relativeTo: .body, fontFamily: "Geologica")
-        numS = GPTextStyle(size: 48, lineHeight: 48, weight: theme.thin, tracking: -0.04, relativeTo: .largeTitle, fontFamily: "Geologica")
-        numSWide = GPTextStyle(size: 60, lineHeight: 60, weight: theme.thin, tracking: -0.04, relativeTo: .largeTitle, fontFamily: "Geologica")
-        numM = GPTextStyle(size: 56, lineHeight: 56, weight: theme.thin, tracking: -0.04, relativeTo: .largeTitle, fontFamily: "Geologica")
-        numMWide = GPTextStyle(size: 72, lineHeight: 72, weight: theme.thin, tracking: -0.04, relativeTo: .largeTitle, fontFamily: "Geologica")
-        numL = GPTextStyle(size: 70, lineHeight: 70, weight: theme.thin, tracking: -0.04, relativeTo: .largeTitle, fontFamily: "Geologica")
-        numLWide = GPTextStyle(size: 88, lineHeight: 88, weight: theme.thin, tracking: -0.04, relativeTo: .largeTitle, fontFamily: "Geologica")
-        numXl = GPTextStyle(size: 88, lineHeight: 83.6, weight: theme.thin, tracking: -0.04, relativeTo: .largeTitle, fontFamily: "Geologica")
-        numXlWide = GPTextStyle(size: 120, lineHeight: 114, weight: theme.thin, tracking: -0.04, relativeTo: .largeTitle, fontFamily: "Geologica")
-        numXxl = GPTextStyle(size: 104, lineHeight: 93.6, weight: theme.thin, tracking: -0.04, relativeTo: .largeTitle, fontFamily: "Geologica")
-        numXxlWide = GPTextStyle(size: 144, lineHeight: 129.6, weight: theme.thin, tracking: -0.04, relativeTo: .largeTitle, fontFamily: "Geologica")
-        numCompact = GPTextStyle(size: 36, lineHeight: 37.8, weight: theme.thin, tracking: -0.03, relativeTo: .title, fontFamily: "Geologica")
-        numCompactWide = GPTextStyle(size: 52, lineHeight: 54.6, weight: theme.thin, tracking: -0.03, relativeTo: .title, fontFamily: "Geologica")
-        wordTitle = GPTextStyle(size: 40, lineHeight: 44, weight: theme.thin, tracking: -0.02, relativeTo: .largeTitle, fontFamily: "Geologica")
-        wordTitleWide = GPTextStyle(size: 56, lineHeight: 61.6, weight: theme.thin, tracking: -0.02, relativeTo: .largeTitle, fontFamily: "Geologica")
+        weekCount = GPTextStyle(size: 26, lineHeight: 37.7, weight: .heavy, tracking: -0.035, relativeTo: .title2, fontFamily: "Onest")
+        numLabel = GPTextStyle(size: 20, lineHeight: 24, weight: .medium, tracking: -0.015, relativeTo: .title2, fontFamily: "Onest")
+        numLabelWide = GPTextStyle(size: 28, lineHeight: 33.6, weight: .medium, tracking: -0.015, relativeTo: .title2, fontFamily: "Onest")
+        numUnit = GPTextStyle(size: 22, lineHeight: 31.9, weight: .heavy, tracking: -0.025, relativeTo: .title3, fontFamily: "Onest")
+        promptTitle = GPTextStyle(size: 24, lineHeight: 30, weight: .semibold, tracking: -0.015, relativeTo: .title2, fontFamily: "Onest")
+        promptTitleWide = GPTextStyle(size: 28, lineHeight: 29.4, weight: .heavy, tracking: -0.035, relativeTo: .title2, fontFamily: "Onest")
+        inputCompact = GPTextStyle(size: 17, lineHeight: 17, weight: .medium, tracking: 0, relativeTo: .body, fontFamily: "Onest")
+        inputCompactWide = GPTextStyle(size: 19, lineHeight: 19, weight: .medium, tracking: 0, relativeTo: .body, fontFamily: "Onest")
+        inputLetter = GPTextStyle(size: 26, lineHeight: 37.7, weight: .medium, tracking: -0.0031, relativeTo: .title2, fontFamily: "Onest")
+        inputDisplay = GPTextStyle(size: 26, lineHeight: 31.2, weight: .medium, tracking: 0.01, relativeTo: .title2, fontFamily: "Onest")
+        h1Compact = GPTextStyle(size: 34, lineHeight: 35.36, weight: .heavy, tracking: -0.035, relativeTo: .largeTitle, fontFamily: "Onest")
+        h1CompactWide = GPTextStyle(size: 44, lineHeight: 45.76, weight: .heavy, tracking: -0.035, relativeTo: .largeTitle, fontFamily: "Onest")
+        completeWordsText = GPTextStyle(size: 18, lineHeight: 38.7, weight: .regular, tracking: -0.005, relativeTo: .body, fontFamily: "Onest")
+        completeWordsTextWide = GPTextStyle(size: 22, lineHeight: 48.4, weight: .regular, tracking: -0.005, relativeTo: .body, fontFamily: "Onest")
+        sentenceAssembly = GPTextStyle(size: 20, lineHeight: 46, weight: .regular, tracking: -0.004, relativeTo: .body, fontFamily: "Onest")
+        sentenceAssemblyWide = GPTextStyle(size: 24, lineHeight: 55.2, weight: .regular, tracking: -0.0033, relativeTo: .body, fontFamily: "Onest")
+        numS = GPTextStyle(size: 48, lineHeight: 48, weight: .heavy, tracking: -0.04, relativeTo: .largeTitle, fontFamily: "Onest")
+        numSWide = GPTextStyle(size: 60, lineHeight: 60, weight: .heavy, tracking: -0.04, relativeTo: .largeTitle, fontFamily: "Onest")
+        numM = GPTextStyle(size: 52, lineHeight: 50.96, weight: .heavy, tracking: -0.045, relativeTo: .largeTitle, fontFamily: "Onest")
+        numMWide = GPTextStyle(size: 52, lineHeight: 50.96, weight: .heavy, tracking: -0.045, relativeTo: .largeTitle, fontFamily: "Onest")
+        numL = GPTextStyle(size: 64, lineHeight: 57.6, weight: .heavy, tracking: -0.05, relativeTo: .largeTitle, fontFamily: "Onest")
+        numLWide = GPTextStyle(size: 64, lineHeight: 57.6, weight: .heavy, tracking: -0.05, relativeTo: .largeTitle, fontFamily: "Onest")
+        numXl = GPTextStyle(size: 68, lineHeight: 64.6, weight: .heavy, tracking: -0.05, relativeTo: .largeTitle, fontFamily: "Onest")
+        numXlWide = GPTextStyle(size: 68, lineHeight: 64.6, weight: .heavy, tracking: -0.05, relativeTo: .largeTitle, fontFamily: "Onest")
+        numXxl = GPTextStyle(size: 120, lineHeight: 96, weight: .heavy, tracking: -0.055, relativeTo: .largeTitle, fontFamily: "Onest")
+        numXxlWide = GPTextStyle(size: 120, lineHeight: 96, weight: .heavy, tracking: -0.055, relativeTo: .largeTitle, fontFamily: "Onest")
+        numCompact = GPTextStyle(size: 36, lineHeight: 37.8, weight: .heavy, tracking: -0.04, relativeTo: .title, fontFamily: "Onest")
+        numCompactWide = GPTextStyle(size: 52, lineHeight: 54.6, weight: .heavy, tracking: -0.04, relativeTo: .title, fontFamily: "Onest")
+        wordTitle = GPTextStyle(size: 40, lineHeight: 44, weight: .heavy, tracking: -0.045, relativeTo: .largeTitle, fontFamily: "Onest")
+        wordTitleWide = GPTextStyle(size: 56, lineHeight: 61.6, weight: .heavy, tracking: -0.045, relativeTo: .largeTitle, fontFamily: "Onest")
     }
 }
 
 /// Движение. Длительности — секунды; при «Уменьшить движение» анимации нажатия и появления выключаются.
 public enum GPMotion {
-    public static let press: Double = 0.16
+    public static let press: Double = 0.14
     public static let reveal: Double = 0.24
     public static let pulse: Double = 1.6
-    public static let pressScale: CGFloat = 0.98
+    public static let pressScale: CGFloat = 0.97
     public static func easeOut(duration: Double) -> Animation {
-        .timingCurve(0.2, 0.8, 0.2, 1, duration: duration)
+        .timingCurve(0.23, 1, 0.32, 1, duration: duration)
     }
 }

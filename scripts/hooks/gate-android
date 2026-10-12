@@ -21,7 +21,17 @@ app="$root/apps/android"
 cd "$app"
 
 work="$(mktemp -d)"
-trap 'rm -rf "$work"' EXIT
+cleanup() {
+  cleanup_status=$?
+  trap - EXIT
+  if rm -rf "$work"; then :; else
+    removal_status=$?
+    # Ошибка уборки не должна заменять код упавшего шага.
+    if [ "$cleanup_status" -eq 0 ]; then cleanup_status="$removal_status"; fi
+  fi
+  exit "$cleanup_status"
+}
+trap cleanup EXIT
 
 # SDK — из окружения или там, куда его ставит Android Studio на Маке.
 if [ -z "${ANDROID_HOME:-}" ]; then
@@ -39,10 +49,13 @@ step() {
   shift
   log="$work/$name.log"
   echo "gate: Android — $name" >&2
-  if ! ./gradlew --console=plain "$@" >"$log" 2>&1; then
+  if ./gradlew --console=plain "$@" >"$log" 2>&1; then return 0; else
+    step_status=$?
+    case "$step_status" in ''|*[!0-9]*) step_status=1 ;; esac
     grep -E '^e: |Error:|FAILED|What went wrong|\.kt:[0-9]+' "$log" | head -40 >&2
-    echo "gate: Android — «$name» не прошёл (полный лог: ./gradlew $*)" >&2
-    exit 1
+    # Скобки отделяют имя от «ёлочки»: системный sh на Маке иначе включает её в имя переменной.
+    echo "gate: Android — «${name}» не прошёл (полный лог: ./gradlew $*)" >&2
+    exit "$step_status"
   fi
 }
 
@@ -56,6 +69,9 @@ fi
 
 step "стиль кода (ktlint)" ktlintCheck
 step "Android lint" lintDebug lintRelease
+# Только компиляция: общий src/test не должен ссылаться на src/debug (решение Даши 11.10.2026).
+# AGP по умолчанию создаёт тесты только для debug; включаем остальные варианты лишь в этом шаге.
+step "компиляция тестов релизной сборки" compileReleaseUnitTestKotlin -Pandroid.onlyEnableUnitTestForTheTestedBuildType=false
 step "тесты клиента API" :core:api:test
 step "тесты, сценарии и снимки экранов" :app:verifyRoborazziDebug :app:koverXmlReportDebug
 
@@ -84,7 +100,7 @@ apk="app/build/outputs/apk/release/app-release-unsigned.apk"
 unzip -q -o "$apk" 'classes*.dex' resources.arsc -d "$work/apk"
 for forbidden in "api/auth/dev" "10.0.2.2"; do
   if grep -a -q -F "$forbidden" "$work"/apk/classes*.dex; then
-    echo "gate: Android — в релизной сборке есть «$forbidden»: вход подменой и сервер на Маке — только для отладки" >&2
+    echo "gate: Android — в релизной сборке есть «${forbidden}»: вход подменой и сервер на Маке — только для отладки" >&2
     exit 1
   fi
 done

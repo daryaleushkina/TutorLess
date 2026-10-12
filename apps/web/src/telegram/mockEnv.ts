@@ -25,7 +25,7 @@
  *   ?tgPlatform=ios|android|tdesktop|macos|weba|web  (по умолчанию ios)
  *   ?tgVersion=10.1              версия Bot API клиента; ниже — проверка isAvailable()
  *   ?tgInsets=59,34,46,0         safe top, safe bottom, content top, content bottom
- *   ?tgChrome=0                  не рисовать заглушки нативных кнопок
+ *   ?tgChrome=0                  не рисовать заглушку кнопки назад
  *   ?tgStart=abc                 start_param
  *   ?tgUserId=900001             id пользователя Telegram (по умолчанию 1): у каждого e2e-теста — свой,
  *                                чтобы тесты шли параллельно и не видели данных друг друга
@@ -36,15 +36,15 @@
  *                                настоящим путём, с проверкой подписи на сервере; без неё initData неподписанная
  *                                и сервер её отклонит
  */
-import { emitEvent, isTMA, mockTelegramEnv, mainButton, secondaryButton, backButton } from '@tma.js/sdk-react';
+import { emitEvent, isTMA, mockTelegramEnv, backButton } from '@tma.js/sdk-react';
 
 let restoreChrome = () => {};
-/** Telegram сохраняет нативные кнопки между загрузками. Браузерная подмена восстанавливает их после mount SDK. */
+/** Telegram сохраняет кнопку назад между загрузками. Браузерная подмена восстанавливает её после mount SDK. */
 export function restoreMockChrome(): void { restoreChrome(); }
 
 declare global {
   interface Window {
-    __tgMock?: { setTheme: (name: 'light' | 'dark') => void };
+    __tgMock?: { events: string[]; setTheme: (name: 'light' | 'dark') => void };
   }
 }
 
@@ -88,21 +88,6 @@ const LIGHT_THEME: Theme = {
   text_color: '#222222',
 };
 
-// Высота нижней панели — как у отладочной панели в telegram-web-app.js:
-// 58 px на ряд, +51 px, если вторичная кнопка стоит сверху или снизу.
-const BAR_ROW = 58;
-const BAR_EXTRA_ROW = 51;
-
-interface ButtonState {
-  isVisible: boolean;
-  isActive: boolean;
-  isProgressVisible: boolean;
-  text: string;
-  color?: string;
-  textColor?: string;
-  position?: string;
-}
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
@@ -137,56 +122,20 @@ export async function mockTelegramEnvForDev(): Promise<void> {
     .split(',')
     .map((n) => Number.parseInt(n, 10) || 0);
 
-  const buttons: Record<'main' | 'secondary', ButtonState> = {
-    main: { isVisible: false, isActive: true, isProgressVisible: false, text: '' },
-    secondary: { isVisible: false, isActive: true, isProgressVisible: false, text: '', position: 'left' },
-  };
   let backVisible = false;
-
-  const barHeight = (): number => {
-    const { main, secondary } = buttons;
-    if (!main.isVisible && !secondary.isVisible) return 0;
-    const stacked = main.isVisible && secondary.isVisible
-      && (secondary.position === 'top' || secondary.position === 'bottom');
-    return stacked ? BAR_ROW + BAR_EXTRA_ROW : BAR_ROW;
-  };
   const emitViewport = (): void => {
     emitEvent('viewport_changed', {
-      height: window.innerHeight - (drawChrome ? barHeight() : 0) + viewportExtra,
-      width: window.innerWidth,
-      is_expanded: true,
-      is_state_stable: true,
+      height: window.innerHeight + viewportExtra, width: window.innerWidth,
+      is_expanded: true, is_state_stable: true,
     });
   };
-
-  // ── Заглушки нативных элементов: в браузере их нет, а на скриншоте нужны ──
-  const chrome = drawChrome ? createChrome() : undefined;
+  // Единственный нативный элемент, который остаётся у клиента, — BackButton.
+  const back = drawChrome ? createChrome() : undefined;
   const render = (): void => {
-    if (!chrome) return;
-    chrome.back.hidden = !backVisible;
-    renderButton(chrome.main, buttons.main);
-    renderButton(chrome.secondary, buttons.secondary);
-    const { position } = buttons.secondary;
-    chrome.bar.toggleAttribute('data-stacked', position === 'top' || position === 'bottom');
-    chrome.bar.style.flexDirection = position === 'top' ? 'column-reverse'
-      : position === 'bottom' ? 'column'
-      : position === 'right' ? 'row' : 'row-reverse';
-    chrome.bar.hidden = barHeight() === 0;
-    emitViewport();
+    if (back) back.hidden = !backVisible;
   };
-  restoreChrome = () => {
-    for (const [kind, component] of [['main', mainButton], ['secondary', secondaryButton]] as const) {
-      const state = component.state();
-      buttons[kind] = { isVisible: state.isVisible, isActive: state.isEnabled, isProgressVisible: state.isLoaderVisible,
-        text: state.text, color: state.bgColor, textColor: state.textColor,
-        ...(kind === 'secondary' && { position: secondaryButton.position() }) };
-    }
-    backVisible = backButton.isVisible();
-    render();
-  };
-  chrome?.main.addEventListener('click', () => emitEvent('main_button_pressed'));
-  chrome?.secondary.addEventListener('click', () => emitEvent('secondary_button_pressed'));
-  chrome?.back.addEventListener('click', () => emitEvent('back_button_pressed'));
+  restoreChrome = () => { backVisible = backButton.isVisible(); render(); };
+  back?.addEventListener('click', () => emitEvent('back_button_pressed'));
   // Escape — «назад» для удобства отладки; срабатывает, только когда кнопка видна
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && backVisible) emitEvent('back_button_pressed');
@@ -209,7 +158,9 @@ export async function mockTelegramEnvForDev(): Promise<void> {
   const secure = store('tg-mock-secure:', sessionStorage);
 
   // Смена темы посреди работы (человек переключил тему в Telegram, сработал ночной режим) — для e2e.
+  const events: string[] = [];
   window.__tgMock = {
+    events,
     setTheme(name) {
       theme = name === 'light' ? LIGHT_THEME : DARK_THEME;
       emitEvent('theme_changed', { theme_params: theme });
@@ -230,6 +181,7 @@ export async function mockTelegramEnvForDev(): Promise<void> {
       ['tgWebAppPlatform', platform],
     ]),
     onEvent(event) {
+      events.push(event.name);
       const p: Record<string, unknown> = isRecord(event.params) ? event.params : {};
       const reqId = str(p, 'req_id') ?? '';
       switch (event.name) {
@@ -242,18 +194,6 @@ export async function mockTelegramEnvForDev(): Promise<void> {
           return emitEvent('safe_area_changed', { top: safeTop, bottom: safeBottom, left: 0, right: 0 });
         case 'web_app_request_content_safe_area':
           return emitEvent('content_safe_area_changed', { top: contentTop, bottom: contentBottom, left: 0, right: 0 });
-        case 'web_app_setup_main_button':
-        case 'web_app_setup_secondary_button': {
-          const b = buttons[event.name === 'web_app_setup_main_button' ? 'main' : 'secondary'];
-          b.isVisible = bool(p, 'is_visible') ?? b.isVisible;
-          b.isActive = bool(p, 'is_active') ?? b.isActive;
-          b.isProgressVisible = bool(p, 'is_progress_visible') ?? b.isProgressVisible;
-          b.text = str(p, 'text') ?? b.text;
-          b.color = str(p, 'color') ?? b.color;
-          b.textColor = str(p, 'text_color') ?? b.textColor;
-          b.position = str(p, 'position') ?? b.position;
-          return render();
-        }
         case 'web_app_request_fullscreen':
           // Клиент переходит в полноэкранный режим и сообщает об этом (Bot API 8.0).
           return emitEvent('fullscreen_changed', { is_fullscreen: true });
@@ -330,43 +270,19 @@ function cloudResult(p: Record<string, unknown>, cloud: {
   }
 }
 
-interface Chrome { bar: HTMLElement; main: HTMLButtonElement; secondary: HTMLButtonElement; back: HTMLButtonElement }
-
-function createChrome(): Chrome {
+function createChrome(): HTMLButtonElement {
   const style = document.createElement('style');
-  // Цвета — только переменные темы: заглушка должна выглядеть как клиент в той же теме
   style.textContent = `
-    #tg-mock-bar { position: fixed; inset: auto 0 0 0; z-index: 2147483647; display: flex; gap: 7px;
-      padding: 7px; box-sizing: border-box;
-      background: var(--tg-bottom-bar-color, var(--tg-theme-bottom-bar-bg-color, var(--tg-theme-secondary-bg-color))); }
-    #tg-mock-bar[hidden], #tg-mock-back[hidden], #tg-mock-bar button[hidden] { display: none; }
-    #tg-mock-bar button { flex: 1; height: 44px; border: 0; border-radius: 10px; font: 600 15px system-ui, sans-serif; }
-    #tg-mock-bar[data-stacked] button { flex: none; }
-    #tg-mock-bar button:disabled { opacity: .6; }
-    #tg-mock-back { position: fixed; top: 8px; left: 8px; z-index: 2147483647; border: 0; border-radius: 16px;
-      padding: 6px 12px; font: 500 14px system-ui, sans-serif;
-      background: var(--color-surface, var(--tg-theme-secondary-bg-color)); color: var(--color-text, var(--tg-theme-text-color)); }`;
+    #tg-mock-back[hidden] { display: none; }
+    #tg-mock-back { position: fixed; top: var(--space-8); left: var(--space-8); z-index: 5;
+      border: 0; border-radius: var(--radius-full); min-height: var(--size-icon-button);
+      padding: var(--space-6) var(--space-12); font: var(--font-action); font-family: var(--font-family-system);
+      background: var(--color-surface); color: var(--color-text); }`;
   document.head.append(style);
-  const bar = document.createElement('div');
-  bar.id = 'tg-mock-bar';
-  bar.hidden = true;
-  const main = document.createElement('button');
-  const secondary = document.createElement('button');
-  bar.append(main, secondary);
   const back = document.createElement('button');
-  back.id = 'tg-mock-back';
-  back.textContent = '‹ Назад';
-  back.hidden = true;
-  const attach = (): void => document.body.append(bar, back);
+  back.id = 'tg-mock-back'; back.textContent = '‹ Назад'; back.hidden = true;
+  const attach = (): void => { document.body.append(back); };
   if (document.body) attach();
   else document.addEventListener('DOMContentLoaded', attach, { once: true });
-  return { bar, main, secondary, back };
-}
-
-function renderButton(el: HTMLButtonElement, s: ButtonState): void {
-  el.hidden = !s.isVisible;
-  el.disabled = !s.isActive || s.isProgressVisible;
-  el.textContent = s.isProgressVisible ? '…' : s.text;
-  el.style.background = s.color ?? 'var(--tg-theme-button-color)';
-  el.style.color = s.textColor ?? 'var(--tg-theme-button-text-color)';
+  return back;
 }

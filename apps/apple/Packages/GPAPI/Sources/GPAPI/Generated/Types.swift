@@ -52,6 +52,18 @@ public protocol APIProtocol: Sendable {
     /// - Remark: HTTP `GET /api/me`.
     /// - Remark: Generated from `#/paths//api/me/get(getMe)`.
     func getMe(_ input: Operations.GetMe.Input) async throws -> Operations.GetMe.Output
+    /// Сменить язык аккаунта для всех устройств
+    ///
+    /// - Remark: HTTP `PUT /api/me/locale`.
+    /// - Remark: Generated from `#/paths//api/me/locale/put(setLocale)`.
+    func setLocale(_ input: Operations.SetLocale.Input) async throws -> Operations.SetLocale.Output
+    /// Данные главной тренировки выбранного экзамена
+    ///
+    /// Только данные текущего пользователя и exam. Определения — решение техлида 11.10.2026. Ответы — сохранённые позиции training_items с answeredAt: повторная отправка и изменение ответа в «Проверке» не создают ещё одну попытку. «Не знаю» и пустой отправленный ответ считаются неверными; позиции без answeredAt не считаются. История учитывает и начатые, и завершённые тренировки, включая задания, впоследствии снятые с публикации. Нет доступа к тренировкам — 403 forbidden.
+    ///
+    /// - Remark: HTTP `GET /api/home`.
+    /// - Remark: Generated from `#/paths//api/home/get(getHome)`.
+    func getHome(_ input: Operations.GetHome.Input) async throws -> Operations.GetHome.Output
     /// Экзамены и разделы в порядке прохождения
     ///
     /// - Remark: HTTP `GET /api/exams`.
@@ -76,7 +88,7 @@ public protocol APIProtocol: Sendable {
     func getTrainingOptions(_ input: Operations.GetTrainingOptions.Input) async throws -> Operations.GetTrainingOptions.Output
     /// Начать тренировку — сессия со всеми заданиями и разборами сразу
     ///
-    /// Всё нужное для сессии приходит одним ответом, чтобы начатая тренировка дожила без сети (PRODUCT.md, «Operating Context»). Задания — только проверенные, сначала те, что человек ещё не решал. Нет ни одного подходящего — 409 no_questions. Нет доступа к тренировкам — 403 forbidden.
+    /// Всё нужное для сессии приходит одним ответом, чтобы начатая тренировка дожила без сети (PRODUCT.md, «Operating Context»). Задания — только проверенные, сначала те, что человек ещё не решал. source=mistakes оставляет только задания с последним неверным ответом самого человека, сохраняя фильтры exam, section, questionTypes, topicIds и difficulty. Нет ни одного подходящего — 409 no_questions. Нет доступа к тренировкам — 403 forbidden.
     ///
     /// - Remark: HTTP `POST /api/trainings`.
     /// - Remark: Generated from `#/paths//api/trainings/post(startTraining)`.
@@ -204,6 +216,34 @@ extension APIProtocol {
     public func getMe(headers: Operations.GetMe.Input.Headers = .init()) async throws -> Operations.GetMe.Output {
         try await getMe(Operations.GetMe.Input(headers: headers))
     }
+    /// Сменить язык аккаунта для всех устройств
+    ///
+    /// - Remark: HTTP `PUT /api/me/locale`.
+    /// - Remark: Generated from `#/paths//api/me/locale/put(setLocale)`.
+    public func setLocale(
+        headers: Operations.SetLocale.Input.Headers = .init(),
+        body: Operations.SetLocale.Input.Body
+    ) async throws -> Operations.SetLocale.Output {
+        try await setLocale(Operations.SetLocale.Input(
+            headers: headers,
+            body: body
+        ))
+    }
+    /// Данные главной тренировки выбранного экзамена
+    ///
+    /// Только данные текущего пользователя и exam. Определения — решение техлида 11.10.2026. Ответы — сохранённые позиции training_items с answeredAt: повторная отправка и изменение ответа в «Проверке» не создают ещё одну попытку. «Не знаю» и пустой отправленный ответ считаются неверными; позиции без answeredAt не считаются. История учитывает и начатые, и завершённые тренировки, включая задания, впоследствии снятые с публикации. Нет доступа к тренировкам — 403 forbidden.
+    ///
+    /// - Remark: HTTP `GET /api/home`.
+    /// - Remark: Generated from `#/paths//api/home/get(getHome)`.
+    public func getHome(
+        query: Operations.GetHome.Input.Query,
+        headers: Operations.GetHome.Input.Headers = .init()
+    ) async throws -> Operations.GetHome.Output {
+        try await getHome(Operations.GetHome.Input(
+            query: query,
+            headers: headers
+        ))
+    }
     /// Экзамены и разделы в порядке прохождения
     ///
     /// - Remark: HTTP `GET /api/exams`.
@@ -248,7 +288,7 @@ extension APIProtocol {
     }
     /// Начать тренировку — сессия со всеми заданиями и разборами сразу
     ///
-    /// Всё нужное для сессии приходит одним ответом, чтобы начатая тренировка дожила без сети (PRODUCT.md, «Operating Context»). Задания — только проверенные, сначала те, что человек ещё не решал. Нет ни одного подходящего — 409 no_questions. Нет доступа к тренировкам — 403 forbidden.
+    /// Всё нужное для сессии приходит одним ответом, чтобы начатая тренировка дожила без сети (PRODUCT.md, «Operating Context»). Задания — только проверенные, сначала те, что человек ещё не решал. source=mistakes оставляет только задания с последним неверным ответом самого человека, сохраняя фильтры exam, section, questionTypes, topicIds и difficulty. Нет ни одного подходящего — 409 no_questions. Нет доступа к тренировкам — 403 forbidden.
     ///
     /// - Remark: HTTP `POST /api/trainings`.
     /// - Remark: Generated from `#/paths//api/trainings/post(startTraining)`.

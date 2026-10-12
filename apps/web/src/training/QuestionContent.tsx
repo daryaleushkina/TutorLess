@@ -16,9 +16,17 @@ export function QuestionPrompt({ question: q, selection }: { question: Question;
     {q.condition && <p lang="en" className={styles.prompt}>{q.condition}</p>}
     <div className={styles.quantityRow}>{[['Quantity A', q.quantityA], ['Quantity B', q.quantityB]].map(([label, value]) => <div key={label} className={styles.quantity}><span lang="en" className={styles.note}>{label}</span><strong lang="en">{value}</strong></div>)}</div>
   </div>;
-  return <p lang="en" className={styles.prompt}>{q.prompt.split('___').map((part, index) => <span key={index}>{index > 0 && <span className={styles.blank} role="img" aria-label={`${t.training.question_blank} ${BLANKS[index - 1] ?? ''}${q.groups[index - 1]?.options.some((option) => selection.includes(option.id)) ? ': ' + q.groups[index - 1]?.options.filter((option) => selection.includes(option.id)).map((option) => option.text).join(', ') : ''}`}>
-    {q.groups[index - 1]?.options.filter((option) => selection.includes(option.id)).map((option) => option.text).join(' / ') || '　　'}{q.groups.length > 1 && <small>{BLANKS[index - 1]}</small>}
-  </span>}{part}</span>)}</p>;
+  return <p lang="en" className={styles.prompt}>{q.prompt.split('___').map((part, index) => {
+    if (index === 0) return <span key={index}>{part}</span>;
+    const chosen = q.groups[index - 1]?.options.filter((option) => selection.includes(option.id)) ?? [];
+    const punctuation = part.match(/^[,.;:!?…%)\]}»”’]+/)?.[0] ?? '';
+    // WebKit иначе ставит запятую в начале новой строки. Длинный ответ переносится внутри blank.
+    return <span key={index}><span className={styles.blankWithPunctuation}>
+      <span className={styles.blank} role="img" aria-label={`${t.training.question_blank} ${BLANKS[index - 1] ?? ''}${chosen.length ? ': ' + chosen.map((option) => option.text).join(', ') : ''}`}>
+        {chosen.map((option) => option.text).join(' / ') || '　　'}{q.groups.length > 1 && <small>{BLANKS[index - 1]}</small>}
+      </span>{punctuation}
+    </span>{part.slice(punctuation.length)}</span>;
+  })}</p>;
 }
 
 export function Options({ question: q, selection, revealed, onSelect }: { question: Question; selection: string[]; revealed: boolean; onSelect: (id: string) => void }) {
@@ -60,7 +68,7 @@ export function Explanation({ question: q, chosen, language, onLanguage }: { que
       <p role="status"><strong>{chosen.length ? correct ? text.verdict_correct : text.verdict_wrong : ''}</strong>{!correct && ` ${q.answer.length > 1 ? text.verdict_answers(keys) : text.verdict_answer(keys)}`}</p>
       <p className={styles.solution}><RichText text={q.explanation.solution[language]} /></p>
       <div className={styles.explanationTools}>
-        {wrong.length > 0 && <button className={`${styles.whyNot} ${glass.glass}`} aria-expanded={open} aria-controls={whyNotId} onClick={() => setOpen(!open)}>{text.why_not(wrongLabel)}</button>}
+        {wrong.length > 0 && <button className={styles.whyNot} aria-expanded={open} aria-controls={whyNotId} onClick={() => setOpen(!open)}>{text.why_not(wrongLabel)}</button>}
         <div className={`${styles.segments} ${glass.glass}`} aria-label={dictionaries[locale].training.explanation_language}>{(['ru', 'en'] as const).map((lang) => <button key={lang} type="button" aria-pressed={language === lang} onClick={() => onLanguage(lang)}>{lang.toUpperCase()}</button>)}</div>
       </div>
       {open && <div id={whyNotId} className={styles.whyNotBody}>{wrong.map((item) => <p key={item.optionId} data-testid="explanation-option"><RichText text={item.text[language]} /></p>)}</div>}

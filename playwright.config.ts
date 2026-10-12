@@ -18,6 +18,7 @@
 // Проекты: мини-апп — iPhone/WebKit и Android/Chromium, светлая и тёмная тема (AGENTS.md, «Тесты»); сайт — компьютер
 // (Chromium и WebKit/Safari, обе темы), средняя ширина и телефон.
 import { defineConfig, devices, type PlaywrightTestOptions, type PlaywrightWorkerOptions, type Project } from '@playwright/test';
+import { e2eSlot } from './tools/dev/e2e-slot';
 
 export interface TgOptions {
   /** Тема Telegram в подменённом окружении. */
@@ -29,10 +30,11 @@ export interface TgOptions {
 
 /** Ключ тестового бота — не секрет: живёт только на стенде e2e, им же подписывает initData фикстура. */
 export const E2E_BOT_TOKEN = '123456:E2E-local-bot-token';
-const WEB = 'https://localhost:5191';
-const API = '127.0.0.1:8093';
-const OIDC = 'http://127.0.0.1:8094';
-const BROWSERS = process.env.E2E_BROWSERS_WS ?? 'ws://127.0.0.1:3556/';
+const slot = e2eSlot();
+const WEB = `https://localhost:${slot.webPort}`;
+const API = `127.0.0.1:${slot.apiPort}`;
+const OIDC = `http://127.0.0.1:${slot.oidcPort}`;
+const BROWSERS = process.env.E2E_BROWSERS_WS ?? `ws://127.0.0.1:${slot.browsersPort}/`;
 
 const MINIAPP = 'miniapp/**/*.spec.ts';
 const SITE = 'site/**/*.spec.ts';
@@ -52,6 +54,7 @@ const site = (name: string, use: E2EProject['use']): E2EProject => ({ name, test
 
 export default defineConfig<TgOptions>({
   testDir: 'e2e',
+  outputDir: slot.outputDir,
   testIgnore: EXPLORE,
   fullyParallel: true,
   workers: process.env.CI ? 2 : 6,
@@ -63,7 +66,7 @@ export default defineConfig<TgOptions>({
     timeout: process.env.CI ? 15_000 : 8_000,
     toHaveScreenshot: { animations: 'disabled', caret: 'hide', maxDiffPixelRatio: 0.002, scale: 'css' },
   },
-  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : [['list']],
+  reporter: process.env.CI ? [['list'], ['html', { open: 'never', outputFolder: slot.reportDir }]] : [['list']],
   snapshotPathTemplate: '{testDir}/__screens__/{projectName}/{arg}{ext}',
   use: {
     baseURL: WEB,
@@ -84,12 +87,12 @@ export default defineConfig<TgOptions>({
       command: 'go run ./cmd/e2estack',
       cwd: 'server',
       url: `http://${API}/api/health`,
-      env: { E2E_BOT_TOKEN, E2E_WEB_ORIGIN: WEB, E2E_API_ADDR: API, E2E_OIDC_ADDR: OIDC.replace('http://', '') },
+      env: { E2E_BOT_TOKEN, E2E_SLOT: String(slot.slot), E2E_DB: slot.database, E2E_WEB_ORIGIN: WEB, E2E_API_ADDR: API, E2E_OIDC_ADDR: OIDC.replace('http://', '') },
       reuseExistingServer: false,
       timeout: 180_000,
     },
     {
-      command: 'pnpm --filter @greprep/web exec sh -c "vite build --outDir dist-e2e --emptyOutDir && vite preview --outDir dist-e2e --port 5191 --strictPort"',
+      command: `pnpm --filter @greprep/web exec sh -c "vite build --outDir ${slot.buildDir} --emptyOutDir && vite preview --outDir ${slot.buildDir} --port ${slot.webPort} --strictPort"`,
       url: WEB,
       ignoreHTTPSErrors: true,
       env: {
@@ -97,8 +100,6 @@ export default defineConfig<TgOptions>({
         GP_APP_VERSION: 'e2e',
         VITE_DEV_SIGN_IN: '1',
         VITE_TELEGRAM_MOCK: '1',
-        VITE_OIDC_TELEGRAM_AUTHORIZATION_ENDPOINT: `${OIDC}/auth`,
-        VITE_OIDC_TELEGRAM_CLIENT_ID: 'e2e-telegram',
         VITE_OIDC_APPLE_AUTHORIZATION_ENDPOINT: `${OIDC}/auth`,
         VITE_OIDC_APPLE_CLIENT_ID: 'e2e-apple',
         VITE_OIDC_GOOGLE_AUTHORIZATION_ENDPOINT: `${OIDC}/auth`,

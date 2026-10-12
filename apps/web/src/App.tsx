@@ -12,6 +12,7 @@ import { SessionProvider, useSession } from './session/session';
 import { ShellProvider, useShell } from './shellContext';
 import type { Shell } from './shell';
 import type { TelegramLaunch } from './telegram/sdk';
+import { bindVisibleViewport } from './layout/visibleViewport';
 
 interface Props {
   queryClient: QueryClient;
@@ -21,6 +22,7 @@ interface Props {
 }
 
 export function App({ queryClient, router, shell, launch }: Props): ReactNode {
+  useEffect(bindVisibleViewport, []);
   useEffect(() => bindTrainingSession(queryClient, shell), [queryClient, shell]);
   useEffect(() => {
     // После первого кадра с содержимым или скелетом: раньше — заглушка Telegram сменится пустым экраном (навык).

@@ -1,4 +1,4 @@
-// PKCE (RFC 7636) и случайные строки для входа через Telegram, Apple и Google на сайте.
+// PKCE (RFC 7636) и случайные строки для входа через Apple и Google на сайте.
 
 function base64Url(bytes: Uint8Array): string {
   let s = '';

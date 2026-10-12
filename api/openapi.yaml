@@ -154,6 +154,64 @@ paths:
               schema: { $ref: '#/components/schemas/User' }
         default: { $ref: '#/components/responses/Error' }
 
+  /api/me/locale:
+    put:
+      operationId: setLocale
+      summary: Сменить язык аккаунта для всех устройств
+      tags: [account]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LocaleChoice' }
+      responses:
+        '200':
+          description: Пользователь с выбранным языком (тот же ответ, что GET /api/me)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        default: { $ref: '#/components/responses/Error' }
+
+  /api/home:
+    get:
+      operationId: getHome
+      summary: Данные главной тренировки выбранного экзамена
+      description: >-
+        Только данные текущего пользователя и exam. Определения — решение техлида 11.10.2026.
+        Ответы — сохранённые позиции training_items с answeredAt: повторная отправка и изменение ответа
+        в «Проверке» не создают ещё одну попытку. «Не знаю» и пустой отправленный ответ считаются неверными;
+        позиции без answeredAt не считаются. История учитывает и начатые, и завершённые тренировки,
+        включая задания, впоследствии снятые с публикации. Нет доступа к тренировкам — 403 forbidden.
+      tags: [trainings]
+      parameters:
+        - name: exam
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/Exam' }
+        - name: tz
+          in: query
+          required: true
+          description: IANA-зона клиента из базы зон сервера, включая UTC; неизвестная зона или Local — 400 bad_request
+          schema: { type: string, minLength: 1, maxLength: 100 }
+        - name: types
+          in: query
+          required: true
+          description: >-
+            Типы заданий, которые клиент умеет показывать. Если последний запрос содержит тип вне списка,
+            lastTraining — null. Статистика разделов, ошибок и слабого типа от списка не зависит.
+          schema:
+            type: array
+            minItems: 1
+            maxItems: 20
+            items: { $ref: '#/components/schemas/QuestionType' }
+      responses:
+        '200':
+          description: Статистика и параметры для запуска тренировки
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Home' }
+        default: { $ref: '#/components/responses/Error' }
+
   /api/exams:
     get:
       operationId: getExams
@@ -237,7 +295,8 @@ paths:
       summary: Начать тренировку — сессия со всеми заданиями и разборами сразу
       description: >-
         Всё нужное для сессии приходит одним ответом, чтобы начатая тренировка дожила без сети (PRODUCT.md,
-        «Operating Context»). Задания — только проверенные, сначала те, что человек ещё не решал. Нет ни
+        «Operating Context»). Задания — только проверенные, сначала те, что человек ещё не решал. source=mistakes оставляет только задания с последним неверным ответом самого человека,
+        сохраняя фильтры exam, section, questionTypes, topicIds и difficulty. Нет ни
         одного подходящего — 409 no_questions. Нет доступа к тренировкам — 403 forbidden.
       tags: [trainings]
       requestBody:
@@ -559,6 +618,99 @@ components:
       type: string
       enum: [ru, en]
 
+    LocaleChoice:
+      type: object
+      additionalProperties: false
+      required: [locale]
+      properties:
+        locale: { $ref: '#/components/schemas/Locale' }
+
+    Home:
+      type: object
+      additionalProperties: false
+      required: [lastTraining, sections, mistakes, weakSpot, week]
+      properties:
+        lastTraining: { $ref: '#/components/schemas/LastTraining' }
+        sections:
+          type: array
+          description: Все разделы экзамена в порядке справочника; без ответов — нули; точность correct / total
+          items: { $ref: '#/components/schemas/SectionStats' }
+        mistakes:
+          type: integer
+          minimum: 0
+          description: >-
+            Число разных опубликованных заданий (status=approved), последний сохранённый ответ на которые
+            неверный, за всё время.
+            Последний — по answeredAt, при совпадении по началу тренировки и её id.
+            Неотвеченные позиции не заменяют последний ответ; черновики и снятые задания не считаются.
+            Число соответствует source=mistakes без дополнительных фильтров конструктора.
+        weakSpot: { $ref: '#/components/schemas/WeakSpot' }
+        week: { $ref: '#/components/schemas/WeekStats' }
+
+    LastTraining:
+      type: [object, 'null']
+      additionalProperties: false
+      required: [request, size]
+      description: >-
+        Последняя начатая тренировка по startedAt (при совпадении — id), даже без ответов.
+        Нет тренировки или её запрос содержит тип вне переданного types — null. Запрос старого сервера
+        без exam дополняется из строки тренировки.
+        Нечитаемый старый запрос — null и запись ошибки в журнал сервера.
+      properties:
+        request: { $ref: '#/components/schemas/TrainingRequest' }
+        size:
+          type: integer
+          minimum: 1
+          maximum: 50
+          description: Фактическое число заданий сессии; request.count — исходное пожелание, оно может быть больше
+
+    SectionStats:
+      type: object
+      additionalProperties: false
+      required: [section, total, correct]
+      properties:
+        section: { $ref: '#/components/schemas/Section' }
+        total: { type: integer, minimum: 0 }
+        correct: { type: integer, minimum: 0 }
+
+    WeakSpot:
+      type: [object, 'null']
+      additionalProperties: false
+      required: [questionType, section, accuracy]
+      description: >-
+        Тип с наименьшей точностью среди типов с минимум 10 сохранёнными ответами за скользящие последние
+        30 суток и точностью строго ниже 70 процентов. Интервал [сейчас - 30 суток, сейчас].
+        При одинаковой точности — тип в лексикографическом порядке. Нет кандидата — null.
+      properties:
+        questionType: { $ref: '#/components/schemas/QuestionType' }
+        section: { $ref: '#/components/schemas/Section' }
+        accuracy:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          description: Процент верных ответов, 100 * correct / total, без округления
+
+    WeekStats:
+      type: object
+      additionalProperties: false
+      required: [days, answers, minutes]
+      description: >-
+        Текущая календарная неделя в tz: от понедельника 00:00 включительно до следующего понедельника
+        00:00 исключительно (учитываются переходы летнего времени). days — число местных дат с ответами,
+        answers — число сохранённых ответов в этом интервале. Ответы сессии упорядочены по answeredAt,
+        при совпадении — по позиции. Для каждого ответа интервал начинается с предыдущего answeredAt,
+        для первого — со startedAt. Каждый интервал ограничен 300 секундами: пауза дольше — человек отошёл.
+        Время сессии ограничено timeLimitSeconds, если лимит есть, включая расход до начала недели.
+        Для ответов недели берётся только часть интервала после её начала; первый ответ учитывает время
+        от startedAt только если старт тоже в неделе. minutes = floor(sum(учтённых секунд) / 60).
+        Завершение без ответа и elapsedMs не добавляют времени. Сначала суммируются интервалы всех сессий,
+        затем округляются минуты; лимит сессии не возобновляется с началом новой недели.
+      properties:
+        days: { type: integer, minimum: 0, maximum: 7 }
+        answers: { type: integer, minimum: 0 }
+        minutes: { type: integer, minimum: 0 }
+
     User:
       type: object
       additionalProperties: false
@@ -811,11 +963,17 @@ components:
           minimum: 1
           description: Больше этого числа вопросов в одной тренировке не бывает
 
+    TrainingSource:
+      type: string
+      enum: [catalog, mistakes]
+      description: catalog (также при отсутствии поля) — весь каталог; mistakes — только свои последние неверные ответы
+
     TrainingRequest:
       type: object
       additionalProperties: false
       required: [exam, section, questionTypes, count, mode]
       properties:
+        source: { $ref: '#/components/schemas/TrainingSource' }
         exam: { $ref: '#/components/schemas/Exam' }
         section: { $ref: '#/components/schemas/Section' }
         questionTypes:

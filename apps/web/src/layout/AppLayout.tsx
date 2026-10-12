@@ -3,9 +3,10 @@
 //     initData, показывает причину и «Повторить».
 //   • TabsLayout — экраны-разделы: в мини-аппе и на узком сайте — стеклянная капсула вкладок снизу; на сайте
 //     600–899 px — строка разделов сверху, шире — боковая панель (решение Даши 06.10.2026, DESIGN.md «Navigation»).
-import { isApiError, type Section } from '@greprep/api-client';
+import { isApiError } from '@greprep/api-client';
 import { Link, Navigate, Outlet, useMatch, useMatchRoute, useRouter, useRouterState } from '@tanstack/react-router';
-import { createContext, use, useEffect, useRef, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { returnToSearch } from '../auth/returnTo';
 import { BrandMark } from '../components/BrandMark';
 import { BackIcon, ExamIcon, ProgressIcon, SettingsIcon, TodayIcon, WordsIcon } from '../components/icons';
@@ -19,15 +20,6 @@ import { useTrainingSwipes } from '../telegram/hooks';
 import { useStoredTraining } from '../training/hooks';
 import glass from '../styles/glass.module.css';
 import styles from './AppLayout.module.css';
-
-export type Glow = Section | 'exam';
-
-const GlowContext = createContext<(glow: Glow) => void>(() => {});
-
-/** Экран задаёт цвет света сверху — цвет раздела текущего шага (DESIGN.md, «Elevation & Depth»). */
-export function useGlow(): (glow: Glow) => void {
-  return use(GlowContext);
-}
 
 export function AppGate(): ReactNode {
   const { session } = useSession();
@@ -86,22 +78,19 @@ const TABS = [
 
 export function TabsLayout(): ReactNode {
   const { shell } = useShell();
-  const [glow, setGlow] = useState<Glow>('verbal');
   const matchRoute = useMatchRoute();
   // Настройки на телефоне — вложенный экран из «Прогресса»: без капсулы, с «назад».
   const nested = Boolean(matchRoute({ to: '/settings' }));
   return (
-    <GlowContext value={setGlow}>
-      <div className={styles.frame} data-shell={shell} data-glow={glow} data-nested={nested || undefined}>
-        {shell === 'site' && <SiteNav />}
-        <main className={`app-shell ${styles.main}`} id="main">
-          <div className={styles.column}>
-            <Outlet />
-          </div>
-        </main>
-        <TabBar />
-      </div>
-    </GlowContext>
+    <div className={styles.frame} data-shell={shell} data-nested={nested || undefined}>
+      {shell === 'site' && <SiteNav />}
+      <main className={`app-shell ${styles.main}`} id="main">
+        <div className={styles.column}>
+          <Outlet />
+        </div>
+      </main>
+      <TabBar />
+    </div>
   );
 }
 
@@ -157,17 +146,28 @@ function SiteNav(): ReactNode {
 }
 
 /**
- * Экран сессии без вкладок (шаг ленты): режим фокуса — без панели и капсулы, тот же свет и та же колонка
+ * Экран сессии без вкладок (шаг ленты): режим фокуса — без панели и капсулы, та же колонка
  * (DESIGN.md, «Navigation»: «сессии — режим фокуса без панели»).
  */
-export function FocusLayout({ glow, children, training = false, wide = false, session = false }: { glow: Glow; children: ReactNode; training?: boolean; wide?: boolean; session?: boolean }): ReactNode {
+const FooterHost = createContext<HTMLElement | null>(null);
+
+/** Форма владеет состоянием действия, а панель остаётся вне прокрутки общей оболочки. */
+export function FocusFooter({ children }: { children: ReactNode }): ReactNode {
+  const host = useContext(FooterHost);
+  return host && createPortal(children, host);
+}
+
+export function FocusLayout({ children, footer, training = false, wide = false, session = false }: { children: ReactNode; footer?: ReactNode; training?: boolean; wide?: boolean; session?: boolean }): ReactNode {
   const { shell } = useShell();
+  const [host, setHost] = useState<HTMLDivElement | null>(null);
   return (
-    <div className={styles.frame} data-shell={shell} data-glow={glow} data-nested data-training={training || undefined} data-wide={wide || undefined} data-session={session || undefined}>
+    <FooterHost.Provider value={host}><div className={styles.frame} data-shell={shell} data-nested data-training={training || undefined} data-wide={wide || undefined} data-session={session || undefined} data-footer={Boolean(footer) || undefined}>
       <main className={`app-shell ${styles.main}`} id="main">
         <div className={styles.column}>{children}</div>
       </main>
-    </div>
+      {footer}
+      <div className={styles.footerHost} ref={setHost} />
+    </div></FooterHost.Provider>
   );
 }
 

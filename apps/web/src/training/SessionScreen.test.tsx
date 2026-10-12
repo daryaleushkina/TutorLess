@@ -20,6 +20,19 @@ async function boot(training: StoredTraining = storedTraining(trainingSession(),
   return app;
 }
 
+test('сайт: область прокрутки заканчивается над панелью действий, включая дополнительные строки', async () => {
+  const { screen } = await boot(storedTraining(trainingSession({ mode: 'check', timeLimitSeconds: 270 }), Date.now()));
+  const main = screen.getByRole('main').element();
+  // Панель ищем по смыслу, а не по месту в разметке: тест должен падать на симптоме, а не на селекторе.
+  const footer = document.querySelector('footer');
+  if (!footer) throw new Error('Нет панели действий');
+  await document.fonts.ready;
+  await expect.poll(() => main.getBoundingClientRect().bottom - footer.getBoundingClientRect().top).toBeLessThanOrEqual(1);
+  await screen.getByRole('button', { name: 'Пропустить', exact: true }).click();
+  await expect.element(screen.getByRole('button', { name: 'Назад', exact: true })).toBeVisible();
+  await expect.poll(() => main.getBoundingClientRect().bottom - footer.getBoundingClientRect().top).toBeLessThanOrEqual(1);
+});
+
 test('практика: верный, неверный с RU/EN, «Не знаю», итог и исчезнувшее продолжение', async () => {
   const { screen } = await boot();
   await expect.element(screen.getByRole('button', { name: 'Проверить', exact: true })).toBeDisabled();

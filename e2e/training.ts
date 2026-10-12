@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test';
 import { schemas } from '../packages/api-client/src';
 import { checkScreen, expect } from './fixtures';
+import { e2eSlot } from '../tools/dev/e2e-slot';
 
 async function closeSession(page: Page) {
   // BackButton виден и в конструкторе: сначала ждём экран сессии, как прежде ждали его собственную ссылку.
@@ -9,10 +10,9 @@ async function closeSession(page: Page) {
   else await page.getByRole('link', { name: 'Закрыть тренировку' }).click();
 }
 
-export async function nativeButtonsFit(page: Page) {
-  await expect.poll(() => page.locator('#tg-mock-bar button:visible').evaluateAll((buttons) => buttons.length > 0 && buttons.every((button) => {
-    const range = document.createRange(); range.selectNodeContents(button);
-    return range.getClientRects().length === 1 && button.getBoundingClientRect().height >= 44;
+export async function actionButtonsFit(page: Page) {
+  await expect.poll(() => page.locator('footer button:visible').evaluateAll((buttons) => buttons.length > 0 && buttons.every((button) => {
+    return button.scrollWidth <= button.clientWidth && button.getBoundingClientRect().height >= 54;
   }))).toBe(true);
 }
 
@@ -400,7 +400,7 @@ export async function reportCount(me: import('./fixtures').Me, trainingId: strin
   const current = schemas.User.parse(await me.api('GET', '/me'));
   const id = schemas.TrainingSession.shape.id.parse(trainingId);
   const query = `SELECT count(*) FROM question_reports WHERE user_id = '${current.id}' AND training_id = '${id}'`;
-  const { stdout } = await promisify(execFile)('docker', ['compose', 'exec', '-T', 'postgres', 'psql', '-U', 'greprep', '-d', 'greprep_web_e2e', '-Atc', query]);
+  const { stdout } = await promisify(execFile)('docker', ['compose', '--env-file', '/dev/null', '-p', 'greprep', 'exec', '-T', 'postgres', 'psql', '-U', 'greprep', '-d', e2eSlot().database, '-Atc', query]);
   return Number(stdout.trim());
 }
 

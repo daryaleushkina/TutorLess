@@ -28,6 +28,7 @@ import dev.greprepapp.api.models.Exam
 import dev.greprepapp.api.models.QuestionType
 import dev.greprepapp.api.models.Section
 import dev.greprepapp.api.models.TrainingMode
+import dev.greprepapp.api.models.TrainingSource
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -41,6 +42,7 @@ import kotlinx.serialization.Contextual
  * @param questionTypes Конструктор даёт один тип; «Проверка на время» — все типы раздела вперемешку (макет R16)
  * @param count 
  * @param mode 
+ * @param source 
  * @param topicIds Пусто или нет — все темы
  * @param difficulty 
  */
@@ -63,6 +65,9 @@ data class TrainingRequest (
 
     @Contextual @SerialName(value = "mode")
     val mode: TrainingMode,
+
+    @Contextual @SerialName(value = "source")
+    val source: TrainingSource? = null,
 
     /* Пусто или нет — все темы */
     @SerialName(value = "topicIds")

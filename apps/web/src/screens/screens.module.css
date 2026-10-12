@@ -1,4 +1,4 @@
-/* Общее для простых экранов: заголовок раздела, круглая стеклянная кнопка, группа строк настроек. */
+/* Общее для простых экранов: заголовок раздела, круглая кнопка, группа строк настроек. */
 
 .screen {
   display: flex;
@@ -7,8 +7,8 @@
 }
 
 .title {
-  font: var(--font-title-1);
-  letter-spacing: var(--tracking-title-1);
+  font: var(--font-h1);
+  letter-spacing: var(--tracking-h1);
 }
 
 .titleRow {
@@ -18,11 +18,11 @@
   gap: var(--space-12);
 }
 
-/* Стеклянный круг шапки (DESIGN.md, «Шапка Telegram»): тот же размер, что у кругов клиента. */
+/* Круг шапки (DESIGN.md, «Шапка Telegram»): тот же размер, что у кругов клиента. */
 .circle {
   flex: none;
-  width: var(--size-header-button);
-  height: var(--size-header-button);
+  width: var(--size-icon-button);
+  height: var(--size-icon-button);
   border-radius: var(--radius-full);
   color: var(--color-text);
   display: flex;
@@ -59,9 +59,9 @@
   padding: 0;
   border: 0;
   background: none;
-  color: var(--color-text-secondary);
-  font: var(--font-subhead);
-  font-weight: var(--font-weight-medium);
+  color: var(--color-text-2);
+  font: var(--font-action);
+  letter-spacing: var(--tracking-action);
   text-decoration: underline;
   text-decoration-thickness: var(--size-hairline);
   text-decoration-color: var(--color-line);
@@ -74,20 +74,23 @@
 
 .version {
   font: var(--font-caption);
-  color: var(--color-text-secondary);
+  letter-spacing: var(--tracking-caption);
+  color: var(--color-text-3);
   font-variant-numeric: tabular-nums;
 }
 
 .error {
   margin-top: var(--space-8);
-  font: var(--font-subhead);
+  font: var(--font-meta);
+  letter-spacing: var(--tracking-meta);
   color: var(--color-text);
 }
 
 .disclaimer {
   margin-top: var(--space-16);
   font: var(--font-caption);
-  color: var(--color-text-secondary);
+  letter-spacing: var(--tracking-caption);
+  color: var(--color-text-3);
 }
 
 /* В мини-аппе низ настроек — по центру (G2), как версия над ним. */

@@ -20,3 +20,6 @@ ORDER BY created_at;
 
 -- name: SetUserRole :exec
 UPDATE users SET role = $2 WHERE id = $1;
+
+-- name: SetUserLocale :exec
+UPDATE users SET locale = sqlc.arg(locale)::text WHERE id = sqlc.arg(user_id);

@@ -230,7 +230,7 @@ func (s *Service) StartTraining(ctx context.Context, req *api.TrainingRequest) (
 		ids, err := q.PickQuestions(tctx, db.PickQuestionsParams{
 			ExamID:  string(req.Exam),
 			Section: string(req.Section), QuestionTypes: types, TopicIds: topicIDs, Difficulty: difficulty,
-			UserID: p.user.ID, MaxCount: req.Count,
+			UserID: p.user.ID, MaxCount: req.Count, MistakesOnly: req.Source.Or(api.TrainingSourceCatalog) == api.TrainingSourceMistakes,
 		})
 		if err != nil {
 			return fmt.Errorf("pick questions: %w", err)
