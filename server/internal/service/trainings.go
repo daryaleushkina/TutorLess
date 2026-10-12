@@ -364,7 +364,10 @@ func (s *Service) SubmitTrainingAnswers(ctx context.Context, req *api.AnswerBatc
 			}
 			correct, err := training.CheckResponse(question, responseOf(a))
 			if err != nil {
-				return apperr.Invalid(fmt.Sprintf("answer at position %d", a.Position), err)
+				if errors.Is(err, training.ErrBadAnswer) {
+					return apperr.Invalid(fmt.Sprintf("answer at position %d", a.Position), err)
+				}
+				return fmt.Errorf("check answer at position %d: %w", a.Position, err)
 			}
 			ids := a.OptionIds
 			if ids == nil {
