@@ -491,6 +491,28 @@ func (s *Service) ReportQuestion(ctx context.Context, req *api.QuestionReport, p
 	defer cancel()
 	var trainingID *uuid.UUID
 	if id, ok := req.TrainingId.Get(); ok {
+		trainingID = &id
+	}
+	var reportID *uuid.UUID
+	if id, ok := req.ReportId.Get(); ok {
+		reportID = &id
+	}
+	report := db.InsertQuestionReportParams{
+		UserID: &p.user.ID, QuestionID: params.QuestionId, TrainingID: trainingID,
+		Kind: string(req.Kind), Text: optPtr(req.Text), ReportID: reportID,
+	}
+	key := db.GetQuestionReportParams{UserID: report.UserID, ReportID: reportID}
+	if reportID != nil {
+		// Ответ мог потеряться до снятия задания: принятую жалобу подтверждаем без новой проверки контента.
+		stored, err := s.q.GetQuestionReport(qctx, key)
+		if err == nil {
+			return compareQuestionReport(stored, report)
+		}
+		if !errors.Is(err, pgx.ErrNoRows) {
+			return fmt.Errorf("get question report: %w", err)
+		}
+	}
+	if id, ok := req.TrainingId.Get(); ok {
 		if _, err := s.q.GetTraining(qctx, db.GetTrainingParams{ID: id, UserID: p.user.ID}); err != nil {
 			return trainingLookupError(err)
 		}
@@ -502,7 +524,6 @@ func (s *Service) ReportQuestion(ctx context.Context, req *api.QuestionReport, p
 		if !in {
 			return apperr.New(http.StatusNotFound, apperr.NotFound, "question is not in the training", nil)
 		}
-		trainingID = &id
 	}
 	ok, err := s.q.QuestionReportable(qctx, db.QuestionReportableParams{QuestionID: params.QuestionId, UserID: p.user.ID})
 	if err != nil {
@@ -511,13 +532,32 @@ func (s *Service) ReportQuestion(ctx context.Context, req *api.QuestionReport, p
 	if !ok {
 		return apperr.New(http.StatusNotFound, apperr.NotFound, "question not found", nil)
 	}
-	err = s.q.InsertQuestionReport(qctx, db.InsertQuestionReportParams{
-		UserID: &p.user.ID, QuestionID: params.QuestionId, TrainingID: trainingID, Kind: string(req.Kind), Text: optPtr(req.Text),
-	})
+	inserted, err := s.q.InsertQuestionReport(qctx, report)
 	if err != nil {
 		return fmt.Errorf("insert question report: %w", err)
 	}
+	if inserted == 0 {
+		// ON CONFLICT дождался конкурирующей вставки. Отдельный SELECT видит её после commit;
+		// CTE в том же SQL мог бы остаться со снимком базы до вставки и не найти запись.
+		stored, err := s.q.GetQuestionReport(qctx, key)
+		if err != nil {
+			return fmt.Errorf("get concurrent question report: %w", err)
+		}
+		return compareQuestionReport(stored, report)
+	}
 	return nil
+}
+
+func compareQuestionReport(stored db.GetQuestionReportRow, report db.InsertQuestionReportParams) error {
+	if stored.QuestionID != report.QuestionID || stored.Kind != report.Kind ||
+		!sameOptional(stored.Text, report.Text) || !sameOptional(stored.TrainingID, report.TrainingID) {
+		return apperr.New(http.StatusConflict, apperr.ReportIDConflict, "reportId already used with different content", nil)
+	}
+	return nil
+}
+
+func sameOptional[T comparable](a, b *T) bool {
+	return (a == nil && b == nil) || (a != nil && b != nil && *a == *b)
 }
 
 // questionOf — задание из строки базы в виде правил training.

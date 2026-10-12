@@ -1478,6 +1478,8 @@ public struct Client: APIProtocol {
     }
     /// «Сообщить об ошибке» в задании — в очередь админки
     ///
+    /// reportId — UUID жалобы, созданный устройством. Повтор с тем же reportId у того же пользователя и теми же questionId, kind, text и trainingId возвращает 204 без новой записи. Изменение содержимого с тем же reportId — 409 report_id_conflict. Ключи разных пользователей независимы. Без reportId каждый запрос создаёт новую жалобу, как у прежних клиентов.
+    ///
     /// - Remark: HTTP `POST /api/questions/{questionId}/reports`.
     /// - Remark: Generated from `#/paths//api/questions/{questionId}/reports/post(reportQuestion)`.
     public func reportQuestion(_ input: Operations.ReportQuestion.Input) async throws -> Operations.ReportQuestion.Output {

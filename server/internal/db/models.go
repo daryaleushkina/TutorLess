@@ -75,6 +75,7 @@ type QuestionReport struct {
 	Text       *string
 	CreatedAt  time.Time
 	ResolvedAt *time.Time
+	ReportID   *uuid.UUID
 }
 
 type Session struct {

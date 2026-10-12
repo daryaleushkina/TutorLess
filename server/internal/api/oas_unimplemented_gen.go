@@ -118,7 +118,12 @@ func (UnimplementedHandler) ReportClientError(ctx context.Context, req *ClientEr
 
 // ReportQuestion implements reportQuestion operation.
 //
-// «Сообщить об ошибке» в задании — в очередь админки.
+// ReportId — UUID жалобы, созданный устройством. Повтор с тем
+// же reportId у того же пользователя и теми же questionId, kind, text и
+// trainingId возвращает 204 без новой записи. Изменение
+// содержимого с тем же reportId — 409 report_id_conflict. Ключи разных
+// пользователей независимы. Без reportId каждый запрос
+// создаёт новую жалобу, как у прежних клиентов.
 //
 // POST /api/questions/{questionId}/reports
 func (UnimplementedHandler) ReportQuestion(ctx context.Context, req *QuestionReport, params ReportQuestionParams) error {
