@@ -5,7 +5,8 @@
 //     600–899 px — строка разделов сверху, шире — боковая панель (решение Даши 06.10.2026, DESIGN.md «Navigation»).
 import { isApiError } from '@greprep/api-client';
 import { Link, Navigate, Outlet, useMatch, useMatchRoute, useRouter, useRouterState } from '@tanstack/react-router';
-import { useEffect, useRef, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { returnToSearch } from '../auth/returnTo';
 import { BrandMark } from '../components/BrandMark';
 import { BackIcon, ExamIcon, ProgressIcon, SettingsIcon, TodayIcon, WordsIcon } from '../components/icons';
@@ -148,15 +149,25 @@ function SiteNav(): ReactNode {
  * Экран сессии без вкладок (шаг ленты): режим фокуса — без панели и капсулы, та же колонка
  * (DESIGN.md, «Navigation»: «сессии — режим фокуса без панели»).
  */
+const FooterHost = createContext<HTMLElement | null>(null);
+
+/** Форма владеет состоянием действия, а панель остаётся вне прокрутки общей оболочки. */
+export function FocusFooter({ children }: { children: ReactNode }): ReactNode {
+  const host = useContext(FooterHost);
+  return host && createPortal(children, host);
+}
+
 export function FocusLayout({ children, footer, training = false, wide = false, session = false }: { children: ReactNode; footer?: ReactNode; training?: boolean; wide?: boolean; session?: boolean }): ReactNode {
   const { shell } = useShell();
+  const [host, setHost] = useState<HTMLDivElement | null>(null);
   return (
-    <div className={styles.frame} data-shell={shell} data-nested data-training={training || undefined} data-wide={wide || undefined} data-session={session || undefined} data-footer={Boolean(footer) || undefined}>
+    <FooterHost.Provider value={host}><div className={styles.frame} data-shell={shell} data-nested data-training={training || undefined} data-wide={wide || undefined} data-session={session || undefined} data-footer={Boolean(footer) || undefined}>
       <main className={`app-shell ${styles.main}`} id="main">
-        <div className={styles.column}>{children}{shell === 'telegram' && footer}</div>
+        <div className={styles.column}>{children}</div>
       </main>
-      {shell === 'site' && footer}
-    </div>
+      {footer}
+      <div className={styles.footerHost} ref={setHost} />
+    </div></FooterHost.Provider>
   );
 }
 

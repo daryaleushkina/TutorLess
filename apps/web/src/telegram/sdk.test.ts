@@ -12,6 +12,7 @@ const sdk = vi.hoisted(() => {
     DeviceStorage: vi.fn(function (_options: ConstructorParameters<typeof DeviceStorage>[0]) { return device; }),
     request2Fp: vi.fn(),
     createRequestId: vi.fn(),
+    hapticFeedback: { impactOccurred: { ifAvailable: vi.fn() } },
     themeParams: { mount: vi.fn(), bindCssVars: vi.fn(), isDark: Object.assign(vi.fn(() => false), { sub: vi.fn(() => () => {}) }) },
     miniApp: {
       mount: vi.fn(),
@@ -67,6 +68,13 @@ beforeEach(() => {
 });
 
 describe('startTelegram', () => {
+  it('родные кнопки действий не монтируются; системная кнопка назад остаётся', async () => {
+    environment();
+    expect((await startTelegram()).kind).toBe('ok');
+    expect(sdk.mainButton.mount.ifAvailable).not.toHaveBeenCalled();
+    expect(sdk.secondaryButton.mount.ifAvailable).not.toHaveBeenCalled();
+    expect(sdk.backButton.mount.ifAvailable).toHaveBeenCalledOnce();
+  });
   it('цвета клиента применяются сразу после miniApp.mount, до ожидания viewport', async () => {
     environment();
     vi.stubGlobal('document', { documentElement: {} });

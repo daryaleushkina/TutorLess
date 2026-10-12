@@ -66,6 +66,7 @@
 
 .node {
   --section-color: var(--color-verbal);
+  --section-ink: var(--color-verbal-ink);
   --section-tint: var(--color-verbal-soft);
   position: relative;
   justify-self: center;
@@ -74,7 +75,7 @@
   border-radius: var(--radius-full);
   border: var(--size-hairline) solid var(--color-line);
   background: var(--color-surface);
-  color: var(--section-color);
+  color: var(--section-ink);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -88,18 +89,21 @@
 .node[data-section='quant'],
 .section[data-section='quant'] {
   --section-color: var(--color-quant);
+  --section-ink: var(--color-quant-ink);
   --section-tint: var(--color-quant-soft);
 }
 
 .node[data-section='words'],
 .section[data-section='words'] {
   --section-color: var(--color-words);
+  --section-ink: var(--color-words-ink);
   --section-tint: var(--color-words-soft);
 }
 
 .node[data-section='essay'],
 .section[data-section='essay'] {
   --section-color: var(--color-essay);
+  --section-ink: var(--color-essay-ink);
   --section-tint: var(--color-essay-soft);
 }
 
@@ -110,7 +114,7 @@
   height: var(--size-icon-button);
   border: 0;
   background: var(--section-color);
-  color: var(--color-surface);
+  color: var(--color-on-accent);
   outline: var(--space-4) solid var(--section-tint);
 }
 
@@ -173,10 +177,11 @@
 
 .section {
   --section-color: var(--color-verbal);
+  --section-ink: var(--color-verbal-ink);
   font: var(--font-meta);
   letter-spacing: var(--tracking-meta);
   font-weight: var(--font-weight-medium);
-  color: var(--section-color);
+  color: var(--section-ink);
 }
 
 .startWrap {
@@ -215,7 +220,6 @@
   color: var(--color-on-accent);
   font: var(--font-button);
   letter-spacing: var(--tracking-button);
-  box-shadow: var(--shadow-glow);
 }
 
 .blocked {

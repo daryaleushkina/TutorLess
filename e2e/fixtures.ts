@@ -207,7 +207,7 @@ export async function checkScreen(page: Page, name: string, opts: { mask?: Locat
       main.scrollTop = main.scrollHeight;
       if (main.scrollTop === 0) out.push('содержимое выше экрана, но не листается');
     }
-    const footer = main.parentElement?.querySelector<HTMLElement>(':scope > footer[data-shell="site"]');
+    const footer = main.parentElement?.querySelector<HTMLElement>('footer[data-shell]');
     if (footer) {
       const f = footer.getBoundingClientRect();
       if (Math.abs(main.getBoundingClientRect().bottom - f.top) > 1) out.push('main не заканчивается у панели действий');

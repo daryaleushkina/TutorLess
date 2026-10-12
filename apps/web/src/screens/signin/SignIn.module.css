@@ -47,7 +47,7 @@
   height: var(--space-72);
   margin-bottom: var(--space-12);
   border-radius: var(--radius-l);
-  color: var(--color-verbal);
+  color: var(--color-verbal-ink);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -107,7 +107,7 @@
   gap: var(--space-6);
   background: var(--sign-in-apple-bg);
   color: var(--sign-in-apple-text);
-  /* Правила Apple требуют системный шрифт, поэтому не Geologica. */
+  /* Правила Apple требуют системный шрифт, поэтому не Onest. */
   font-family: var(--sign-in-apple-font-family);
   font-size: var(--sign-in-apple-font-size);
   font-weight: var(--sign-in-apple-font-weight);
@@ -126,7 +126,7 @@
   border: var(--size-hairline) solid var(--sign-in-google-stroke);
   background: var(--sign-in-google-bg);
   color: var(--sign-in-google-text);
-  /* Правила Google требуют Roboto, поэтому не Geologica. */
+  /* Правила Google требуют Roboto, поэтому не Onest. */
   font-family: var(--sign-in-google-font-family);
   font-size: var(--sign-in-google-font-size);
   font-weight: var(--sign-in-google-font-weight);

@@ -1,11 +1,11 @@
 // Запуск мини-аппа: порядок инициализации @tma.js/sdk-react 3.x — по навыку telegram-mini-app
 // (assets/bootstrap.tsx). Тема — наша, тёмная по умолчанию (решение Даши 10.10.2026):
 // шапке, фону и нижней панели клиента отдаётся наш фон, чтобы швов не было.
-import { backButton, createRequestId, DeviceStorage, deviceStorage, init, initData, mainButton, secondaryButton, swipeBehavior, miniApp, request2Fp, retrieveLaunchParams, themeParams, viewport } from '@tma.js/sdk-react';
+import { backButton, createRequestId, DeviceStorage, deviceStorage, hapticFeedback, init, initData, swipeBehavior, miniApp, request2Fp, retrieveLaunchParams, themeParams, viewport } from '@tma.js/sdk-react';
 import { setTelegramRuntime } from './runtime';
 import type { DeviceThemeStorage } from '../styles/theme';
 
-setTelegramRuntime({ backButton, swipeBehavior, mainButton, secondaryButton, miniApp });
+setTelegramRuntime({ backButton, swipeBehavior, miniApp, hapticFeedback });
 
 export interface TelegramLaunch {
   /** Сырая initData — уходит на сервер, тот проверяет подпись ключом бота. */
@@ -48,8 +48,6 @@ export async function startTelegram(): Promise<TelegramStart> {
   themeParams.mount();
   miniApp.mount();
   syncTelegramTheme();
-  mainButton.mount.ifAvailable();
-  secondaryButton.mount.ifAvailable();
   swipeBehavior.mount.ifAvailable();
   themeParams.bindCssVars();
   miniApp.bindCssVars();

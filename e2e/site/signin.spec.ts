@@ -1,3 +1,4 @@
+import { e2eSlot } from '../../tools/dev/e2e-slot';
 // Сайт: вход через Apple и Google с подменным провайдером (server/cmd/e2estack) — весь путь OIDC с PKCE, обмен
 // кода на сервере, кука сессии; выход; отказы.
 import type { Page } from '@playwright/test';
@@ -10,7 +11,7 @@ const PROVIDERS = [
 
 /** Подменный провайдер пускает «человека» из login_hint: так тест задаёт, кто входит, или отказ (deny). */
 async function loginAs(page: Page, hint: string) {
-  await page.route('http://127.0.0.1:8094/auth?**', (route) => {
+  await page.route(`http://127.0.0.1:${e2eSlot().oidcPort}/auth?**`, (route) => {
     const url = new URL(route.request().url());
     url.searchParams.set('login_hint', hint);
     return route.continue({ url: url.toString() });
@@ -100,7 +101,7 @@ test('глубокая ссылка → отмена у провайдера →
   await page.getByRole('button', { name: 'Войти с аккаунтом Google' }).click({ noWaitAfter: true });
   await page.waitForURL((url) => url.pathname === '/signin' && url.searchParams.get('reason') === 'cancelled');
   expect(new URL(page.url()).searchParams.get('returnTo')).toBe('/settings');
-  await page.unroute('http://127.0.0.1:8094/auth?**');
+  await page.unroute(`http://127.0.0.1:${e2eSlot().oidcPort}/auth?**`);
   await loginAs(page, `google-deep-${info.testId}`);
   await page.getByRole('button', { name: 'Войти с аккаунтом Google' }).click({ noWaitAfter: true });
   await page.waitForURL((url) => url.pathname === '/settings');

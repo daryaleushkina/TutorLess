@@ -5,6 +5,8 @@ import { BackIcon } from '../components/icons';
 import { StatusScreen } from '../components/StatusScreen';
 import { useI18n } from '../i18n/i18n';
 import { TrainingAction } from './Action';
+import { FocusFooter } from '../layout/AppLayout';
+import { SessionFooter } from './SessionFooter';
 import { TYPE_LABELS } from './builder';
 import { REPORT_TEXT_MAX, type ReportDraft, type StoredTraining } from './model';
 import { ReadTraining, TrainingHeading } from './ReadTraining';
@@ -113,7 +115,7 @@ function ReportFields({ training, index, onBack, cancelRef, draft }: {
   if (sent) return <>
     <TrainingHeading>{copy.report_thanks}</TrainingHeading>
     <p role="status">{copy.report_saved}</p><p className={styles.note}>{copy.report_note}</p>
-    <div className={styles.sessionFooter}><TrainingAction text={copy.report_back} disabled={false} onClick={onBack} /></div>
+    <FocusFooter><SessionFooter><TrainingAction text={copy.report_back} disabled={false} onClick={onBack} /></SessionFooter></FocusFooter>
   </>;
   return <>
     <TrainingHeading>{copy.question_report}</TrainingHeading>
@@ -148,7 +150,7 @@ function ReportFields({ training, index, onBack, cancelRef, draft }: {
       {truncated && <p id="report-truncated" role="status" className={styles.note}>{copy.report_truncated(REPORT_TEXT_MAX)}</p>}
       <p className={styles.note}>{copy.report_note}</p>
       {failed && <p role="alert">{failed === 'quota' ? copy.report_failed : failed === 'owner' ? copy.report_session_changed : failed === 'missing' ? copy.report_training_missing : copy.report_storage_failed}</p>}
-      <div className={styles.sessionFooter}><TrainingAction text={copy.report_send} onClick={() => void send()} disabled={!kind || busy} busy={busy} /></div>
+      <FocusFooter><SessionFooter><TrainingAction text={copy.report_send} onClick={() => void send()} disabled={!kind || busy} busy={busy} /></SessionFooter></FocusFooter>
     </form>
   </>;
 }
