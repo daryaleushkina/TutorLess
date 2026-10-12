@@ -548,7 +548,7 @@ Code эмулятор запускается только вне песочни�
 adb devices; xcrun simctl list devices booted               # включённых на Маке должно быть меньше пяти
 port=5570                                                   # первый чётный, где не слушают ни консоль, ни adb
 while nc -z 127.0.0.1 $port >/dev/null 2>&1 || nc -z 127.0.0.1 $((port + 1)) >/dev/null 2>&1; do port=$((port + 2)); done
-emulator -avd GrePrep_Pixel_9 -read-only -no-window -no-boot-anim -no-snapshot-save -port $port & pid=$!
+emulator -avd GrePrep_Pixel_9 -read-only -no-window -no-audio -no-boot-anim -no-snapshot-save -port $port & pid=$!
 export ANDROID_SERIAL=emulator-$port                        # дальше adb и gradlew говорят только с этой копией
 adb wait-for-device && kill -0 $pid                         # kill -0 упал — на порту чужое устройство, дальше не идти
 adb shell 'while [ "$(getprop sys.boot_completed)" != 1 ]; do sleep 1; done'

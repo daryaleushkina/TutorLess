@@ -20,4 +20,9 @@ for d in json.load(sys.stdin)["devices"].get(runtime, []):
 if [ -z "$udid" ]; then
   udid="$(xcrun simctl create "$name" "com.apple.CoreSimulator.SimDeviceType.$type" "com.apple.CoreSimulator.SimRuntime.$runtime")"
 fi
+# Без звука (просьба Даши 12.10.2026): щелчки клавиатуры и звук блокировки в UI-тестах слышны на весь Мак.
+# Пишем прямо в настройки устройства — так работает и до загрузки симулятора.
+prefs="$HOME/Library/Developer/CoreSimulator/Devices/$udid/data/Library/Preferences/com.apple.preferences.sounds"
+defaults write "$prefs" keyboard-audio -bool false
+defaults write "$prefs" lock-audio -bool false
 echo "$udid"
