@@ -152,6 +152,10 @@ func (s *Server) handleFinishTrainingRequest(args [1]string, argsEscaped bool, w
 					Name: "trainingId",
 					In:   "path",
 				}: params.TrainingId,
+				{
+					Name: "X-Training-Capabilities",
+					In:   "header",
+				}: params.XTrainingCapabilities,
 			},
 			Raw: r,
 		}
@@ -480,6 +484,10 @@ func (s *Server) handleGetHomeRequest(args [0]string, argsEscaped bool, w http.R
 					Name: "types",
 					In:   "query",
 				}: params.Types,
+				{
+					Name: "X-Training-Capabilities",
+					In:   "header",
+				}: params.XTrainingCapabilities,
 			},
 			Raw: r,
 		}
@@ -1076,6 +1084,10 @@ func (s *Server) handleGetTrainingRequest(args [1]string, argsEscaped bool, w ht
 					Name: "trainingId",
 					In:   "path",
 				}: params.TrainingId,
+				{
+					Name: "X-Training-Capabilities",
+					In:   "header",
+				}: params.XTrainingCapabilities,
 			},
 			Raw: r,
 		}
@@ -1243,6 +1255,10 @@ func (s *Server) handleGetTrainingOptionsRequest(args [0]string, argsEscaped boo
 					Name: "types",
 					In:   "query",
 				}: params.Types,
+				{
+					Name: "X-Training-Capabilities",
+					In:   "header",
+				}: params.XTrainingCapabilities,
 			},
 			Raw: r,
 		}
@@ -2573,6 +2589,16 @@ func (s *Server) handleStartTrainingRequest(args [0]string, argsEscaped bool, w 
 			return
 		}
 	}
+	params, err := decodeStartTrainingParams(args, argsEscaped, r)
+	if err != nil {
+		err = &ogenerrors.DecodeParamsError{
+			OperationContext: opErrContext,
+			Err:              err,
+		}
+		defer recordError("DecodeParams", err)
+		s.cfg.ErrorHandler(ctx, w, r, err)
+		return
+	}
 
 	var rawBody []byte
 	request, rawBody, close, err := s.decodeStartTrainingRequest(r)
@@ -2600,13 +2626,18 @@ func (s *Server) handleStartTrainingRequest(args [0]string, argsEscaped bool, w 
 			OperationID:      "startTraining",
 			Body:             request,
 			RawBody:          rawBody,
-			Params:           middleware.Parameters{},
-			Raw:              r,
+			Params: middleware.Parameters{
+				{
+					Name: "X-Training-Capabilities",
+					In:   "header",
+				}: params.XTrainingCapabilities,
+			},
+			Raw: r,
 		}
 
 		type (
 			Request  = *TrainingRequest
-			Params   = struct{}
+			Params   = StartTrainingParams
 			Response = *TrainingSession
 		)
 		response, err = middleware.HookMiddleware[
@@ -2616,14 +2647,14 @@ func (s *Server) handleStartTrainingRequest(args [0]string, argsEscaped bool, w 
 		](
 			m,
 			mreq,
-			nil,
+			unpackStartTrainingParams,
 			func(ctx context.Context, request Request, params Params) (response Response, err error) {
-				response, err = s.h.StartTraining(ctx, request)
+				response, err = s.h.StartTraining(ctx, request, params)
 				return response, err
 			},
 		)
 	} else {
-		response, err = s.h.StartTraining(ctx, request)
+		response, err = s.h.StartTraining(ctx, request, params)
 	}
 	if err != nil {
 		if errRes, ok := errors.Into[*ErrorStatusCode](err); ok {
@@ -2781,6 +2812,10 @@ func (s *Server) handleSubmitTrainingAnswersRequest(args [1]string, argsEscaped 
 					Name: "trainingId",
 					In:   "path",
 				}: params.TrainingId,
+				{
+					Name: "X-Training-Capabilities",
+					In:   "header",
+				}: params.XTrainingCapabilities,
 			},
 			Raw: r,
 		}

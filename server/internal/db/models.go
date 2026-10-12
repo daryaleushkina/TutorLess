@@ -41,16 +41,29 @@ type Identity struct {
 }
 
 type Question struct {
-	ID           uuid.UUID
-	QuestionType string
-	TopicID      string
-	Difficulty   string
-	Status       string
-	Body         []byte
-	Answer       []string
-	Explanation  []byte
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+	ID            uuid.UUID
+	QuestionType  string
+	TopicID       string
+	Difficulty    string
+	Status        string
+	Body          []byte
+	Answer        []string
+	Explanation   []byte
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	NumericAnswer []byte
+	PassageID     *string
+	FigureID      *string
+}
+
+type QuestionFigure struct {
+	ID   string
+	Body []byte
+}
+
+type QuestionPassage struct {
+	ID   string
+	Body []byte
 }
 
 type QuestionReport struct {
@@ -98,15 +111,17 @@ type Training struct {
 }
 
 type TrainingItem struct {
-	TrainingID uuid.UUID
-	Position   int
-	QuestionID uuid.UUID
-	OptionIds  []string
-	DontKnow   bool
-	Flagged    bool
-	AnsweredAt *time.Time
-	ElapsedMs  *int
-	Correct    *bool
+	TrainingID    uuid.UUID
+	Position      int
+	QuestionID    uuid.UUID
+	OptionIds     []string
+	DontKnow      bool
+	Flagged       bool
+	AnsweredAt    *time.Time
+	ElapsedMs     *int
+	Correct       *bool
+	NumericAnswer []byte
+	SentenceID    *string
 }
 
 type User struct {

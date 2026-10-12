@@ -208,7 +208,7 @@ func (UnimplementedHandler) SignOut(ctx context.Context) (r *SignOutNoContent, _
 // тренировкам — 403 forbidden.
 //
 // POST /api/trainings
-func (UnimplementedHandler) StartTraining(ctx context.Context, req *TrainingRequest) (r *TrainingSession, _ error) {
+func (UnimplementedHandler) StartTraining(ctx context.Context, req *TrainingRequest, params StartTrainingParams) (r *TrainingSession, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

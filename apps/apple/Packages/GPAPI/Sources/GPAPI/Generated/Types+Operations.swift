@@ -1181,7 +1181,7 @@ public enum Operations {
                 ///
                 /// - Remark: Generated from `#/paths/api/home/GET/query/tz`.
                 public var tz: Swift.String
-                /// Типы заданий, которые клиент умеет показывать. Если последний запрос содержит тип вне списка, lastTraining — null. Статистика разделов, ошибок и слабого типа от списка не зависит.
+                /// Типы заданий, которые клиент умеет показывать. Если последний запрос содержит тип вне списка, lastTraining — null. Статистика разделов и недели общая; ошибки и слабый тип учитывают только доступные формы.
                 ///
                 /// - Remark: Generated from `#/paths/api/home/GET/query/types`.
                 public var types: [Components.Schemas.QuestionType]
@@ -1190,7 +1190,7 @@ public enum Operations {
                 /// - Parameters:
                 ///   - exam:
                 ///   - tz: IANA-зона клиента из базы зон сервера, включая UTC; неизвестная зона или Local — 400 bad_request
-                ///   - types: Типы заданий, которые клиент умеет показывать. Если последний запрос содержит тип вне списка, lastTraining — null. Статистика разделов, ошибок и слабого типа от списка не зависит.
+                ///   - types: Типы заданий, которые клиент умеет показывать. Если последний запрос содержит тип вне списка, lastTraining — null. Статистика разделов и недели общая; ошибки и слабый тип учитывают только доступные формы.
                 public init(
                     exam: Components.Schemas.Exam,
                     tz: Swift.String,

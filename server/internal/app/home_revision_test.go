@@ -110,7 +110,7 @@ func TestHomeRequiresValidClientTypes(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t, nil)
 	token, _ := e.devSignIn(t, "home-types-input", "")
-	for _, path := range []string{"/api/home?exam=gre&tz=UTC", "/api/home?exam=gre&tz=UTC&types=", "/api/home?exam=gre&tz=UTC&types=not_a_type"} {
+	for _, path := range []string{"/api/home?exam=gre&tz=UTC&types=", "/api/home?exam=gre&tz=UTC&types=not_a_type"} {
 		wantError(t, e.do(t, call{method: "GET", path: path, bearer: token}), http.StatusBadRequest, "bad_request")
 	}
 }

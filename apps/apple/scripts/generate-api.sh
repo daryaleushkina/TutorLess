@@ -12,7 +12,9 @@ root="$(cd "$here/../.." && pwd)"
 out="$here/Packages/GPAPI/Sources/GPAPI/Generated"
 spec="$(mktemp -d)/openapi.yaml"
 trap 'rm -rf "$(dirname "$spec")"' EXIT
-sed '/^[[:space:]]*additionalProperties:[[:space:]]*false[[:space:]]*$/d' "$root/api/openapi.yaml" > "$spec"
+python3 "$root/tools/dev/native-contract.py" "$root/api/openapi.yaml" "$spec" apple
+sed '/^[[:space:]]*additionalProperties:[[:space:]]*false[[:space:]]*$/d' "$spec" > "$spec.tolerant"
+mv "$spec.tolerant" "$spec"
 mkdir -p "$out"
 swift run --quiet --package-path "$here/Tools" swift-openapi-generator generate \
   --config "$here/Packages/GPAPI/openapi-generator-config.yaml" \

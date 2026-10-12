@@ -1,3 +1,4 @@
+import { SUPPORTED_TYPES } from '../training/repository';
 import { schemas, type GivenAnswer, type TrainingOptions, type TrainingSession } from '@greprep/api-client';
 import { storedTraining } from '../training/model';
 
@@ -14,7 +15,7 @@ export const givenAnswer = (over: Partial<GivenAnswer> = {}): GivenAnswer => ({ 
   flagged: false, answeredAt: '2026-10-06T09:01:00Z', elapsedMs: 1000, ...over });
 export const savedTraining = (id = trainingSession().id, startedAtMillis = Date.now()) => storedTraining(trainingSession({ id }), startedAtMillis);
 export const trainingOptions = (over: Partial<TrainingOptions> = {}): TrainingOptions => ({
-  types: schemas.QuestionType.options.map((questionType, index) => ({ questionType, section: index < 2 ? 'verbal' : 'quant',
+  types: SUPPORTED_TYPES.map((questionType, index) => ({ questionType, section: index < 2 ? 'verbal' : 'quant',
     paceSeconds: index < 2 ? 90 : 105, topics: ['contrast', 'cause'].map((id) => ({ id, title: { ru: id === 'contrast' ? 'Контраст' : 'Причина', en: id }, available: { easy: 3, medium: 2, hard: 1 } })) })),
   presets: [{ kind: 'timed', request: { exam: 'gre', section: 'verbal', questionTypes: ['text_completion', 'sentence_equivalence'], count: 12, mode: 'check' } }], maxQuestions: 50, ...over,
 });

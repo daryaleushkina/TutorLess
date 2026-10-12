@@ -5,7 +5,8 @@ import { type ReportDraft, pendingReportSchema, storedTraining, type StoredTrain
 import { TrainingRules } from './rules';
 import { TrainingStore, TrainingOwnerChangedError, TrainingStorageBlockedError, type TrainingOwner } from './store';
 
-export const SUPPORTED_TYPES = schemas.QuestionType.options;
+export const SUPPORTED_TYPES = schemas.QuestionType.options.filter((type) =>
+  type === 'text_completion' || type === 'sentence_equivalence' || type === 'quantitative_comparison' || type === 'multiple_choice');
 const PERMANENT = new Set([400, 404, 409, 410, 422]);
 export const SYNC_LOCK = 'greprep-training-sync';
 interface TrainingApi {

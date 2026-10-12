@@ -16,10 +16,19 @@ const countApprovedQuestions = `-- name: CountApprovedQuestions :many
 SELECT t.section, q.question_type, t.id AS topic_id, t.title_ru, t.title_en, q.difficulty, count(*)::integer AS available
 FROM questions q
 JOIN topics t ON t.id = q.topic_id
-WHERE q.status = 'approved' AND t.exam_id = $1
+WHERE q.status = 'approved' AND t.exam_id = $1 AND q.question_type = ANY ($2::text[])
+  AND ($3::boolean OR q.passage_id IS NULL)
+  AND ($4::boolean OR q.figure_id IS NULL)
 GROUP BY t.section, q.question_type, t.id, t.title_ru, t.title_en, t.position, q.difficulty
 ORDER BY t.position, t.id
 `
+
+type CountApprovedQuestionsParams struct {
+	ExamID         string
+	SupportedTypes []string
+	WithPassage    bool
+	WithFigure     bool
+}
 
 type CountApprovedQuestionsRow struct {
 	Section      string
@@ -32,8 +41,13 @@ type CountApprovedQuestionsRow struct {
 }
 
 // Сколько проверенных заданий в каждой теме по типу и сложности — для конструктора (макеты R1, R2).
-func (q *Queries) CountApprovedQuestions(ctx context.Context, examID string) ([]CountApprovedQuestionsRow, error) {
-	rows, err := q.db.Query(ctx, countApprovedQuestions, examID)
+func (q *Queries) CountApprovedQuestions(ctx context.Context, arg CountApprovedQuestionsParams) ([]CountApprovedQuestionsRow, error) {
+	rows, err := q.db.Query(ctx, countApprovedQuestions,
+		arg.ExamID,
+		arg.SupportedTypes,
+		arg.WithPassage,
+		arg.WithFigure,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -137,21 +151,39 @@ func (q *Queries) FinishTraining(ctx context.Context, arg FinishTrainingParams) 
 }
 
 const getLastTrainingRequest = `-- name: GetLastTrainingRequest :one
-SELECT (request || jsonb_build_object('exam', exam_id))::jsonb AS request
-FROM trainings WHERE user_id = $1 AND exam_id = $2 ORDER BY started_at DESC, id DESC LIMIT 1
+SELECT (request || jsonb_build_object('exam', exam_id))::jsonb AS request,
+  NOT EXISTS (SELECT 1 FROM training_items i JOIN questions q ON q.id = i.question_id
+    WHERE i.training_id = trainings.id AND NOT (q.question_type = ANY ($1::text[])
+  AND ($2::boolean OR q.passage_id IS NULL)
+  AND ($3::boolean OR q.figure_id IS NULL))) AS compatible
+FROM trainings WHERE user_id = $4 AND exam_id = $5 ORDER BY started_at DESC, id DESC LIMIT 1
 `
 
 type GetLastTrainingRequestParams struct {
-	UserID uuid.UUID
-	ExamID string
+	SupportedTypes []string
+	WithPassage    bool
+	WithFigure     bool
+	UserID         uuid.UUID
+	ExamID         string
+}
+
+type GetLastTrainingRequestRow struct {
+	Request    []byte
+	Compatible bool
 }
 
 // Старый сервер после миграции ещё пишет JSON без exam; источником истины остаётся столбец строки.
-func (q *Queries) GetLastTrainingRequest(ctx context.Context, arg GetLastTrainingRequestParams) ([]byte, error) {
-	row := q.db.QueryRow(ctx, getLastTrainingRequest, arg.UserID, arg.ExamID)
-	var request []byte
-	err := row.Scan(&request)
-	return request, err
+func (q *Queries) GetLastTrainingRequest(ctx context.Context, arg GetLastTrainingRequestParams) (GetLastTrainingRequestRow, error) {
+	row := q.db.QueryRow(ctx, getLastTrainingRequest,
+		arg.SupportedTypes,
+		arg.WithPassage,
+		arg.WithFigure,
+		arg.UserID,
+		arg.ExamID,
+	)
+	var i GetLastTrainingRequestRow
+	err := row.Scan(&i.Request, &i.Compatible)
+	return i, err
 }
 
 const getTopicSection = `-- name: GetTopicSection :one
@@ -219,33 +251,41 @@ func (q *Queries) InsertQuestionReport(ctx context.Context, arg InsertQuestionRe
 
 const listTrainingItems = `-- name: ListTrainingItems :many
 SELECT i.position, i.question_id, i.option_ids, i.dont_know, i.flagged, i.answered_at, i.elapsed_ms, i.correct,
-       q.question_type, q.difficulty, q.body, q.answer, q.explanation,
+       q.question_type, q.difficulty, q.body, q.answer, q.explanation, q.numeric_answer AS question_numeric_answer,
+       p.body AS passage, f.body AS figure, i.numeric_answer, i.sentence_id,
        t.id AS topic_id, t.section, t.title_ru, t.title_en
 FROM training_items i
 JOIN questions q ON q.id = i.question_id
 JOIN topics t ON t.id = q.topic_id
+LEFT JOIN question_passages p ON p.id = q.passage_id
+LEFT JOIN question_figures f ON f.id = q.figure_id
 WHERE i.training_id = $1
 ORDER BY i.position
 `
 
 type ListTrainingItemsRow struct {
-	Position     int
-	QuestionID   uuid.UUID
-	OptionIds    []string
-	DontKnow     bool
-	Flagged      bool
-	AnsweredAt   *time.Time
-	ElapsedMs    *int
-	Correct      *bool
-	QuestionType string
-	Difficulty   string
-	Body         []byte
-	Answer       []string
-	Explanation  []byte
-	TopicID      string
-	Section      string
-	TitleRu      string
-	TitleEn      string
+	Position              int
+	QuestionID            uuid.UUID
+	OptionIds             []string
+	DontKnow              bool
+	Flagged               bool
+	AnsweredAt            *time.Time
+	ElapsedMs             *int
+	Correct               *bool
+	QuestionType          string
+	Difficulty            string
+	Body                  []byte
+	Answer                []string
+	Explanation           []byte
+	QuestionNumericAnswer []byte
+	Passage               []byte
+	Figure                []byte
+	NumericAnswer         []byte
+	SentenceID            *string
+	TopicID               string
+	Section               string
+	TitleRu               string
+	TitleEn               string
 }
 
 func (q *Queries) ListTrainingItems(ctx context.Context, trainingID uuid.UUID) ([]ListTrainingItemsRow, error) {
@@ -271,6 +311,11 @@ func (q *Queries) ListTrainingItems(ctx context.Context, trainingID uuid.UUID) (
 			&i.Body,
 			&i.Answer,
 			&i.Explanation,
+			&i.QuestionNumericAnswer,
+			&i.Passage,
+			&i.Figure,
+			&i.NumericAnswer,
+			&i.SentenceID,
 			&i.TopicID,
 			&i.Section,
 			&i.TitleRu,
@@ -320,12 +365,12 @@ WITH seen AS (
   SELECT DISTINCT i.question_id
   FROM trainings tr
   JOIN training_items i ON i.training_id = tr.id
-  WHERE tr.user_id = $8
+  WHERE tr.user_id = $10
 ), latest AS (
   SELECT DISTINCT ON (i.question_id) i.question_id, i.correct
   FROM trainings tr JOIN training_items i ON i.training_id = tr.id
   WHERE $1::boolean
-    AND tr.user_id = $8 AND tr.exam_id = $2 AND i.answered_at IS NOT NULL
+    AND tr.user_id = $10 AND tr.exam_id = $2 AND i.answered_at IS NOT NULL
   ORDER BY i.question_id, i.answered_at DESC, tr.started_at DESC, tr.id DESC
 )
 SELECT q.id
@@ -338,10 +383,12 @@ WHERE q.status = 'approved'
   AND t.exam_id = $2
   AND t.section = $3
   AND q.question_type = ANY ($4::text[])
-  AND (cardinality($5::text[]) = 0 OR q.topic_id = ANY ($5::text[]))
-  AND ($6::text IS NULL OR q.difficulty = $6::text)
+  AND ($5::boolean OR q.passage_id IS NULL)
+  AND ($6::boolean OR q.figure_id IS NULL)
+  AND (cardinality($7::text[]) = 0 OR q.topic_id = ANY ($7::text[]))
+  AND ($8::text IS NULL OR q.difficulty = $8::text)
 ORDER BY s.question_id IS NOT NULL, random()
-LIMIT $7::integer
+LIMIT $9::integer
 `
 
 type PickQuestionsParams struct {
@@ -349,6 +396,8 @@ type PickQuestionsParams struct {
 	ExamID        string
 	Section       string
 	QuestionTypes []string
+	WithPassage   bool
+	WithFigure    bool
 	TopicIds      []string
 	Difficulty    *string
 	MaxCount      int
@@ -363,6 +412,8 @@ func (q *Queries) PickQuestions(ctx context.Context, arg PickQuestionsParams) ([
 		arg.ExamID,
 		arg.Section,
 		arg.QuestionTypes,
+		arg.WithPassage,
+		arg.WithFigure,
 		arg.TopicIds,
 		arg.Difficulty,
 		arg.MaxCount,
@@ -414,26 +465,30 @@ func (q *Queries) QuestionReportable(ctx context.Context, arg QuestionReportable
 const saveTrainingAnswer = `-- name: SaveTrainingAnswer :execrows
 UPDATE training_items
 SET option_ids = $1,
-    dont_know = $2,
-    flagged = $3,
-    answered_at = $4,
-    elapsed_ms = $5,
-    correct = $6
-WHERE training_id = $7
-  AND position = $8
-  AND (answered_at IS NULL OR (NOT $9::boolean AND answered_at <= $4))
+    numeric_answer = $2,
+    sentence_id = $3,
+    dont_know = $4,
+    flagged = $5,
+    answered_at = $6,
+    elapsed_ms = $7,
+    correct = $8
+WHERE training_id = $9
+  AND position = $10
+  AND (answered_at IS NULL OR (NOT $11::boolean AND answered_at <= $6))
 `
 
 type SaveTrainingAnswerParams struct {
-	OptionIds  []string
-	DontKnow   bool
-	Flagged    bool
-	AnsweredAt *time.Time
-	ElapsedMs  *int
-	Correct    *bool
-	TrainingID uuid.UUID
-	Position   int
-	KeepFirst  bool
+	OptionIds     []string
+	NumericAnswer []byte
+	SentenceID    *string
+	DontKnow      bool
+	Flagged       bool
+	AnsweredAt    *time.Time
+	ElapsedMs     *int
+	Correct       *bool
+	TrainingID    uuid.UUID
+	Position      int
+	KeepFirst     bool
 }
 
 // Ответ на позицию. keep_first — «Практика»: разбор уже показан, первый ответ не заменяется. Иначе
@@ -441,6 +496,8 @@ type SaveTrainingAnswerParams struct {
 func (q *Queries) SaveTrainingAnswer(ctx context.Context, arg SaveTrainingAnswerParams) (int64, error) {
 	result, err := q.db.Exec(ctx, saveTrainingAnswer,
 		arg.OptionIds,
+		arg.NumericAnswer,
+		arg.SentenceID,
 		arg.DontKnow,
 		arg.Flagged,
 		arg.AnsweredAt,
@@ -496,23 +553,57 @@ func (q *Queries) TrainingSelectionValid(ctx context.Context, arg TrainingSelect
 	return valid, err
 }
 
+const upsertFigure = `-- name: UpsertFigure :exec
+INSERT INTO question_figures(id, body) VALUES($1, $2)
+ON CONFLICT(id) DO UPDATE SET body = excluded.body
+`
+
+type UpsertFigureParams struct {
+	ID   string
+	Body []byte
+}
+
+func (q *Queries) UpsertFigure(ctx context.Context, arg UpsertFigureParams) error {
+	_, err := q.db.Exec(ctx, upsertFigure, arg.ID, arg.Body)
+	return err
+}
+
+const upsertPassage = `-- name: UpsertPassage :exec
+INSERT INTO question_passages(id, body) VALUES($1, $2)
+ON CONFLICT(id) DO UPDATE SET body = excluded.body
+`
+
+type UpsertPassageParams struct {
+	ID   string
+	Body []byte
+}
+
+func (q *Queries) UpsertPassage(ctx context.Context, arg UpsertPassageParams) error {
+	_, err := q.db.Exec(ctx, upsertPassage, arg.ID, arg.Body)
+	return err
+}
+
 const upsertQuestion = `-- name: UpsertQuestion :exec
-INSERT INTO questions (id, question_type, topic_id, difficulty, status, body, answer, explanation)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+INSERT INTO questions (id, question_type, topic_id, difficulty, status, body, answer, explanation, numeric_answer, passage_id, figure_id)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 ON CONFLICT (id) DO UPDATE SET question_type = excluded.question_type, topic_id = excluded.topic_id,
   difficulty = excluded.difficulty, status = excluded.status, body = excluded.body, answer = excluded.answer,
-  explanation = excluded.explanation, updated_at = now()
+  explanation = excluded.explanation, numeric_answer = excluded.numeric_answer,
+  passage_id = excluded.passage_id, figure_id = excluded.figure_id, updated_at = now()
 `
 
 type UpsertQuestionParams struct {
-	ID           uuid.UUID
-	QuestionType string
-	TopicID      string
-	Difficulty   string
-	Status       string
-	Body         []byte
-	Answer       []string
-	Explanation  []byte
+	ID            uuid.UUID
+	QuestionType  string
+	TopicID       string
+	Difficulty    string
+	Status        string
+	Body          []byte
+	Answer        []string
+	Explanation   []byte
+	NumericAnswer []byte
+	PassageID     *string
+	FigureID      *string
 }
 
 func (q *Queries) UpsertQuestion(ctx context.Context, arg UpsertQuestionParams) error {
@@ -525,6 +616,9 @@ func (q *Queries) UpsertQuestion(ctx context.Context, arg UpsertQuestionParams) 
 		arg.Body,
 		arg.Answer,
 		arg.Explanation,
+		arg.NumericAnswer,
+		arg.PassageID,
+		arg.FigureID,
 	)
 	return err
 }

@@ -13,7 +13,7 @@ import (
 	"unicode/utf8"
 )
 
-// Type — тип задания первого среза (решение Даши 06.10.2026).
+// Type — поддержанные форматы заданий GRE.
 type Type string
 
 const (
@@ -21,6 +21,9 @@ const (
 	SentenceEquivalence    Type = "sentence_equivalence"
 	QuantitativeComparison Type = "quantitative_comparison"
 	MultipleChoice         Type = "multiple_choice"
+	MultipleChoiceMulti    Type = "multiple_choice_multi"
+	NumericEntry           Type = "numeric_entry"
+	SelectInPassage        Type = "select_in_passage"
 )
 
 // Section — раздел экзамена, в котором бывают тренировки.
@@ -39,10 +42,13 @@ const (
 	Check    Mode = "check"
 )
 
-// Types — все типы первого среза в порядке конструктора.
-var Types = []Type{TextCompletion, SentenceEquivalence, QuantitativeComparison, MultipleChoice}
+// LegacyTypes — формы без текста и рисунка для клиента без объявления возможностей.
+var LegacyTypes = []Type{TextCompletion, SentenceEquivalence, QuantitativeComparison, MultipleChoice}
 
-// ExamOf — типы первого среза относятся к GRE. Конвейер добавит типы других экзаменов явно, вместе
+// Types — поддержанные типы GRE в порядке конструктора.
+var Types = append(slices.Clone(LegacyTypes), MultipleChoiceMulti, NumericEntry, SelectInPassage)
+
+// ExamOf — эти форматы относятся к GRE. Конвейер добавит типы других экзаменов явно, вместе
 // с проверкой тела и ответа; одинаковое название формата ещё не делает его типом другого экзамена.
 func ExamOf(t Type) string {
 	if slices.Contains(Types, t) {
@@ -54,9 +60,9 @@ func ExamOf(t Type) string {
 // SectionOf — раздел типа задания; пусто — тип неизвестен.
 func SectionOf(t Type) Section {
 	switch t {
-	case TextCompletion, SentenceEquivalence:
+	case TextCompletion, SentenceEquivalence, SelectInPassage:
 		return Verbal
-	case QuantitativeComparison, MultipleChoice:
+	case QuantitativeComparison, MultipleChoice, MultipleChoiceMulti, NumericEntry:
 		return Quant
 	default:
 		return ""
@@ -116,12 +122,15 @@ type Group struct {
 
 // Body — условие задания; хранится в questions.body.
 type Body struct {
-	Prompt      string  `json:"prompt"`
-	Condition   string  `json:"condition,omitempty"`
-	QuantityA   string  `json:"quantityA,omitempty"`
-	QuantityB   string  `json:"quantityB,omitempty"`
-	Groups      []Group `json:"groups"`
-	SelectCount int     `json:"selectCount"`
+	Prompt       string       `json:"prompt"`
+	Condition    string       `json:"condition,omitempty"`
+	QuantityA    string       `json:"quantityA,omitempty"`
+	QuantityB    string       `json:"quantityB,omitempty"`
+	Groups       []Group      `json:"groups"`
+	SelectCount  int          `json:"selectCount"`
+	NumericEntry *NumericSpec `json:"numericEntry,omitempty"`
+	Passage      *Passage     `json:"passage,omitempty"`
+	Figure       *Figure      `json:"figure,omitempty"`
 }
 
 // OptionExplanation — «Почему не …?»: чем соблазняет неверный вариант и чем плох.
@@ -138,10 +147,11 @@ type Explanation struct {
 
 // Question — задание целиком.
 type Question struct {
-	Type        Type
-	Body        Body
-	Answer      []string
-	Explanation Explanation
+	Type          Type
+	Body          Body
+	Answer        []string
+	Explanation   Explanation
+	NumericAnswer *NumericResponse `json:"numericAnswer,omitempty"`
 }
 
 // Пределы — те же, что в договоре (api/openapi.yaml, Question): задание, которое договор не пропустит, не
@@ -171,6 +181,9 @@ func Validate(q Question) error {
 		if utf8.RuneCountInString(s) > maxSide {
 			return invalid("condition and quantities must be at most %d characters", maxSide)
 		}
+	}
+	if err := validateMaterials(q); err != nil {
+		return err
 	}
 	if err := validateShape(q); err != nil {
 		return err
@@ -219,6 +232,21 @@ func validateShape(q Question) error {
 		if !slices.Equal(sizes, []int{4}) || b.SelectCount != 1 || b.QuantityA == "" || b.QuantityB == "" {
 			return invalid("quantitative comparison needs quantities A and B and 4 options")
 		}
+	case MultipleChoiceMulti:
+		if len(sizes) != 1 || sizes[0] < 2 || sizes[0] > 10 || b.SelectCount < 0 || b.SelectCount > sizes[0] {
+			return invalid("multiple answers need 2..10 options and a valid selectCount")
+		}
+		if b.Passage != nil && sizes[0] != 3 {
+			return invalid("reading multiple answers need 3 options")
+		}
+	case NumericEntry:
+		if len(sizes) != 0 || b.SelectCount != 0 || b.NumericEntry == nil {
+			return invalid("numeric entry needs no groups and a numeric format")
+		}
+	case SelectInPassage:
+		if len(sizes) != 0 || b.SelectCount != 0 || b.Passage == nil {
+			return invalid("select in passage needs a passage and no groups")
+		}
 	case MultipleChoice:
 		if !slices.Equal(sizes, []int{5}) || b.SelectCount != 1 {
 			return invalid("multiple choice needs 5 options and 1 answer")
@@ -231,6 +259,28 @@ func validateShape(q Question) error {
 
 // validateAnswer — в каждой группе ровно selectCount верных.
 func validateAnswer(q Question, ids map[string]int) error {
+	if q.Type == NumericEntry {
+		if len(q.Answer) != 0 || q.NumericAnswer == nil {
+			return invalid("numeric entry needs a numeric key only")
+		}
+		if _, err := numericValue(*q.NumericAnswer, q.Body.NumericEntry.Format); err != nil {
+			return invalid("numeric key: %v", err)
+		}
+		return nil
+	}
+	if q.NumericAnswer != nil {
+		return invalid("numeric key outside numeric entry")
+	}
+	if q.Type == SelectInPassage {
+		if len(q.Answer) != 1 || !hasSentence(q.Body.Passage, q.Answer[0]) {
+			return invalid("key must name one passage sentence")
+		}
+		return nil
+	}
+	if q.Type == MultipleChoiceMulti && (len(q.Answer) == 0 || len(q.Answer) > 10) {
+		return invalid("multiple answers need a nonempty key")
+	}
+
 	perGroup := make([]int, len(q.Body.Groups))
 	seen := map[string]bool{}
 	for _, id := range q.Answer {
@@ -242,7 +292,7 @@ func validateAnswer(q Question, ids map[string]int) error {
 		perGroup[g]++
 	}
 	for g, n := range perGroup {
-		if n != q.Body.SelectCount {
+		if (q.Type != MultipleChoiceMulti || q.Body.SelectCount != 0) && n != q.Body.SelectCount {
 			return invalid("group %d has %d answers, want %d", g+1, n, q.Body.SelectCount)
 		}
 	}
@@ -265,7 +315,11 @@ func validateExplanation(q Question, ids map[string]int) error {
 		}
 		explained[o.OptionID] = true
 	}
-	if want := len(ids) - len(q.Answer); len(explained) != want {
+	want := len(ids) - len(q.Answer)
+	if q.Type == SelectInPassage {
+		want = 0
+	}
+	if len(explained) != want {
 		return invalid("%d of %d wrong options are explained", len(explained), want)
 	}
 	return nil
@@ -278,6 +332,9 @@ var ErrBadAnswer = errors.New("answer does not fit the question")
 // «не ответил»: correct=false, ошибки нет. Верен только полный ответ: в Text Completion с тремя пропусками
 // и в Sentence Equivalence балл, как в GRE, — лишь за все верные части.
 func CheckAnswer(q Question, optionIDs []string, dontKnow bool) (correct bool, err error) {
+	if q.Type == NumericEntry || q.Type == SelectInPassage {
+		return CheckResponse(q, Response{OptionIDs: optionIDs, DontKnow: dontKnow})
+	}
 	if dontKnow && len(optionIDs) > 0 {
 		return false, fmt.Errorf("%w: dont know with chosen options", ErrBadAnswer)
 	}
@@ -296,7 +353,7 @@ func CheckAnswer(q Question, optionIDs []string, dontKnow bool) (correct bool, e
 		}
 		seen[id] = true
 		perGroup[g]++
-		if perGroup[g] > q.Body.SelectCount {
+		if (q.Type != MultipleChoiceMulti || q.Body.SelectCount != 0) && perGroup[g] > q.Body.SelectCount {
 			return false, fmt.Errorf("%w: too many options in group %d", ErrBadAnswer, g+1)
 		}
 	}

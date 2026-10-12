@@ -195,15 +195,16 @@ paths:
           schema: { type: string, minLength: 1, maxLength: 100 }
         - name: types
           in: query
-          required: true
+          required: false
           description: >-
             Типы заданий, которые клиент умеет показывать. Если последний запрос содержит тип вне списка,
-            lastTraining — null. Статистика разделов, ошибок и слабого типа от списка не зависит.
+            lastTraining — null. Статистика разделов и недели общая; ошибки и слабый тип учитывают только доступные формы.
           schema:
             type: array
             minItems: 1
             maxItems: 20
             items: { $ref: '#/components/schemas/QuestionType' }
+        - $ref: '#/components/parameters/TrainingCapabilities'
       responses:
         '200':
           description: Статистика и параметры для запуска тренировки
@@ -272,7 +273,7 @@ paths:
           schema: { $ref: '#/components/schemas/Exam' }
         - name: types
           in: query
-          required: true
+          required: false
           description: >-
             Типы заданий, которые клиент умеет показывать. Других сервер не присылает ни в списке, ни в наборах:
             новый тип на сервере не ломает уже установленные версии приложений.
@@ -281,6 +282,7 @@ paths:
             minItems: 1
             maxItems: 20
             items: { $ref: '#/components/schemas/QuestionType' }
+        - $ref: '#/components/parameters/TrainingCapabilities'
       responses:
         '200':
           description: Варианты конструктора
@@ -299,6 +301,8 @@ paths:
         сохраняя фильтры exam, section, questionTypes, topicIds и difficulty. Нет ни
         одного подходящего — 409 no_questions. Нет доступа к тренировкам — 403 forbidden.
       tags: [trainings]
+      parameters:
+        - $ref: '#/components/parameters/TrainingCapabilities'
       requestBody:
         required: true
         content:
@@ -320,6 +324,7 @@ paths:
       tags: [trainings]
       parameters:
         - $ref: '#/components/parameters/TrainingId'
+        - $ref: '#/components/parameters/TrainingCapabilities'
       responses:
         '200':
           description: Сессия с ответами, которые уже дошли до сервера
@@ -340,6 +345,7 @@ paths:
       tags: [trainings]
       parameters:
         - $ref: '#/components/parameters/TrainingId'
+        - $ref: '#/components/parameters/TrainingCapabilities'
       requestBody:
         required: true
         content:
@@ -358,6 +364,7 @@ paths:
       tags: [trainings]
       parameters:
         - $ref: '#/components/parameters/TrainingId'
+        - $ref: '#/components/parameters/TrainingCapabilities'
       requestBody:
         required: true
         content:
@@ -445,6 +452,17 @@ components:
       description: Токен сессии — сайт и админка
 
   parameters:
+    TrainingCapabilities:
+      name: X-Training-Capabilities
+      in: header
+      required: false
+      description: >-
+        Через запятую: поддерживаемые QuestionType и формы passage, figure. Без заголовка — четыре старых
+        типа и только задания без текста/рисунка. Заголовок задаёт полный список; query types на главной и
+        в конструкторе дополнительно сужает его. Неизвестная или пустая возможность — 400 bad_request.
+        Неподдерживаемая сессия целиком — 409 unsupported_training: позиции и итог не обрезаются.
+        Тот же заголовок отправляется при старте, чтении, ответах и завершении.
+      schema: { type: string, minLength: 1, maxLength: 512 }
     TrainingId:
       name: trainingId
       in: path
@@ -870,11 +888,10 @@ components:
 
     QuestionType:
       type: string
-      enum: [text_completion, sentence_equivalence, quantitative_comparison, multiple_choice]
+      enum: [text_completion, sentence_equivalence, quantitative_comparison, multiple_choice, multiple_choice_multi, numeric_entry, select_in_passage]
       description: >-
-        Первый срез тренировок — задания с выбором ответа (решение Даши 06.10.2026): Text Completion (1–3
-        пропуска), Sentence Equivalence (два ответа из шести), Quantitative Comparison, обычный выбор в
-        математике. Reading Comprehension, ввод числа и несколько верных — следующими срезами.
+        Типы GRE (решение Даши 12.10.2026). multiple_choice и multiple_choice_multi бывают в Quant и
+        Reading Comprehension; select_in_passage — в Verbal, numeric_entry — в Quant.
 
     Difficulty:
       type: string
@@ -979,7 +996,7 @@ components:
         questionTypes:
           type: array
           minItems: 1
-          maxItems: 4
+          maxItems: 7
           uniqueItems: true
           items: { $ref: '#/components/schemas/QuestionType' }
           description: Конструктор даёт один тип; «Проверка на время» — все типы раздела вперемешку (макет R16)
@@ -1011,7 +1028,7 @@ components:
         options:
           type: array
           minItems: 2
-          maxItems: 6
+          maxItems: 10
           items: { $ref: '#/components/schemas/QuestionOption' }
 
     OptionExplanation:
@@ -1066,23 +1083,27 @@ components:
         quantityB: { type: string, maxLength: 500 }
         groups:
           type: array
-          minItems: 1
+          minItems: 0
           maxItems: 3
           items: { $ref: '#/components/schemas/OptionGroup' }
-          description: Группа — один пропуск Text Completion; у остальных типов одна группа
+          description: Группа — пропуск TC; одна у выбора вариантов, пусто у числа и выбора предложения
         selectCount:
           type: integer
-          minimum: 1
-          maximum: 2
-          description: Сколько вариантов выбрать в группе (Sentence Equivalence — 2)
+          minimum: 0
+          maximum: 10
+          description: Число требуемых вариантов; 0 — все подходящие (multi), число или предложение
         answer:
           type: array
-          minItems: 1
-          maxItems: 3
+          minItems: 0
+          maxItems: 10
           items: { type: string, maxLength: 16 }
           description: >-
-            Верные варианты. Приходит вместе с заданием: проверка без сети идёт на устройстве; сервер
+            Верные варианты или один id предложения; у numeric_entry пусто. Приходит вместе с заданием: проверка без сети идёт на устройстве; сервер
             проверяет ответ сам и статистику клиенту не доверяет.
+        numericEntry: { $ref: '#/components/schemas/NumericEntry' }
+        numericAnswer: { $ref: '#/components/schemas/NumericAnswer' }
+        passage: { $ref: '#/components/schemas/Passage' }
+        figure: { $ref: '#/components/schemas/DataFigure' }
         explanation: { $ref: '#/components/schemas/Explanation' }
 
     GivenAnswer:
@@ -1093,12 +1114,14 @@ components:
         position: { type: integer, minimum: 0, maximum: 49 }
         optionIds:
           type: array
-          maxItems: 3
+          maxItems: 10
           items: { type: string, maxLength: 16 }
-          description: Пусто — не ответил (пропустил или «Не знаю»)
+          description: Варианты ответа; пусто у числа, предложения и пропуска
+        numericAnswer: { $ref: '#/components/schemas/NumericAnswer' }
+        sentenceId: { type: string, minLength: 1, maxLength: 16 }
         dontKnow:
           type: boolean
-          description: «Не знаю» в «Практике» — для «что повторить» это ошибка; только с пустым optionIds
+          description: «Не знаю» — ошибка для повторения; только без вариантов, числа и предложения
         flagged:
           type: boolean
           description: Отметка «вернуться» в «Проверке»
@@ -1134,7 +1157,7 @@ components:
         questionTypes:
           type: array
           minItems: 1
-          maxItems: 4
+          maxItems: 7
           items: { $ref: '#/components/schemas/QuestionType' }
         startedAt: { type: string, format: date-time }
         timeLimitSeconds:
@@ -1211,3 +1234,95 @@ components:
           description: Где ошибка — в задании, в ответе, в разборе, в переводе, другое (макет R17)
         text: { type: string, maxLength: 2000 }
         trainingId: { type: string, format: uuid }
+
+    NumericEntry:
+      type: object
+      additionalProperties: false
+      required: [format]
+      properties:
+        format: { type: string, enum: [number, fraction] }
+        decimalPlaces:
+          type: integer
+          minimum: 0
+          maximum: 12
+          description: Округлить итог до этого числа знаков, половину от нуля; ключ хранит исходное точное значение
+
+    NumericAnswer:
+      type: object
+      additionalProperties: false
+      description: >-
+        Ровно number либо numerator вместе с denominator, согласно NumericEntry.format.
+        Десятичная точка, необязательный минус; экспонента, пробелы, NaN и бесконечность запрещены.
+        Компоненты дроби — целые, знаменатель ненулевой. Проверка по точному рациональному значению.
+      properties:
+        number: { type: string, minLength: 1, maxLength: 128 }
+        numerator: { type: string, minLength: 1, maxLength: 128 }
+        denominator: { type: string, minLength: 1, maxLength: 128 }
+
+    PassageSentence:
+      type: object
+      additionalProperties: false
+      required: [id, text]
+      properties:
+        id: { type: string, minLength: 1, maxLength: 16 }
+        text: { type: string, minLength: 1, maxLength: 4000 }
+
+    PassageParagraph:
+      type: object
+      additionalProperties: false
+      required: [sentences]
+      properties:
+        sentences:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items: { $ref: '#/components/schemas/PassageSentence' }
+
+    Passage:
+      type: object
+      additionalProperties: false
+      required: [id, paragraphs]
+      properties:
+        id: { type: string, minLength: 1, maxLength: 64 }
+        paragraphs:
+          type: array
+          minItems: 1
+          maxItems: 20
+          items: { $ref: '#/components/schemas/PassageParagraph' }
+
+    DataSeries:
+      type: object
+      additionalProperties: false
+      required: [id, label, values]
+      properties:
+        id: { type: string, minLength: 1, maxLength: 16 }
+        label: { type: string, minLength: 1, maxLength: 200 }
+        values:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items: { type: number, format: double }
+
+    DataFigure:
+      type: object
+      additionalProperties: false
+      required: [id, kind, title, xLabel, yLabel, unit, categories, series, description]
+      description: Одна запись на несколько вопросов; клиент рисует в своей теме, description содержит данные для доступности
+      properties:
+        id: { type: string, minLength: 1, maxLength: 64 }
+        kind: { type: string, enum: [bar, line, table] }
+        title: { type: string, minLength: 1, maxLength: 200 }
+        xLabel: { type: string, maxLength: 200 }
+        yLabel: { type: string, maxLength: 200 }
+        unit: { type: string, maxLength: 100 }
+        categories:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items: { type: string, minLength: 1, maxLength: 200 }
+        series:
+          type: array
+          minItems: 1
+          maxItems: 20
+          items: { $ref: '#/components/schemas/DataSeries' }
+        description: { type: string, minLength: 1, maxLength: 8000 }

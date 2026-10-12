@@ -375,6 +375,196 @@ func (s *CookieAuth) SetRoles(val []string) {
 	s.Roles = val
 }
 
+// Одна запись на несколько вопросов; клиент рисует в
+// своей теме, description содержит данные для доступности.
+// Ref: #/components/schemas/DataFigure
+type DataFigure struct {
+	ID          string         `json:"id"`
+	Kind        DataFigureKind `json:"kind"`
+	Title       string         `json:"title"`
+	XLabel      string         `json:"xLabel"`
+	YLabel      string         `json:"yLabel"`
+	Unit        string         `json:"unit"`
+	Categories  []string       `json:"categories"`
+	Series      []DataSeries   `json:"series"`
+	Description string         `json:"description"`
+}
+
+// GetID returns the value of ID.
+func (s *DataFigure) GetID() string {
+	return s.ID
+}
+
+// GetKind returns the value of Kind.
+func (s *DataFigure) GetKind() DataFigureKind {
+	return s.Kind
+}
+
+// GetTitle returns the value of Title.
+func (s *DataFigure) GetTitle() string {
+	return s.Title
+}
+
+// GetXLabel returns the value of XLabel.
+func (s *DataFigure) GetXLabel() string {
+	return s.XLabel
+}
+
+// GetYLabel returns the value of YLabel.
+func (s *DataFigure) GetYLabel() string {
+	return s.YLabel
+}
+
+// GetUnit returns the value of Unit.
+func (s *DataFigure) GetUnit() string {
+	return s.Unit
+}
+
+// GetCategories returns the value of Categories.
+func (s *DataFigure) GetCategories() []string {
+	return s.Categories
+}
+
+// GetSeries returns the value of Series.
+func (s *DataFigure) GetSeries() []DataSeries {
+	return s.Series
+}
+
+// GetDescription returns the value of Description.
+func (s *DataFigure) GetDescription() string {
+	return s.Description
+}
+
+// SetID sets the value of ID.
+func (s *DataFigure) SetID(val string) {
+	s.ID = val
+}
+
+// SetKind sets the value of Kind.
+func (s *DataFigure) SetKind(val DataFigureKind) {
+	s.Kind = val
+}
+
+// SetTitle sets the value of Title.
+func (s *DataFigure) SetTitle(val string) {
+	s.Title = val
+}
+
+// SetXLabel sets the value of XLabel.
+func (s *DataFigure) SetXLabel(val string) {
+	s.XLabel = val
+}
+
+// SetYLabel sets the value of YLabel.
+func (s *DataFigure) SetYLabel(val string) {
+	s.YLabel = val
+}
+
+// SetUnit sets the value of Unit.
+func (s *DataFigure) SetUnit(val string) {
+	s.Unit = val
+}
+
+// SetCategories sets the value of Categories.
+func (s *DataFigure) SetCategories(val []string) {
+	s.Categories = val
+}
+
+// SetSeries sets the value of Series.
+func (s *DataFigure) SetSeries(val []DataSeries) {
+	s.Series = val
+}
+
+// SetDescription sets the value of Description.
+func (s *DataFigure) SetDescription(val string) {
+	s.Description = val
+}
+
+type DataFigureKind string
+
+const (
+	DataFigureKindBar   DataFigureKind = "bar"
+	DataFigureKindLine  DataFigureKind = "line"
+	DataFigureKindTable DataFigureKind = "table"
+)
+
+// AllValues returns all DataFigureKind values.
+func (DataFigureKind) AllValues() []DataFigureKind {
+	return []DataFigureKind{
+		DataFigureKindBar,
+		DataFigureKindLine,
+		DataFigureKindTable,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s DataFigureKind) MarshalText() ([]byte, error) {
+	switch s {
+	case DataFigureKindBar:
+		return []byte(s), nil
+	case DataFigureKindLine:
+		return []byte(s), nil
+	case DataFigureKindTable:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *DataFigureKind) UnmarshalText(data []byte) error {
+	switch DataFigureKind(data) {
+	case DataFigureKindBar:
+		*s = DataFigureKindBar
+		return nil
+	case DataFigureKindLine:
+		*s = DataFigureKindLine
+		return nil
+	case DataFigureKindTable:
+		*s = DataFigureKindTable
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/DataSeries
+type DataSeries struct {
+	ID     string    `json:"id"`
+	Label  string    `json:"label"`
+	Values []float64 `json:"values"`
+}
+
+// GetID returns the value of ID.
+func (s *DataSeries) GetID() string {
+	return s.ID
+}
+
+// GetLabel returns the value of Label.
+func (s *DataSeries) GetLabel() string {
+	return s.Label
+}
+
+// GetValues returns the value of Values.
+func (s *DataSeries) GetValues() []float64 {
+	return s.Values
+}
+
+// SetID sets the value of ID.
+func (s *DataSeries) SetID(val string) {
+	s.ID = val
+}
+
+// SetLabel sets the value of Label.
+func (s *DataSeries) SetLabel(val string) {
+	s.Label = val
+}
+
+// SetValues sets the value of Values.
+func (s *DataSeries) SetValues(val []float64) {
+	s.Values = val
+}
+
 // Ref: #/components/schemas/DevSignIn
 type DevSignIn struct {
 	// Имя тестового пользователя; один и тот же name — один и
@@ -727,10 +917,12 @@ func (s *Explanation) SetOptions(val []OptionExplanation) {
 // Ref: #/components/schemas/GivenAnswer
 type GivenAnswer struct {
 	Position int `json:"position"`
-	// Пусто — не ответил (пропустил или «Не знаю»).
-	OptionIds []string `json:"optionIds"`
-	// «Не знаю» в «Практике» — для «что повторить» это
-	// ошибка; только с пустым optionIds.
+	// Варианты ответа; пусто у числа, предложения и пропуска.
+	OptionIds     []string         `json:"optionIds"`
+	NumericAnswer OptNumericAnswer `json:"numericAnswer"`
+	SentenceId    OptString        `json:"sentenceId"`
+	// «Не знаю» — ошибка для повторения; только без
+	// вариантов, числа и предложения.
 	DontKnow bool `json:"dontKnow"`
 	// Отметка «вернуться» в «Проверке».
 	Flagged    bool      `json:"flagged"`
@@ -746,6 +938,16 @@ func (s *GivenAnswer) GetPosition() int {
 // GetOptionIds returns the value of OptionIds.
 func (s *GivenAnswer) GetOptionIds() []string {
 	return s.OptionIds
+}
+
+// GetNumericAnswer returns the value of NumericAnswer.
+func (s *GivenAnswer) GetNumericAnswer() OptNumericAnswer {
+	return s.NumericAnswer
+}
+
+// GetSentenceId returns the value of SentenceId.
+func (s *GivenAnswer) GetSentenceId() OptString {
+	return s.SentenceId
 }
 
 // GetDontKnow returns the value of DontKnow.
@@ -776,6 +978,16 @@ func (s *GivenAnswer) SetPosition(val int) {
 // SetOptionIds sets the value of OptionIds.
 func (s *GivenAnswer) SetOptionIds(val []string) {
 	s.OptionIds = val
+}
+
+// SetNumericAnswer sets the value of NumericAnswer.
+func (s *GivenAnswer) SetNumericAnswer(val OptNumericAnswer) {
+	s.NumericAnswer = val
+}
+
+// SetSentenceId sets the value of SentenceId.
+func (s *GivenAnswer) SetSentenceId(val OptString) {
+	s.SentenceId = val
 }
 
 // SetDontKnow sets the value of DontKnow.
@@ -1343,6 +1555,117 @@ func (o NilWeakSpot) Or(d WeakSpot) WeakSpot {
 	return d
 }
 
+// Ровно number либо numerator вместе с denominator, согласно
+// NumericEntry.format. Десятичная точка, необязательный минус;
+// экспонента, пробелы, NaN и бесконечность запрещены.
+// Компоненты дроби — целые, знаменатель ненулевой.
+// Проверка по точному рациональному значению.
+// Ref: #/components/schemas/NumericAnswer
+type NumericAnswer struct {
+	Number      OptString `json:"number"`
+	Numerator   OptString `json:"numerator"`
+	Denominator OptString `json:"denominator"`
+}
+
+// GetNumber returns the value of Number.
+func (s *NumericAnswer) GetNumber() OptString {
+	return s.Number
+}
+
+// GetNumerator returns the value of Numerator.
+func (s *NumericAnswer) GetNumerator() OptString {
+	return s.Numerator
+}
+
+// GetDenominator returns the value of Denominator.
+func (s *NumericAnswer) GetDenominator() OptString {
+	return s.Denominator
+}
+
+// SetNumber sets the value of Number.
+func (s *NumericAnswer) SetNumber(val OptString) {
+	s.Number = val
+}
+
+// SetNumerator sets the value of Numerator.
+func (s *NumericAnswer) SetNumerator(val OptString) {
+	s.Numerator = val
+}
+
+// SetDenominator sets the value of Denominator.
+func (s *NumericAnswer) SetDenominator(val OptString) {
+	s.Denominator = val
+}
+
+// Ref: #/components/schemas/NumericEntry
+type NumericEntry struct {
+	Format NumericEntryFormat `json:"format"`
+	// Округлить итог до этого числа знаков, половину от нуля;
+	// ключ хранит исходное точное значение.
+	DecimalPlaces OptInt `json:"decimalPlaces"`
+}
+
+// GetFormat returns the value of Format.
+func (s *NumericEntry) GetFormat() NumericEntryFormat {
+	return s.Format
+}
+
+// GetDecimalPlaces returns the value of DecimalPlaces.
+func (s *NumericEntry) GetDecimalPlaces() OptInt {
+	return s.DecimalPlaces
+}
+
+// SetFormat sets the value of Format.
+func (s *NumericEntry) SetFormat(val NumericEntryFormat) {
+	s.Format = val
+}
+
+// SetDecimalPlaces sets the value of DecimalPlaces.
+func (s *NumericEntry) SetDecimalPlaces(val OptInt) {
+	s.DecimalPlaces = val
+}
+
+type NumericEntryFormat string
+
+const (
+	NumericEntryFormatNumber   NumericEntryFormat = "number"
+	NumericEntryFormatFraction NumericEntryFormat = "fraction"
+)
+
+// AllValues returns all NumericEntryFormat values.
+func (NumericEntryFormat) AllValues() []NumericEntryFormat {
+	return []NumericEntryFormat{
+		NumericEntryFormatNumber,
+		NumericEntryFormatFraction,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s NumericEntryFormat) MarshalText() ([]byte, error) {
+	switch s {
+	case NumericEntryFormatNumber:
+		return []byte(s), nil
+	case NumericEntryFormatFraction:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *NumericEntryFormat) UnmarshalText(data []byte) error {
+	switch NumericEntryFormat(data) {
+	case NumericEntryFormatNumber:
+		*s = NumericEntryFormatNumber
+		return nil
+	case NumericEntryFormatFraction:
+		*s = NumericEntryFormatFraction
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // NewOptBool returns new OptBool with value set to v.
 func NewOptBool(v bool) OptBool {
 	return OptBool{
@@ -1429,6 +1752,52 @@ func (o OptClientKind) Get() (v ClientKind, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptClientKind) Or(d ClientKind) ClientKind {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptDataFigure returns new OptDataFigure with value set to v.
+func NewOptDataFigure(v DataFigure) OptDataFigure {
+	return OptDataFigure{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptDataFigure is optional DataFigure.
+type OptDataFigure struct {
+	Value DataFigure
+	Set   bool
+}
+
+// IsSet returns true if OptDataFigure was set.
+func (o OptDataFigure) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptDataFigure) Reset() {
+	var v DataFigure
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptDataFigure) SetTo(v DataFigure) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptDataFigure) Get() (v DataFigure, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptDataFigure) Or(d DataFigure) DataFigure {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -1711,6 +2080,144 @@ func (o OptLocale) Or(d Locale) Locale {
 	return d
 }
 
+// NewOptNumericAnswer returns new OptNumericAnswer with value set to v.
+func NewOptNumericAnswer(v NumericAnswer) OptNumericAnswer {
+	return OptNumericAnswer{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNumericAnswer is optional NumericAnswer.
+type OptNumericAnswer struct {
+	Value NumericAnswer
+	Set   bool
+}
+
+// IsSet returns true if OptNumericAnswer was set.
+func (o OptNumericAnswer) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNumericAnswer) Reset() {
+	var v NumericAnswer
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptNumericAnswer) SetTo(v NumericAnswer) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNumericAnswer) Get() (v NumericAnswer, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNumericAnswer) Or(d NumericAnswer) NumericAnswer {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNumericEntry returns new OptNumericEntry with value set to v.
+func NewOptNumericEntry(v NumericEntry) OptNumericEntry {
+	return OptNumericEntry{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNumericEntry is optional NumericEntry.
+type OptNumericEntry struct {
+	Value NumericEntry
+	Set   bool
+}
+
+// IsSet returns true if OptNumericEntry was set.
+func (o OptNumericEntry) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNumericEntry) Reset() {
+	var v NumericEntry
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptNumericEntry) SetTo(v NumericEntry) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNumericEntry) Get() (v NumericEntry, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNumericEntry) Or(d NumericEntry) NumericEntry {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptPassage returns new OptPassage with value set to v.
+func NewOptPassage(v Passage) OptPassage {
+	return OptPassage{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptPassage is optional Passage.
+type OptPassage struct {
+	Value Passage
+	Set   bool
+}
+
+// IsSet returns true if OptPassage was set.
+func (o OptPassage) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptPassage) Reset() {
+	var v Passage
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptPassage) SetTo(v Passage) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptPassage) Get() (v Passage, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptPassage) Or(d Passage) Passage {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptRole returns new OptRole with value set to v.
 func NewOptRole(v Role) OptRole {
 	return OptRole{
@@ -1937,6 +2444,73 @@ func (s *OptionGroup) SetOptions(val []QuestionOption) {
 	s.Options = val
 }
 
+// Ref: #/components/schemas/Passage
+type Passage struct {
+	ID         string             `json:"id"`
+	Paragraphs []PassageParagraph `json:"paragraphs"`
+}
+
+// GetID returns the value of ID.
+func (s *Passage) GetID() string {
+	return s.ID
+}
+
+// GetParagraphs returns the value of Paragraphs.
+func (s *Passage) GetParagraphs() []PassageParagraph {
+	return s.Paragraphs
+}
+
+// SetID sets the value of ID.
+func (s *Passage) SetID(val string) {
+	s.ID = val
+}
+
+// SetParagraphs sets the value of Paragraphs.
+func (s *Passage) SetParagraphs(val []PassageParagraph) {
+	s.Paragraphs = val
+}
+
+// Ref: #/components/schemas/PassageParagraph
+type PassageParagraph struct {
+	Sentences []PassageSentence `json:"sentences"`
+}
+
+// GetSentences returns the value of Sentences.
+func (s *PassageParagraph) GetSentences() []PassageSentence {
+	return s.Sentences
+}
+
+// SetSentences sets the value of Sentences.
+func (s *PassageParagraph) SetSentences(val []PassageSentence) {
+	s.Sentences = val
+}
+
+// Ref: #/components/schemas/PassageSentence
+type PassageSentence struct {
+	ID   string `json:"id"`
+	Text string `json:"text"`
+}
+
+// GetID returns the value of ID.
+func (s *PassageSentence) GetID() string {
+	return s.ID
+}
+
+// GetText returns the value of Text.
+func (s *PassageSentence) GetText() string {
+	return s.Text
+}
+
+// SetID sets the value of ID.
+func (s *PassageSentence) SetID(val string) {
+	s.ID = val
+}
+
+// SetText sets the value of Text.
+func (s *PassageSentence) SetText(val string) {
+	s.Text = val
+}
+
 // Ref: #/components/schemas/Question
 type Question struct {
 	ID           uuid.UUID     `json:"id"`
@@ -1952,16 +2526,22 @@ type Question struct {
 	Condition OptString `json:"condition"`
 	QuantityA OptString `json:"quantityA"`
 	QuantityB OptString `json:"quantityB"`
-	// Группа — один пропуск Text Completion; у остальных типов одна
-	// группа.
+	// Группа — пропуск TC; одна у выбора вариантов, пусто у
+	// числа и выбора предложения.
 	Groups []OptionGroup `json:"groups"`
-	// Сколько вариантов выбрать в группе (Sentence Equivalence — 2).
+	// Число требуемых вариантов; 0 — все подходящие (multi),
+	// число или предложение.
 	SelectCount int `json:"selectCount"`
-	// Верные варианты. Приходит вместе с заданием: проверка
-	// без сети идёт на устройстве; сервер проверяет ответ
-	// сам и статистику клиенту не доверяет.
-	Answer      []string    `json:"answer"`
-	Explanation Explanation `json:"explanation"`
+	// Верные варианты или один id предложения; у numeric_entry
+	// пусто. Приходит вместе с заданием: проверка без сети
+	// идёт на устройстве; сервер проверяет ответ сам и
+	// статистику клиенту не доверяет.
+	Answer        []string         `json:"answer"`
+	NumericEntry  OptNumericEntry  `json:"numericEntry"`
+	NumericAnswer OptNumericAnswer `json:"numericAnswer"`
+	Passage       OptPassage       `json:"passage"`
+	Figure        OptDataFigure    `json:"figure"`
+	Explanation   Explanation      `json:"explanation"`
 }
 
 // GetID returns the value of ID.
@@ -2027,6 +2607,26 @@ func (s *Question) GetSelectCount() int {
 // GetAnswer returns the value of Answer.
 func (s *Question) GetAnswer() []string {
 	return s.Answer
+}
+
+// GetNumericEntry returns the value of NumericEntry.
+func (s *Question) GetNumericEntry() OptNumericEntry {
+	return s.NumericEntry
+}
+
+// GetNumericAnswer returns the value of NumericAnswer.
+func (s *Question) GetNumericAnswer() OptNumericAnswer {
+	return s.NumericAnswer
+}
+
+// GetPassage returns the value of Passage.
+func (s *Question) GetPassage() OptPassage {
+	return s.Passage
+}
+
+// GetFigure returns the value of Figure.
+func (s *Question) GetFigure() OptDataFigure {
+	return s.Figure
 }
 
 // GetExplanation returns the value of Explanation.
@@ -2097,6 +2697,26 @@ func (s *Question) SetSelectCount(val int) {
 // SetAnswer sets the value of Answer.
 func (s *Question) SetAnswer(val []string) {
 	s.Answer = val
+}
+
+// SetNumericEntry sets the value of NumericEntry.
+func (s *Question) SetNumericEntry(val OptNumericEntry) {
+	s.NumericEntry = val
+}
+
+// SetNumericAnswer sets the value of NumericAnswer.
+func (s *Question) SetNumericAnswer(val OptNumericAnswer) {
+	s.NumericAnswer = val
+}
+
+// SetPassage sets the value of Passage.
+func (s *Question) SetPassage(val OptPassage) {
+	s.Passage = val
+}
+
+// SetFigure sets the value of Figure.
+func (s *Question) SetFigure(val OptDataFigure) {
+	s.Figure = val
 }
 
 // SetExplanation sets the value of Explanation.
@@ -2233,11 +2853,9 @@ func (s *QuestionReportKind) UnmarshalText(data []byte) error {
 	}
 }
 
-// Первый срез тренировок — задания с выбором ответа
-// (решение Даши 06.10.2026): Text Completion (1–3 пропуска), Sentence Equivalence
-// (два ответа из шести), Quantitative Comparison, обычный выбор в
-// математике. Reading Comprehension, ввод числа и несколько верных
-// — следующими срезами.
+// Типы GRE (решение Даши 12.10.2026). multiple_choice и multiple_choice_multi
+// бывают в Quant и Reading Comprehension; select_in_passage — в Verbal, numeric_entry —
+// в Quant.
 // Ref: #/components/schemas/QuestionType
 type QuestionType string
 
@@ -2246,6 +2864,9 @@ const (
 	QuestionTypeSentenceEquivalence    QuestionType = "sentence_equivalence"
 	QuestionTypeQuantitativeComparison QuestionType = "quantitative_comparison"
 	QuestionTypeMultipleChoice         QuestionType = "multiple_choice"
+	QuestionTypeMultipleChoiceMulti    QuestionType = "multiple_choice_multi"
+	QuestionTypeNumericEntry           QuestionType = "numeric_entry"
+	QuestionTypeSelectInPassage        QuestionType = "select_in_passage"
 )
 
 // AllValues returns all QuestionType values.
@@ -2255,6 +2876,9 @@ func (QuestionType) AllValues() []QuestionType {
 		QuestionTypeSentenceEquivalence,
 		QuestionTypeQuantitativeComparison,
 		QuestionTypeMultipleChoice,
+		QuestionTypeMultipleChoiceMulti,
+		QuestionTypeNumericEntry,
+		QuestionTypeSelectInPassage,
 	}
 }
 
@@ -2268,6 +2892,12 @@ func (s QuestionType) MarshalText() ([]byte, error) {
 	case QuestionTypeQuantitativeComparison:
 		return []byte(s), nil
 	case QuestionTypeMultipleChoice:
+		return []byte(s), nil
+	case QuestionTypeMultipleChoiceMulti:
+		return []byte(s), nil
+	case QuestionTypeNumericEntry:
+		return []byte(s), nil
+	case QuestionTypeSelectInPassage:
 		return []byte(s), nil
 	default:
 		return nil, errors.Errorf("invalid value: %q", s)
@@ -2288,6 +2918,15 @@ func (s *QuestionType) UnmarshalText(data []byte) error {
 		return nil
 	case QuestionTypeMultipleChoice:
 		*s = QuestionTypeMultipleChoice
+		return nil
+	case QuestionTypeMultipleChoiceMulti:
+		*s = QuestionTypeMultipleChoiceMulti
+		return nil
+	case QuestionTypeNumericEntry:
+		*s = QuestionTypeNumericEntry
+		return nil
+	case QuestionTypeSelectInPassage:
+		*s = QuestionTypeSelectInPassage
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)

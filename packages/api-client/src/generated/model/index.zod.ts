@@ -194,7 +194,7 @@ export const Section = zod.enum(['verbal', 'quant', 'words', 'essay', 'reading',
 export type Section = zod.input<typeof Section>;
 export type SectionOutput = zod.output<typeof Section>;
 
-export const QuestionType = zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice']).describe('Первый срез тренировок — задания с выбором ответа (решение Даши 06.10.2026): Text Completion (1–3 пропуска), Sentence Equivalence (два ответа из шести), Quantitative Comparison, обычный выбор в математике. Reading Comprehension, ввод числа и несколько верных — следующими срезами.')
+export const QuestionType = zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice', 'multiple_choice_multi', 'numeric_entry', 'select_in_passage']).describe('Типы GRE (решение Даши 12.10.2026). multiple_choice и multiple_choice_multi бывают в Quant и Reading Comprehension; select_in_passage — в Verbal, numeric_entry — в Quant.')
 
 export type QuestionType = zod.input<typeof QuestionType>;
 export type QuestionTypeOutput = zod.output<typeof QuestionType>;
@@ -209,7 +209,7 @@ export const TrainingMode = zod.enum(['practice', 'check']).describe('practice �
 export type TrainingMode = zod.input<typeof TrainingMode>;
 export type TrainingModeOutput = zod.output<typeof TrainingMode>;
 
-export const trainingRequestQuestionTypesMax = 4;
+export const trainingRequestQuestionTypesMax = 7;
 
 export const trainingRequestTopicIdsItemMax = 64;
 
@@ -222,7 +222,7 @@ export const TrainingRequest = zod.object({
   "source": zod.enum(['catalog', 'mistakes']).optional().describe('catalog (также при отсутствии поля) — весь каталог; mistakes — только свои последние неверные ответы'),
   "exam": zod.enum(['gre', 'toefl']),
   "section": zod.enum(['verbal', 'quant', 'words', 'essay', 'reading', 'listening', 'writing', 'speaking']),
-  "questionTypes": zod.array(zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice']).describe('Первый срез тренировок — задания с выбором ответа (решение Даши 06.10.2026): Text Completion (1–3 пропуска), Sentence Equivalence (два ответа из шести), Quantitative Comparison, обычный выбор в математике. Reading Comprehension, ввод числа и несколько верных — следующими срезами.')).min(1).max(trainingRequestQuestionTypesMax).describe('Конструктор даёт один тип; «Проверка на время» — все типы раздела вперемешку (макет R16)'),
+  "questionTypes": zod.array(zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice', 'multiple_choice_multi', 'numeric_entry', 'select_in_passage']).describe('Типы GRE (решение Даши 12.10.2026). multiple_choice и multiple_choice_multi бывают в Quant и Reading Comprehension; select_in_passage — в Verbal, numeric_entry — в Quant.')).min(1).max(trainingRequestQuestionTypesMax).describe('Конструктор даёт один тип; «Проверка на время» — все типы раздела вперемешку (макет R16)'),
   "topicIds": zod.array(zod.string().max(trainingRequestTopicIdsItemMax)).max(trainingRequestTopicIdsMax).optional().describe('Пусто или нет — все темы'),
   "difficulty": zod.enum(['easy', 'medium', 'hard']).optional(),
   "count": zod.int().min(1).max(trainingRequestCountMax),
@@ -232,7 +232,7 @@ export const TrainingRequest = zod.object({
 export type TrainingRequest = zod.input<typeof TrainingRequest>;
 export type TrainingRequestOutput = zod.output<typeof TrainingRequest>;
 
-export const lastTrainingRequestQuestionTypesMax = 4;
+export const lastTrainingRequestQuestionTypesMax = 7;
 
 export const lastTrainingRequestTopicIdsItemMax = 64;
 
@@ -248,7 +248,7 @@ export const LastTraining = zod.object({
   "source": zod.enum(['catalog', 'mistakes']).optional().describe('catalog (также при отсутствии поля) — весь каталог; mistakes — только свои последние неверные ответы'),
   "exam": zod.enum(['gre', 'toefl']),
   "section": zod.enum(['verbal', 'quant', 'words', 'essay', 'reading', 'listening', 'writing', 'speaking']),
-  "questionTypes": zod.array(zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice']).describe('Первый срез тренировок — задания с выбором ответа (решение Даши 06.10.2026): Text Completion (1–3 пропуска), Sentence Equivalence (два ответа из шести), Quantitative Comparison, обычный выбор в математике. Reading Comprehension, ввод числа и несколько верных — следующими срезами.')).min(1).max(lastTrainingRequestQuestionTypesMax).describe('Конструктор даёт один тип; «Проверка на время» — все типы раздела вперемешку (макет R16)'),
+  "questionTypes": zod.array(zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice', 'multiple_choice_multi', 'numeric_entry', 'select_in_passage']).describe('Типы GRE (решение Даши 12.10.2026). multiple_choice и multiple_choice_multi бывают в Quant и Reading Comprehension; select_in_passage — в Verbal, numeric_entry — в Quant.')).min(1).max(lastTrainingRequestQuestionTypesMax).describe('Конструктор даёт один тип; «Проверка на время» — все типы раздела вперемешку (макет R16)'),
   "topicIds": zod.array(zod.string().max(lastTrainingRequestTopicIdsItemMax)).max(lastTrainingRequestTopicIdsMax).optional().describe('Пусто или нет — все темы'),
   "difficulty": zod.enum(['easy', 'medium', 'hard']).optional(),
   "count": zod.int().min(1).max(lastTrainingRequestCountMax),
@@ -279,7 +279,7 @@ export const weakSpotAccuracyMax = 100;
 
 
 export const WeakSpot = zod.object({
-  "questionType": zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice']).describe('Первый срез тренировок — задания с выбором ответа (решение Даши 06.10.2026): Text Completion (1–3 пропуска), Sentence Equivalence (два ответа из шести), Quantitative Comparison, обычный выбор в математике. Reading Comprehension, ввод числа и несколько верных — следующими срезами.'),
+  "questionType": zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice', 'multiple_choice_multi', 'numeric_entry', 'select_in_passage']).describe('Типы GRE (решение Даши 12.10.2026). multiple_choice и multiple_choice_multi бывают в Quant и Reading Comprehension; select_in_passage — в Verbal, numeric_entry — в Quant.'),
   "section": zod.enum(['verbal', 'quant', 'words', 'essay', 'reading', 'listening', 'writing', 'speaking']),
   "accuracy": zod.number().min(weakSpotAccuracyMin).max(weakSpotAccuracyMax).describe('Процент верных ответов, 100 * correct / total, без округления')
 }).nullable().describe('Тип с наименьшей точностью среди типов с минимум 10 сохранёнными ответами за скользящие последние 30 суток и точностью строго ниже 70 процентов. Интервал [сейчас - 30 суток, сейчас]. При одинаковой точности — тип в лексикографическом порядке. Нет кандидата — null.')
@@ -304,7 +304,7 @@ export const WeekStats = zod.object({
 export type WeekStats = zod.input<typeof WeekStats>;
 export type WeekStatsOutput = zod.output<typeof WeekStats>;
 
-export const homeLastTrainingRequestQuestionTypesMax = 4;
+export const homeLastTrainingRequestQuestionTypesMax = 7;
 
 export const homeLastTrainingRequestTopicIdsItemMax = 64;
 
@@ -337,7 +337,7 @@ export const Home = zod.object({
   "source": zod.enum(['catalog', 'mistakes']).optional().describe('catalog (также при отсутствии поля) — весь каталог; mistakes — только свои последние неверные ответы'),
   "exam": zod.enum(['gre', 'toefl']),
   "section": zod.enum(['verbal', 'quant', 'words', 'essay', 'reading', 'listening', 'writing', 'speaking']),
-  "questionTypes": zod.array(zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice']).describe('Первый срез тренировок — задания с выбором ответа (решение Даши 06.10.2026): Text Completion (1–3 пропуска), Sentence Equivalence (два ответа из шести), Quantitative Comparison, обычный выбор в математике. Reading Comprehension, ввод числа и несколько верных — следующими срезами.')).min(1).max(homeLastTrainingRequestQuestionTypesMax).describe('Конструктор даёт один тип; «Проверка на время» — все типы раздела вперемешку (макет R16)'),
+  "questionTypes": zod.array(zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice', 'multiple_choice_multi', 'numeric_entry', 'select_in_passage']).describe('Типы GRE (решение Даши 12.10.2026). multiple_choice и multiple_choice_multi бывают в Quant и Reading Comprehension; select_in_passage — в Verbal, numeric_entry — в Quant.')).min(1).max(homeLastTrainingRequestQuestionTypesMax).describe('Конструктор даёт один тип; «Проверка на время» — все типы раздела вперемешку (макет R16)'),
   "topicIds": zod.array(zod.string().max(homeLastTrainingRequestTopicIdsItemMax)).max(homeLastTrainingRequestTopicIdsMax).optional().describe('Пусто или нет — все темы'),
   "difficulty": zod.enum(['easy', 'medium', 'hard']).optional(),
   "count": zod.int().min(1).max(homeLastTrainingRequestCountMax),
@@ -352,7 +352,7 @@ export const Home = zod.object({
 })).describe('Все разделы экзамена в порядке справочника; без ответов — нули; точность correct / total'),
   "mistakes": zod.int().min(homeMistakesMin).describe('Число разных опубликованных заданий (status=approved), последний сохранённый ответ на которые неверный, за всё время. Последний — по answeredAt, при совпадении по началу тренировки и её id. Неотвеченные позиции не заменяют последний ответ; черновики и снятые задания не считаются. Число соответствует source=mistakes без дополнительных фильтров конструктора.'),
   "weakSpot": zod.object({
-  "questionType": zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice']).describe('Первый срез тренировок — задания с выбором ответа (решение Даши 06.10.2026): Text Completion (1–3 пропуска), Sentence Equivalence (два ответа из шести), Quantitative Comparison, обычный выбор в математике. Reading Comprehension, ввод числа и несколько верных — следующими срезами.'),
+  "questionType": zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice', 'multiple_choice_multi', 'numeric_entry', 'select_in_passage']).describe('Типы GRE (решение Даши 12.10.2026). multiple_choice и multiple_choice_multi бывают в Quant и Reading Comprehension; select_in_passage — в Verbal, numeric_entry — в Quant.'),
   "section": zod.enum(['verbal', 'quant', 'words', 'essay', 'reading', 'listening', 'writing', 'speaking']),
   "accuracy": zod.number().min(homeWeakSpotAccuracyMin).max(homeWeakSpotAccuracyMax).describe('Процент верных ответов, 100 * correct / total, без округления')
 }).nullable().describe('Тип с наименьшей точностью среди типов с минимум 10 сохранёнными ответами за скользящие последние 30 суток и точностью строго ниже 70 процентов. Интервал [сейчас - 30 суток, сейчас]. При одинаковой точности — тип в лексикографическом порядке. Нет кандидата — null.'),
@@ -543,7 +543,7 @@ export const trainingTypeTopicsMax = 100;
 
 export const TrainingType = zod.object({
   "section": zod.enum(['verbal', 'quant', 'words', 'essay', 'reading', 'listening', 'writing', 'speaking']),
-  "questionType": zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice']).describe('Первый срез тренировок — задания с выбором ответа (решение Даши 06.10.2026): Text Completion (1–3 пропуска), Sentence Equivalence (два ответа из шести), Quantitative Comparison, обычный выбор в математике. Reading Comprehension, ввод числа и несколько верных — следующими срезами.'),
+  "questionType": zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice', 'multiple_choice_multi', 'numeric_entry', 'select_in_passage']).describe('Типы GRE (решение Даши 12.10.2026). multiple_choice и multiple_choice_multi бывают в Quant и Reading Comprehension; select_in_passage — в Verbal, numeric_entry — в Quant.'),
   "paceSeconds": zod.int().min(1).describe('Темп экзамена на вопрос (Verbal — 90 с, Quant — 105 с): время «Проверки» и оценка «~12 мин» на кнопке'),
   "topics": zod.array(zod.object({
   "id": zod.string().max(trainingTypeTopicsItemIdMax),
@@ -564,7 +564,7 @@ export type TrainingTypeOutput = zod.output<typeof TrainingType>;
 
 export const trainingPresetKindMax = 32;
 
-export const trainingPresetRequestQuestionTypesMax = 4;
+export const trainingPresetRequestQuestionTypesMax = 7;
 
 export const trainingPresetRequestTopicIdsItemMax = 64;
 
@@ -579,7 +579,7 @@ export const TrainingPreset = zod.object({
   "source": zod.enum(['catalog', 'mistakes']).optional().describe('catalog (также при отсутствии поля) — весь каталог; mistakes — только свои последние неверные ответы'),
   "exam": zod.enum(['gre', 'toefl']),
   "section": zod.enum(['verbal', 'quant', 'words', 'essay', 'reading', 'listening', 'writing', 'speaking']),
-  "questionTypes": zod.array(zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice']).describe('Первый срез тренировок — задания с выбором ответа (решение Даши 06.10.2026): Text Completion (1–3 пропуска), Sentence Equivalence (два ответа из шести), Quantitative Comparison, обычный выбор в математике. Reading Comprehension, ввод числа и несколько верных — следующими срезами.')).min(1).max(trainingPresetRequestQuestionTypesMax).describe('Конструктор даёт один тип; «Проверка на время» — все типы раздела вперемешку (макет R16)'),
+  "questionTypes": zod.array(zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice', 'multiple_choice_multi', 'numeric_entry', 'select_in_passage']).describe('Типы GRE (решение Даши 12.10.2026). multiple_choice и multiple_choice_multi бывают в Quant и Reading Comprehension; select_in_passage — в Verbal, numeric_entry — в Quant.')).min(1).max(trainingPresetRequestQuestionTypesMax).describe('Конструктор даёт один тип; «Проверка на время» — все типы раздела вперемешку (макет R16)'),
   "topicIds": zod.array(zod.string().max(trainingPresetRequestTopicIdsItemMax)).max(trainingPresetRequestTopicIdsMax).optional().describe('Пусто или нет — все темы'),
   "difficulty": zod.enum(['easy', 'medium', 'hard']).optional(),
   "count": zod.int().min(1).max(trainingPresetRequestCountMax),
@@ -605,7 +605,7 @@ export const trainingOptionsTypesMax = 20;
 
 export const trainingOptionsPresetsItemKindMax = 32;
 
-export const trainingOptionsPresetsItemRequestQuestionTypesMax = 4;
+export const trainingOptionsPresetsItemRequestQuestionTypesMax = 7;
 
 export const trainingOptionsPresetsItemRequestTopicIdsItemMax = 64;
 
@@ -620,7 +620,7 @@ export const trainingOptionsPresetsMax = 10;
 export const TrainingOptions = zod.object({
   "types": zod.array(zod.object({
   "section": zod.enum(['verbal', 'quant', 'words', 'essay', 'reading', 'listening', 'writing', 'speaking']),
-  "questionType": zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice']).describe('Первый срез тренировок — задания с выбором ответа (решение Даши 06.10.2026): Text Completion (1–3 пропуска), Sentence Equivalence (два ответа из шести), Quantitative Comparison, обычный выбор в математике. Reading Comprehension, ввод числа и несколько верных — следующими срезами.'),
+  "questionType": zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice', 'multiple_choice_multi', 'numeric_entry', 'select_in_passage']).describe('Типы GRE (решение Даши 12.10.2026). multiple_choice и multiple_choice_multi бывают в Quant и Reading Comprehension; select_in_passage — в Verbal, numeric_entry — в Quant.'),
   "paceSeconds": zod.int().min(1).describe('Темп экзамена на вопрос (Verbal — 90 с, Quant — 105 с): время «Проверки» и оценка «~12 мин» на кнопке'),
   "topics": zod.array(zod.object({
   "id": zod.string().max(trainingOptionsTypesItemTopicsItemIdMax),
@@ -641,7 +641,7 @@ export const TrainingOptions = zod.object({
   "source": zod.enum(['catalog', 'mistakes']).optional().describe('catalog (также при отсутствии поля) — весь каталог; mistakes — только свои последние неверные ответы'),
   "exam": zod.enum(['gre', 'toefl']),
   "section": zod.enum(['verbal', 'quant', 'words', 'essay', 'reading', 'listening', 'writing', 'speaking']),
-  "questionTypes": zod.array(zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice']).describe('Первый срез тренировок — задания с выбором ответа (решение Даши 06.10.2026): Text Completion (1–3 пропуска), Sentence Equivalence (два ответа из шести), Quantitative Comparison, обычный выбор в математике. Reading Comprehension, ввод числа и несколько верных — следующими срезами.')).min(1).max(trainingOptionsPresetsItemRequestQuestionTypesMax).describe('Конструктор даёт один тип; «Проверка на время» — все типы раздела вперемешку (макет R16)'),
+  "questionTypes": zod.array(zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice', 'multiple_choice_multi', 'numeric_entry', 'select_in_passage']).describe('Типы GRE (решение Даши 12.10.2026). multiple_choice и multiple_choice_multi бывают в Quant и Reading Comprehension; select_in_passage — в Verbal, numeric_entry — в Quant.')).min(1).max(trainingOptionsPresetsItemRequestQuestionTypesMax).describe('Конструктор даёт один тип; «Проверка на время» — все типы раздела вперемешку (макет R16)'),
   "topicIds": zod.array(zod.string().max(trainingOptionsPresetsItemRequestTopicIdsItemMax)).max(trainingOptionsPresetsItemRequestTopicIdsMax).optional().describe('Пусто или нет — все темы'),
   "difficulty": zod.enum(['easy', 'medium', 'hard']).optional(),
   "count": zod.int().min(1).max(trainingOptionsPresetsItemRequestCountMax),
@@ -672,7 +672,7 @@ export const optionGroupOptionsItemIdMax = 16;
 export const optionGroupOptionsItemTextMax = 500;
 
 export const optionGroupOptionsMin = 2;
-export const optionGroupOptionsMax = 6;
+export const optionGroupOptionsMax = 10;
 
 
 export const OptionGroup = zod.object({
@@ -721,6 +721,148 @@ export const Explanation = zod.object({
 export type Explanation = zod.input<typeof Explanation>;
 export type ExplanationOutput = zod.output<typeof Explanation>;
 
+export const numericEntryDecimalPlacesMin = 0;
+export const numericEntryDecimalPlacesMax = 12;
+
+
+export const NumericEntry = zod.object({
+  "format": zod.enum(['number', 'fraction']),
+  "decimalPlaces": zod.int().min(numericEntryDecimalPlacesMin).max(numericEntryDecimalPlacesMax).optional().describe('Округлить итог до этого числа знаков, половину от нуля; ключ хранит исходное точное значение')
+})
+
+export type NumericEntry = zod.input<typeof NumericEntry>;
+export type NumericEntryOutput = zod.output<typeof NumericEntry>;
+
+export const numericAnswerNumberMax = 128;
+
+export const numericAnswerNumeratorMax = 128;
+
+export const numericAnswerDenominatorMax = 128;
+
+
+export const NumericAnswer = zod.object({
+  "number": zod.string().min(1).max(numericAnswerNumberMax).optional(),
+  "numerator": zod.string().min(1).max(numericAnswerNumeratorMax).optional(),
+  "denominator": zod.string().min(1).max(numericAnswerDenominatorMax).optional()
+}).describe('Ровно number либо numerator вместе с denominator, согласно NumericEntry.format. Десятичная точка, необязательный минус; экспонента, пробелы, NaN и бесконечность запрещены. Компоненты дроби — целые, знаменатель ненулевой. Проверка по точному рациональному значению.')
+
+export type NumericAnswer = zod.input<typeof NumericAnswer>;
+export type NumericAnswerOutput = zod.output<typeof NumericAnswer>;
+
+export const passageSentenceIdMax = 16;
+
+export const passageSentenceTextMax = 4000;
+
+
+export const PassageSentence = zod.object({
+  "id": zod.string().min(1).max(passageSentenceIdMax),
+  "text": zod.string().min(1).max(passageSentenceTextMax)
+})
+
+export type PassageSentence = zod.input<typeof PassageSentence>;
+export type PassageSentenceOutput = zod.output<typeof PassageSentence>;
+
+export const passageParagraphSentencesItemIdMax = 16;
+
+export const passageParagraphSentencesItemTextMax = 4000;
+
+export const passageParagraphSentencesMax = 50;
+
+
+export const PassageParagraph = zod.object({
+  "sentences": zod.array(zod.object({
+  "id": zod.string().min(1).max(passageParagraphSentencesItemIdMax),
+  "text": zod.string().min(1).max(passageParagraphSentencesItemTextMax)
+})).min(1).max(passageParagraphSentencesMax)
+})
+
+export type PassageParagraph = zod.input<typeof PassageParagraph>;
+export type PassageParagraphOutput = zod.output<typeof PassageParagraph>;
+
+export const passageIdMax = 64;
+
+export const passageParagraphsItemSentencesItemIdMax = 16;
+
+export const passageParagraphsItemSentencesItemTextMax = 4000;
+
+export const passageParagraphsItemSentencesMax = 50;
+
+export const passageParagraphsMax = 20;
+
+
+export const Passage = zod.object({
+  "id": zod.string().min(1).max(passageIdMax),
+  "paragraphs": zod.array(zod.object({
+  "sentences": zod.array(zod.object({
+  "id": zod.string().min(1).max(passageParagraphsItemSentencesItemIdMax),
+  "text": zod.string().min(1).max(passageParagraphsItemSentencesItemTextMax)
+})).min(1).max(passageParagraphsItemSentencesMax)
+})).min(1).max(passageParagraphsMax)
+})
+
+export type Passage = zod.input<typeof Passage>;
+export type PassageOutput = zod.output<typeof Passage>;
+
+export const dataSeriesIdMax = 16;
+
+export const dataSeriesLabelMax = 200;
+
+export const dataSeriesValuesMax = 100;
+
+
+export const DataSeries = zod.object({
+  "id": zod.string().min(1).max(dataSeriesIdMax),
+  "label": zod.string().min(1).max(dataSeriesLabelMax),
+  "values": zod.array(zod.number()).min(1).max(dataSeriesValuesMax)
+})
+
+export type DataSeries = zod.input<typeof DataSeries>;
+export type DataSeriesOutput = zod.output<typeof DataSeries>;
+
+export const dataFigureIdMax = 64;
+
+export const dataFigureTitleMax = 200;
+
+export const dataFigureXLabelMax = 200;
+
+export const dataFigureYLabelMax = 200;
+
+export const dataFigureUnitMax = 100;
+
+export const dataFigureCategoriesItemMax = 200;
+
+export const dataFigureCategoriesMax = 100;
+
+export const dataFigureSeriesItemIdMax = 16;
+
+export const dataFigureSeriesItemLabelMax = 200;
+
+export const dataFigureSeriesItemValuesMax = 100;
+
+export const dataFigureSeriesMax = 20;
+
+export const dataFigureDescriptionMax = 8000;
+
+
+export const DataFigure = zod.object({
+  "id": zod.string().min(1).max(dataFigureIdMax),
+  "kind": zod.enum(['bar', 'line', 'table']),
+  "title": zod.string().min(1).max(dataFigureTitleMax),
+  "xLabel": zod.string().max(dataFigureXLabelMax),
+  "yLabel": zod.string().max(dataFigureYLabelMax),
+  "unit": zod.string().max(dataFigureUnitMax),
+  "categories": zod.array(zod.string().min(1).max(dataFigureCategoriesItemMax)).min(1).max(dataFigureCategoriesMax),
+  "series": zod.array(zod.object({
+  "id": zod.string().min(1).max(dataFigureSeriesItemIdMax),
+  "label": zod.string().min(1).max(dataFigureSeriesItemLabelMax),
+  "values": zod.array(zod.number()).min(1).max(dataFigureSeriesItemValuesMax)
+})).min(1).max(dataFigureSeriesMax),
+  "description": zod.string().min(1).max(dataFigureDescriptionMax)
+}).describe('Одна запись на несколько вопросов; клиент рисует в своей теме, description содержит данные для доступности')
+
+export type DataFigure = zod.input<typeof DataFigure>;
+export type DataFigureOutput = zod.output<typeof DataFigure>;
+
 export const questionTopicIdMax = 64;
 
 export const questionPromptMax = 4000;
@@ -736,15 +878,61 @@ export const questionGroupsItemOptionsItemIdMax = 16;
 export const questionGroupsItemOptionsItemTextMax = 500;
 
 export const questionGroupsItemOptionsMin = 2;
-export const questionGroupsItemOptionsMax = 6;
+export const questionGroupsItemOptionsMax = 10;
 
+export const questionGroupsMin = 0;
 export const questionGroupsMax = 3;
 
-export const questionSelectCountMax = 2;
+export const questionSelectCountMin = 0;
+export const questionSelectCountMax = 10;
 
 export const questionAnswerItemMax = 16;
 
-export const questionAnswerMax = 3;
+export const questionAnswerMin = 0;
+export const questionAnswerMax = 10;
+
+export const questionNumericEntryDecimalPlacesMin = 0;
+export const questionNumericEntryDecimalPlacesMax = 12;
+
+export const questionNumericAnswerNumberMax = 128;
+
+export const questionNumericAnswerNumeratorMax = 128;
+
+export const questionNumericAnswerDenominatorMax = 128;
+
+export const questionPassageIdMax = 64;
+
+export const questionPassageParagraphsItemSentencesItemIdMax = 16;
+
+export const questionPassageParagraphsItemSentencesItemTextMax = 4000;
+
+export const questionPassageParagraphsItemSentencesMax = 50;
+
+export const questionPassageParagraphsMax = 20;
+
+export const questionFigureIdMax = 64;
+
+export const questionFigureTitleMax = 200;
+
+export const questionFigureXLabelMax = 200;
+
+export const questionFigureYLabelMax = 200;
+
+export const questionFigureUnitMax = 100;
+
+export const questionFigureCategoriesItemMax = 200;
+
+export const questionFigureCategoriesMax = 100;
+
+export const questionFigureSeriesItemIdMax = 16;
+
+export const questionFigureSeriesItemLabelMax = 200;
+
+export const questionFigureSeriesItemValuesMax = 100;
+
+export const questionFigureSeriesMax = 20;
+
+export const questionFigureDescriptionMax = 8000;
 
 export const questionExplanationOptionsItemOptionIdMax = 16;
 
@@ -753,7 +941,7 @@ export const questionExplanationOptionsMax = 18;
 
 export const Question = zod.object({
   "id": zod.uuid(),
-  "questionType": zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice']).describe('Первый срез тренировок — задания с выбором ответа (решение Даши 06.10.2026): Text Completion (1–3 пропуска), Sentence Equivalence (два ответа из шести), Quantitative Comparison, обычный выбор в математике. Reading Comprehension, ввод числа и несколько верных — следующими срезами.'),
+  "questionType": zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice', 'multiple_choice_multi', 'numeric_entry', 'select_in_passage']).describe('Типы GRE (решение Даши 12.10.2026). multiple_choice и multiple_choice_multi бывают в Quant и Reading Comprehension; select_in_passage — в Verbal, numeric_entry — в Quant.'),
   "section": zod.enum(['verbal', 'quant', 'words', 'essay', 'reading', 'listening', 'writing', 'speaking']),
   "topicId": zod.string().max(questionTopicIdMax),
   "topicTitle": zod.object({
@@ -770,9 +958,42 @@ export const Question = zod.object({
   "id": zod.string().max(questionGroupsItemOptionsItemIdMax),
   "text": zod.string().max(questionGroupsItemOptionsItemTextMax)
 })).min(questionGroupsItemOptionsMin).max(questionGroupsItemOptionsMax)
-})).min(1).max(questionGroupsMax).describe('Группа — один пропуск Text Completion; у остальных типов одна группа'),
-  "selectCount": zod.int().min(1).max(questionSelectCountMax).describe('Сколько вариантов выбрать в группе (Sentence Equivalence — 2)'),
-  "answer": zod.array(zod.string().max(questionAnswerItemMax)).min(1).max(questionAnswerMax).describe('Верные варианты. Приходит вместе с заданием: проверка без сети идёт на устройстве; сервер проверяет ответ сам и статистику клиенту не доверяет.'),
+})).min(questionGroupsMin).max(questionGroupsMax).describe('Группа — пропуск TC; одна у выбора вариантов, пусто у числа и выбора предложения'),
+  "selectCount": zod.int().min(questionSelectCountMin).max(questionSelectCountMax).describe('Число требуемых вариантов; 0 — все подходящие (multi), число или предложение'),
+  "answer": zod.array(zod.string().max(questionAnswerItemMax)).min(questionAnswerMin).max(questionAnswerMax).describe('Верные варианты или один id предложения; у numeric_entry пусто. Приходит вместе с заданием: проверка без сети идёт на устройстве; сервер проверяет ответ сам и статистику клиенту не доверяет.'),
+  "numericEntry": zod.object({
+  "format": zod.enum(['number', 'fraction']),
+  "decimalPlaces": zod.int().min(questionNumericEntryDecimalPlacesMin).max(questionNumericEntryDecimalPlacesMax).optional().describe('Округлить итог до этого числа знаков, половину от нуля; ключ хранит исходное точное значение')
+}).optional(),
+  "numericAnswer": zod.object({
+  "number": zod.string().min(1).max(questionNumericAnswerNumberMax).optional(),
+  "numerator": zod.string().min(1).max(questionNumericAnswerNumeratorMax).optional(),
+  "denominator": zod.string().min(1).max(questionNumericAnswerDenominatorMax).optional()
+}).optional().describe('Ровно number либо numerator вместе с denominator, согласно NumericEntry.format. Десятичная точка, необязательный минус; экспонента, пробелы, NaN и бесконечность запрещены. Компоненты дроби — целые, знаменатель ненулевой. Проверка по точному рациональному значению.'),
+  "passage": zod.object({
+  "id": zod.string().min(1).max(questionPassageIdMax),
+  "paragraphs": zod.array(zod.object({
+  "sentences": zod.array(zod.object({
+  "id": zod.string().min(1).max(questionPassageParagraphsItemSentencesItemIdMax),
+  "text": zod.string().min(1).max(questionPassageParagraphsItemSentencesItemTextMax)
+})).min(1).max(questionPassageParagraphsItemSentencesMax)
+})).min(1).max(questionPassageParagraphsMax)
+}).optional(),
+  "figure": zod.object({
+  "id": zod.string().min(1).max(questionFigureIdMax),
+  "kind": zod.enum(['bar', 'line', 'table']),
+  "title": zod.string().min(1).max(questionFigureTitleMax),
+  "xLabel": zod.string().max(questionFigureXLabelMax),
+  "yLabel": zod.string().max(questionFigureYLabelMax),
+  "unit": zod.string().max(questionFigureUnitMax),
+  "categories": zod.array(zod.string().min(1).max(questionFigureCategoriesItemMax)).min(1).max(questionFigureCategoriesMax),
+  "series": zod.array(zod.object({
+  "id": zod.string().min(1).max(questionFigureSeriesItemIdMax),
+  "label": zod.string().min(1).max(questionFigureSeriesItemLabelMax),
+  "values": zod.array(zod.number()).min(1).max(questionFigureSeriesItemValuesMax)
+})).min(1).max(questionFigureSeriesMax),
+  "description": zod.string().min(1).max(questionFigureDescriptionMax)
+}).optional().describe('Одна запись на несколько вопросов; клиент рисует в своей теме, description содержит данные для доступности'),
   "explanation": zod.object({
   "solution": zod.object({
   "ru": zod.string(),
@@ -796,7 +1017,15 @@ export const givenAnswerPositionMax = 49;
 
 export const givenAnswerOptionIdsItemMax = 16;
 
-export const givenAnswerOptionIdsMax = 3;
+export const givenAnswerOptionIdsMax = 10;
+
+export const givenAnswerNumericAnswerNumberMax = 128;
+
+export const givenAnswerNumericAnswerNumeratorMax = 128;
+
+export const givenAnswerNumericAnswerDenominatorMax = 128;
+
+export const givenAnswerSentenceIdMax = 16;
 
 export const givenAnswerElapsedMsMin = 0;
 export const givenAnswerElapsedMsMax = 86400000;
@@ -804,8 +1033,14 @@ export const givenAnswerElapsedMsMax = 86400000;
 
 export const GivenAnswer = zod.object({
   "position": zod.int().min(givenAnswerPositionMin).max(givenAnswerPositionMax),
-  "optionIds": zod.array(zod.string().max(givenAnswerOptionIdsItemMax)).max(givenAnswerOptionIdsMax).describe('Пусто — не ответил (пропустил или «Не знаю»)'),
-  "dontKnow": zod.boolean().describe('«Не знаю» в «Практике» — для «что повторить» это ошибка; только с пустым optionIds'),
+  "optionIds": zod.array(zod.string().max(givenAnswerOptionIdsItemMax)).max(givenAnswerOptionIdsMax).describe('Варианты ответа; пусто у числа, предложения и пропуска'),
+  "numericAnswer": zod.object({
+  "number": zod.string().min(1).max(givenAnswerNumericAnswerNumberMax).optional(),
+  "numerator": zod.string().min(1).max(givenAnswerNumericAnswerNumeratorMax).optional(),
+  "denominator": zod.string().min(1).max(givenAnswerNumericAnswerDenominatorMax).optional()
+}).optional().describe('Ровно number либо numerator вместе с denominator, согласно NumericEntry.format. Десятичная точка, необязательный минус; экспонента, пробелы, NaN и бесконечность запрещены. Компоненты дроби — целые, знаменатель ненулевой. Проверка по точному рациональному значению.'),
+  "sentenceId": zod.string().min(1).max(givenAnswerSentenceIdMax).optional(),
+  "dontKnow": zod.boolean().describe('«Не знаю» — ошибка для повторения; только без вариантов, числа и предложения'),
   "flagged": zod.boolean().describe('Отметка «вернуться» в «Проверке»'),
   "answeredAt": zod.iso.datetime({"offset":true}),
   "elapsedMs": zod.int().min(givenAnswerElapsedMsMin).max(givenAnswerElapsedMsMax)
@@ -832,15 +1067,61 @@ export const trainingItemQuestionGroupsItemOptionsItemIdMax = 16;
 export const trainingItemQuestionGroupsItemOptionsItemTextMax = 500;
 
 export const trainingItemQuestionGroupsItemOptionsMin = 2;
-export const trainingItemQuestionGroupsItemOptionsMax = 6;
+export const trainingItemQuestionGroupsItemOptionsMax = 10;
 
+export const trainingItemQuestionGroupsMin = 0;
 export const trainingItemQuestionGroupsMax = 3;
 
-export const trainingItemQuestionSelectCountMax = 2;
+export const trainingItemQuestionSelectCountMin = 0;
+export const trainingItemQuestionSelectCountMax = 10;
 
 export const trainingItemQuestionAnswerItemMax = 16;
 
-export const trainingItemQuestionAnswerMax = 3;
+export const trainingItemQuestionAnswerMin = 0;
+export const trainingItemQuestionAnswerMax = 10;
+
+export const trainingItemQuestionNumericEntryDecimalPlacesMin = 0;
+export const trainingItemQuestionNumericEntryDecimalPlacesMax = 12;
+
+export const trainingItemQuestionNumericAnswerNumberMax = 128;
+
+export const trainingItemQuestionNumericAnswerNumeratorMax = 128;
+
+export const trainingItemQuestionNumericAnswerDenominatorMax = 128;
+
+export const trainingItemQuestionPassageIdMax = 64;
+
+export const trainingItemQuestionPassageParagraphsItemSentencesItemIdMax = 16;
+
+export const trainingItemQuestionPassageParagraphsItemSentencesItemTextMax = 4000;
+
+export const trainingItemQuestionPassageParagraphsItemSentencesMax = 50;
+
+export const trainingItemQuestionPassageParagraphsMax = 20;
+
+export const trainingItemQuestionFigureIdMax = 64;
+
+export const trainingItemQuestionFigureTitleMax = 200;
+
+export const trainingItemQuestionFigureXLabelMax = 200;
+
+export const trainingItemQuestionFigureYLabelMax = 200;
+
+export const trainingItemQuestionFigureUnitMax = 100;
+
+export const trainingItemQuestionFigureCategoriesItemMax = 200;
+
+export const trainingItemQuestionFigureCategoriesMax = 100;
+
+export const trainingItemQuestionFigureSeriesItemIdMax = 16;
+
+export const trainingItemQuestionFigureSeriesItemLabelMax = 200;
+
+export const trainingItemQuestionFigureSeriesItemValuesMax = 100;
+
+export const trainingItemQuestionFigureSeriesMax = 20;
+
+export const trainingItemQuestionFigureDescriptionMax = 8000;
 
 export const trainingItemQuestionExplanationOptionsItemOptionIdMax = 16;
 
@@ -851,7 +1132,15 @@ export const trainingItemAnswerPositionMax = 49;
 
 export const trainingItemAnswerOptionIdsItemMax = 16;
 
-export const trainingItemAnswerOptionIdsMax = 3;
+export const trainingItemAnswerOptionIdsMax = 10;
+
+export const trainingItemAnswerNumericAnswerNumberMax = 128;
+
+export const trainingItemAnswerNumericAnswerNumeratorMax = 128;
+
+export const trainingItemAnswerNumericAnswerDenominatorMax = 128;
+
+export const trainingItemAnswerSentenceIdMax = 16;
 
 export const trainingItemAnswerElapsedMsMin = 0;
 export const trainingItemAnswerElapsedMsMax = 86400000;
@@ -861,7 +1150,7 @@ export const TrainingItem = zod.object({
   "position": zod.int().min(trainingItemPositionMin).max(trainingItemPositionMax),
   "question": zod.object({
   "id": zod.uuid(),
-  "questionType": zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice']).describe('Первый срез тренировок — задания с выбором ответа (решение Даши 06.10.2026): Text Completion (1–3 пропуска), Sentence Equivalence (два ответа из шести), Quantitative Comparison, обычный выбор в математике. Reading Comprehension, ввод числа и несколько верных — следующими срезами.'),
+  "questionType": zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice', 'multiple_choice_multi', 'numeric_entry', 'select_in_passage']).describe('Типы GRE (решение Даши 12.10.2026). multiple_choice и multiple_choice_multi бывают в Quant и Reading Comprehension; select_in_passage — в Verbal, numeric_entry — в Quant.'),
   "section": zod.enum(['verbal', 'quant', 'words', 'essay', 'reading', 'listening', 'writing', 'speaking']),
   "topicId": zod.string().max(trainingItemQuestionTopicIdMax),
   "topicTitle": zod.object({
@@ -878,9 +1167,42 @@ export const TrainingItem = zod.object({
   "id": zod.string().max(trainingItemQuestionGroupsItemOptionsItemIdMax),
   "text": zod.string().max(trainingItemQuestionGroupsItemOptionsItemTextMax)
 })).min(trainingItemQuestionGroupsItemOptionsMin).max(trainingItemQuestionGroupsItemOptionsMax)
-})).min(1).max(trainingItemQuestionGroupsMax).describe('Группа — один пропуск Text Completion; у остальных типов одна группа'),
-  "selectCount": zod.int().min(1).max(trainingItemQuestionSelectCountMax).describe('Сколько вариантов выбрать в группе (Sentence Equivalence — 2)'),
-  "answer": zod.array(zod.string().max(trainingItemQuestionAnswerItemMax)).min(1).max(trainingItemQuestionAnswerMax).describe('Верные варианты. Приходит вместе с заданием: проверка без сети идёт на устройстве; сервер проверяет ответ сам и статистику клиенту не доверяет.'),
+})).min(trainingItemQuestionGroupsMin).max(trainingItemQuestionGroupsMax).describe('Группа — пропуск TC; одна у выбора вариантов, пусто у числа и выбора предложения'),
+  "selectCount": zod.int().min(trainingItemQuestionSelectCountMin).max(trainingItemQuestionSelectCountMax).describe('Число требуемых вариантов; 0 — все подходящие (multi), число или предложение'),
+  "answer": zod.array(zod.string().max(trainingItemQuestionAnswerItemMax)).min(trainingItemQuestionAnswerMin).max(trainingItemQuestionAnswerMax).describe('Верные варианты или один id предложения; у numeric_entry пусто. Приходит вместе с заданием: проверка без сети идёт на устройстве; сервер проверяет ответ сам и статистику клиенту не доверяет.'),
+  "numericEntry": zod.object({
+  "format": zod.enum(['number', 'fraction']),
+  "decimalPlaces": zod.int().min(trainingItemQuestionNumericEntryDecimalPlacesMin).max(trainingItemQuestionNumericEntryDecimalPlacesMax).optional().describe('Округлить итог до этого числа знаков, половину от нуля; ключ хранит исходное точное значение')
+}).optional(),
+  "numericAnswer": zod.object({
+  "number": zod.string().min(1).max(trainingItemQuestionNumericAnswerNumberMax).optional(),
+  "numerator": zod.string().min(1).max(trainingItemQuestionNumericAnswerNumeratorMax).optional(),
+  "denominator": zod.string().min(1).max(trainingItemQuestionNumericAnswerDenominatorMax).optional()
+}).optional().describe('Ровно number либо numerator вместе с denominator, согласно NumericEntry.format. Десятичная точка, необязательный минус; экспонента, пробелы, NaN и бесконечность запрещены. Компоненты дроби — целые, знаменатель ненулевой. Проверка по точному рациональному значению.'),
+  "passage": zod.object({
+  "id": zod.string().min(1).max(trainingItemQuestionPassageIdMax),
+  "paragraphs": zod.array(zod.object({
+  "sentences": zod.array(zod.object({
+  "id": zod.string().min(1).max(trainingItemQuestionPassageParagraphsItemSentencesItemIdMax),
+  "text": zod.string().min(1).max(trainingItemQuestionPassageParagraphsItemSentencesItemTextMax)
+})).min(1).max(trainingItemQuestionPassageParagraphsItemSentencesMax)
+})).min(1).max(trainingItemQuestionPassageParagraphsMax)
+}).optional(),
+  "figure": zod.object({
+  "id": zod.string().min(1).max(trainingItemQuestionFigureIdMax),
+  "kind": zod.enum(['bar', 'line', 'table']),
+  "title": zod.string().min(1).max(trainingItemQuestionFigureTitleMax),
+  "xLabel": zod.string().max(trainingItemQuestionFigureXLabelMax),
+  "yLabel": zod.string().max(trainingItemQuestionFigureYLabelMax),
+  "unit": zod.string().max(trainingItemQuestionFigureUnitMax),
+  "categories": zod.array(zod.string().min(1).max(trainingItemQuestionFigureCategoriesItemMax)).min(1).max(trainingItemQuestionFigureCategoriesMax),
+  "series": zod.array(zod.object({
+  "id": zod.string().min(1).max(trainingItemQuestionFigureSeriesItemIdMax),
+  "label": zod.string().min(1).max(trainingItemQuestionFigureSeriesItemLabelMax),
+  "values": zod.array(zod.number()).min(1).max(trainingItemQuestionFigureSeriesItemValuesMax)
+})).min(1).max(trainingItemQuestionFigureSeriesMax),
+  "description": zod.string().min(1).max(trainingItemQuestionFigureDescriptionMax)
+}).optional().describe('Одна запись на несколько вопросов; клиент рисует в своей теме, description содержит данные для доступности'),
   "explanation": zod.object({
   "solution": zod.object({
   "ru": zod.string(),
@@ -897,8 +1219,14 @@ export const TrainingItem = zod.object({
 }),
   "answer": zod.object({
   "position": zod.int().min(trainingItemAnswerPositionMin).max(trainingItemAnswerPositionMax),
-  "optionIds": zod.array(zod.string().max(trainingItemAnswerOptionIdsItemMax)).max(trainingItemAnswerOptionIdsMax).describe('Пусто — не ответил (пропустил или «Не знаю»)'),
-  "dontKnow": zod.boolean().describe('«Не знаю» в «Практике» — для «что повторить» это ошибка; только с пустым optionIds'),
+  "optionIds": zod.array(zod.string().max(trainingItemAnswerOptionIdsItemMax)).max(trainingItemAnswerOptionIdsMax).describe('Варианты ответа; пусто у числа, предложения и пропуска'),
+  "numericAnswer": zod.object({
+  "number": zod.string().min(1).max(trainingItemAnswerNumericAnswerNumberMax).optional(),
+  "numerator": zod.string().min(1).max(trainingItemAnswerNumericAnswerNumeratorMax).optional(),
+  "denominator": zod.string().min(1).max(trainingItemAnswerNumericAnswerDenominatorMax).optional()
+}).optional().describe('Ровно number либо numerator вместе с denominator, согласно NumericEntry.format. Десятичная точка, необязательный минус; экспонента, пробелы, NaN и бесконечность запрещены. Компоненты дроби — целые, знаменатель ненулевой. Проверка по точному рациональному значению.'),
+  "sentenceId": zod.string().min(1).max(trainingItemAnswerSentenceIdMax).optional(),
+  "dontKnow": zod.boolean().describe('«Не знаю» — ошибка для повторения; только без вариантов, числа и предложения'),
   "flagged": zod.boolean().describe('Отметка «вернуться» в «Проверке»'),
   "answeredAt": zod.iso.datetime({"offset":true}),
   "elapsedMs": zod.int().min(trainingItemAnswerElapsedMsMin).max(trainingItemAnswerElapsedMsMax)
@@ -909,7 +1237,7 @@ export const TrainingItem = zod.object({
 export type TrainingItem = zod.input<typeof TrainingItem>;
 export type TrainingItemOutput = zod.output<typeof TrainingItem>;
 
-export const trainingSessionQuestionTypesMax = 4;
+export const trainingSessionQuestionTypesMax = 7;
 
 
 export const trainingSessionItemsItemPositionMin = 0;
@@ -930,15 +1258,61 @@ export const trainingSessionItemsItemQuestionGroupsItemOptionsItemIdMax = 16;
 export const trainingSessionItemsItemQuestionGroupsItemOptionsItemTextMax = 500;
 
 export const trainingSessionItemsItemQuestionGroupsItemOptionsMin = 2;
-export const trainingSessionItemsItemQuestionGroupsItemOptionsMax = 6;
+export const trainingSessionItemsItemQuestionGroupsItemOptionsMax = 10;
 
+export const trainingSessionItemsItemQuestionGroupsMin = 0;
 export const trainingSessionItemsItemQuestionGroupsMax = 3;
 
-export const trainingSessionItemsItemQuestionSelectCountMax = 2;
+export const trainingSessionItemsItemQuestionSelectCountMin = 0;
+export const trainingSessionItemsItemQuestionSelectCountMax = 10;
 
 export const trainingSessionItemsItemQuestionAnswerItemMax = 16;
 
-export const trainingSessionItemsItemQuestionAnswerMax = 3;
+export const trainingSessionItemsItemQuestionAnswerMin = 0;
+export const trainingSessionItemsItemQuestionAnswerMax = 10;
+
+export const trainingSessionItemsItemQuestionNumericEntryDecimalPlacesMin = 0;
+export const trainingSessionItemsItemQuestionNumericEntryDecimalPlacesMax = 12;
+
+export const trainingSessionItemsItemQuestionNumericAnswerNumberMax = 128;
+
+export const trainingSessionItemsItemQuestionNumericAnswerNumeratorMax = 128;
+
+export const trainingSessionItemsItemQuestionNumericAnswerDenominatorMax = 128;
+
+export const trainingSessionItemsItemQuestionPassageIdMax = 64;
+
+export const trainingSessionItemsItemQuestionPassageParagraphsItemSentencesItemIdMax = 16;
+
+export const trainingSessionItemsItemQuestionPassageParagraphsItemSentencesItemTextMax = 4000;
+
+export const trainingSessionItemsItemQuestionPassageParagraphsItemSentencesMax = 50;
+
+export const trainingSessionItemsItemQuestionPassageParagraphsMax = 20;
+
+export const trainingSessionItemsItemQuestionFigureIdMax = 64;
+
+export const trainingSessionItemsItemQuestionFigureTitleMax = 200;
+
+export const trainingSessionItemsItemQuestionFigureXLabelMax = 200;
+
+export const trainingSessionItemsItemQuestionFigureYLabelMax = 200;
+
+export const trainingSessionItemsItemQuestionFigureUnitMax = 100;
+
+export const trainingSessionItemsItemQuestionFigureCategoriesItemMax = 200;
+
+export const trainingSessionItemsItemQuestionFigureCategoriesMax = 100;
+
+export const trainingSessionItemsItemQuestionFigureSeriesItemIdMax = 16;
+
+export const trainingSessionItemsItemQuestionFigureSeriesItemLabelMax = 200;
+
+export const trainingSessionItemsItemQuestionFigureSeriesItemValuesMax = 100;
+
+export const trainingSessionItemsItemQuestionFigureSeriesMax = 20;
+
+export const trainingSessionItemsItemQuestionFigureDescriptionMax = 8000;
 
 export const trainingSessionItemsItemQuestionExplanationOptionsItemOptionIdMax = 16;
 
@@ -949,7 +1323,15 @@ export const trainingSessionItemsItemAnswerPositionMax = 49;
 
 export const trainingSessionItemsItemAnswerOptionIdsItemMax = 16;
 
-export const trainingSessionItemsItemAnswerOptionIdsMax = 3;
+export const trainingSessionItemsItemAnswerOptionIdsMax = 10;
+
+export const trainingSessionItemsItemAnswerNumericAnswerNumberMax = 128;
+
+export const trainingSessionItemsItemAnswerNumericAnswerNumeratorMax = 128;
+
+export const trainingSessionItemsItemAnswerNumericAnswerDenominatorMax = 128;
+
+export const trainingSessionItemsItemAnswerSentenceIdMax = 16;
 
 export const trainingSessionItemsItemAnswerElapsedMsMin = 0;
 export const trainingSessionItemsItemAnswerElapsedMsMax = 86400000;
@@ -962,7 +1344,7 @@ export const TrainingSession = zod.object({
   "exam": zod.enum(['gre', 'toefl']).optional().describe('Необязательное только для чтения сохранённых сессий старого формата; сервер возвращает всегда'),
   "mode": zod.enum(['practice', 'check']).describe('practice — разбор после каждого вопроса, без таймера, вместо пропуска «Не знаю»; check — разбор в конце, таймер темпа экзамена, пропустить и вернуться можно, время вышло — сессия кончилась.'),
   "section": zod.enum(['verbal', 'quant', 'words', 'essay', 'reading', 'listening', 'writing', 'speaking']),
-  "questionTypes": zod.array(zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice']).describe('Первый срез тренировок — задания с выбором ответа (решение Даши 06.10.2026): Text Completion (1–3 пропуска), Sentence Equivalence (два ответа из шести), Quantitative Comparison, обычный выбор в математике. Reading Comprehension, ввод числа и несколько верных — следующими срезами.')).min(1).max(trainingSessionQuestionTypesMax),
+  "questionTypes": zod.array(zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice', 'multiple_choice_multi', 'numeric_entry', 'select_in_passage']).describe('Типы GRE (решение Даши 12.10.2026). multiple_choice и multiple_choice_multi бывают в Quant и Reading Comprehension; select_in_passage — в Verbal, numeric_entry — в Quant.')).min(1).max(trainingSessionQuestionTypesMax),
   "startedAt": zod.iso.datetime({"offset":true}),
   "timeLimitSeconds": zod.int().min(1).optional().describe('Только у «Проверки» — темп секции экзамена'),
   "finishedAt": zod.iso.datetime({"offset":true}).optional(),
@@ -970,7 +1352,7 @@ export const TrainingSession = zod.object({
   "position": zod.int().min(trainingSessionItemsItemPositionMin).max(trainingSessionItemsItemPositionMax),
   "question": zod.object({
   "id": zod.uuid(),
-  "questionType": zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice']).describe('Первый срез тренировок — задания с выбором ответа (решение Даши 06.10.2026): Text Completion (1–3 пропуска), Sentence Equivalence (два ответа из шести), Quantitative Comparison, обычный выбор в математике. Reading Comprehension, ввод числа и несколько верных — следующими срезами.'),
+  "questionType": zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice', 'multiple_choice_multi', 'numeric_entry', 'select_in_passage']).describe('Типы GRE (решение Даши 12.10.2026). multiple_choice и multiple_choice_multi бывают в Quant и Reading Comprehension; select_in_passage — в Verbal, numeric_entry — в Quant.'),
   "section": zod.enum(['verbal', 'quant', 'words', 'essay', 'reading', 'listening', 'writing', 'speaking']),
   "topicId": zod.string().max(trainingSessionItemsItemQuestionTopicIdMax),
   "topicTitle": zod.object({
@@ -987,9 +1369,42 @@ export const TrainingSession = zod.object({
   "id": zod.string().max(trainingSessionItemsItemQuestionGroupsItemOptionsItemIdMax),
   "text": zod.string().max(trainingSessionItemsItemQuestionGroupsItemOptionsItemTextMax)
 })).min(trainingSessionItemsItemQuestionGroupsItemOptionsMin).max(trainingSessionItemsItemQuestionGroupsItemOptionsMax)
-})).min(1).max(trainingSessionItemsItemQuestionGroupsMax).describe('Группа — один пропуск Text Completion; у остальных типов одна группа'),
-  "selectCount": zod.int().min(1).max(trainingSessionItemsItemQuestionSelectCountMax).describe('Сколько вариантов выбрать в группе (Sentence Equivalence — 2)'),
-  "answer": zod.array(zod.string().max(trainingSessionItemsItemQuestionAnswerItemMax)).min(1).max(trainingSessionItemsItemQuestionAnswerMax).describe('Верные варианты. Приходит вместе с заданием: проверка без сети идёт на устройстве; сервер проверяет ответ сам и статистику клиенту не доверяет.'),
+})).min(trainingSessionItemsItemQuestionGroupsMin).max(trainingSessionItemsItemQuestionGroupsMax).describe('Группа — пропуск TC; одна у выбора вариантов, пусто у числа и выбора предложения'),
+  "selectCount": zod.int().min(trainingSessionItemsItemQuestionSelectCountMin).max(trainingSessionItemsItemQuestionSelectCountMax).describe('Число требуемых вариантов; 0 — все подходящие (multi), число или предложение'),
+  "answer": zod.array(zod.string().max(trainingSessionItemsItemQuestionAnswerItemMax)).min(trainingSessionItemsItemQuestionAnswerMin).max(trainingSessionItemsItemQuestionAnswerMax).describe('Верные варианты или один id предложения; у numeric_entry пусто. Приходит вместе с заданием: проверка без сети идёт на устройстве; сервер проверяет ответ сам и статистику клиенту не доверяет.'),
+  "numericEntry": zod.object({
+  "format": zod.enum(['number', 'fraction']),
+  "decimalPlaces": zod.int().min(trainingSessionItemsItemQuestionNumericEntryDecimalPlacesMin).max(trainingSessionItemsItemQuestionNumericEntryDecimalPlacesMax).optional().describe('Округлить итог до этого числа знаков, половину от нуля; ключ хранит исходное точное значение')
+}).optional(),
+  "numericAnswer": zod.object({
+  "number": zod.string().min(1).max(trainingSessionItemsItemQuestionNumericAnswerNumberMax).optional(),
+  "numerator": zod.string().min(1).max(trainingSessionItemsItemQuestionNumericAnswerNumeratorMax).optional(),
+  "denominator": zod.string().min(1).max(trainingSessionItemsItemQuestionNumericAnswerDenominatorMax).optional()
+}).optional().describe('Ровно number либо numerator вместе с denominator, согласно NumericEntry.format. Десятичная точка, необязательный минус; экспонента, пробелы, NaN и бесконечность запрещены. Компоненты дроби — целые, знаменатель ненулевой. Проверка по точному рациональному значению.'),
+  "passage": zod.object({
+  "id": zod.string().min(1).max(trainingSessionItemsItemQuestionPassageIdMax),
+  "paragraphs": zod.array(zod.object({
+  "sentences": zod.array(zod.object({
+  "id": zod.string().min(1).max(trainingSessionItemsItemQuestionPassageParagraphsItemSentencesItemIdMax),
+  "text": zod.string().min(1).max(trainingSessionItemsItemQuestionPassageParagraphsItemSentencesItemTextMax)
+})).min(1).max(trainingSessionItemsItemQuestionPassageParagraphsItemSentencesMax)
+})).min(1).max(trainingSessionItemsItemQuestionPassageParagraphsMax)
+}).optional(),
+  "figure": zod.object({
+  "id": zod.string().min(1).max(trainingSessionItemsItemQuestionFigureIdMax),
+  "kind": zod.enum(['bar', 'line', 'table']),
+  "title": zod.string().min(1).max(trainingSessionItemsItemQuestionFigureTitleMax),
+  "xLabel": zod.string().max(trainingSessionItemsItemQuestionFigureXLabelMax),
+  "yLabel": zod.string().max(trainingSessionItemsItemQuestionFigureYLabelMax),
+  "unit": zod.string().max(trainingSessionItemsItemQuestionFigureUnitMax),
+  "categories": zod.array(zod.string().min(1).max(trainingSessionItemsItemQuestionFigureCategoriesItemMax)).min(1).max(trainingSessionItemsItemQuestionFigureCategoriesMax),
+  "series": zod.array(zod.object({
+  "id": zod.string().min(1).max(trainingSessionItemsItemQuestionFigureSeriesItemIdMax),
+  "label": zod.string().min(1).max(trainingSessionItemsItemQuestionFigureSeriesItemLabelMax),
+  "values": zod.array(zod.number()).min(1).max(trainingSessionItemsItemQuestionFigureSeriesItemValuesMax)
+})).min(1).max(trainingSessionItemsItemQuestionFigureSeriesMax),
+  "description": zod.string().min(1).max(trainingSessionItemsItemQuestionFigureDescriptionMax)
+}).optional().describe('Одна запись на несколько вопросов; клиент рисует в своей теме, description содержит данные для доступности'),
   "explanation": zod.object({
   "solution": zod.object({
   "ru": zod.string(),
@@ -1006,8 +1421,14 @@ export const TrainingSession = zod.object({
 }),
   "answer": zod.object({
   "position": zod.int().min(trainingSessionItemsItemAnswerPositionMin).max(trainingSessionItemsItemAnswerPositionMax),
-  "optionIds": zod.array(zod.string().max(trainingSessionItemsItemAnswerOptionIdsItemMax)).max(trainingSessionItemsItemAnswerOptionIdsMax).describe('Пусто — не ответил (пропустил или «Не знаю»)'),
-  "dontKnow": zod.boolean().describe('«Не знаю» в «Практике» — для «что повторить» это ошибка; только с пустым optionIds'),
+  "optionIds": zod.array(zod.string().max(trainingSessionItemsItemAnswerOptionIdsItemMax)).max(trainingSessionItemsItemAnswerOptionIdsMax).describe('Варианты ответа; пусто у числа, предложения и пропуска'),
+  "numericAnswer": zod.object({
+  "number": zod.string().min(1).max(trainingSessionItemsItemAnswerNumericAnswerNumberMax).optional(),
+  "numerator": zod.string().min(1).max(trainingSessionItemsItemAnswerNumericAnswerNumeratorMax).optional(),
+  "denominator": zod.string().min(1).max(trainingSessionItemsItemAnswerNumericAnswerDenominatorMax).optional()
+}).optional().describe('Ровно number либо numerator вместе с denominator, согласно NumericEntry.format. Десятичная точка, необязательный минус; экспонента, пробелы, NaN и бесконечность запрещены. Компоненты дроби — целые, знаменатель ненулевой. Проверка по точному рациональному значению.'),
+  "sentenceId": zod.string().min(1).max(trainingSessionItemsItemAnswerSentenceIdMax).optional(),
+  "dontKnow": zod.boolean().describe('«Не знаю» — ошибка для повторения; только без вариантов, числа и предложения'),
   "flagged": zod.boolean().describe('Отметка «вернуться» в «Проверке»'),
   "answeredAt": zod.iso.datetime({"offset":true}),
   "elapsedMs": zod.int().min(trainingSessionItemsItemAnswerElapsedMsMin).max(trainingSessionItemsItemAnswerElapsedMsMax)
@@ -1024,7 +1445,15 @@ export const answerBatchAnswersItemPositionMax = 49;
 
 export const answerBatchAnswersItemOptionIdsItemMax = 16;
 
-export const answerBatchAnswersItemOptionIdsMax = 3;
+export const answerBatchAnswersItemOptionIdsMax = 10;
+
+export const answerBatchAnswersItemNumericAnswerNumberMax = 128;
+
+export const answerBatchAnswersItemNumericAnswerNumeratorMax = 128;
+
+export const answerBatchAnswersItemNumericAnswerDenominatorMax = 128;
+
+export const answerBatchAnswersItemSentenceIdMax = 16;
 
 export const answerBatchAnswersItemElapsedMsMin = 0;
 export const answerBatchAnswersItemElapsedMsMax = 86400000;
@@ -1035,8 +1464,14 @@ export const answerBatchAnswersMax = 50;
 export const AnswerBatch = zod.object({
   "answers": zod.array(zod.object({
   "position": zod.int().min(answerBatchAnswersItemPositionMin).max(answerBatchAnswersItemPositionMax),
-  "optionIds": zod.array(zod.string().max(answerBatchAnswersItemOptionIdsItemMax)).max(answerBatchAnswersItemOptionIdsMax).describe('Пусто — не ответил (пропустил или «Не знаю»)'),
-  "dontKnow": zod.boolean().describe('«Не знаю» в «Практике» — для «что повторить» это ошибка; только с пустым optionIds'),
+  "optionIds": zod.array(zod.string().max(answerBatchAnswersItemOptionIdsItemMax)).max(answerBatchAnswersItemOptionIdsMax).describe('Варианты ответа; пусто у числа, предложения и пропуска'),
+  "numericAnswer": zod.object({
+  "number": zod.string().min(1).max(answerBatchAnswersItemNumericAnswerNumberMax).optional(),
+  "numerator": zod.string().min(1).max(answerBatchAnswersItemNumericAnswerNumeratorMax).optional(),
+  "denominator": zod.string().min(1).max(answerBatchAnswersItemNumericAnswerDenominatorMax).optional()
+}).optional().describe('Ровно number либо numerator вместе с denominator, согласно NumericEntry.format. Десятичная точка, необязательный минус; экспонента, пробелы, NaN и бесконечность запрещены. Компоненты дроби — целые, знаменатель ненулевой. Проверка по точному рациональному значению.'),
+  "sentenceId": zod.string().min(1).max(answerBatchAnswersItemSentenceIdMax).optional(),
+  "dontKnow": zod.boolean().describe('«Не знаю» — ошибка для повторения; только без вариантов, числа и предложения'),
   "flagged": zod.boolean().describe('Отметка «вернуться» в «Проверке»'),
   "answeredAt": zod.iso.datetime({"offset":true}),
   "elapsedMs": zod.int().min(answerBatchAnswersItemElapsedMsMin).max(answerBatchAnswersItemElapsedMsMax)
@@ -1207,11 +1642,21 @@ export const getHomeParamsTypesMax = 20;
 export const GetHomeParams = zod.object({
   "exam": zod.enum(['gre', 'toefl']),
   "tz": zod.string().min(1).max(getHomeParamsTzMax),
-  "types": zod.array(zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice']).describe('Первый срез тренировок — задания с выбором ответа (решение Даши 06.10.2026): Text Completion (1–3 пропуска), Sentence Equivalence (два ответа из шести), Quantitative Comparison, обычный выбор в математике. Reading Comprehension, ввод числа и несколько верных — следующими срезами.')).min(1).max(getHomeParamsTypesMax)
+  "types": zod.array(zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice', 'multiple_choice_multi', 'numeric_entry', 'select_in_passage']).describe('Типы GRE (решение Даши 12.10.2026). multiple_choice и multiple_choice_multi бывают в Quant и Reading Comprehension; select_in_passage — в Verbal, numeric_entry — в Quant.')).min(1).max(getHomeParamsTypesMax).optional()
 })
 
 export type GetHomeParams = zod.input<typeof GetHomeParams>;
 export type GetHomeParamsOutput = zod.output<typeof GetHomeParams>;
+
+export const getHomeHeadersXTrainingCapabilitiesMax = 512;
+
+
+export const GetHomeHeaders = zod.object({
+  "X-Training-Capabilities": zod.string().min(1).max(getHomeHeadersXTrainingCapabilitiesMax).optional()
+})
+
+export type GetHomeHeaders = zod.input<typeof GetHomeHeaders>;
+export type GetHomeHeadersOutput = zod.output<typeof GetHomeHeaders>;
 
 export const SetActiveExamBody = zod.object({
   "exam": zod.enum(['gre', 'toefl'])
@@ -1225,13 +1670,23 @@ export const getTrainingOptionsParamsTypesMax = 20;
 
 export const GetTrainingOptionsParams = zod.object({
   "exam": zod.enum(['gre', 'toefl']),
-  "types": zod.array(zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice']).describe('Первый срез тренировок — задания с выбором ответа (решение Даши 06.10.2026): Text Completion (1–3 пропуска), Sentence Equivalence (два ответа из шести), Quantitative Comparison, обычный выбор в математике. Reading Comprehension, ввод числа и несколько верных — следующими срезами.')).min(1).max(getTrainingOptionsParamsTypesMax)
+  "types": zod.array(zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice', 'multiple_choice_multi', 'numeric_entry', 'select_in_passage']).describe('Типы GRE (решение Даши 12.10.2026). multiple_choice и multiple_choice_multi бывают в Quant и Reading Comprehension; select_in_passage — в Verbal, numeric_entry — в Quant.')).min(1).max(getTrainingOptionsParamsTypesMax).optional()
 })
 
 export type GetTrainingOptionsParams = zod.input<typeof GetTrainingOptionsParams>;
 export type GetTrainingOptionsParamsOutput = zod.output<typeof GetTrainingOptionsParams>;
 
-export const startTrainingBodyQuestionTypesMax = 4;
+export const getTrainingOptionsHeadersXTrainingCapabilitiesMax = 512;
+
+
+export const GetTrainingOptionsHeaders = zod.object({
+  "X-Training-Capabilities": zod.string().min(1).max(getTrainingOptionsHeadersXTrainingCapabilitiesMax).optional()
+})
+
+export type GetTrainingOptionsHeaders = zod.input<typeof GetTrainingOptionsHeaders>;
+export type GetTrainingOptionsHeadersOutput = zod.output<typeof GetTrainingOptionsHeaders>;
+
+export const startTrainingBodyQuestionTypesMax = 7;
 
 export const startTrainingBodyTopicIdsItemMax = 64;
 
@@ -1244,7 +1699,7 @@ export const StartTrainingBody = zod.object({
   "source": zod.enum(['catalog', 'mistakes']).optional().describe('catalog (также при отсутствии поля) — весь каталог; mistakes — только свои последние неверные ответы'),
   "exam": zod.enum(['gre', 'toefl']),
   "section": zod.enum(['verbal', 'quant', 'words', 'essay', 'reading', 'listening', 'writing', 'speaking']),
-  "questionTypes": zod.array(zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice']).describe('Первый срез тренировок — задания с выбором ответа (решение Даши 06.10.2026): Text Completion (1–3 пропуска), Sentence Equivalence (два ответа из шести), Quantitative Comparison, обычный выбор в математике. Reading Comprehension, ввод числа и несколько верных — следующими срезами.')).min(1).max(startTrainingBodyQuestionTypesMax).describe('Конструктор даёт один тип; «Проверка на время» — все типы раздела вперемешку (макет R16)'),
+  "questionTypes": zod.array(zod.enum(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice', 'multiple_choice_multi', 'numeric_entry', 'select_in_passage']).describe('Типы GRE (решение Даши 12.10.2026). multiple_choice и multiple_choice_multi бывают в Quant и Reading Comprehension; select_in_passage — в Verbal, numeric_entry — в Quant.')).min(1).max(startTrainingBodyQuestionTypesMax).describe('Конструктор даёт один тип; «Проверка на время» — все типы раздела вперемешку (макет R16)'),
   "topicIds": zod.array(zod.string().max(startTrainingBodyTopicIdsItemMax)).max(startTrainingBodyTopicIdsMax).optional().describe('Пусто или нет — все темы'),
   "difficulty": zod.enum(['easy', 'medium', 'hard']).optional(),
   "count": zod.int().min(1).max(startTrainingBodyCountMax),
@@ -1254,12 +1709,40 @@ export const StartTrainingBody = zod.object({
 export type StartTrainingBody = zod.input<typeof StartTrainingBody>;
 export type StartTrainingBodyOutput = zod.output<typeof StartTrainingBody>;
 
+export const startTrainingHeadersXTrainingCapabilitiesMax = 512;
+
+
+export const StartTrainingHeaders = zod.object({
+  "X-Training-Capabilities": zod.string().min(1).max(startTrainingHeadersXTrainingCapabilitiesMax).optional()
+})
+
+export type StartTrainingHeaders = zod.input<typeof StartTrainingHeaders>;
+export type StartTrainingHeadersOutput = zod.output<typeof StartTrainingHeaders>;
+
+export const getTrainingHeadersXTrainingCapabilitiesMax = 512;
+
+
+export const GetTrainingHeaders = zod.object({
+  "X-Training-Capabilities": zod.string().min(1).max(getTrainingHeadersXTrainingCapabilitiesMax).optional()
+})
+
+export type GetTrainingHeaders = zod.input<typeof GetTrainingHeaders>;
+export type GetTrainingHeadersOutput = zod.output<typeof GetTrainingHeaders>;
+
 export const submitTrainingAnswersBodyAnswersItemPositionMin = 0;
 export const submitTrainingAnswersBodyAnswersItemPositionMax = 49;
 
 export const submitTrainingAnswersBodyAnswersItemOptionIdsItemMax = 16;
 
-export const submitTrainingAnswersBodyAnswersItemOptionIdsMax = 3;
+export const submitTrainingAnswersBodyAnswersItemOptionIdsMax = 10;
+
+export const submitTrainingAnswersBodyAnswersItemNumericAnswerNumberMax = 128;
+
+export const submitTrainingAnswersBodyAnswersItemNumericAnswerNumeratorMax = 128;
+
+export const submitTrainingAnswersBodyAnswersItemNumericAnswerDenominatorMax = 128;
+
+export const submitTrainingAnswersBodyAnswersItemSentenceIdMax = 16;
 
 export const submitTrainingAnswersBodyAnswersItemElapsedMsMin = 0;
 export const submitTrainingAnswersBodyAnswersItemElapsedMsMax = 86400000;
@@ -1270,8 +1753,14 @@ export const submitTrainingAnswersBodyAnswersMax = 50;
 export const SubmitTrainingAnswersBody = zod.object({
   "answers": zod.array(zod.object({
   "position": zod.int().min(submitTrainingAnswersBodyAnswersItemPositionMin).max(submitTrainingAnswersBodyAnswersItemPositionMax),
-  "optionIds": zod.array(zod.string().max(submitTrainingAnswersBodyAnswersItemOptionIdsItemMax)).max(submitTrainingAnswersBodyAnswersItemOptionIdsMax).describe('Пусто — не ответил (пропустил или «Не знаю»)'),
-  "dontKnow": zod.boolean().describe('«Не знаю» в «Практике» — для «что повторить» это ошибка; только с пустым optionIds'),
+  "optionIds": zod.array(zod.string().max(submitTrainingAnswersBodyAnswersItemOptionIdsItemMax)).max(submitTrainingAnswersBodyAnswersItemOptionIdsMax).describe('Варианты ответа; пусто у числа, предложения и пропуска'),
+  "numericAnswer": zod.object({
+  "number": zod.string().min(1).max(submitTrainingAnswersBodyAnswersItemNumericAnswerNumberMax).optional(),
+  "numerator": zod.string().min(1).max(submitTrainingAnswersBodyAnswersItemNumericAnswerNumeratorMax).optional(),
+  "denominator": zod.string().min(1).max(submitTrainingAnswersBodyAnswersItemNumericAnswerDenominatorMax).optional()
+}).optional().describe('Ровно number либо numerator вместе с denominator, согласно NumericEntry.format. Десятичная точка, необязательный минус; экспонента, пробелы, NaN и бесконечность запрещены. Компоненты дроби — целые, знаменатель ненулевой. Проверка по точному рациональному значению.'),
+  "sentenceId": zod.string().min(1).max(submitTrainingAnswersBodyAnswersItemSentenceIdMax).optional(),
+  "dontKnow": zod.boolean().describe('«Не знаю» — ошибка для повторения; только без вариантов, числа и предложения'),
   "flagged": zod.boolean().describe('Отметка «вернуться» в «Проверке»'),
   "answeredAt": zod.iso.datetime({"offset":true}),
   "elapsedMs": zod.int().min(submitTrainingAnswersBodyAnswersItemElapsedMsMin).max(submitTrainingAnswersBodyAnswersItemElapsedMsMax)
@@ -1281,6 +1770,16 @@ export const SubmitTrainingAnswersBody = zod.object({
 export type SubmitTrainingAnswersBody = zod.input<typeof SubmitTrainingAnswersBody>;
 export type SubmitTrainingAnswersBodyOutput = zod.output<typeof SubmitTrainingAnswersBody>;
 
+export const submitTrainingAnswersHeadersXTrainingCapabilitiesMax = 512;
+
+
+export const SubmitTrainingAnswersHeaders = zod.object({
+  "X-Training-Capabilities": zod.string().min(1).max(submitTrainingAnswersHeadersXTrainingCapabilitiesMax).optional()
+})
+
+export type SubmitTrainingAnswersHeaders = zod.input<typeof SubmitTrainingAnswersHeaders>;
+export type SubmitTrainingAnswersHeadersOutput = zod.output<typeof SubmitTrainingAnswersHeaders>;
+
 export const FinishTrainingBody = zod.object({
   "finishedAt": zod.iso.datetime({"offset":true}),
   "timedOut": zod.boolean().describe('Время «Проверки» вышло — оставшиеся вопросы «не успел»')
@@ -1288,6 +1787,16 @@ export const FinishTrainingBody = zod.object({
 
 export type FinishTrainingBody = zod.input<typeof FinishTrainingBody>;
 export type FinishTrainingBodyOutput = zod.output<typeof FinishTrainingBody>;
+
+export const finishTrainingHeadersXTrainingCapabilitiesMax = 512;
+
+
+export const FinishTrainingHeaders = zod.object({
+  "X-Training-Capabilities": zod.string().min(1).max(finishTrainingHeadersXTrainingCapabilitiesMax).optional()
+})
+
+export type FinishTrainingHeaders = zod.input<typeof FinishTrainingHeaders>;
+export type FinishTrainingHeadersOutput = zod.output<typeof FinishTrainingHeaders>;
 
 export const reportQuestionBodyTextMax = 2000;
 
