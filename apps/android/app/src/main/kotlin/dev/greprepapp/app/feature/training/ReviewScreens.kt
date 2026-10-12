@@ -598,7 +598,7 @@ fun ReviewItemContent(
                 val average = training.answers.values.sumOf { it.elapsedMs.toLong() } / training.total
                 Text(if (elapsed > average) stringResource(R.string.review_slower, time) else time, style = Gp.type.meta)
             }
-            QuestionContent(question, answer?.response ?: emptyResponse(question), revealed = true)
+            QuestionContent(question, answer?.response ?: emptyResponse(question), revealed = true, includePassage = false)
         }
         val explanation: @Composable () -> Unit = {
             ExplanationPanel(
@@ -616,7 +616,12 @@ fun ReviewItemContent(
         }
         val swipe = Modifier.reviewSwipe(onNext = ::next, onPrevious = ::previous)
         Box(Modifier.fillMaxSize().then(swipe).testTag("reviewItem")) {
-            if (Gp.isWide) {
+            if (question.passage != null && question.questionType != QuestionType.SELECT_IN_PASSAGE) {
+                ReadingQuestionLayout(padding, question, firstForPassage = false, revealed = true, tag = "reviewItem") {
+                    q()
+                    explanation()
+                }
+            } else if (Gp.isWide && question.questionType != QuestionType.SELECT_IN_PASSAGE) {
                 TrainingSplit(padding, "reviewItem", q, explanation)
             } else {
                 Column(

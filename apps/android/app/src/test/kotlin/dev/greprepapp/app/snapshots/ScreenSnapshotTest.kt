@@ -5,7 +5,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.Density
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
 import com.github.takahirom.roborazzi.captureRoboImage
@@ -40,6 +42,60 @@ import org.robolectric.annotation.GraphicsMode
 class ScreenSnapshotTest(
     theme: String,
 ) : SnapshotBase(theme) {
+    @Test fun newType0() =
+        snap("b-r7", large = false, beforeCapture = {
+            compose.onNodeWithTag("reading.question").performClick()
+        }) { NewTrainingScreens.Screen("r7") }
+
+    @Test fun newType0Large() =
+        snap("b-r7-large", large = true, beforeCapture = {
+            compose.onNodeWithTag("reading.question").performClick()
+        }) { NewTrainingScreens.Screen("r7") }
+
+    @Test fun newType1() = snap("b-r7-text", large = false) { NewTrainingScreens.Screen("r7-text") }
+
+    @Test fun newType1Large() = snap("b-r7-text-large", large = true) { NewTrainingScreens.Screen("r7-text") }
+
+    @Test fun newType2() = snap("b-r7-review", large = false) { NewTrainingScreens.Screen("r7-review") }
+
+    @Test fun newType2Large() = snap("b-r7-review-large", large = true) { NewTrainingScreens.Screen("r7-review") }
+
+    @Test fun newType3() = snap("b-r8", large = false) { NewTrainingScreens.Screen("r8") }
+
+    @Test fun newType3Large() = snap("b-r8-large", large = true) { NewTrainingScreens.Screen("r8") }
+
+    @Test fun newType4() = snap("b-r8-correct", large = false) { NewTrainingScreens.Screen("r8-correct") }
+
+    @Test fun newType4Large() = snap("b-r8-correct-large", large = true) { NewTrainingScreens.Screen("r8-correct") }
+
+    @Test fun newType5() = snap("b-r8-wrong", large = false) { NewTrainingScreens.Screen("r8-wrong") }
+
+    @Test fun newType5Large() = snap("b-r8-wrong-large", large = true) { NewTrainingScreens.Screen("r8-wrong") }
+
+    @Test fun newType6() = snap("b-r10", large = false) { NewTrainingScreens.Screen("r10") }
+
+    @Test fun newType6Large() = snap("b-r10-large", large = true) { NewTrainingScreens.Screen("r10") }
+
+    @Test fun newType7() = snap("b-r10-checked", large = false) { NewTrainingScreens.Screen("r10-checked") }
+
+    @Test fun newType7Large() = snap("b-r10-checked-large", large = true) { NewTrainingScreens.Screen("r10-checked") }
+
+    @Test fun newType8() = snap("b-r11", large = false) { NewTrainingScreens.Screen("r11") }
+
+    @Test fun newType8Large() = snap("b-r11-large", large = true) { NewTrainingScreens.Screen("r11") }
+
+    @Test fun newType9() = snap("b-r11-bad", large = false) { NewTrainingScreens.Screen("r11-bad") }
+
+    @Test fun newType9Large() = snap("b-r11-bad-large", large = true) { NewTrainingScreens.Screen("r11-bad") }
+
+    @Test fun newType10() = snap("b-r11-correct", large = false) { NewTrainingScreens.Screen("r11-correct") }
+
+    @Test fun newType10Large() = snap("b-r11-correct-large", large = true) { NewTrainingScreens.Screen("r11-correct") }
+
+    @Test fun newType11() = snap("b-r11b", large = false) { NewTrainingScreens.Screen("r11b") }
+
+    @Test fun newType11Large() = snap("b-r11b-large", large = true) { NewTrainingScreens.Screen("r11b") }
+
     @Test
     fun home() = snap("home") { Home() }
 

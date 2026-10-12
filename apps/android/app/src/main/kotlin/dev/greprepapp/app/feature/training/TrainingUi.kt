@@ -101,6 +101,9 @@ fun QuestionType.label(): String =
             QuestionType.SENTENCE_EQUIVALENCE -> R.string.type_sentence_equivalence
             QuestionType.QUANTITATIVE_COMPARISON -> R.string.type_quantitative_comparison
             QuestionType.MULTIPLE_CHOICE -> R.string.type_multiple_choice
+            QuestionType.MULTIPLE_CHOICE_MULTI -> R.string.type_multiple_choice_multi
+            QuestionType.NUMERIC_ENTRY -> R.string.type_numeric_entry
+            QuestionType.SELECT_IN_PASSAGE -> R.string.type_select_in_passage
         },
     )
 
@@ -108,6 +111,8 @@ fun QuestionType.label(): String =
 @Composable
 @ReadOnlyComposable
 fun Question.typeLabel(): String {
+    if (passage != null) return stringResource(R.string.type_reading_comprehension)
+    if (numericEntry?.format == dev.greprepapp.api.models.NumericEntry.Format.FRACTION) return stringResource(R.string.type_fraction_entry)
     val note =
         when {
             questionType == QuestionType.TEXT_COMPLETION && groups.size == 2 -> R.string.type_two_blanks
@@ -142,7 +147,11 @@ internal fun mathText(value: String): AnnotatedString =
     buildAnnotatedString {
         append(value)
         Regex("(?<![A-Za-z])[A-Za-z](?![A-Za-z])").findAll(value).forEach {
-            addStyle(SpanStyle(fontStyle = FontStyle.Italic), it.range.first, it.range.last + 1)
+            addStyle(
+                SpanStyle(fontStyle = FontStyle.Italic, fontFamily = dev.greprepapp.design.MathFamily),
+                it.range.first,
+                it.range.last + 1,
+            )
         }
     }
 
@@ -514,6 +523,15 @@ private fun answerList(
     question: Question,
     and: String,
 ): String {
+    if (question.numericAnswer != null) return NumericResponseComponent.keyText(question)
+    if (question.questionType == QuestionType.SELECT_IN_PASSAGE) {
+        return question.passage
+            ?.paragraphs
+            ?.flatMap { it.sentences }
+            ?.firstOrNull { it.id in question.answer }
+            ?.text
+            .orEmpty()
+    }
     val options = question.groups.flatMap { it.options }.associateBy { it.id }
     val items = question.answer.mapNotNull { id -> options[id]?.text }
     return if (items.size <= 1) items.joinToString() else items.dropLast(1).joinToString(", ") + " $and " + items.last()

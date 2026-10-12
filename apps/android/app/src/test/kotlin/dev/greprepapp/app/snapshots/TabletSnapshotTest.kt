@@ -38,6 +38,54 @@ import org.robolectric.annotation.GraphicsMode
 class TabletSnapshotTest(
     theme: String,
 ) : SnapshotBase(theme) {
+    @Test fun newType0() = snap("tablet-b-r7", large = false) { NewTrainingScreens.Screen("r7") }
+
+    @Test fun newType0Large() = snap("tablet-b-r7-large", large = true) { NewTrainingScreens.Screen("r7") }
+
+    @Test fun newType1() = snap("tablet-b-r7-text", large = false) { NewTrainingScreens.Screen("r7-text") }
+
+    @Test fun newType1Large() = snap("tablet-b-r7-text-large", large = true) { NewTrainingScreens.Screen("r7-text") }
+
+    @Test fun newType2() = snap("tablet-b-r7-review", large = false) { NewTrainingScreens.Screen("r7-review") }
+
+    @Test fun newType2Large() = snap("tablet-b-r7-review-large", large = true) { NewTrainingScreens.Screen("r7-review") }
+
+    @Test fun newType3() = snap("tablet-b-r8", large = false) { NewTrainingScreens.Screen("r8") }
+
+    @Test fun newType3Large() = snap("tablet-b-r8-large", large = true) { NewTrainingScreens.Screen("r8") }
+
+    @Test fun newType4() = snap("tablet-b-r8-correct", large = false) { NewTrainingScreens.Screen("r8-correct") }
+
+    @Test fun newType4Large() = snap("tablet-b-r8-correct-large", large = true) { NewTrainingScreens.Screen("r8-correct") }
+
+    @Test fun newType5() = snap("tablet-b-r8-wrong", large = false) { NewTrainingScreens.Screen("r8-wrong") }
+
+    @Test fun newType5Large() = snap("tablet-b-r8-wrong-large", large = true) { NewTrainingScreens.Screen("r8-wrong") }
+
+    @Test fun newType6() = snap("tablet-b-r10", large = false) { NewTrainingScreens.Screen("r10") }
+
+    @Test fun newType6Large() = snap("tablet-b-r10-large", large = true) { NewTrainingScreens.Screen("r10") }
+
+    @Test fun newType7() = snap("tablet-b-r10-checked", large = false) { NewTrainingScreens.Screen("r10-checked") }
+
+    @Test fun newType7Large() = snap("tablet-b-r10-checked-large", large = true) { NewTrainingScreens.Screen("r10-checked") }
+
+    @Test fun newType8() = snap("tablet-b-r11", large = false) { NewTrainingScreens.Screen("r11") }
+
+    @Test fun newType8Large() = snap("tablet-b-r11-large", large = true) { NewTrainingScreens.Screen("r11") }
+
+    @Test fun newType9() = snap("tablet-b-r11-bad", large = false) { NewTrainingScreens.Screen("r11-bad") }
+
+    @Test fun newType9Large() = snap("tablet-b-r11-bad-large", large = true) { NewTrainingScreens.Screen("r11-bad") }
+
+    @Test fun newType10() = snap("tablet-b-r11-correct", large = false) { NewTrainingScreens.Screen("r11-correct") }
+
+    @Test fun newType10Large() = snap("tablet-b-r11-correct-large", large = true) { NewTrainingScreens.Screen("r11-correct") }
+
+    @Test fun newType11() = snap("tablet-b-r11b", large = false) { NewTrainingScreens.Screen("r11b") }
+
+    @Test fun newType11Large() = snap("tablet-b-r11b-large", large = true) { NewTrainingScreens.Screen("r11b") }
+
     @Test fun trainingB0() = snap("tablet-b-r1") { TrainingScreens.Builder() }
 
     @Test fun trainingBLarge0() = snap("tablet-b-r1-large", large = true) { TrainingScreens.Builder() }

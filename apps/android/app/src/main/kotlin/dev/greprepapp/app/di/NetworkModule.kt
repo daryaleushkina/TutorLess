@@ -62,8 +62,7 @@ object NetworkModule {
                             .newBuilder()
                             .header(
                                 "X-Training-Capabilities",
-                                dev.greprepapp.app.feature.training.TrainingRepository.SUPPORTED
-                                    .joinToString(",") { it.value },
+                                dev.greprepapp.app.feature.training.TrainingRepository.CAPABILITIES,
                             ).build()
                     val token = holder.token
                     if (token.isNullOrEmpty() || request.header(AUTHORIZATION) != null) {

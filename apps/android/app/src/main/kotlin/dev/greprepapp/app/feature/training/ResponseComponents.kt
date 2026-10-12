@@ -59,6 +59,9 @@ internal fun responseComponent(
                 QuestionType.SENTENCE_EQUIVALENCE -> EquivalenceResponseComponent
                 QuestionType.QUANTITATIVE_COMPARISON -> ComparisonResponseComponent
                 QuestionType.MULTIPLE_CHOICE -> ChoiceResponseComponent
+                QuestionType.MULTIPLE_CHOICE_MULTI -> MultiChoiceResponseComponent
+                QuestionType.NUMERIC_ENTRY -> NumericResponseComponent
+                QuestionType.SELECT_IN_PASSAGE -> SentenceResponseComponent
             }
         }
     }
@@ -120,6 +123,9 @@ internal open class OptionsResponseComponent(
         val selection = (response as? Response.Options)?.ids ?: return ResponseChange(response)
         val group = question.groups.firstOrNull { g -> g.options.any { it.id == optionId } } ?: return ResponseChange(response)
         val inGroup = group.options.map { it.id }.toSet()
+        if (question.questionType == QuestionType.MULTIPLE_CHOICE_MULTI && optionId in selection) {
+            return ResponseChange(Response.Options(selection - optionId))
+        }
         if (question.selectCount == 1) return ResponseChange(Response.Options(selection.filterNot { it in inGroup } + optionId))
         if (optionId in selection) return ResponseChange(Response.Options(selection - optionId))
         val chosen = selection.filter { it in inGroup }
@@ -139,7 +145,9 @@ internal object ComparisonResponseComponent : OptionsResponseComponent()
 
 internal object ChoiceResponseComponent : OptionsResponseComponent()
 
-/** Пока только модель; экран числа добавится вместе с частью 3б. */
+internal object MultiChoiceResponseComponent : OptionsResponseComponent(refuseExtra = true)
+
+/** Число проверяется точно, дроби сравниваются без округления. */
 internal object NumericResponseComponent : ResponseComponent {
     override fun isComplete(
         question: Question,
@@ -199,13 +207,27 @@ internal object NumericResponseComponent : ResponseComponent {
     private fun integer(text: String?): BigInteger? =
         text?.takeIf { it.length <= MAX_NUMERIC_LENGTH && INTEGER.matches(it) }?.toBigInteger()
 
+    fun validInteger(text: String): Boolean = integer(text) != null
+
+    fun zeroInteger(text: String): Boolean = integer(text) == BigInteger.ZERO
+
+    fun keyText(question: Question): String {
+        val value = question.numericAnswer ?: return ""
+        val places = question.numericEntry?.decimalPlaces
+        if (places != null && places in 0..MAX_DECIMAL_PLACES) {
+            val exact = rational(value) ?: return ""
+            return BigDecimal(exact.first).divide(BigDecimal(exact.second), places, RoundingMode.HALF_UP).toPlainString()
+        }
+        return value.number ?: "${value.numerator}/${value.denominator}"
+    }
+
     private const val MAX_NUMERIC_LENGTH = 128
     private const val MAX_DECIMAL_PLACES = 12
     private val DECIMAL = Regex("-?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)")
     private val INTEGER = Regex("-?[0-9]+")
 }
 
-/** Пока только модель; выбор предложения получит свой компонент в части 3б. */
+/** Предложение проверяется по устойчивому id, а не по положению или тексту. */
 internal object SentenceResponseComponent : ResponseComponent {
     override fun isComplete(
         question: Question,

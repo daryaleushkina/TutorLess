@@ -2,6 +2,39 @@
 <!-- Тексты — те же, что в приложении Apple (Localizable.xcstrings): платформы говорят одними словами.
      Язык по умолчанию — русский (аудитория — русскоязычные), английский — values-en. -->
 <resources>
+    <string name="type_reading_comprehension" translatable="false">Reading Comprehension</string>
+    <string name="type_multiple_choice_multi">Несколько ответов</string>
+    <string name="type_numeric_entry">Ввод числа</string>
+    <string name="type_fraction_entry">Ввод дробью</string>
+    <string name="type_select_in_passage">Выбор предложения</string>
+    <string name="question_select_all">Выберите все подходящие варианты.</string>
+    <string name="question_multi_limit">Сначала снимите отметку с выбранного варианта.</string>
+    <plurals name="question_select_choices">
+        <item quantity="one">Выберите %1$d вариант.</item>
+        <item quantity="few">Выберите %1$d варианта.</item>
+        <item quantity="many">Выберите %1$d вариантов.</item>
+        <item quantity="other">Выберите %1$d варианта.</item>
+    </plurals>
+    <plurals name="question_missing_choices">
+        <item quantity="one">Выберите ещё %1$d вариант</item>
+        <item quantity="few">Выберите ещё %1$d варианта</item>
+        <item quantity="many">Выберите ещё %1$d вариантов</item>
+        <item quantity="other">Выберите ещё %1$d варианта</item>
+    </plurals>
+    <string name="question_select_sentence">Нажмите на предложение в тексте.</string>
+    <string name="question_enter_number">Введите ответ числом.</string>
+    <string name="question_enter_fraction">Введите ответ дробью. Сокращать не нужно.</string>
+    <string name="numeric_answer">Ответ</string>
+    <string name="numeric_numerator">Числитель</string>
+    <string name="numeric_denominator">Знаменатель</string>
+    <string name="numeric_fraction_hint">Сверху — числитель, снизу — знаменатель</string>
+    <string name="numeric_invalid_number">Так число не записать: одна запятая или точка, минус — только впереди.</string>
+    <string name="numeric_invalid_integer">Введите целое число. Минус — только впереди.</string>
+    <string name="numeric_zero_denominator">Знаменатель не может быть нулём</string>
+    <string name="reading_text">Текст</string>
+    <string name="reading_question">Вопрос</string>
+    <string name="reading_paragraph">Абзац %1$d</string>
+    <string name="reading_sentence">Абзац %1$d, предложение %2$d. %3$s</string>
     <string name="app_name" translatable="false">Tutorless</string>
 
     <!-- Названия разделов экзамена остаются английскими в обеих локализациях. -->
