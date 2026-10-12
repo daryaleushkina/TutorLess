@@ -114,3 +114,6 @@ import { homeFirstOfflineScreen } from '../shellScreens';
 test('T2-offline: отказ старта внутри первой карточки', async ({ site: page }) => { await homeFirstOfflineScreen(page); });
 
 test('проверка: все ответы, отмеченные и разбор Quant по фильтру', async ({ site: page }) => { await stableCheckReviewScreens(page); });
+
+import { newTypesScreens } from '../training-types';
+test('B новые: RC, предложения, несколько ответов, число и дробь', async ({ site }) => { await newTypesScreens(site); });

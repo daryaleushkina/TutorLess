@@ -2,13 +2,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { GivenAnswer } from '@greprep/api-client';
 import type { StoredTraining } from './model';
 import { trainingRepository } from './repository';
-import { answerFormat } from './QuestionContent';
+import { answerFormat, draftAnswer } from './answerFormats';
 import { TrainingRules } from './rules';
 
 const initialSelection = (training: StoredTraining) => {
   const answer = training.answers[String(training.position)];
   const format = answerFormat(training.session.items[training.position]!.question);
-  return answer ? format?.decode(answer) ?? [] : training.drafts?.[String(training.position)] ?? [];
+  return training.session.mode === 'check' && training.drafts?.[String(training.position)] ? training.drafts[String(training.position)]! : answer ? format?.decode(answer) ?? [] : training.drafts?.[String(training.position)] ?? [];
 };
 
 /** Выбор виден сразу, записи идут по порядку; отложенные переходы читают уже записанное состояние. */
@@ -95,7 +95,7 @@ export function useTrainingSession(incoming: StoredTraining) {
   }, [training.session.mode, training.finish, expire]);
 
   const makeAnswer = (ids: string[], dontKnow = false, flagged = latest.current.answers[String(latest.current.position)]?.flagged ?? false): GivenAnswer => ({
-    position: latest.current.position, ...(answerFormat(latest.current.session.items[latest.current.position]!.question)?.encode(ids) ?? { optionIds: [] }), dontKnow, flagged,
+    position: latest.current.position, ...(answerFormat(latest.current.session.items[latest.current.position]!.question)?.encode(latest.current.session.items[latest.current.position]!.question, ids) ?? { optionIds: [] }), dontKnow, flagged,
     answeredAt: new Date(Date.now()).toISOString(), elapsedMs: Math.max(0, Date.now() - shownAt.current),
   });
   const save = async (ids: string[], dontKnow = false, flagged?: boolean) => {
@@ -118,7 +118,7 @@ export function useTrainingSession(incoming: StoredTraining) {
   };
   const check = async () => {
     const current = latest.current;
-    if (current.session.mode === 'practice' && !current.answers[String(current.position)] && answerFormat(current.session.items[current.position]!.question)?.complete(current.session.items[current.position]!.question, selected.current)) await save(selected.current);
+    if (current.session.mode === 'practice' && !current.answers[String(current.position)] && answerFormat(current.session.items[current.position]!.question)?.isComplete(current.session.items[current.position]!.question, draftAnswer(current.session.items[current.position]!.question, selected.current))) await save(selected.current);
   };
   const select = (optionId: string) => {
     const current = latest.current;
@@ -128,12 +128,16 @@ export function useTrainingSession(incoming: StoredTraining) {
     if (!next) return;
     setSelectionLimit(next.limit);
     if (next.limit) return;
-    const ids = next.value;
+    change(next.value);
+  };
+  const change = (ids: string[]) => {
+    const current = latest.current;
+    if (expire() || current.session.mode === 'practice' && current.answers[String(current.position)]) return;
     selectionVersion.current++; showSelection(ids);
     if (current.session.mode === 'check') {
       const answer = makeAnswer(ids);
-      latest.current = { ...current, answers: { ...current.answers, [current.position]: answer } }; setTraining(latest.current);
-      run(() => trainingRepository.answer(id, answer));
+      latest.current = { ...current, drafts: { ...current.drafts, [current.position]: ids }, answers: { ...current.answers, [current.position]: answer } }; setTraining(latest.current);
+      run(() => trainingRepository.answer(id, answer, ids));
     } else run(() => trainingRepository.draft(id, current.position, ids));
   };
   const position = training.position;
@@ -144,13 +148,12 @@ export function useTrainingSession(incoming: StoredTraining) {
   const returnPosition = training.practiceReturnPosition ?? position;
   const browsingPast = !checkMode && training.practiceReturnPosition !== undefined && position < returnPosition && revealed;
   return { training, selection, selectionLimit, returnPosition, browsingPast, overview, setOverview, busy, failed, position, question, answer, checkMode, revealed,
-    complete: answerFormat(question)?.complete(question, selection) ?? false, flagged: answer?.flagged ?? false,
-    remaining: TrainingRules.remainingSeconds(training, now), select,
+    complete: answerFormat(question)?.isComplete(question, draftAnswer(question, selection)) ?? false, flagged: answer?.flagged ?? false,
+    remaining: TrainingRules.remainingSeconds(training, now), select, change,
     selectKey: (key: string) => {
-      const groups = latest.current.session.items[latest.current.position]!.question.groups;
-      const group = groups.find((group) => !group.options.some((option) => selected.current.includes(option.id))) ?? groups[0];
-      const option = group?.options[key.toLowerCase().charCodeAt(0) - 'a'.charCodeAt(0)];
-      if (option) select(option.id);
+      const question = latest.current.session.items[latest.current.position]!.question;
+      const input = answerFormat(question)?.selectKey?.(question, selected.current, key);
+      if (input) select(input);
     },
     go: (next: number) => run(() => move(next)),
     previous: () => run(() => move(latest.current.position - 1)),

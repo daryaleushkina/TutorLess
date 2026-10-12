@@ -110,7 +110,7 @@
 .secondaryAction svg { width: var(--size-icon-sm); height: var(--size-icon-sm); flex: none; }
 .secondaryAction[aria-pressed='true'] { background: var(--color-text); color: var(--color-bg); }
 .textButton { min-height: var(--size-tap-target); border: 0; background: transparent; font: var(--font-action); color: var(--color-text-2); text-align: left; }
-.questionTools { display: flex; flex-wrap: wrap; gap: var(--space-8); }
+.questionTools { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-8); }
 .questionTools .secondaryAction { min-height: var(--size-tap-target); font: var(--font-action); }
 .overview { display: grid; gap: var(--space-20); }
 .questionGrid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--space-8); }
@@ -194,7 +194,7 @@
   .reviewFilters button { font: var(--font-caption); font-weight: var(--font-weight-bold); }
   .sessionLabel { font: var(--font-caption); font-weight: var(--font-weight-semibold); }
 }
-@media (hover: hover) and (pointer: fine) { .option:not(:disabled):not([aria-checked='true']):hover, .row:not(:disabled):hover, .iconButton:hover, .secondaryAction:hover, .reviewRow:hover { background: var(--color-surface-2); } }
+@media (hover: hover) and (pointer: fine) { .option:not(:disabled):not([aria-checked='true']):hover, .row:not(:disabled):hover, .iconButton:hover, .secondaryAction:not([aria-pressed='true']):hover, .reviewRow:hover { background: var(--color-surface-2); } }
 .option:not(:disabled):active, .secondaryAction:active, .action:active, .overviewCell:active, .iconButton:active { transform: scale(var(--motion-press-scale)); }
 @media (prefers-reduced-motion: reduce) { .option:active, .secondaryAction:active, .action:active, .overviewCell:active, .iconButton:active { transform: none; } .spinner { animation: none; } }
 
@@ -219,3 +219,40 @@
 .reportForm .sessionFooter { position: sticky; bottom: 0; padding: var(--space-8) 0 0; }
 .reportField textarea { min-height: min(calc(var(--size-section-row) * 2), calc(var(--app-height) / 4)); }
 @media (min-width: 900px) { .sheetDialog { bottom: 0; } }
+
+.numericAnswer { display: grid; gap: var(--space-12); }
+.numericEntry { display: flex; align-items: center; gap: var(--space-12); margin-top: var(--space-8); }
+.numericField { display: inline-flex; align-items: center; gap: var(--space-12); max-width: 100%; }
+.numericUnit { flex: none; color: var(--color-text-3); font: var(--font-opt); }
+.numericInput { min-width: 0; width: calc(var(--space-64) * 3 + var(--space-8)); max-width: 100%; min-height: calc(var(--size-opt) + var(--space-4)); padding: var(--space-12) var(--space-16); border: calc(var(--size-hairline) * 2) solid var(--color-line-strong); border-radius: var(--radius-m); background: var(--color-surface); color: var(--color-text); font: var(--font-h2); font-weight: var(--font-weight-semibold); letter-spacing: var(--tracking-h3); font-variant-numeric: tabular-nums; caret-color: var(--color-text); }
+.numericInput:focus { border-color: var(--color-text); }
+.numericInput:focus-visible { outline-color: var(--color-text); }
+.numericInput[aria-invalid='true'] { border-color: var(--color-wrong); }
+.numericError { color: var(--color-wrong); font: var(--font-meta); }
+.fractionWrap { display: flex; align-items: center; gap: var(--space-14); }
+.fractionWrap small { max-width: calc(var(--space-40) * 3); }
+.fraction { display: grid; gap: var(--space-8); width: calc(var(--space-64) * 3 + var(--space-8)); max-width: 100%; }
+.fraction .numericInput { width: 100%; text-align: center; }
+.fractionLine { height: calc(var(--size-hairline) * 2); background: var(--color-text); border-radius: var(--radius-full); }
+.passage { display: grid; gap: var(--space-14); font: var(--font-opt); line-height: calc(1em + var(--space-12)); text-wrap: pretty; }
+.paragraphNumber { display: block; font: var(--font-caption); color: var(--color-text-3); font-weight: var(--font-weight-semibold); margin-bottom: var(--space-4); }
+.sentence { display: inline; font: inherit; text-align: left; color: inherit; background: transparent; border: 0; padding: var(--space-4) 0; border-radius: var(--radius-s); text-decoration: underline dotted var(--color-line-strong); text-underline-offset: var(--space-4); }
+.sentence[aria-pressed='true'] { background: var(--color-highlight); outline: var(--size-hairline) solid var(--color-text); }
+.sentence[data-result='correct'] { outline: calc(var(--size-hairline) * 2) solid var(--color-right); }
+.sentence[data-result='wrong'] { outline: calc(var(--size-hairline) * 2) solid var(--color-wrong); }
+.sentence[data-result='missed'] { outline: calc(var(--size-hairline) * 2) dashed var(--color-right); }
+.sentence:disabled { text-decoration: none; cursor: default; }
+.sentenceMark { margin-left: var(--space-6); font: var(--font-caption); color: var(--color-right); }
+.sentence[data-result='wrong'] .sentenceMark { color: var(--color-wrong); }
+.rc { flex: 1; display: flex; flex-direction: column; gap: var(--space-24); min-height: 0; }
+.rcColumns { display: grid; min-height: 0; flex: 1; }
+.rcText, .rcQuestion { min-width: 0; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: var(--space-4) var(--space-4) var(--space-24); }
+.rc[data-tab='text'] .rcQuestion, .rc[data-tab='question'] .rcText { display: none; }
+.rcTabs { width: 100%; }
+@media (min-width: 900px) {
+  .rcTabs { display: none; }
+  .rc .rcColumns { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: var(--space-48); }
+  .rc[data-tab] .rcText, .rc[data-tab] .rcQuestion { display: block; }
+  .session[data-shell='site'] .rc .questionLayout, .readTraining[data-shell='site'] .rc .reviewQuestionLayout { grid-template-columns: minmax(0, 1fr); }
+  .rc .explanation { border-top: var(--size-hairline) solid var(--color-line); padding-top: var(--space-24); }
+}

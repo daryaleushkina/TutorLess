@@ -189,9 +189,9 @@ test('новый вход того же человека ждёт очистки
   await expect(m.repo.start({ ...request, questionTypes: [...request.questionTypes] })).resolves.toBe(trainingSession().id);
 });
 
-test('опции запрашиваются с четырьмя типами; старт скачивает всё и сохраняет до открытия', async () => {
+test('опции объявляют реализованные типы и passage; старт скачивает всё и сохраняет до открытия', async () => {
   const m = make(); await m.repo.signedIn('a'); expect(await m.repo.options('gre')).toEqual(trainingOptions());
-  expect(m.api.options).toHaveBeenCalledWith({ exam: 'gre', types: ['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice'] }, { signal: undefined });
+  expect(m.api.options).toHaveBeenCalledWith({ exam: 'gre', types: ['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice', 'multiple_choice_multi', 'numeric_entry', 'select_in_passage'] }, { signal: undefined, headers: { 'X-Training-Capabilities': 'text_completion,sentence_equivalence,quantitative_comparison,multiple_choice,multiple_choice_multi,numeric_entry,select_in_passage,passage' } });
   const id = await m.repo.start({ ...request, questionTypes: [...request.questionTypes] });
   expect(await m.repo.get(id)).toEqual(savedTraining(id, NOW));
   expect((await m.repo.active())?.session.id).toBe(id);

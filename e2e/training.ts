@@ -57,8 +57,8 @@ export async function presetMatchesForm(page: Page) {
   const posted = page.waitForRequest((req) => req.method() === 'POST' && new URL(req.url()).pathname === '/api/trainings');
   await page.getByRole('button', { name: /^(Начать ·|Начинаем…)/ }).click();
   expect(schemas.TrainingRequest.parse((await posted).postDataJSON())).toMatchObject({ exam: 'gre', section: 'verbal', count: 12, mode: 'check',
-    questionTypes: ['text_completion', 'sentence_equivalence'] });
-  await expect(page.getByRole('heading', { name: /Text Completion|Sentence Equivalence/ })).toBeVisible();
+    questionTypes: ['text_completion', 'sentence_equivalence', 'multiple_choice', 'multiple_choice_multi', 'select_in_passage'] });
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Text Completion|Sentence Equivalence|Multiple Choice|Multiple Answer|Select in Passage/);
 }
 
 export async function resumeCounterStaysTogether(page: Page) {
@@ -140,7 +140,7 @@ export async function startSession(page: Page, mode: 'practice' | 'check' = 'pra
   const response = page.waitForResponse((r) => r.request().method() === 'POST' && new URL(r.url()).pathname === '/api/trainings');
   await page.getByRole('button', { name: /^(Начать ·|Начинаем…)/ }).click();
   const session = schemas.TrainingSession.parse(await (await response).json());
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(new RegExp('Text Completion|Sentence Equivalence|Quantitative Comparison|Multiple Choice'));
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Text Completion|Sentence Equivalence|Quantitative Comparison|Multiple Choice|Multiple Answer|Numeric Entry|Select in Passage/);
   return session;
 }
 
@@ -347,7 +347,15 @@ export async function stableTrainingScreens(page: Page, capture = true) {
   await page.getByRole('button', { name: 'Готово', exact: true }).click();
   const check = await startSession(page, 'check', 50);
   await page.getByRole('button', { name: 'Отметить, чтобы вернуться' }).click();
+  // Снимок нужен после сохранения отметки: иначе в эталон попадает временно неактивная кнопка.
+  await expect(page.getByRole('button', { name: 'Снять отметку', exact: true })).toBeEnabled();
   if (capture) {
+    await expect.poll(() => page.getByRole('button', { name: 'Вопросы', exact: true }).locator('..').evaluate((tools) => {
+      const first = tools.firstElementChild!.getBoundingClientRect();
+      const last = tools.lastElementChild!.getBoundingClientRect();
+      const row = tools.getBoundingClientRect();
+      return Math.abs(first.left - row.left) < 1 && Math.abs(last.right - row.right) < 1;
+    }), { message: 'R14: «Вопросы» и «Вернуться» у разных краёв строки' }).toBe(true);
     await checkScreen(page, 'training-b-timed');
     if (new URL(page.url()).pathname.startsWith('/tg/')) await trainingBack(page);
     else await page.getByRole('button', { name: 'Закрыть тренировку', exact: true }).click();
@@ -670,7 +678,7 @@ export async function reportDraftWritesAndQuota(page: Page) {
 }
 
 export async function chooseTrainingType(page: Page, type: string) {
-  const labels: Record<string, string> = { text_completion: 'Text Completion', sentence_equivalence: 'Sentence Equivalence', quantitative_comparison: 'Quantitative Comparison', multiple_choice: 'Multiple Choice' };
+  const labels: Record<string, string> = { text_completion: 'Text Completion', sentence_equivalence: 'Sentence Equivalence', quantitative_comparison: 'Quantitative Comparison', multiple_choice: 'Multiple Choice', multiple_choice_multi: 'Multiple Answer', numeric_entry: 'Numeric Entry', select_in_passage: 'Select in Passage' };
   await page.getByRole('button', { name: /^Тип/ }).click();
   await page.getByRole('radio', { name: labels[type], exact: true }).click();
 }

@@ -3,9 +3,9 @@ import { reportError } from '../errors/report';
 import { type ReportDraft, pendingReportSchema, storedTraining, type StoredTraining } from './model';
 import { TrainingRules } from './rules';
 import { TrainingStore, TrainingOwnerChangedError, TrainingStorageBlockedError, type TrainingOwner } from './store';
+import { SUPPORTED_TYPES, TRAINING_HEADERS } from './capabilities';
 
-export const SUPPORTED_TYPES = schemas.QuestionType.options.filter((type) =>
-  type === 'text_completion' || type === 'sentence_equivalence' || type === 'quantitative_comparison' || type === 'multiple_choice');
+export { SUPPORTED_TYPES } from './capabilities';
 const PERMANENT = new Set([400, 404, 409, 410, 422]);
 export const SYNC_LOCK = 'greprep-training-sync';
 interface TrainingApi {
@@ -19,8 +19,8 @@ const TRAINING_API: TrainingApi = {
   options: getTrainingOptions, start: startTraining,
   // Пачка ограничена договором (50 ответов, по три id до 16 знаков): keepalive переживает перезагрузку в WebKit.
   // Неотправленное остаётся на диске; повтор того же ответа после открытия подтверждается сервером идемпотентно.
-  answers: (id, answers, options) => submitTrainingAnswers(id, answers, { ...options, keepalive: true }),
-  finish: (id, finish, options) => finishTraining(id, finish, { ...options, keepalive: true }),
+  answers: (id, answers, options) => submitTrainingAnswers(id, answers, { ...options, headers: TRAINING_HEADERS, keepalive: true }),
+  finish: (id, finish, options) => finishTraining(id, finish, { ...options, headers: TRAINING_HEADERS, keepalive: true }),
   report: (id, report, options) => reportQuestion(id, report, { ...options, keepalive: true }),
 };
 
@@ -126,7 +126,7 @@ export class TrainingRepository {
 
   async options(exam: Exam, signal?: AbortSignal) {
     const generation = this.generation;
-    try { return await this.api.options({ exam, types: SUPPORTED_TYPES }, { signal }); }
+    try { return await this.api.options({ exam, types: SUPPORTED_TYPES }, { signal, headers: TRAINING_HEADERS }); }
     catch (error) { if (generation === this.generation) this.handle(error); throw error; }
   }
 
@@ -137,7 +137,7 @@ export class TrainingRepository {
     if (!owner) throw new Error('training start without session');
     let saving = false;
     try {
-      const session = await this.api.start(request);
+      const session = await this.api.start(request, { headers: TRAINING_HEADERS });
       if (!this.isCurrent(owner, generation)) throw new Error('training session changed during start');
       saving = true;
       if (!await this.store.put(owner, storedTraining(session, this.now()))) throw new Error('training owner changed during start');
@@ -166,10 +166,10 @@ export class TrainingRepository {
     return active;
   }
 
-  async answer(id: string, answer: GivenAnswer): Promise<void> {
+  async answer(id: string, answer: GivenAnswer, draft?: string[]): Promise<void> {
     const checked = schemas.GivenAnswer.parse(answer);
     await this.edit(id, (t) => t.finish || checked.position >= t.session.items.length ? t : {
-      ...t, answers: { ...t.answers, [checked.position]: checked }, unsent: [...new Set([...t.unsent, checked.position])],
+      ...t, ...(draft && t.session.mode === 'check' && { drafts: { ...t.drafts, [checked.position]: draft } }), answers: { ...t.answers, [checked.position]: checked }, unsent: [...new Set([...t.unsent, checked.position])],
     });
     this.requestSync();
   }

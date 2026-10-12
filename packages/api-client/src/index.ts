@@ -3,4 +3,4 @@ export * from './generated/api';
 export * as schemas from './generated/model/index.zod';
 export type * from './generated/model/index.zod';
 export { ApiError, configureHttp, isApiError, lastSeenRequestId, type ApiErrorKind } from './http';
-export { gradeTrainingAnswer } from './training-answer';
+export { gradeTrainingAnswer, trainingNumericSolution } from './training-answer';
