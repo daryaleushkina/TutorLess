@@ -20,7 +20,7 @@ enum Fonts {
     }
 
     static func register() {
-        for name in ["Geologica-Variable", "IBMPlexMono-Regular", "SourceSerif4-Variable", googleMediumName] {
+        for name in ["Onest-Variable", "IBMPlexMono-Regular", "SourceSerif4-Variable", googleMediumName] {
             guard let url = Bundle.main.url(forResource: name, withExtension: "ttf") else {
                 reportFailure("В наборе приложения нет \(name).ttf")
                 continue
@@ -46,12 +46,12 @@ enum Fonts {
     static func naturalLineHeight(for family: String) -> CGFloat {
         // Из head.unitsPerEm и (hhea.ascent - descent + lineGap); OS/2 sTypo* совпадают,
         // USE_TYPO_METRICS включён. Проверено fontTools.ttLib.TTFont по вшитым ttf:
-        // Geologica: (1950 + 550 + 0) / 2000 = 1,25; IBM Plex Mono: (1025 + 275 + 0) / 1000 = 1,30;
+        // Onest: (970 + 305 + 0) / 1000 = 1,275; IBM Plex Mono: (1025 + 275 + 0) / 1000 = 1,30;
         // Source Serif 4: (1036 + 335 + 0) / 1000 = 1,371. CoreText-метрики проверяет AppearanceTests.
         switch family {
         case GPType.monoFontFamily: 1.3
         case GPType.mathFontFamily: 1.371
-        default: 1.25
+        default: 1.275
         }
     }
 }

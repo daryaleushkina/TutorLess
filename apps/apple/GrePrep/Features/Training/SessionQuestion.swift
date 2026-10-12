@@ -172,7 +172,7 @@ struct SessionQuestion: View {
 
     @ViewBuilder private var heading: some View {
         Text(verbatim: TrainingText.typeLabel(question)).gpText(\.meta)
-            .foregroundStyle(section.color).accessibilityAddTraits(.isHeader)
+            .foregroundStyle(section.ink).accessibilityAddTraits(.isHeader)
         if let onReport {
             Button("Сообщить об ошибке", action: onReport).gpText(\.caption)
                 .buttonStyle(.plain).foregroundStyle(Color(.text3))
@@ -199,7 +199,7 @@ struct SessionQuestion: View {
                 question.groups.indices.contains(index)
                 ? question.groups[index].options.first { chosen.contains($0.id) } : nil
             var blank = AttributedString(many ? option?.text ?? "_______" : "_______")
-            blank.foregroundColor = many && option != nil ? Color(screen.revealed ? .right : .accent) : Color(.text2)
+            blank.foregroundColor = many && option != nil ? Color(screen.revealed ? .right : .text) : Color(.text2)
             text.append(blank)
         }
         return text
@@ -247,12 +247,12 @@ struct SessionQuestion: View {
                     .padding(.horizontal, GPSpace.s14).padding(.vertical, GPSpace.s8)
                     .frame(minHeight: GPSize.tapTarget)
                     .background(
-                        selected ? Color(.accentSoft) : Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.m)
+                        selected ? Color(.surface2) : Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.m)
                     )
                     .overlay {
                         if selected {
                             RoundedRectangle(cornerRadius: GPRadius.m).stroke(
-                                Color(.accent), lineWidth: GPSize.hairline)
+                                Color(.text), lineWidth: GPSize.hairline)
                         }
                     }
             }.buttonStyle(PressScaleStyle())
@@ -269,10 +269,10 @@ struct SessionQuestion: View {
             Text(verbatim: option.id).gpText(\.meta).fontWeight(.semibold)
                 .frame(minWidth: GPSize.icon, minHeight: GPSize.icon)
                 .foregroundStyle(
-                    mark == .selected ? Color(.onAccent) : mark == .correct ? Color(.right) : Color(.text2)
+                    mark == .selected ? Color(.bg) : mark == .correct ? Color(.right) : Color(.text2)
                 )
                 .background(
-                    mark == .selected ? Color(.accent) : mark == .correct ? Color(.surface) : Color(.surface2),
+                    mark == .selected ? Color(.text) : mark == .correct ? Color(.surface) : Color(.surface2),
                     in: Capsule()
                 )
             Text(verbatim: option.text).gpText(\.opt).frame(maxWidth: .infinity, alignment: .leading)
@@ -285,12 +285,12 @@ struct SessionQuestion: View {
             }
         }.frame(minHeight: GPSize.opt).padding(.horizontal, GPSpace.s12).padding(.vertical, GPSpace.s8)
             .background(
-                mark == .selected ? Color(.accentSoft) : mark == .correct ? Color(.rightSoft) : Color(.surface),
+                mark == .selected ? Color(.surface2) : mark == .correct ? Color(.rightSoft) : Color(.surface),
                 in: RoundedRectangle(cornerRadius: GPRadius.m)
             )
             .overlay {
                 if mark == .selected {
-                    RoundedRectangle(cornerRadius: GPRadius.m).stroke(Color(.accent), lineWidth: GPSize.hairline)
+                    RoundedRectangle(cornerRadius: GPRadius.m).stroke(Color(.text), lineWidth: GPSize.hairline)
                 }
             }
     }

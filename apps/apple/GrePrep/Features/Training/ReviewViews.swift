@@ -301,12 +301,12 @@ struct QuestionReportView: View {
                                         .frame(maxWidth: .infinity, minHeight: GPSize.tapTarget)
                                         .foregroundStyle(Color(.text))
                                         .background(
-                                            model.draft.kind == kind ? Color(.accentSoft) : Color(.surface),
+                                            model.draft.kind == kind ? Color(.surface2) : Color(.surface),
                                             in: Capsule()
                                         )
                                         .overlay {
                                             if model.draft.kind == kind {
-                                                Capsule().strokeBorder(Color(.accent), lineWidth: GPSize.hairline)
+                                                Capsule().strokeBorder(Color(.text), lineWidth: GPSize.hairline)
                                             }
                                         }
                                 }.buttonStyle(PressScaleStyle()).accessibilityAddTraits(
@@ -387,7 +387,7 @@ struct QuestionReportView: View {
                 #if os(iOS)
                     .navigationBarTitleDisplayMode(.inline)
                 #endif
-        }.tint(Color(.accent))
+        }.tint(Color(.text))
             .interactiveDismissDisabled(model.saving)
             #if os(macOS)
                 // Системный Escape иначе закрывает лист мимо «Отмены» и оставляет черновик.

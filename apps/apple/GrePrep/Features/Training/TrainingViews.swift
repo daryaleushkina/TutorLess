@@ -87,7 +87,7 @@ struct TrainingFlow: View {
                 }
             }
         }
-        .tint(Color(.accent))
+        .tint(Color(.text))
         .onAppear {
             // State(initialValue:) вычислялся при каждом пересчёте родителя, даже если SwiftUI сохранял State.
             if sessionID == nil, builder == nil { builder = BuilderModel(trainings: trainings, prefill: prefill) }
@@ -403,7 +403,7 @@ struct TrainingTopicsView: View {
                         verbatim:
                             "\(TrainingText.sectionLabel(model.form.section)) · \(model.form.type.label)"
                     )
-                    .gpText(\.meta).foregroundStyle(StudySection(model.form.section).color)
+                    .gpText(\.meta).foregroundStyle(StudySection(model.form.section).ink)
                     topics
                     difficulty
                     if wide {
@@ -443,7 +443,7 @@ struct TrainingTopicsView: View {
                         Text(model.available(in: topic), format: .number).gpText(\.meta).monospacedDigit()
                             .foregroundStyle(Color(.text2))
                     }
-                }.tint(StudySection(model.form.section).color).frame(minHeight: GPSize.tapTarget)
+                }.tint(StudySection(model.form.section).ink).frame(minHeight: GPSize.tapTarget)
                     .padding(.vertical, GPSpace.s8).accessibilityIdentifier("builder.topic.\(topic.id)")
             }
         }.padding(.horizontal, GPSpace.s16).background(

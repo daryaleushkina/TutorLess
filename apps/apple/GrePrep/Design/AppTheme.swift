@@ -28,20 +28,17 @@ enum AppTheme: String, Sendable {
     #endif
 }
 
-/// Вес цифр и свечение идут вместе с цветами каталога, включая снимки с явной темой.
+/// Роли текста выбираются вместе с цветами каталога, включая снимки с явной темой.
 struct GPDesignTokens {
     let type: GPType
-    let theme: GPThemeTokens
 
     init(colorScheme: ColorScheme) {
         type = colorScheme == .dark ? .dark : .light
-        theme = colorScheme == .dark ? .dark : .light
     }
 }
 
 extension EnvironmentValues {
     @Entry var gpType = GPType.dark
-    @Entry var gpTheme = GPThemeTokens.dark
     @Entry var gpWideLayout = false
 }
 
@@ -53,10 +50,9 @@ private struct GPDesignTokensModifier: ViewModifier {
         let tokens = GPDesignTokens(colorScheme: colorScheme)
         content
             .environment(\.gpType, tokens.type)
-            .environment(\.gpTheme, tokens.theme)
             .font(.gp(tokens.type.body, scale: textScale))
             .foregroundStyle(Color(.text))
-            .tint(Color(.accent))
+            .tint(Color(.text))
     }
 }
 

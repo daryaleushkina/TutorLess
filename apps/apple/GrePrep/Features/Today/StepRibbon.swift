@@ -75,7 +75,7 @@ private struct StepRow: View {
         case .next:
             Image(systemName: step.section.symbol)
                 .font(.system(size: GPSize.icon / 2, weight: .semibold))
-                .foregroundStyle(step.section.color)
+                .foregroundStyle(step.section.ink)
                 .frame(width: GPSize.icon, height: GPSize.icon)
                 .background(Color(.surface), in: Circle())
                 .overlay(Circle().strokeBorder(Color(.line), lineWidth: GPSize.hairline))
@@ -138,7 +138,7 @@ private struct CurrentStepCard: View {
             Text(step.section.label)
                 .gpText(\.meta)
                 .fontWeight(.medium)
-                .foregroundStyle(step.section.color)
+                .foregroundStyle(step.section.ink)
             Button(action: onStart) {
                 Text("Начать")
             }
@@ -177,7 +177,7 @@ private struct QuietStepLabel: View {
                         .foregroundStyle(Color(.text))
                     Text(step.section.label)
                         .gpText(\.meta)
-                        .foregroundStyle(step.section.color)
+                        .foregroundStyle(step.section.ink)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 Group {

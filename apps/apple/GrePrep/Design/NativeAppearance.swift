@@ -4,6 +4,7 @@ import SwiftUI
     import CoreText
     import UIKit
 
+    @MainActor
     enum NativeAppearance {
         static func navigation(compatibleWith traits: UITraitCollection? = nil) -> UINavigationBarAppearance {
             let appearance = UINavigationBarAppearance()
@@ -19,6 +20,27 @@ import SwiftUI
             UINavigationBar.appearance().standardAppearance = appearance
             UINavigationBar.appearance().scrollEdgeAppearance = appearance
             UINavigationBar.appearance().compactAppearance = appearance
+            let tabs = tabBar()
+            UITabBar.appearance().standardAppearance = tabs
+            UITabBar.appearance().scrollEdgeAppearance = tabs
+            UITabBar.appearance().unselectedItemTintColor = UIColor(resource: .text3)
+        }
+
+        static func tabBar(compatibleWith traits: UITraitCollection? = nil) -> UITabBarAppearance {
+            let appearance = UITabBarAppearance()
+            appearance.configureWithDefaultBackground()
+            for layout in [
+                appearance.stackedLayoutAppearance, appearance.inlineLayoutAppearance,
+                appearance.compactInlineLayoutAppearance,
+            ] {
+                var normal = attributes(GPType.dark.navLabel, compatibleWith: traits)
+                normal[.foregroundColor] = UIColor(resource: .text3)
+                layout.normal.titleTextAttributes = normal
+                layout.normal.iconColor = UIColor(resource: .text3)
+                layout.selected.titleTextAttributes = attributes(GPType.dark.navLabel, compatibleWith: traits)
+                layout.selected.iconColor = UIColor(resource: .text)
+            }
+            return appearance
         }
 
         static func attributes(_ role: GPTextStyle, compatibleWith traits: UITraitCollection? = nil)
@@ -26,11 +48,11 @@ import SwiftUI
         {
             let font = UIFont(name: role.fontFamily, size: role.size) ?? .systemFont(ofSize: role.size)
             let weights: [(Font.Weight, CGFloat)] = [
-                (.ultraLight, 100), (.thin, 200), (.light, 300), (.regular, 400), (.medium, 500),
-                (.semibold, 600), (.bold, 700), (.heavy, 800), (.black, 900),
+                (.regular, 400), (.medium, 500),
+                (.semibold, 600), (.bold, 700), (.heavy, 800),
             ]
             let descriptor = font.fontDescriptor.addingAttributes([
-                // traits.weight не меняет wght в переменной Geologica; ось задаётся явно по роли.
+                // traits.weight не меняет wght в переменном Onest; ось задаётся явно по роли.
                 UIFontDescriptor.AttributeName(rawValue: kCTFontVariationAttribute as String): [
                     NSNumber(value: 0x7767_6874): weights.first { $0.0 == role.weight }?.1 ?? 400
                 ]

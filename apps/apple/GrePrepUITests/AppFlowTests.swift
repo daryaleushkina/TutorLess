@@ -53,7 +53,7 @@ final class AppFlowTests: XCTestCase {
         let apple = app.buttons["signin.apple"]
         XCTAssertTrue(apple.waitForExistence(timeout: 10))
         let image = XCUIScreen.main.screenshot().image
-        try expectPixel(image, at: CGPoint(x: 4, y: image.size.height / 2), rgb: (10, 15, 31))
+        try expectPixel(image, at: CGPoint(x: 4, y: image.size.height / 2), rgb: backgroundRGB("dark"))
         try expectPixel(
             image, at: CGPoint(x: apple.frame.minX + apple.frame.height / 2, y: apple.frame.midY), rgb: (255, 255, 255))
         if let path = ProcessInfo.processInfo.environment["GP_REVIEW_OUTPUT"] {
@@ -80,17 +80,17 @@ final class AppFlowTests: XCTestCase {
         var app = launch(reset: true, theme: "light", useReviewTheme: false)
         XCTAssertTrue(app.buttons["signin.apple"].waitForExistence(timeout: 10))
         var image = XCUIScreen.main.screenshot().image
-        try expectPixel(image, at: CGPoint(x: 4, y: image.size.height / 2), rgb: (226, 227, 241))
+        try expectPixel(image, at: CGPoint(x: 4, y: image.size.height / 2), rgb: backgroundRGB("light"))
         app.terminate()
         app = launch(reset: false, useReviewTheme: false)
         XCTAssertTrue(app.buttons["signin.apple"].waitForExistence(timeout: 10))
         image = XCUIScreen.main.screenshot().image
-        try expectPixel(image, at: CGPoint(x: 4, y: image.size.height / 2), rgb: (226, 227, 241))
+        try expectPixel(image, at: CGPoint(x: 4, y: image.size.height / 2), rgb: backgroundRGB("light"))
         app.terminate()
         app = launch(reset: true, useReviewTheme: false)
         XCTAssertTrue(app.buttons["signin.apple"].waitForExistence(timeout: 10))
         image = XCUIScreen.main.screenshot().image
-        try expectPixel(image, at: CGPoint(x: 4, y: image.size.height / 2), rgb: (10, 15, 31))
+        try expectPixel(image, at: CGPoint(x: 4, y: image.size.height / 2), rgb: backgroundRGB("dark"))
     }
 
     func testBuilderModeDoesNotOverlapStartWhileKeyboardIsOpen() {
@@ -140,9 +140,42 @@ final class AppFlowTests: XCTestCase {
                 XCTAssertTrue(app.buttons["builder.topics.done"].waitForExistence(timeout: 5))
                 app.buttons["builder.topics.done"].tap()
                 let absent = XCTNSPredicateExpectation(
-                    predicate: NSPredicate { _, _ in !app.buttons["builder.keyboardDone"].exists }, object: nil)
+                    predicate: NSPredicate { _, _ in
+                        !app.buttons["builder.keyboardDone"].exists && !app.buttons["builder.topics.done"].exists
+                    }, object: nil)
                 XCTAssertEqual(XCTWaiter.wait(for: [absent], timeout: 5), .completed)
             })
+    }
+
+    private func backgroundRGB(_ theme: String) throws -> (Int, Int, Int) {
+        // Проверяем пиксель приложения против источника цветов, без второй палитры в тестах.
+        struct Asset: Decodable {
+            struct Entry: Decodable {
+                struct Appearance: Decodable { let value: String }
+                struct Color: Decodable {
+                    struct Components: Decodable {
+                        let red: String
+                        let green: String
+                        let blue: String
+                    }
+                    let components: Components
+                }
+                let color: Color
+                let appearances: [Appearance]?
+            }
+            let colors: [Entry]
+        }
+        let root = URL(filePath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .deletingLastPathComponent().deletingLastPathComponent()
+        let url = root.appending(path: "design/tokens/generated/apple/GPColors.xcassets/bg.colorset/Contents.json")
+        let asset = try JSONDecoder().decode(Asset.self, from: Data(contentsOf: url))
+        let color = try XCTUnwrap(
+            asset.colors.first { entry in
+                theme == "dark" ? entry.appearances?.contains { $0.value == "dark" } == true : entry.appearances == nil
+            }
+        ).color.components
+        func channel(_ value: String) throws -> Int { Int((try XCTUnwrap(Double(value)) * 255).rounded()) }
+        return try (channel(color.red), channel(color.green), channel(color.blue))
     }
 
     private func expectPixel(
@@ -373,7 +406,14 @@ final class AppFlowTests: XCTestCase {
         app.switches["builder.topic.cause-effect"].tap()
         if threeBlanks { app.segmentedControls["builder.difficulty"].buttons["Трудная"].tap() }
         app.buttons["builder.topics.done"].tap()
-        app.buttons["builder.start"].tap()
+        let start = app.buttons["builder.start"]
+        // На iOS 18 завершение события «Готово» не гарантирует, что шторка уже перестала перехватывать касание.
+        let ready = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in
+                !app.buttons["builder.topics.done"].exists && start.isHittable && start.isEnabled
+            }, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [ready], timeout: 5), .completed)
+        start.tap()
         XCTAssertTrue(app.staticTexts["session.progress"].waitForExistence(timeout: 10))
     }
 

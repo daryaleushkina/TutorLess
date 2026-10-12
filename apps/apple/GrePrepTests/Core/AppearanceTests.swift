@@ -34,18 +34,16 @@ struct AppearanceTests {
         #expect(theme.colorScheme == (theme == .dark ? .dark : .light))
     }
 
-    @Test("цвета, тонкий вес и свечение выбираются одной схемой", arguments: [ColorScheme.light, .dark])
+    @Test("крупные цифры используют плотный вес в обеих темах", arguments: [ColorScheme.light, .dark])
     func themeTokens(scheme: ColorScheme) {
         let tokens = GPDesignTokens(colorScheme: scheme)
-        let expected = scheme == .dark ? GPThemeTokens.dark : .light
-        #expect(tokens.theme.thin == expected.thin)
-        #expect(tokens.type.scoreNum.weight == expected.thin)
-        #expect(tokens.type.sessionCount.weight == expected.thin)
-        #expect(tokens.theme.glow.color == expected.glow.color)
-        #expect(tokens.theme.glow.spread == expected.glow.spread)
+        for role in [tokens.type.scoreNum, tokens.type.sessionCount, tokens.type.numXxl] {
+            #expect(role.weight == .heavy)
+            #expect(role.tracking < 0)
+        }
     }
 
-    @Test("корень передаёт роли и свечение в рисуемый экран", arguments: [ColorScheme.light, .dark])
+    @Test("корень передаёт роли выбранной темы в рисуемый экран", arguments: [ColorScheme.light, .dark])
     func renderedEnvironment(scheme: ColorScheme) throws {
         let probe = TokenProbe()
         let renderer = ImageRenderer(
@@ -57,10 +55,10 @@ struct AppearanceTests {
             #expect(renderer.nsImage != nil)
         #endif
         let type = try #require(probe.type)
-        let theme = try #require(probe.theme)
-        #expect(type.scoreNum.weight == (scheme == .dark ? .ultraLight : .light))
-        #expect(theme.thin == type.scoreNum.weight)
-        #expect(theme.glow.spread == (scheme == .dark ? GPThemeTokens.dark : .light).glow.spread)
+        let expected = scheme == .dark ? GPType.dark : .light
+        #expect(type.scoreNum.weight == expected.scoreNum.weight)
+        #expect(type.scoreNum.tracking == expected.scoreNum.tracking)
+        #expect(type.body.fontFamily == expected.body.fontFamily)
     }
 
     @Test("роли находят вшитые семейства по имени, без системной подмены")
@@ -95,7 +93,25 @@ struct AppearanceTests {
     }
 
     #if os(iOS)
-        @Test("крупный и обычный заголовки родной панели используют Geologica")
+        @Test("родные вкладки используют Onest и цвета активного и тихого текста")
+        func tabBarFontAndColors() throws {
+            let appearance = NativeAppearance.tabBar()
+            for layout in [
+                appearance.stackedLayoutAppearance, appearance.inlineLayoutAppearance,
+                appearance.compactInlineLayoutAppearance,
+            ] {
+                for (state, color) in [(layout.normal, ColorResource.text3), (layout.selected, .text)] {
+                    let font = try #require(state.titleTextAttributes[.font] as? UIFont)
+                    #expect(font.familyName == GPType.fontFamily)
+                    let variations = CTFontCopyVariation(font as CTFont) as? [NSNumber: NSNumber]
+                    #expect(variations?[NSNumber(value: 0x7767_6874)]?.doubleValue == 600)
+                    #expect(state.titleTextAttributes[.foregroundColor] as? UIColor == UIColor(resource: color))
+                    #expect(state.iconColor == UIColor(resource: color))
+                }
+            }
+        }
+
+        @Test("крупный и обычный заголовки родной панели используют Onest")
         func navigationFont() throws {
             let appearance = NativeAppearance.navigation()
             for attributes in [appearance.titleTextAttributes, appearance.largeTitleTextAttributes] {
@@ -109,14 +125,14 @@ struct AppearanceTests {
         func navigationWeightAndTracking() throws {
             Fonts.register()
             let appearance = NativeAppearance.navigation()
-            for (attributes, role) in [
-                (appearance.titleTextAttributes, GPType.dark.h3),
-                (appearance.largeTitleTextAttributes, GPType.dark.h1),
+            for (attributes, role, weight) in [
+                (appearance.titleTextAttributes, GPType.dark.h3, 700.0),
+                (appearance.largeTitleTextAttributes, GPType.dark.h1, 800.0),
             ] {
                 let font = try #require(attributes[.font] as? UIFont)
                 let variations = CTFontCopyVariation(font as CTFont) as? [NSNumber: NSNumber]
-                // OpenType-тег wght; обе роли каталога имеют вес semibold (600).
-                #expect(variations?[NSNumber(value: 0x7767_6874)]?.doubleValue == 600)
+                // Проверяем реальную ось, а не только имя семейства в дескрипторе.
+                #expect(variations?[NSNumber(value: 0x7767_6874)]?.doubleValue == weight)
                 let actualTracking: Double? = (attributes[.kern] as? NSNumber)?.doubleValue
                 let expectedTracking: Double = role.tracking * font.pointSize
                 #expect(actualTracking == expectedTracking)
@@ -143,8 +159,7 @@ struct AppearanceTests {
         @Test(
             "нативный шрифт сохраняет веса ролей",
             arguments: [
-                (Font.Weight.ultraLight, 100.0), (.thin, 200), (.light, 300), (.regular, 400), (.medium, 500),
-                (.semibold, 600), (.bold, 700), (.heavy, 800), (.black, 900),
+                (Font.Weight.regular, 400.0), (.medium, 500), (.semibold, 600), (.bold, 700), (.heavy, 800),
             ])
         func nativeRoleWeights(weight: Font.Weight, expected: Double) throws {
             let role = GPTextStyle(
@@ -153,7 +168,7 @@ struct AppearanceTests {
             let attributes = NativeAppearance.attributes(role)
             let font = try #require(attributes[.font] as? UIFont)
             let variations = CTFontCopyVariation(font as CTFont) as? [NSNumber: NSNumber]
-            // CoreText не хранит вариацию, равную default оси (у вшитой Geologica это 100).
+            // CoreText не хранит вариацию, равную default оси (у вшитого Onest это 400).
             let axes = try #require(CTFontCopyVariationAxes(font as CTFont) as? [[String: Any]])
             let axis = try #require(
                 axes.first { ($0[kCTFontVariationAxisIdentifierKey as String] as? NSNumber)?.intValue == 0x7767_6874 })
@@ -195,17 +210,14 @@ struct AppearanceTests {
 
 @MainActor private final class TokenProbe {
     var type: GPType?
-    var theme: GPThemeTokens?
 }
 
 private struct TokenProbeView: View {
     let probe: TokenProbe
     @Environment(\.gpType) private var type
-    @Environment(\.gpTheme) private var theme
 
     var body: some View {
         probe.type = type
-        probe.theme = theme
         return Text(verbatim: "170").gpText(\.scoreNum)
     }
 }

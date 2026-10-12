@@ -373,7 +373,7 @@ struct SessionOverview: View {
                                 Image(systemName: "checkmark").gpText(\.caption)
                             }
                         }.frame(maxWidth: .infinity, minHeight: GPSize.tapTarget).padding(.vertical, GPSpace.s4)
-                            .foregroundStyle(answered ? section.color : Color(.text))
+                            .foregroundStyle(answered ? section.ink : Color(.text))
                             .background(
                                 answered ? section.tint : Color(.surface),
                                 in: RoundedRectangle(cornerRadius: GPRadius.m)
@@ -408,7 +408,7 @@ struct SessionSummary: View {
         VStack(alignment: .leading, spacing: GPSpace.s24) {
             HStack(alignment: .firstTextBaseline, spacing: GPSpace.s12) {
                 Text(result.correct, format: .number).gpText(wide ? \.numXxlWide : \.numXxl)
-                    .accessibilityIdentifier("summary.correct")
+                    .foregroundStyle(section.ink).accessibilityIdentifier("summary.correct")
                 Text(verbatim: TrainingCopy.correctOf(result.total)).gpText(wide ? \.numLabelWide : \.numLabel)
                     .foregroundStyle(Color(.text2))
             }.accessibilityElement(children: .combine)

@@ -90,7 +90,7 @@ struct TodayView: View {
                             VStack(alignment: .leading, spacing: GPSpace.s4) {
                                 Text("Продолжить тренировку").gpText(\.h3)
                                 Text(verbatim: TrainingCopy.continuation(training)).gpText(\.meta)
-                                    .foregroundStyle(StudySection(training.session.section).color)
+                                    .foregroundStyle(StudySection(training.session.section).ink)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
                             Spacer(minLength: GPSpace.s8)

@@ -38,6 +38,16 @@ enum StudySection: String, Hashable, Sendable, CaseIterable {
         }
     }
 
+    /// Контрастный оттенок для подписей и цифр; базовый color — только для меток и заливок.
+    var ink: Color {
+        switch self {
+        case .verbal: Color(.verbalInk)
+        case .quant: Color(.quantInk)
+        case .words: Color(.wordsInk)
+        case .essay: Color(.essayInk)
+        }
+    }
+
     var tint: Color {
         switch self {
         case .verbal: Color(.verbalSoft)
