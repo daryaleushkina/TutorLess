@@ -28,35 +28,35 @@ class BuilderFontScaleTest {
     @get:Rule val compose = createAppComposeRule()
 
     @Test
-    fun countFieldGrowsToFitItsTextAtFontScale130() {
-        var lineHeight = 0f
+    fun countChoicesFitAtFontScale130() = countChoicesFit(1.3f)
+
+    @Test
+    fun countChoicesFitAtFontScale200() = countChoicesFit(2f)
+
+    private fun countChoicesFit(scale: Float) {
         compose.setContent {
             val density = LocalDensity.current
-            CompositionLocalProvider(LocalDensity provides Density(density.density, 1.3f)) {
-                GpTheme {
-                    lineHeight = with(LocalDensity.current) { Gp.type.sessionCount.lineHeight.value * this.density * this.fontScale }
-                    TrainingScreens.Builder()
-                }
+            CompositionLocalProvider(LocalDensity provides Density(density.density, scale)) {
+                GpTheme { TrainingScreens.Builder() }
             }
         }
-        val field = compose.onNodeWithTag("builder.count").performScrollTo()
-        val results = mutableListOf<TextLayoutResult>()
-        field.performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(results) }
-        val layout = results.single()
-        assertTrue(
-            "Вся высота строки числа должна помещаться в поле: ${maxOf(
-                lineHeight,
-                layout.multiParagraph.height,
-            )}, ${field.fetchSemanticsNode().layoutInfo.height.toFloat()}",
-            maxOf(lineHeight, layout.multiParagraph.height) <=
-                field
-                    .fetchSemanticsNode()
-                    .layoutInfo.height
-                    .toFloat(),
-        )
+        compose.onNodeWithTag("builder.count").performScrollTo()
+        for (text in listOf("5", "10", "15", "20")) {
+            val results = mutableListOf<TextLayoutResult>()
+            val node = compose.onNodeWithText(text, useUnmergedTree = true)
+            node.performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(results) }
+            assertEquals(1, results.single().lineCount)
+            val layout = results.single()
+            // softWrap=false оставляет Paragraph с дробной шириной. Глиф «5» занимает 28 px
+            // в рамке 29 px, хотя didOverflowWidth=true: проверяем нарисованную строку.
+            assertTrue("Число $text обрезается слева", layout.getLineLeft(0) >= 0)
+            assertTrue("Число $text обрезается справа", layout.getLineRight(0) <= layout.size.width)
+            assertTrue("Число $text обрезается по высоте", !layout.didOverflowHeight)
+            assertEquals(text.length, layout.getLineEnd(0, visibleEnd = true))
+        }
     }
 
-    @Test fun modeLabelStaysWholeAndTheSegmentsWrapUnderItAtLargeFont() {
+    @Test fun modeLabelStaysWholeAndTheChoicesDoNotOverlapItAtLargeFont() {
         compose.setContent {
             val density = LocalDensity.current
             CompositionLocalProvider(LocalDensity provides Density(density.density, 1.3f)) {
@@ -69,6 +69,6 @@ class BuilderFontScaleTest {
         assertEquals(1, results.single().lineCount)
         val labelBounds = label.fetchSemanticsNode().boundsInRoot
         val segments = compose.onNodeWithTag("builder.mode.practice").fetchSemanticsNode().boundsInRoot
-        assertTrue("Сегменты должны перейти под целую подпись", segments.top >= labelBounds.bottom)
+        assertTrue("Выбор режима не должен налезать на подпись", !segments.overlaps(labelBounds))
     }
 }

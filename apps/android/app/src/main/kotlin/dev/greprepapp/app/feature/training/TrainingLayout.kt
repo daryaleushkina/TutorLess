@@ -114,30 +114,6 @@ internal fun TrainingSplit(
     }
 }
 
-/** Подсказки не занимают место на сенсорном устройстве; роль Key берётся из общей типографики. */
-@Composable
-internal fun KeyHint(
-    key: String,
-    label: String,
-) {
-    if (!hasHardwareKeyboard()) return
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(GpSpace.s8)) {
-        Surface(
-            color = Gp.colors.surface,
-            shape = RoundedCornerShape(GpRadius.s),
-            border = BorderStroke(GpSize.hairline, Gp.colors.line),
-        ) {
-            Text(
-                key,
-                style = Gp.type.caption,
-                color = Gp.colors.text2,
-                modifier = Modifier.padding(horizontal = GpSpace.s6, vertical = GpSpace.s4),
-            )
-        }
-        Text(label, style = Gp.type.caption, color = Gp.colors.text2)
-    }
-}
-
 internal val AnswerKeys =
     listOf(
         Key.A,

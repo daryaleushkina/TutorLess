@@ -69,7 +69,19 @@ fun ShellState.startRequest(): TrainingRequest? {
                 last.request.questionTypes.all { questionType ->
                     available.any { it.section == last.request.section && it.questionType == questionType }
                 }
-        }?.let { return it.request.copy(source = null, count = it.propertySize) }
+        }?.let {
+            return it.request.copy(
+                source = null,
+                count =
+                    if (it.request.mode ==
+                        TrainingMode.CHECK
+                    ) {
+                        BuilderViewModel.checkCount(options, it.request.section)
+                    } else {
+                        it.propertySize
+                    },
+            )
+        }
     return TrainingRequest(
         selectedExam,
         type.section,

@@ -1,6 +1,7 @@
 package dev.greprepapp.app.snapshots
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import dev.greprepapp.api.models.Difficulty
 import dev.greprepapp.api.models.GivenAnswer
 import dev.greprepapp.api.models.Question
@@ -15,6 +16,7 @@ import dev.greprepapp.app.feature.training.BuilderForm
 import dev.greprepapp.app.feature.training.BuilderViewModel
 import dev.greprepapp.app.feature.training.ReportContent
 import dev.greprepapp.app.feature.training.ReportViewModel
+import dev.greprepapp.app.feature.training.Response
 import dev.greprepapp.app.feature.training.ReviewContent
 import dev.greprepapp.app.feature.training.ReviewItemContent
 import dev.greprepapp.app.feature.training.ReviewViewModel
@@ -24,6 +26,7 @@ import dev.greprepapp.app.feature.training.SessionViewModel
 import dev.greprepapp.app.feature.training.StoredTraining
 import dev.greprepapp.app.feature.training.TrainingProblem
 import dev.greprepapp.app.feature.training.TrainingRules
+import dev.greprepapp.app.feature.training.toRecordedAnswer
 import dev.greprepapp.app.testing.Fixtures
 import dev.greprepapp.app.testing.Fixtures.qc
 import dev.greprepapp.app.testing.Fixtures.se
@@ -50,7 +53,7 @@ object TrainingScreens {
     ) = StoredTraining(
         session = Fixtures.session(*questions, mode = mode),
         startedAtMillis = start,
-        answers = answers.associateBy { it.position },
+        answers = answers.map { it.toRecordedAnswer() }.associateBy { it.position },
         finish = finish,
     )
 
@@ -62,7 +65,9 @@ object TrainingScreens {
         overview: Boolean = false,
         english: Boolean? = null,
         whyNot: Boolean = false,
-    ) = SessionViewModel.UiState.Active(SessionViewModel.Screen(t, position, selection, remaining, overview, english, whyNot))
+    ) = SessionViewModel.UiState.Active(
+        SessionViewModel.Screen(t, position, Response.Options(selection), remaining, overview, english, whyNot),
+    )
 
     @Composable
     fun Session(state: SessionViewModel.UiState) = SessionContent(state, SessionViewModel.RepeatState(), SessionActions())
@@ -105,6 +110,24 @@ object TrainingScreens {
             overview = true,
         )
 
+    val dontKnow = active(stored(tc1, se, answers = listOf(answer(0, dontKnow = true))))
+    val seSelected = active(stored(se, tc1), selection = listOf("A"))
+    val qcPractice = active(stored(qc, Fixtures.mc))
+    val mcSelected = active(stored(Fixtures.mc, qc), selection = listOf("B"))
+    val past =
+        SessionViewModel.UiState.Active(
+            SessionViewModel.Screen(
+                stored(tc1, se, tc3, answers = listOf(answer(0, "C"), answer(1, "A", "C"))),
+                0,
+                Response.Options(listOf("C")),
+                null,
+                false,
+                false,
+                false,
+                frontier = 2,
+            ),
+        )
+
     private val finishedAnswers =
         listOf(answer(0, "C"), answer(1, "A", "C"), answer(2, "B", "D", "G"), answer(3, "A"), answer(4, dontKnow = true))
 
@@ -142,29 +165,35 @@ object TrainingScreens {
 
     @Composable
     fun Report(
+        modifier: Modifier = Modifier,
         sent: Boolean = false,
         failed: Boolean = false,
-    ) = ReportContent(
-        state =
-            ReportViewModel.UiState(
-                kind = QuestionReport.Kind.TRANSLATION,
-                text = "В английском разборе опечатка: «recomendation».",
-                sent = sent,
-                failed = failed,
-            ),
-        position = 3,
-        typeLabel = "Text Completion",
-        onKind = {},
-        onText = {},
-        onSend = {},
-        onBack = {},
-    )
+    ) {
+        androidx.compose.foundation.layout.Box(modifier = modifier) {
+            Session(tcWrong)
+            ReportContent(
+                state =
+                    ReportViewModel.UiState(
+                        kind = QuestionReport.Kind.TRANSLATION,
+                        text = "В английском разборе опечатка: «recomendation».",
+                        sent = sent,
+                        failed = failed,
+                    ),
+                position = 3,
+                typeLabel = "Text Completion",
+                onKind = {},
+                onText = {},
+                onSend = {},
+                onBack = {},
+            )
+        }
+    }
 
     private val readyBuilder =
         BuilderViewModel.Content.Ready(
             options = Fixtures.options(listOf(Fixtures.lastPreset, Fixtures.timedPreset)),
-            form = BuilderForm(Section.QUANT, QuestionType.QUANTITATIVE_COMPARISON, "5", TrainingMode.CHECK, null, null),
-            preset = 0,
+            form = BuilderForm(Section.VERBAL, QuestionType.TEXT_COMPLETION, "10", TrainingMode.PRACTICE, null, null),
+            preset = null,
         )
 
     @Composable

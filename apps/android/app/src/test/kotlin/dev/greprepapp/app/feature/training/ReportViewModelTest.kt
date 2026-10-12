@@ -24,6 +24,44 @@ class ReportViewModelTest {
     @get:Rule val folder = TemporaryFolder()
 
     @Test
+    fun aNewHumanReportGetsAnotherIdentityWithoutLosingQueuedReports() =
+        runTest(main.dispatcher) {
+            val g = TestGraph(this, main.dispatcher, folder.root, token = "token").also { it.settle() }
+            g.trainingsApi.report = dev.greprepapp.app.testing.Reply.NetworkDown
+            val vm = ReportViewModel("q", "t", g.trainings)
+            vm.setKind(QuestionReport.Kind.QUESTION)
+            vm.setText("Опечатка")
+            vm.prepareNextReport()
+            assertEquals("Опечатка", vm.state.value.text)
+            vm.send()
+            advanceUntilIdle()
+            val first =
+                g.trainingStore.reports.value
+                    .single()
+                    .reportId
+            vm.prepareNextReport()
+            assertFalse(vm.state.value.sent)
+            assertNull(vm.state.value.kind)
+            vm.setKind(QuestionReport.Kind.ANSWER)
+            vm.send()
+            advanceUntilIdle()
+            assertEquals(2, g.trainingStore.reports.value.size)
+            assertEquals(
+                2,
+                g.trainingStore.reports.value
+                    .map { it.reportId }
+                    .distinct()
+                    .size,
+            )
+            assertEquals(
+                first,
+                g.trainingStore.reports.value
+                    .first()
+                    .reportId,
+            )
+        }
+
+    @Test
     fun withoutOwnerConfirmationTheReportIsPersistedAndWaitsForTheNetwork() =
         runTest(main.dispatcher) {
             val g = TestGraph(this, main.dispatcher, folder.root, token = "token")
@@ -123,7 +161,13 @@ class ReportViewModelTest {
             vm.setText("   ")
             vm.send()
             advanceUntilIdle()
-            assertNull(
+            assertFalse(vm.state.value.canSend)
+            assertTrue(graph.trainingsApi.reports.isEmpty())
+            vm.setText("Опечатка")
+            vm.send()
+            advanceUntilIdle()
+            assertEquals(
+                "Опечатка",
                 graph.trainingsApi.reports
                     .single()
                     .second.text,

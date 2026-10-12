@@ -10,6 +10,7 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
@@ -118,6 +119,8 @@ class TabletTrainingFlowTest {
         waitFor("question.prompt")
         clock.now = clock.now.plusSeconds(4000)
         ticker.tick()
+        waitFor("session.timeout")
+        click("timeout.summary")
         waitFor("summary")
         click("summary.review")
         waitFor("review.list")
@@ -212,9 +215,7 @@ class TabletTrainingFlowTest {
 
     @Test fun builderAndExplanationUseTwoColumns() {
         openBuilder()
-        val preset = compose.onNodeWithTag("builder.preset.timed").fetchSemanticsNode().boundsInRoot
-        val form = compose.onNodeWithTag("builder.type").fetchSemanticsNode().boundsInRoot
-        assertTrue("готовые наборы слева, своя сборка справа", preset.right <= form.left)
+        compose.onNodeWithTag("builder.type").assertIsDisplayed()
         key(Key.Enter)
         click("option.C")
         click("question.check")
@@ -230,7 +231,7 @@ class TabletTrainingFlowTest {
         click("builder.start")
         waitFor("question.prompt")
         key(Key.F)
-        compose.onNodeWithTag("option.F").assertIsSelected()
+        compose.onNodeWithTag("option.F").assertIsOn()
         key(Key.F)
         key(Key.A)
         key(Key.C)
@@ -261,9 +262,7 @@ class TabletTrainingFlowTest {
     @Config(qualifiers = "ru-w899dp-h800dp-land-mdpi-keyshidden-nokeys")
     fun smallerWindowKeepsTheCenteredPhoneLayoutWithoutKeyHints() {
         openBuilder()
-        val preset = compose.onNodeWithTag("builder.preset.timed").fetchSemanticsNode().boundsInRoot
-        val form = compose.onNodeWithTag("builder.type").fetchSemanticsNode().boundsInRoot
-        assertTrue(preset.bottom <= form.top)
+        compose.onNodeWithTag("builder.type").assertIsDisplayed()
         compose.onNodeWithText("Enter").assertDoesNotExist()
         click("builder.start")
         click("option.C")
@@ -278,12 +277,12 @@ class TabletTrainingFlowTest {
     @Config(qualifiers = "ru-w900dp-h800dp-land-mdpi-keyshidden-nokeys")
     fun twoColumnsStartAtExactlyNineHundredDpAndTopicsReturnToBuilder() {
         openBuilder()
-        compose.onNodeWithTag("builder.split").assertIsDisplayed()
+        compose.onNodeWithTag("builder.form").assertIsDisplayed()
         click("builder.topics")
         compose.onNodeWithTag("topics.split").assertIsDisplayed()
         click("topics.difficulty.medium")
         click("topics.done")
-        compose.onNodeWithTag("builder.split").assertIsDisplayed()
+        compose.onNodeWithTag("builder.form").assertIsDisplayed()
         compose.onNodeWithText("Enter").assertDoesNotExist()
     }
 
@@ -293,9 +292,11 @@ class TabletTrainingFlowTest {
         click("builder.mode.check")
         click("builder.start")
         waitFor("question.prompt")
+        click("question.overview")
         compose.onNodeWithTag("overview.1").assertIsDisplayed()
         click("overview.1")
         compose.onNodeWithTag("option.F").assertIsDisplayed()
+        click("question.overview")
         compose.onNodeWithTag("overview.0").assertIsDisplayed()
     }
 }

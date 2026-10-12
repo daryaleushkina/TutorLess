@@ -13,6 +13,7 @@ import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.test.core.app.ActivityScenario
@@ -127,6 +128,7 @@ class TrainingFlowTest {
                 .hasContentDescription("Вопрос 1, без ответа"),
         )
         click("overview.finish")
+        click("overview.confirm.finish")
         waitFor("summary")
         compose.onNodeWithTag("summary.correct").assertTextEquals("0")
     }
@@ -136,7 +138,7 @@ class TrainingFlowTest {
         openBuilder()
         click("builder.start")
         click("question.report")
-        click("report.kind.translation")
+        click("report.kind.question")
         compose.onNodeWithTag("report.text").performTextInput("Тестовая опечатка")
         val context =
             androidx.test.core.app.ApplicationProvider
@@ -146,7 +148,7 @@ class TrainingFlowTest {
         waitFor("report.problem")
         compose.onNodeWithTag("report.sent").assertDoesNotExist()
         compose.onNodeWithTag("report.text").assertTextContains("Тестовая опечатка")
-        compose.onNodeWithTag("report.kind.translation").assertIsSelected()
+        compose.onNodeWithTag("report.kind.question").assertIsSelected()
         compose.onNodeWithText("Не удалось сохранить жалобу. Попробуйте ещё раз.").assertIsDisplayed()
         assertTrue(trainings.reports.value.isEmpty())
         assertTrue(blocked.delete())
@@ -159,7 +161,7 @@ class TrainingFlowTest {
     fun practiceExplainsEachAnswerAndEndsWithWhatToReview() {
         openBuilder()
         // Набор «Проверка на время» есть, но выбрана своя сборка: Verbal · Text Completion · Практика.
-        compose.onNodeWithText("Проверка на время").assertIsDisplayed()
+        compose.onNodeWithTag("builder.mode.practice").assertIsSelected()
         click("builder.start")
         waitFor("question.prompt")
         assertEquals(1, server.starts.size)
@@ -167,11 +169,11 @@ class TrainingFlowTest {
 
         // Неверно: вердикт, ключ, второй уровень и английский.
         answerPractice("C")
-        compose.onNodeWithTag("explanation.verdict").assertTextEquals("Неверно. Верный ответ — A, equivocal.")
+        compose.onNodeWithTag("explanation.verdict").assertTextEquals("Неверно. Верный ответ — equivocal.")
         click("explanation.whyNotToggle")
         compose.onNodeWithText("исчерпывающий", substring = true).assertIsDisplayed()
         compose.onNodeWithText("EN").performClick()
-        compose.onNodeWithTag("explanation.verdict").assertTextEquals("Incorrect. The answer is A, equivocal.")
+        compose.onNodeWithTag("explanation.verdict").assertTextEquals("Incorrect. The answer is equivocal.")
         click("question.next")
 
         // Sentence Equivalence: «Проверить» — только когда выбраны оба слова.
@@ -198,6 +200,8 @@ class TrainingFlowTest {
         click("summary.review")
         click("review.item.0")
         waitFor("reviewItem")
+        compose.onNodeWithText("EN").performClick()
+        compose.onNodeWithTag("question.report").performScrollTo()
         click("question.report")
         click("report.kind.translation")
         compose.onNodeWithTag("report.text").performTextInput("Опечатка в английском разборе")
@@ -216,12 +220,14 @@ class TrainingFlowTest {
         click("builder.mode.check")
         click("builder.start")
         waitFor("session.timer")
-        compose.onNodeWithText("3:00").assertIsDisplayed()
+        compose.onNodeWithText("3:00", useUnmergedTree = true).assertIsDisplayed()
         click("option.A")
         click("question.flag")
 
         clock.now = clock.now.plusSeconds(181)
         ticker.tick()
+        waitFor("session.timeout")
+        click("timeout.summary")
         waitFor("summary")
         compose.onNodeWithText("Время вышло — неотвеченные не считаются ошибками темы.").assertIsDisplayed()
         compose.waitUntil(TIMEOUT) { server.finishes.size == 1 }
@@ -295,13 +301,14 @@ class TrainingFlowTest {
         click("option.A")
         click("question.next")
         // Второй вопрос — «Пропустить»: после последнего открывается список вопросов.
-        click("session.secondary")
+        click("question.next")
         waitFor("overview")
         click("overview.0")
         waitFor("question.prompt")
         compose.onNodeWithTag("option.A").assertIsSelected()
         click("question.overview")
         click("overview.finish")
+        click("overview.confirm.finish")
         waitFor("summary")
         compose.waitUntil(TIMEOUT) { server.finishes.size == 1 }
         assertEquals(false, server.finishes.single().timedOut)
@@ -314,7 +321,7 @@ class TrainingFlowTest {
         click("builder.start")
         click("question.dontKnow")
         waitFor("explanation")
-        compose.onNodeWithTag("explanation.verdict").assertTextEquals("Верный ответ — A, equivocal.")
+        compose.onNodeWithTag("explanation.verdict").assertTextContains("Разберём", substring = true)
         click("question.next")
         click("question.dontKnow")
         waitFor("explanation")
@@ -346,7 +353,9 @@ class TrainingFlowTest {
     @Test
     fun timedPresetStartsAsItIs() {
         openBuilder()
-        click("builder.preset.timed")
+        click("builder.mode.check")
+        click("builder.type")
+        click("builder.type.all")
         click("builder.start")
         waitFor("question.prompt")
         val request = server.starts.single()

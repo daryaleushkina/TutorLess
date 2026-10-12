@@ -90,7 +90,9 @@ class TrainingRepository
         val active: Flow<StoredTraining?> =
             trainings
                 .map { all ->
-                    all.values.filterNot { it.isFinished || isExpired(it) }.maxByOrNull { it.startedAtMillis }
+                    all.values
+                        .filterNot { it.isFinished || isExpired(it) }
+                        .maxWithOrNull(compareBy<StoredTraining> { it.startedAtMillis }.thenBy { it.creationOrder })
                 }.distinctUntilChanged()
 
         /** «Проверка», у которой вышло время, пока экрана не было: её закончит ближайшая отправка. */
@@ -138,7 +140,15 @@ class TrainingRepository
                     val saved =
                         edits.withLock {
                             write(id) {
-                                store.put(stored)
+                                store.put(
+                                    stored.copy(
+                                        creationOrder =
+                                            (
+                                                store.trainings.value.values
+                                                    .maxOfOrNull { it.creationOrder } ?: 0
+                                            ) + 1,
+                                    ),
+                                )
                                 prune()
                             }
                         }
@@ -169,11 +179,11 @@ class TrainingRepository
         fun recordAnswer(
             trainingId: String,
             position: Int,
-            optionIds: List<String>,
+            response: Response,
             dontKnow: Boolean = false,
             flagged: Boolean = false,
             elapsedMs: Int = 0,
-        ) = durable { answer(trainingId, position, optionIds, dontKnow, flagged, elapsedMs) }
+        ) = durable { answer(trainingId, position, response, dontKnow, flagged, elapsedMs) }
 
         fun recordPosition(
             trainingId: String,
@@ -194,15 +204,15 @@ class TrainingRepository
         suspend fun answer(
             trainingId: String,
             position: Int,
-            optionIds: List<String>,
+            response: Response,
             dontKnow: Boolean = false,
             flagged: Boolean = false,
             elapsedMs: Int = 0,
         ) {
             val given =
-                GivenAnswer(
+                RecordedAnswer(
                     position = position,
-                    optionIds = optionIds,
+                    response = response,
                     dontKnow = dontKnow,
                     flagged = flagged,
                     answeredAt = clock.instant().toString(),
@@ -290,10 +300,14 @@ class TrainingRepository
             val all = store.trainings.value.values
             all
                 .filter { it.isFinished && it.isSynced }
-                .sortedByDescending { it.startedAtMillis }
+                .sortedWith(compareByDescending<StoredTraining> { it.startedAtMillis }.thenByDescending { it.creationOrder })
                 .drop(KEEP_FINISHED)
                 .forEach { store.remove(it.id) }
-            val unfinished = all.filterNot { it.isFinished }.sortedByDescending { it.startedAtMillis }
+            // Порядок запуска хранится в файле: порядок карты после чтения файлов не гарантирован.
+            val unfinished =
+                all
+                    .filterNot { it.isFinished }
+                    .sortedWith(compareByDescending<StoredTraining> { it.startedAtMillis }.thenByDescending { it.creationOrder })
             unfinished.drop(1).filter { it.unsent.isEmpty() }.forEach { store.remove(it.id) }
         }
 
@@ -360,7 +374,7 @@ class TrainingRepository
             id: Long,
         ): Sent {
             if (t.rejected || t.unsent.isEmpty()) return Sent.Done
-            val sent = t.unsent.sorted().mapNotNull { t.answers[it] }
+            val sent = t.unsent.sorted().mapNotNull { t.answers[it]?.toGivenAnswer() }
             return sendAnswerBatch(t.id, sent, id)
         }
 
@@ -399,7 +413,7 @@ class TrainingRepository
             }
             return settle(result, id, "answers") {
                 // Убрать из очереди только то, что не поменялось, пока ответ летел: новый ответ «Проверки» уйдёт следом.
-                edit(trainingId, id) { cur -> cur.copy(unsent = cur.unsent.filterNot { cur.answers[it] in sent }.toSet()) }
+                edit(trainingId, id) { cur -> cur.copy(unsent = cur.unsent.filterNot { cur.answers[it]?.toGivenAnswer() in sent }.toSet()) }
             }
         }
 
@@ -415,7 +429,7 @@ class TrainingRepository
 
         private suspend fun sendReports(id: Long) {
             for (pending in store.reports.value) {
-                val result = apiCallNoContent { api.reportQuestion(pending.questionId, pending.report) }
+                val result = apiCallNoContent { api.reportQuestion(pending.questionId, pending.report.copy(reportId = pending.reportId)) }
                 if (!session.isCurrent(id)) return
                 val sent =
                     settle(result, id, "report") {
