@@ -497,7 +497,11 @@ class TrainingRepository
                     QuestionType.SENTENCE_EQUIVALENCE,
                     QuestionType.QUANTITATIVE_COMPARISON,
                     QuestionType.MULTIPLE_CHOICE,
+                    QuestionType.MULTIPLE_CHOICE_MULTI,
+                    QuestionType.NUMERIC_ENTRY,
+                    QuestionType.SELECT_IN_PASSAGE,
                 )
+            val CAPABILITIES: String = SUPPORTED.joinToString(",") { it.value } + ",passage"
             private const val NO_QUESTIONS = "no_questions"
             private const val KEEP_FINISHED = 3
             private const val MAX_ELAPSED_MS = 86_400_000

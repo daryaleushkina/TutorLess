@@ -1,4 +1,4 @@
 {
   "apple": ["text_completion", "sentence_equivalence", "quantitative_comparison", "multiple_choice"],
-  "android": ["text_completion", "sentence_equivalence", "quantitative_comparison", "multiple_choice"]
+  "android": ["text_completion", "sentence_equivalence", "quantitative_comparison", "multiple_choice", "multiple_choice_multi", "numeric_entry", "select_in_passage"]
 }

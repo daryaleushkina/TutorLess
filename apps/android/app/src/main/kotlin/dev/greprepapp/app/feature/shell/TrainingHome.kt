@@ -430,6 +430,9 @@ fun dev.greprepapp.api.models.QuestionType.displayName(): String =
         dev.greprepapp.api.models.QuestionType.SENTENCE_EQUIVALENCE -> "Sentence Equivalence"
         dev.greprepapp.api.models.QuestionType.QUANTITATIVE_COMPARISON -> "Quantitative Comparison"
         dev.greprepapp.api.models.QuestionType.MULTIPLE_CHOICE -> "Multiple Choice"
+        dev.greprepapp.api.models.QuestionType.MULTIPLE_CHOICE_MULTI -> "Multiple Answers"
+        dev.greprepapp.api.models.QuestionType.NUMERIC_ENTRY -> "Numeric Entry"
+        dev.greprepapp.api.models.QuestionType.SELECT_IN_PASSAGE -> "Select in Passage"
     }
 
 private fun Section.description(): Int =

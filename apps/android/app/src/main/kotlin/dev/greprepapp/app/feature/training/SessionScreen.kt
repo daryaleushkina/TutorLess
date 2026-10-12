@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -441,7 +442,7 @@ private fun QuestionPane(
         containerColor = Color.Transparent,
         topBar = { SessionHeader(s, section, actions) },
         bottomBar = {
-            Column {
+            Column(Modifier.imePadding()) {
                 repeat.problem?.let { StatusLine(R.drawable.ic_error, startProblemText(it), Modifier.testTag("topic.problem")) }
                 QuestionActions(s, actions)
             }
@@ -480,7 +481,20 @@ private fun QuestionPane(
                 )
             }
         }
-        if (Gp.isWide && s.revealed) {
+        if (s.question.passage != null && s.question.questionType != QuestionType.SELECT_IN_PASSAGE) {
+            ReadingQuestionLayout(
+                padding = padding,
+                question = s.question,
+                firstForPassage =
+                    s.training.session.items
+                        .take(s.position)
+                        .none { it.question.passage?.id == s.question.passage?.id },
+                revealed = s.revealed,
+            ) {
+                question()
+                if (s.revealed) companion()
+            }
+        } else if (Gp.isWide && s.revealed && s.question.questionType != QuestionType.SELECT_IN_PASSAGE) {
             TrainingSplit(padding, "question", question, companion)
         } else {
             SessionColumn(padding = padding, tag = "question") {
@@ -545,13 +559,22 @@ private fun QuestionBody(
         revealed = s.revealed,
         onEditResponse = actions.onEditResponse,
         selectionLimitHit = s.selectionLimitHit,
+        includePassage = false,
     )
 }
 
 @Composable
 internal fun PlainPrompt(question: Question) {
     Text(
-        text = question.prompt,
+        text =
+            if (question.section ==
+                dev.greprepapp.api.models.Section.QUANT
+            ) {
+                mathText(question.prompt)
+            } else {
+                androidx.compose.ui.text
+                    .AnnotatedString(question.prompt)
+            },
         style = (if (Gp.isWide) Gp.type.qTextWide else Gp.type.qText).copy(localeList = English),
         color = Gp.colors.text,
         modifier = Modifier.testTag("question.prompt"),
@@ -645,7 +668,7 @@ internal fun ChoosableOptions(
                         OptionRow(
                             option = option,
                             mark = if (option.id in selection) OptionMark.Selected else OptionMark.None,
-                            multiple = question.selectCount > 1,
+                            multiple = question.questionType == QuestionType.MULTIPLE_CHOICE_MULTI || question.selectCount > 1,
                             onClick = { onSelect(option.id) },
                         )
                     }
@@ -681,7 +704,7 @@ fun RevealedOptions(
                             in chosen -> OptionMark.Wrong
                             else -> OptionMark.None
                         },
-                    multiple = question.selectCount > 1,
+                    multiple = question.questionType == QuestionType.MULTIPLE_CHOICE_MULTI || question.selectCount > 1,
                     chosen = option.id in chosen,
                 )
             }
@@ -955,6 +978,10 @@ private fun missingNote(s: Screen): String? {
     if (s.selection.isEmpty()) return null
     val missing = s.missing
     if (missing.isEmpty()) return null
+    if (q.questionType == QuestionType.MULTIPLE_CHOICE_MULTI && q.selectCount > 0) {
+        val remaining = q.selectCount - s.selection.size
+        return pluralStringResource(R.plurals.question_missing_choices, remaining, remaining)
+    }
     return when {
         q.groups.size > 1 && missing.size == 1 -> stringResource(R.string.question_missing_blank, BLANK_NUMBERS[missing[0]])
         q.groups.size > 1 -> stringResource(R.string.question_missing_blanks, missing.joinToString(", ") { BLANK_NUMBERS[it] })

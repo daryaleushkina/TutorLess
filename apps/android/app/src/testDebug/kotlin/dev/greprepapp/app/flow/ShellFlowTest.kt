@@ -182,7 +182,8 @@ class ShellFlowTest {
         org.junit.Assert.assertTrue(
             calls.all {
                 it.headers["X-Training-Capabilities"] ==
-                    "text_completion,sentence_equivalence,quantitative_comparison,multiple_choice"
+                    "text_completion,sentence_equivalence,quantitative_comparison,multiple_choice," +
+                    "multiple_choice_multi,numeric_entry,select_in_passage,passage"
             },
         )
     }

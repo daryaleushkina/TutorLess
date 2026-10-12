@@ -1,5 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="type_multiple_choice_multi">Multiple Answers</string>
+    <string name="type_numeric_entry">Numeric Entry</string>
+    <string name="type_fraction_entry">Fraction Entry</string>
+    <string name="type_select_in_passage">Select in Passage</string>
+    <string name="question_select_all">Select all that apply.</string>
+    <string name="question_multi_limit">Deselect an option before choosing another.</string>
+    <plurals name="question_select_choices">
+        <item quantity="one">Select %1$d option.</item>
+        <item quantity="other">Select %1$d options.</item>
+    </plurals>
+    <plurals name="question_missing_choices">
+        <item quantity="one">Select %1$d more option</item>
+        <item quantity="other">Select %1$d more options</item>
+    </plurals>
+    <string name="question_select_sentence">Tap a sentence in the passage.</string>
+    <string name="question_enter_number">Enter a numeric answer.</string>
+    <string name="question_enter_fraction">Enter a fraction. You do not need to reduce it.</string>
+    <string name="numeric_answer">Answer</string>
+    <string name="numeric_numerator">Numerator</string>
+    <string name="numeric_denominator">Denominator</string>
+    <string name="numeric_fraction_hint">Numerator above, denominator below</string>
+    <string name="numeric_invalid_number">Use one comma or decimal point, with a minus sign only at the start.</string>
+    <string name="numeric_invalid_integer">Enter an integer, with a minus sign only at the start.</string>
+    <string name="numeric_too_long">Use no more than 128 characters per field. Shorten the number.</string>
+    <string name="numeric_zero_denominator">The denominator cannot be zero</string>
+    <string name="reading_text">Passage</string>
+    <string name="reading_question">Question</string>
+    <string name="reading_paragraph">Paragraph %1$d</string>
+    <string name="reading_sentence">Paragraph %1$d, sentence %2$d. %3$s</string>
     <string name="signin_tagline">Exam-style questions and explanations for every mistake in your language.</string>
     <string name="signin_apple">Sign in with Apple</string>
     <string name="signin_google">Sign in with Google</string>
@@ -77,6 +106,10 @@
     <string name="question_blank">blank</string>
     <string name="question_correct_mark">correct</string>
     <string name="question_yours_mark">your answer</string>
+    <string name="question_selected_correct">selected, correct</string>
+    <string name="question_omitted_correct">not selected, correct</string>
+    <string name="question_selected_wrong">selected, incorrect</string>
+    <string name="question_not_selected">not selected</string>
     <string name="question_progress_description">Question %1$d of %2$d</string>
     <string name="type_with_note">%1$s · %2$s</string>
     <string name="type_two_blanks">two blanks</string>

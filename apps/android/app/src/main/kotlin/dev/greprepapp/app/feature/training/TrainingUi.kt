@@ -53,8 +53,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.toggleableState
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -101,6 +104,9 @@ fun QuestionType.label(): String =
             QuestionType.SENTENCE_EQUIVALENCE -> R.string.type_sentence_equivalence
             QuestionType.QUANTITATIVE_COMPARISON -> R.string.type_quantitative_comparison
             QuestionType.MULTIPLE_CHOICE -> R.string.type_multiple_choice
+            QuestionType.MULTIPLE_CHOICE_MULTI -> R.string.type_multiple_choice_multi
+            QuestionType.NUMERIC_ENTRY -> R.string.type_numeric_entry
+            QuestionType.SELECT_IN_PASSAGE -> R.string.type_select_in_passage
         },
     )
 
@@ -108,6 +114,8 @@ fun QuestionType.label(): String =
 @Composable
 @ReadOnlyComposable
 fun Question.typeLabel(): String {
+    if (passage != null) return stringResource(R.string.type_reading_comprehension)
+    if (numericEntry?.format == dev.greprepapp.api.models.NumericEntry.Format.FRACTION) return stringResource(R.string.type_fraction_entry)
     val note =
         when {
             questionType == QuestionType.TEXT_COMPLETION && groups.size == 2 -> R.string.type_two_blanks
@@ -142,7 +150,11 @@ internal fun mathText(value: String): AnnotatedString =
     buildAnnotatedString {
         append(value)
         Regex("(?<![A-Za-z])[A-Za-z](?![A-Za-z])").findAll(value).forEach {
-            addStyle(SpanStyle(fontStyle = FontStyle.Italic), it.range.first, it.range.last + 1)
+            addStyle(
+                SpanStyle(fontStyle = FontStyle.Italic, fontFamily = dev.greprepapp.design.MathFamily),
+                it.range.first,
+                it.range.last + 1,
+            )
         }
     }
 
@@ -179,6 +191,19 @@ fun OptionRow(
             OptionMark.Wrong -> stringResource(R.string.question_yours_mark)
             else -> null
         }
+    val answerState =
+        if (multiple && onClick == null) {
+            stringResource(
+                when {
+                    mark == OptionMark.Wrong -> R.string.question_selected_wrong
+                    mark == OptionMark.Correct && chosen -> R.string.question_selected_correct
+                    mark == OptionMark.Correct -> R.string.question_omitted_correct
+                    else -> R.string.question_not_selected
+                },
+            )
+        } else {
+            markText
+        }
     val clickable =
         if (onClick != null) {
             Modifier.pressScale(interaction).then(
@@ -201,7 +226,13 @@ fun OptionRow(
                 },
             )
         } else {
-            Modifier.semantics(mergeDescendants = true) { if (markText != null) stateDescription = markText }
+            Modifier.semantics(mergeDescendants = true) {
+                if (answerState != null) stateDescription = answerState
+                if (multiple) {
+                    role = Role.Checkbox
+                    toggleableState = if (chosen) ToggleableState.On else ToggleableState.Off
+                }
+            }
         }
     Surface(
         color = container,
@@ -514,6 +545,15 @@ private fun answerList(
     question: Question,
     and: String,
 ): String {
+    if (question.numericAnswer != null) return NumericResponseComponent.keyText(question)
+    if (question.questionType == QuestionType.SELECT_IN_PASSAGE) {
+        return question.passage
+            ?.paragraphs
+            ?.flatMap { it.sentences }
+            ?.firstOrNull { it.id in question.answer }
+            ?.text
+            .orEmpty()
+    }
     val options = question.groups.flatMap { it.options }.associateBy { it.id }
     val items = question.answer.mapNotNull { id -> options[id]?.text }
     return if (items.size <= 1) items.joinToString() else items.dropLast(1).joinToString(", ") + " $and " + items.last()

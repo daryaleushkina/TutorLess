@@ -5,6 +5,7 @@ python3 apps/android/scripts/training-contact-sheets.py
 """
 from pathlib import Path
 from html import escape
+import argparse
 import os
 from PIL import Image, ImageDraw, ImageFont
 
@@ -13,6 +14,14 @@ REPORT = ROOT / "apps/android/build/reports/training-b"
 BASELINES = ROOT / "apps/android/app/src/test/snapshots"
 MOCKUPS = REPORT / "mockups"
 SCREENS = ["r1", "r2", "r3", "r4", "r4-dk", "r5", "r6", "r9", "r14", "r14-list", "r14-timeout", "r15", "r16", "r17", "r19", "r20"]
+parser = argparse.ArgumentParser()
+parser.add_argument("--new-types", action="store_true", help="Только новые формы R7–R11b")
+args = parser.parse_args()
+if args.new_types:
+    REPORT = REPORT / "new-types"
+    MOCKUPS = REPORT / "mockups"
+    SCREENS = ["r7", "r7-text", "r7-review", "r7-multi", "r7-multi-review", "r8", "r8-correct", "r8-wrong", "r10", "r10-checked", "r11", "r11-bad", "r11-long", "r11-correct", "r11b"]
+MOCKUP_SOURCE = {"r7-review": "r7", "r7-multi": "r7", "r7-multi-review": "r7", "r8-correct": "r8", "r8-wrong": "r8", "r10-checked": "r10", "r11-long": "r11-bad", "r11-correct": "r11"}
 FONT = ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial.ttf", 20)
 LABEL_HEIGHT = 36
 WIDTH = 300
@@ -29,10 +38,11 @@ def panels(screen, tablet):
     result = []
     for theme in ("dark", "light"):
         device = "desktop" if tablet else "phone"
-        mock = MOCKUPS / f"mock-{screen}-{device}-{theme}.png"
+        source = MOCKUP_SOURCE.get(screen, screen)
+        mock = MOCKUPS / f"mock-{source}-{device}-{theme}.png"
         if not mock.exists():
-            mock = MOCKUPS / f"mock-{screen}-phone-{theme}.png"
-        result.append((f"Макет · {theme}", mock))
+            mock = MOCKUPS / f"mock-{source}-phone-{theme}.png"
+        result.append((f"Макет {source.upper()} · {theme}", mock))
         prefix = "tablet-" if tablet else ""
         result.append((f"Android · {theme}", BASELINES / f"{prefix}b-{screen}-{theme}.png"))
         result.append((f"«Крупнее» · {theme}", BASELINES / f"{prefix}b-{screen}-large-{theme}.png"))
@@ -69,7 +79,8 @@ for tablet in (False, True):
         for label, path in panels(screen, tablet):
             relative = Path(os.path.relpath(path, REPORT))
             cells.append(f'<figure><figcaption>{escape(label)}</figcaption><a href="{relative}"><img src="{relative}" loading="lazy"></a></figure>')
-        rows.append(f'<section><h2>{screen.upper()} · {"планшет" if tablet else "телефон"}</h2><div class="row">{"".join(cells)}</div></section>')
+        note = '<p>RC multi: раскладка R7, флажки и состояния ответа R10; текст из общих примеров договора.</p>' if screen.startswith("r7-multi") else ''
+        rows.append(f'<section><h2>{screen.upper()} · {"планшет" if tablet else "телефон"}</h2>{note}<div class="row">{"".join(cells)}</div></section>')
 (REPORT / "comparison.html").write_text('<!doctype html><html lang="ru"><meta charset="utf-8"><title>Android B — сверка с макетами</title><style>body{font:16px system-ui;background:#e9e7ee;color:#181323;margin:24px}.row{display:flex;gap:16px;overflow:auto}figure{margin:0;flex:0 0 300px}figcaption{margin-bottom:12px}img{width:300px;height:auto}section{margin-bottom:40px}</style><h1>Android B — сверка с макетами</h1>' + ''.join(rows) + '</html>', encoding="utf-8")
 print("\n".join(str(REPORT / name) for name in pages))
 print(REPORT / "comparison.html")
