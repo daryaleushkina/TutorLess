@@ -46,3 +46,4 @@ tools/dev/backlog.sh           # пересобрать это зеркало
 - [#43](https://github.com/daryaleushkina/TutorLess/issues/43) Android: конструктор на 320 dp при шрифте 200 % — «Тип» рвётся на буквы, кнопка «Начать» обрезана
 - [#44](https://github.com/daryaleushkina/TutorLess/issues/44) Токены тени и затемнения для стиля B (шторка, всплывающее окно)
 - [#45](https://github.com/daryaleushkina/TutorLess/issues/45) Numeric entry: optional unit before and after the answer box ($ ___ , ___ %)
+- [#46](https://github.com/daryaleushkina/TutorLess/issues/46) Verdict and "why not" lines double the punctuation when an option ends with a period
