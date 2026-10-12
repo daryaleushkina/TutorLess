@@ -227,7 +227,8 @@ func CheckResponse(q Question, a Response) (bool, error) {
 		}
 		key, err := numericValue(*q.NumericAnswer, q.Body.NumericEntry.Format)
 		if err != nil {
-			return false, fmt.Errorf("numeric key: %w", err)
+			// Повреждённый ключ — ошибка контента сервера, а не неверный ввод человека.
+			return false, invalid("numeric key: %v", err)
 		}
 		if p := q.Body.NumericEntry.DecimalPlaces; p != nil {
 			key = RoundedValue(key, *p)

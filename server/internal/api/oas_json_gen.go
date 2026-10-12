@@ -5260,12 +5260,19 @@ func (s *QuestionReport) encodeFields(e *jx.Encoder) {
 			s.TrainingId.Encode(e)
 		}
 	}
+	{
+		if s.ReportId.Set {
+			e.FieldStart("reportId")
+			s.ReportId.Encode(e)
+		}
+	}
 }
 
-var jsonFieldsNameOfQuestionReport = [3]string{
+var jsonFieldsNameOfQuestionReport = [4]string{
 	0: "kind",
 	1: "text",
 	2: "trainingId",
+	3: "reportId",
 }
 
 // Decode decodes QuestionReport from json.
@@ -5306,6 +5313,16 @@ func (s *QuestionReport) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"trainingId\"")
+			}
+		case "reportId":
+			if err := func() error {
+				s.ReportId.Reset()
+				if err := s.ReportId.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"reportId\"")
 			}
 		default:
 			return errors.Errorf("unexpected field %q", k)
