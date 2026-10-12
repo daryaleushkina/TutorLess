@@ -153,9 +153,19 @@ function SiteNav(): ReactNode {
 const FooterHost = createContext<HTMLElement | null>(null);
 
 /** Форма владеет состоянием действия, а панель остаётся вне прокрутки общей оболочки. */
-export function FocusFooter({ children }: { children: ReactNode }): ReactNode {
+export function FocusFooter({ children, inlineOnWide = false }: { children: ReactNode; inlineOnWide?: boolean }): ReactNode {
   const host = useContext(FooterHost);
-  return host && createPortal(children, host);
+  const { shell } = useShell();
+  // Граница layout.breakpoint-wide; CSS media и matchMedia не принимают var().
+  const [wide, setWide] = useState(() => matchMedia('(min-width: 900px)').matches);
+  useEffect(() => {
+    if (!inlineOnWide || shell !== 'site') return;
+    const media = matchMedia('(min-width: 900px)');
+    const changed = () => setWide(media.matches);
+    media.addEventListener('change', changed);
+    return () => media.removeEventListener('change', changed);
+  }, [inlineOnWide, shell]);
+  return inlineOnWide && shell === 'site' && wide ? children : host && createPortal(children, host);
 }
 
 export function FocusLayout({ children, footer, training = false, wide = false, session = false, tabs = false }: { children: ReactNode; footer?: ReactNode; training?: boolean; wide?: boolean; session?: boolean; tabs?: boolean }): ReactNode {

@@ -105,5 +105,6 @@ for (const route of ['', '/review', '/report/0']) test(`блокировка х�
   await expect.element(screen.getByRole('heading', { name: 'Обновляем тренировки', exact: true })).toBeVisible();
   await screen.getByRole('button', { name: 'Повторить', exact: true }).click();
   await expect.element(screen.getByRole('heading', { name: 'Обновляем тренировки', exact: true })).not.toBeInTheDocument();
-  await expect.element(screen.getByRole('heading', { level: 1 })).toBeVisible();
+  if (route.startsWith('/report')) await expect.element(screen.getByRole('textbox', { name: 'Что не так' })).toBeVisible();
+  else await expect.element(screen.getByRole('heading', { level: 1 })).toBeVisible();
 });

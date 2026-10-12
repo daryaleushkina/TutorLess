@@ -10,7 +10,7 @@ export function bindVisibleViewport(): () => void {
     html.style.setProperty('--app-visible-top', `${visible.offsetTop}px`);
     const field = document.activeElement;
     if (!field || !(field instanceof HTMLElement)) return;
-    const main = field.closest<HTMLElement>('main.app-shell');
+    const main = field.closest<HTMLElement>('main.app-shell, [data-viewport-scroll]');
     if (!main) return;
     // Фокус мог прокрутить поле до появления клавиатуры: после уменьшения области возвращаем его в видимую часть.
     const bounds = main.getBoundingClientRect(), input = field.getBoundingClientRect();

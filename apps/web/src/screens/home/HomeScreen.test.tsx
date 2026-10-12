@@ -22,7 +22,7 @@ test('«Начать» отправляет доступный набор, се�
     'POST /api/trainings': () => json(trainingSession()) });
   const { screen } = await renderApp({ path: '/' });
   await screen.getByRole('button', { name: 'Начать', exact: true }).click();
-  await expect.element(screen.getByRole('link', { name: 'Закрыть тренировку' })).toBeVisible();
+  await expect.element(screen.getByRole('button', { name: 'Закрыть тренировку' })).toBeVisible();
   expect(screen.getByRole('navigation', { name: 'Разделы' }).elements()).toHaveLength(0);
   expect(await server.requests.find((r) => r.method === 'POST' && new URL(r.url).pathname === '/api/trainings')?.json())
     .toEqual({ exam: 'gre', section: 'verbal', questionTypes: ['text_completion'], count: 10, mode: 'practice' });
@@ -71,8 +71,8 @@ test.each(['practice', 'check'] as const)('прошлый набор: режим
   await expect.element(screen.getByRole('heading', { name: 'Multiple Choice', exact: true })).toBeVisible();
   await expect.element(screen.getByText('Как в прошлый раз', { exact: true })).toBeVisible();
   await screen.getByRole('link', { name: 'Настроить тренировку' }).click();
-  await expect.element(screen.getByRole('radio', { name: 'Как в прошлый раз' })).toBeChecked();
-  await expect.element(screen.getByRole('textbox', { name: 'Вопросов' })).toHaveValue('3');
+  await expect.element(screen.getByRole('button', { name: mode === 'check' ? 'Проверка' : 'Практика', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect.element(screen.getByRole('button', { name: /^Тип/ })).toHaveTextContent('ТипMultiple Choice');
 });
 
 test('первый доступный раздел Quant открывает соответствующий конструктор', async () => {
@@ -101,7 +101,7 @@ test.each([
   expect(router.state.location.pathname).toBe('/');
   fail = false;
   await screen.getByRole('button', { name: 'Начать', exact: true }).click();
-  await expect.element(screen.getByRole('link', { name: 'Закрыть тренировку' })).toBeVisible();
+  await expect.element(screen.getByRole('button', { name: 'Закрыть тренировку' })).toBeVisible();
 });
 
 test('запрос старта в пути не отправляется дважды', async () => {
@@ -116,7 +116,7 @@ test('запрос старта в пути не отправляется два
   await expect.element(screen.getByRole('button', { name: 'Начинаем…' })).toBeDisabled();
   expect(server.requests.filter((request) => request.method === 'POST' && new URL(request.url).pathname === '/api/trainings')).toHaveLength(1);
   release(json(trainingSession()));
-  await expect.element(screen.getByRole('link', { name: 'Закрыть тренировку' })).toBeVisible();
+  await expect.element(screen.getByRole('button', { name: 'Закрыть тренировку' })).toBeVisible();
 });
 
 test('ошибка хранилища объясняет недоступность старта', async () => {

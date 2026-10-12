@@ -29,26 +29,26 @@ test('сайт: область прокрутки заканчивается н�
   await document.fonts.ready;
   await expect.poll(() => main.getBoundingClientRect().bottom - footer.getBoundingClientRect().top).toBeLessThanOrEqual(1);
   await screen.getByRole('button', { name: 'Пропустить', exact: true }).click();
-  await expect.element(screen.getByRole('button', { name: 'Назад', exact: true })).toBeVisible();
+  await expect.element(screen.getByRole('button', { name: 'Предыдущий вопрос', exact: true })).toBeVisible();
   await expect.poll(() => main.getBoundingClientRect().bottom - footer.getBoundingClientRect().top).toBeLessThanOrEqual(1);
 });
 
 test('практика: верный, неверный с RU/EN, «Не знаю», итог и исчезнувшее продолжение', async () => {
   const { screen } = await boot();
   await expect.element(screen.getByRole('button', { name: 'Проверить', exact: true })).toBeDisabled();
-  await screen.getByRole('radio', { name: 'A A', exact: true }).click();
+  await screen.getByRole('radio', { name: 'A', exact: true }).click();
   await screen.getByRole('button', { name: 'Проверить', exact: true }).click();
   await expect.element(screen.getByText('Верно.', { exact: true })).toBeVisible();
-  await screen.getByRole('button', { name: /Дальше · 2 из 3/ }).click();
-  await screen.getByRole('radio', { name: 'B B', exact: true }).click();
+  await screen.getByRole('button', { name: /^Дальше$/ }).click();
+  await screen.getByRole('radio', { name: 'B', exact: true }).click();
   await screen.getByRole('button', { name: 'Проверить', exact: true }).click();
   await screen.getByRole('button', { name: 'Почему не B?' }).click();
   await screen.getByRole('button', { name: 'EN', exact: true }).click();
   await expect.element(screen.getByText('Incorrect.', { exact: true })).toBeVisible();
   await expect.element(screen.getByTestId('explanation-option')).toHaveTextContent('Fixture');
-  await screen.getByRole('button', { name: /Дальше · 3 из 3/ }).click();
+  await screen.getByRole('button', { name: /^Дальше$/ }).click();
   await screen.getByRole('button', { name: 'Не знаю', exact: true }).click();
-  await screen.getByRole('button', { name: 'Итог', exact: true }).click();
+  await screen.getByRole('button', { name: 'К итогу', exact: true }).click();
   await expect.element(screen.getByRole('heading', { name: '1 из 3 верно' })).toBeVisible();
   await expect.element(screen.getByRole('heading', { name: 'Что повторить' })).toBeVisible();
   await screen.getByRole('button', { name: 'Готово', exact: true }).click();
@@ -81,7 +81,7 @@ function holdAnswer() {
 
 for (const key of ['Enter', 'ArrowRight']) test(`Enter и сразу ${key}: один ответ и переход по свежему состоянию`, async () => {
   const { screen } = await boot();
-  await screen.getByRole('radio', { name: 'A A', exact: true }).click();
+  await screen.getByRole('radio', { name: 'A', exact: true }).click();
   await expect.poll(async () => (await trainingRepository.get(trainingSession().id))?.drafts?.['0']).toEqual(['A']);
   const held = holdAnswer();
   try {
@@ -112,10 +112,10 @@ test('быстрые касания в проверке: последняя за
   const { screen } = await boot(storedTraining(trainingSession({ mode: 'check' }), Date.now()));
   const held = holdAnswer();
   try {
-    screen.getByRole('radio', { name: 'A A', exact: true }).element().dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    screen.getByRole('radio', { name: 'B B', exact: true }).element().dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    await expect.element(screen.getByRole('radio', { name: 'B B', exact: true })).toHaveAttribute('aria-checked', 'true');
-    await expect.element(screen.getByRole('radio', { name: 'A A', exact: true })).toBeEnabled();
+    screen.getByRole('radio', { name: 'A', exact: true }).element().dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    screen.getByRole('radio', { name: 'B', exact: true }).element().dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await expect.element(screen.getByRole('radio', { name: 'B', exact: true })).toHaveAttribute('aria-checked', 'true');
+    await expect.element(screen.getByRole('radio', { name: 'A', exact: true })).toBeEnabled();
   } finally { held.release(); }
   await expect.poll(async () => (await trainingRepository.get(trainingSession().id))?.answers['0']?.optionIds).toEqual(['B']);
   expect(held.spy.mock.calls.map((call) => call[1].optionIds)).toEqual([['A'], ['B']]);
@@ -142,8 +142,10 @@ for (const action of ['select', 'flag']) test(`дедлайн до тика: ${a
   const { screen } = await boot(training);
   const save = vi.spyOn(trainingRepository, 'answer');
   vi.spyOn(Date, 'now').mockReturnValue(started + 270000);
-  if (action === 'select') screen.getByRole('radio', { name: 'A A', exact: true }).element().dispatchEvent(new MouseEvent('click', { bubbles: true }));
+  if (action === 'select') screen.getByRole('radio', { name: 'A', exact: true }).element().dispatchEvent(new MouseEvent('click', { bubbles: true }));
   else screen.getByRole('button', { name: 'Отметить, чтобы вернуться' }).element().dispatchEvent(new MouseEvent('click', { bubbles: true }));
+  await expect.element(screen.getByRole('heading', { name: 'Время вышло', exact: true })).toBeVisible();
+  await screen.getByRole('button', { name: 'К итогу', exact: true }).click();
   await expect.element(screen.getByRole('heading', { name: '0 из 3 верно' })).toBeVisible();
   expect(save).not.toHaveBeenCalled();
   expect((await trainingRepository.get(training.session.id))?.answers).toEqual({});
@@ -155,14 +157,16 @@ test('дедлайн во время записи: итог появляется
   const { screen } = await boot(training);
   const held = holdAnswer();
   try {
-    screen.getByRole('radio', { name: 'A A', exact: true }).element().dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    screen.getByRole('radio', { name: 'A', exact: true }).element().dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await expect.poll(() => held.spy.mock.calls.length).toBe(1);
     vi.spyOn(Date, 'now').mockReturnValue(started + 270000);
     document.dispatchEvent(new Event('visibilitychange'));
-    await expect.element(screen.getByRole('heading', { name: '1 из 3 верно' })).toBeVisible();
+    await expect.element(screen.getByRole('heading', { name: 'Время вышло', exact: true })).toBeVisible();
   } finally { held.release(); }
   await expect.poll(async () => (await trainingRepository.get(training.session.id))?.finish?.timedOut).toBe(true);
   expect((await trainingRepository.get(training.session.id))?.answers['0']?.optionIds).toEqual(['A']);
+  await screen.getByRole('button', { name: 'К итогу', exact: true }).click();
+  await expect.element(screen.getByRole('heading', { name: '1 из 3 верно' })).toBeVisible();
 });
 
 test('фоновая отправка на дедлайне ждёт все принятые касания, затем отправляет ответ и итог', async () => {
@@ -208,9 +212,9 @@ test('проверка без лимита не раскрывает верно�
 test('ошибка хранилища исчезает после удачной записи', async () => {
   const { screen } = await boot();
   vi.spyOn(trainingRepository, 'draft').mockRejectedValueOnce(new Error('fixture failure'));
-  await screen.getByRole('radio', { name: 'A A' }).click();
+  await screen.getByRole('radio', { name: 'A' }).click();
   await expect.element(screen.getByRole('alert')).toBeVisible();
-  await screen.getByRole('radio', { name: 'B B' }).click();
+  await screen.getByRole('radio', { name: 'B' }).click();
   await expect.poll(async () => (await trainingRepository.get(trainingSession().id))?.drafts?.['0']).toEqual(['B']);
   await expect.element(screen.getByRole('alert')).not.toBeInTheDocument();
 });
@@ -228,13 +232,13 @@ test('слушатель клавиш не пересоздаётся при в�
 
 test('мини-апп: на вопросе и итоге нет собственной кнопки назад', async () => {
   const { screen } = await boot(undefined, {}, 'ru', 'telegram');
-  await expect.element(screen.getByRole('link', { name: 'Закрыть тренировку' })).not.toBeInTheDocument();
+  await expect.element(screen.getByRole('button', { name: 'Закрыть тренировку' })).not.toBeInTheDocument();
   await screen.getByRole('button', { name: 'Не знаю', exact: true }).click();
-  await screen.getByRole('button', { name: /Дальше · 2/ }).click();
+  await screen.getByRole('button', { name: /^Дальше$/ }).click();
   await screen.getByRole('button', { name: 'Не знаю', exact: true }).click();
-  await screen.getByRole('button', { name: /Дальше · 3/ }).click();
+  await screen.getByRole('button', { name: /^Дальше$/ }).click();
   await screen.getByRole('button', { name: 'Не знаю', exact: true }).click();
-  await screen.getByRole('button', { name: 'Итог', exact: true }).click();
+  await screen.getByRole('button', { name: 'К итогу', exact: true }).click();
   await expect.element(screen.getByRole('heading', { name: '0 из 3 верно' })).toBeVisible();
   await expect.element(screen.getByRole('link', { name: 'Готово', exact: true })).not.toBeInTheDocument();
 });
@@ -254,15 +258,15 @@ test('проверка: пропуск, отметка, список, возвр
   const { screen } = await boot(storedTraining(trainingSession({ mode: 'check', timeLimitSeconds: 270 }), Date.now()));
   await screen.getByRole('button', { name: 'Отметить, чтобы вернуться' }).click();
   await screen.getByRole('button', { name: 'Пропустить', exact: true }).click();
-  await screen.getByRole('radio', { name: 'A A', exact: true }).click();
-  await screen.getByRole('button', { name: 'Все вопросы', exact: true }).click();
+  await screen.getByRole('radio', { name: 'A', exact: true }).click();
+  await screen.getByRole('button', { name: 'Вопросы', exact: true }).click();
   await expect.element(screen.getByRole('button', { name: 'Вопрос 1, без ответа, отмечен', exact: true })).toBeVisible();
   await screen.getByRole('button', { name: 'Вопрос 1, без ответа, отмечен', exact: true }).click();
-  await screen.getByRole('radio', { name: 'B B', exact: true }).click();
+  await screen.getByRole('radio', { name: 'B', exact: true }).click();
   await expect.poll(async () => (await trainingRepository.get(trainingSession().id))?.answers['0']?.optionIds).toEqual(['B']);
   await screen.getByRole('button', { name: 'Снять отметку' }).click();
-  await screen.getByRole('button', { name: 'Все вопросы', exact: true }).click();
-  await screen.getByRole('button', { name: 'Закончить', exact: true }).click();
+  await screen.getByRole('button', { name: 'Вопросы', exact: true }).click();
+  await finishCheck(screen);
   await expect.element(screen.getByRole('heading', { name: '1 из 3 верно' })).toBeVisible();
 });
 
@@ -286,7 +290,7 @@ for (const [type, blanks] of [['text_completion', 1], ['text_completion', 2], ['
   }
   await screen.getByRole('button', { name: 'Проверить', exact: true }).click();
   await expect.element(screen.getByText('Верно.', { exact: true })).toBeVisible();
-  await screen.getByRole('button', { name: 'Итог', exact: true }).click();
+  await screen.getByRole('button', { name: 'К итогу', exact: true }).click();
   await expect.element(screen.getByText('Без ошибок — повторять нечего.')).toBeVisible();
   await screen.getByRole('button', { name: 'Готово', exact: true }).click();
   await expect.element(screen.getByRole('heading', { name: 'Тренировка' })).toBeVisible();
@@ -298,25 +302,25 @@ test('два верных ключа и неверный SE: второй уро
   await screen.getByRole('checkbox', { name: /A word/ }).click();
   await screen.getByRole('checkbox', { name: /B word/ }).click();
   await screen.getByRole('button', { name: 'Check answer', exact: true }).click();
-  await expect.element(screen.getByText(/The answers are/)).toBeVisible();
+  await expect.poll(() => screen.getByRole('checkbox', { name: /correct/ }).elements().length).toBe(2);
   await screen.getByRole('button', { name: 'Why not B word 0?' }).click();
   await expect.element(screen.getByTestId('explanation-option')).toHaveTextContent('Wrong choice.');
   await screen.getByRole('button', { name: 'RU' }).click();
-  await expect.element(screen.getByText(/Верные ответы/)).toBeVisible();
+  await expect.element(screen.getByTestId('explanation')).toHaveAttribute('lang', 'ru');
   await screen.getByRole('button', { name: 'Почему не B word 0?' }).click();
   await expect.element(screen.getByTestId('explanation-option')).not.toBeInTheDocument();
 });
 
 test('выбор и позиция восстанавливаются при повторном открытии; раскрытый ответ нельзя изменить', async () => {
   const { screen, router } = await boot();
-  await screen.getByRole('radio', { name: 'B B', exact: true }).click();
+  await screen.getByRole('radio', { name: 'B', exact: true }).click();
   await expect.poll(async () => (await trainingRepository.get(trainingSession().id))?.drafts?.['0']).toEqual(['B']);
-  await screen.getByRole('link', { name: 'Закрыть тренировку' }).click();
+  await screen.getByRole('button', { name: 'Закрыть тренировку' }).click();
   await screen.getByRole('link', { name: /Продолжить тренировку/ }).click();
-  await expect.element(screen.getByRole('radio', { name: 'B B', exact: true })).toHaveAttribute('aria-checked', 'true');
+  await expect.element(screen.getByRole('radio', { name: 'B', exact: true })).toHaveAttribute('aria-checked', 'true');
   await screen.getByRole('button', { name: 'Проверить', exact: true }).click();
-  await screen.getByRole('button', { name: /Дальше · 2/ }).click();
-  await screen.getByRole('link', { name: 'Закрыть тренировку' }).click();
+  await screen.getByRole('button', { name: /^Дальше$/ }).click();
+  await screen.getByRole('button', { name: 'Закрыть тренировку' }).click();
   await screen.getByRole('link', { name: /Продолжить тренировку/ }).click();
   await expect.element(screen.getByLabelText('Вопрос 2 из 3')).toBeVisible();
   await screen.getByRole('button', { name: 'Не знаю', exact: true }).click();
@@ -331,6 +335,8 @@ test('таймер по часам при возврате из фона зак�
   const { screen } = await boot(training);
   const clock = vi.spyOn(Date, 'now').mockReturnValue(started + 900000);
   document.dispatchEvent(new Event('visibilitychange'));
+  await expect.element(screen.getByRole('heading', { name: 'Время вышло', exact: true })).toBeVisible();
+  await screen.getByRole('button', { name: 'К итогу', exact: true }).click();
   await expect.element(screen.getByRole('heading', { name: '0 из 3 верно' })).toBeVisible();
   await expect.element(screen.getByText('Не успели: 3 вопроса.')).toBeVisible();
   await expect.element(screen.getByRole('heading', { name: 'Что повторить' })).not.toBeInTheDocument();
@@ -340,6 +346,8 @@ test('таймер по часам при возврате из фона зак�
 
 test('истёкшая закрытая проверка сразу показывает итог; короткая проверка округляет минуты', async () => {
   const { screen } = await boot(storedTraining(trainingSession({ mode: 'check', timeLimitSeconds: 20 }), Date.now() - 60000));
+  await expect.element(screen.getByRole('heading', { name: 'Время вышло', exact: true })).toBeVisible();
+  await screen.getByRole('button', { name: 'К итогу', exact: true }).click();
   await expect.element(screen.getByRole('heading', { name: '0 из 3 верно' })).toBeVisible();
   await expect.element(screen.getByText('Проверка · Verbal · 1 минута из 1')).toBeVisible();
 });
@@ -361,33 +369,33 @@ test('клавиши A–E, Enter и стрелки: практика и про�
   await expect.element(screen.getByRole('timer')).toBeVisible();
   await userEvent.keyboard('{ArrowLeft}');
   await userEvent.keyboard('{Control>}a{/Control}');
-  await expect.element(screen.getByRole('radio', { name: 'A A' })).toHaveAttribute('aria-checked', 'false');
+  await expect.element(screen.getByRole('radio', { name: 'A' })).toHaveAttribute('aria-checked', 'false');
   await userEvent.keyboard('a');
-  await expect.element(screen.getByRole('radio', { name: 'A A' })).toBeEnabled();
+  await expect.element(screen.getByRole('radio', { name: 'A' })).toBeEnabled();
   await userEvent.keyboard('{Enter}');
   await expect.element(screen.getByLabelText('Вопрос 2 из 3')).toBeVisible();
   await userEvent.keyboard('{ArrowLeft}');
   await expect.element(screen.getByLabelText('Вопрос 1 из 3')).toBeVisible();
-  await screen.getByRole('button', { name: 'Все вопросы', exact: true }).click();
-  await screen.getByRole('button', { name: 'К вопросу 1' }).click();
+  await screen.getByRole('button', { name: 'Вопросы', exact: true }).click();
+  await screen.getByRole('button', { name: 'Назад' }).click();
   await expect.element(screen.getByLabelText('Вопрос 1 из 3')).toBeVisible();
 });
 
 test('последний вопрос проверки ведёт к списку; назад возвращает к выбранному ответу', async () => {
   const { screen } = await boot({ ...storedTraining(trainingSession({ mode: 'check', timeLimitSeconds: 270 }), Date.now()), position: 2 });
-  await screen.getByRole('button', { name: 'Назад', exact: true }).click();
+  await screen.getByRole('button', { name: 'Предыдущий вопрос', exact: true }).click();
   await expect.element(screen.getByLabelText('Вопрос 2 из 3')).toBeVisible();
-  await screen.getByRole('button', { name: /Дальше · 3/ }).click();
+  await screen.getByRole('button', { name: 'Пропустить', exact: true }).click();
   await screen.getByRole('button', { name: 'К списку вопросов' }).click();
-  await expect.element(screen.getByRole('heading', { name: 'Все вопросы' })).toBeVisible();
+  await expect.element(screen.getByRole('heading', { name: 'Вопросы' })).toBeVisible();
 });
 
 test('запись не удалась: выбор возвращён и человеку видна ошибка', async () => {
   const { screen } = await boot();
   vi.spyOn(trainingRepository, 'draft').mockRejectedValueOnce(new Error('fixture failure'));
-  await screen.getByRole('radio', { name: 'A A' }).click();
+  await screen.getByRole('radio', { name: 'A' }).click();
   await expect.element(screen.getByRole('alert')).toHaveTextContent('Не получилось сохранить тренировку на устройстве. Освободите место и попробуйте снова.');
-  await expect.element(screen.getByRole('radio', { name: 'A A' })).toHaveAttribute('aria-checked', 'false');
+  await expect.element(screen.getByRole('radio', { name: 'A' })).toHaveAttribute('aria-checked', 'false');
 });
 
 for (const failure of ['offline', 'no_questions', 'failed', 'success'] as const) test(`повтор по темам: ${failure}`, async () => {
@@ -422,14 +430,14 @@ test('главное действие сайта видно над нижним 
   await expect.poll(() => primary.element().getBoundingClientRect().bottom <= innerHeight).toBe(true);
   await screen.getByRole('button', { name: 'Не знаю', exact: true }).click();
   document.querySelector('main')!.scrollTop = 0;
-  await expect.poll(() => screen.getByRole('button', { name: 'Итог', exact: true }).element().getBoundingClientRect().bottom <= innerHeight).toBe(true);
+  await expect.poll(() => screen.getByRole('button', { name: 'К итогу', exact: true }).element().getBoundingClientRect().bottom <= innerHeight).toBe(true);
 });
 
-test('подсказки клавиш отражают число вариантов: SE, а не фиксированный A–E', async () => {
+test('подсказок клавиш нет, клавиатура SE работает без букв на экране', async () => {
   const q = questionFixture('sentence_equivalence');
   q.groups[0]!.options.push({ id: 'D', text: 'D' }, { id: 'E', text: 'E' }, { id: 'F', text: 'F' });
-  const { screen } = await boot(storedTraining(trainingSession({ items: [{ position: 0, question: q }] }), Date.now()));
-  await expect.element(screen.getByText('A–F', { exact: true })).toBeInTheDocument();
+  await boot(storedTraining(trainingSession({ items: [{ position: 0, question: q }] }), Date.now()));
+  expect(document.querySelectorAll('kbd')).toHaveLength(0);
 });
 
 test('список проверки: TC3 с одним или двумя пропусками не отвечен; полный неверный ответ отвечен', async () => {
@@ -440,17 +448,17 @@ test('список проверки: TC3 с одним или двумя про�
   await expect.poll(async () => (await trainingRepository.get(training.session.id))?.answers['0']?.optionIds).toEqual(['A0']);
   await screen.getByRole('button', { name: 'Отметить, чтобы вернуться' }).click();
   for (const remaining of ['B word 1', 'C word 2']) {
-    await screen.getByRole('button', { name: 'Все вопросы', exact: true }).click();
+    await screen.getByRole('button', { name: 'Вопросы', exact: true }).click();
     await expect.element(screen.getByText('Отвечено 0 из 1 · отмечено 1', { exact: true })).toBeVisible();
     const incomplete = screen.getByRole('button', { name: 'Вопрос 1, без ответа, отмечен', exact: true });
     await expect.element(incomplete).toHaveAttribute('data-answered', 'false');
     await incomplete.click();
     await screen.getByRole('radio', { name: remaining, exact: true }).click();
   }
-  await screen.getByRole('button', { name: 'Все вопросы', exact: true }).click();
+  await screen.getByRole('button', { name: 'Вопросы', exact: true }).click();
   await expect.element(screen.getByText('Отвечено 1 из 1 · отмечено 1', { exact: true })).toBeVisible();
   await expect.element(screen.getByRole('button', { name: 'Вопрос 1, отвечен, отмечен', exact: true })).toHaveAttribute('data-answered', 'true');
-  await screen.getByRole('button', { name: 'Закончить', exact: true }).click();
+  await finishCheck(screen);
   await expect.element(screen.getByRole('heading', { name: '0 из 1 верно' })).toBeVisible();
 });
 
@@ -459,8 +467,8 @@ test('итог проверки по-прежнему считает части�
   const training = storedTraining(trainingSession({ mode: 'check', timeLimitSeconds: 270, items: [{ position: 0, question }] }), Date.now());
   const { screen } = await boot(training);
   await screen.getByRole('radio', { name: 'A word 0', exact: true }).click();
-  await screen.getByRole('button', { name: 'Все вопросы', exact: true }).click();
-  await screen.getByRole('button', { name: 'Закончить', exact: true }).click();
+  await screen.getByRole('button', { name: 'Вопросы', exact: true }).click();
+  await finishCheck(screen);
   await expect.element(screen.getByRole('heading', { name: '0 из 1 верно' })).toBeVisible();
   await expect.element(screen.getByRole('heading', { name: 'Что повторить' })).toBeVisible();
   await expect.element(screen.getByText('1 ошибка · вопрос 1', { exact: true })).toBeVisible();
@@ -471,13 +479,13 @@ test('список проверки: SE отвечен только после �
   const training = storedTraining(trainingSession({ mode: 'check', timeLimitSeconds: 270, items: [{ position: 0, question }] }), Date.now());
   const { screen } = await boot(training);
   await screen.getByRole('checkbox', { name: /A word 0/ }).click();
-  await screen.getByRole('button', { name: 'Все вопросы', exact: true }).click();
+  await screen.getByRole('button', { name: 'Вопросы', exact: true }).click();
   await expect.element(screen.getByText('Отвечено 0 из 1 · отмечено 0', { exact: true })).toBeVisible();
   const incomplete = screen.getByRole('button', { name: 'Вопрос 1, без ответа', exact: true });
   await expect.element(incomplete).toHaveAttribute('data-answered', 'false');
   await incomplete.click();
   await screen.getByRole('checkbox', { name: /B word 0/ }).click();
-  await screen.getByRole('button', { name: 'Все вопросы', exact: true }).click();
+  await screen.getByRole('button', { name: 'Вопросы', exact: true }).click();
   await expect.element(screen.getByText('Отвечено 1 из 1 · отмечено 0', { exact: true })).toBeVisible();
   await expect.element(screen.getByRole('button', { name: 'Вопрос 1, отвечен', exact: true })).toHaveAttribute('data-answered', 'true');
 });
@@ -508,3 +516,8 @@ test('T6: без сети на вопросе тихая строка, «Про�
   onlineManager.setOnline(true);
   await expect.element(screen.getByText('Нет сети — ответы сохранятся и уйдут сами.')).not.toBeInTheDocument();
 });
+
+async function finishCheck(screen: Awaited<ReturnType<typeof boot>>['screen']) {
+  await screen.getByRole('button', { name: 'Завершить проверку', exact: true }).click();
+  if (screen.getByRole('dialog', { name: /^Без ответа:/ }).elements().length) await screen.getByRole('button', { name: 'Завершить проверку', exact: true }).click();
+}

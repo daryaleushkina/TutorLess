@@ -34,9 +34,9 @@ test('переход вопрос → жалоба → вопрос не вкл�
 test('Telegram «назад» закрывает темы, затем конструктор, затем сессию', async () => {
   fakeServer({ ...signedIn, 'GET /api/trainings/options': () => json(trainingOptions()), 'POST /api/trainings': () => json(trainingSession()) });
   const { screen } = await renderApp({ path: '/training/new', shell: 'telegram', launch });
-  await expect.element(screen.getByRole('textbox', { name: 'Вопросов' })).toBeVisible();
+  await expect.element(screen.getByRole('group', { name: 'Вопросов', exact: true })).toBeVisible();
   await expect.poll(() => sdk.visible()).toBe(true);
-  await screen.getByRole('button', { name: 'Темы и сложность все' }).click(); back();
+  await screen.getByRole('button', { name: /Темы и сложность все/ }).click(); back();
   await expect.element(screen.getByRole('heading', { name: 'Новая тренировка' })).toBeVisible();
   await screen.getByRole('button', { name: /Начать ·/ }).click(); await expect.element(screen.getByRole('heading', { name: 'Text Completion' })).toBeVisible(); back();
   await expect.element(screen.getByRole('heading', { name: 'Тренировка' })).toBeVisible();
@@ -59,7 +59,7 @@ test('два нажатия нашей кнопки в одном кадре с�
   sdk.mainButton.setParams.isAvailable.mockReturnValue(true); vi.clearAllMocks();
   const { screen } = await renderApp({ path: '/training/new', shell: 'telegram', launch });
   try {
-    await expect.element(screen.getByRole('textbox', { name: 'Вопросов' })).toBeVisible();
+    await expect.element(screen.getByRole('group', { name: 'Вопросов', exact: true })).toBeVisible();
     const button = screen.getByRole('button', { name: /^Начать ·/ }).element();
     if (!(button instanceof HTMLButtonElement)) throw new Error('fixture button missing');
     button.click(); button.click();
@@ -125,7 +125,7 @@ test('свайпы выключены только на вопросе и жал
   await screen.getByRole('button', { name: /Начать ·/ }).click();
   for (let index = 0; index < 3; index++) {
     await screen.getByRole('button', { name: 'Не знаю', exact: true }).click();
-    await screen.getByRole('button', { name: index < 2 ? /Дальше ·/ : 'Итог', exact: true }).click();
+    await screen.getByRole('button', { name: index < 2 ? /^Дальше$/ : 'К итогу', exact: true }).click();
   }
   await screen.getByRole('link', { name: 'Все ответы и разборы' }).click();
   await screen.getByRole('link', { name: /Вопрос 1, без ответа/ }).click();
@@ -163,11 +163,11 @@ test('на маршруте жалобы свайпы выключены и по
   const { screen } = await renderApp({ path: '/training/new', shell: 'telegram', launch });
   await screen.getByRole('button', { name: /Начать ·/ }).click();
   await screen.getByRole('link', { name: 'Сообщить об ошибке' }).click();
-  await screen.getByRole('button', { name: 'Другое', exact: true }).click();
+  await screen.getByRole('button', { name: 'В задании', exact: true }).click();
   await screen.getByRole('button', { name: 'Отправить', exact: true }).click();
-  await expect.element(screen.getByRole('heading', { name: 'Спасибо!' })).toBeVisible();
+  await expect.element(screen.getByRole('status').filter({ hasText: 'Спасибо — проверим и поправим' })).toBeVisible();
   expect(sdk.swipeBehavior.enableVertical.ifAvailable).not.toHaveBeenCalled();
-  back(); await expect.element(screen.getByRole('heading', { name: 'Text Completion' })).toBeVisible();
+  await expect.element(screen.getByRole('heading', { name: 'Text Completion' })).toBeVisible();
   expect(sdk.swipeBehavior.enableVertical.ifAvailable).not.toHaveBeenCalled();
 });
 

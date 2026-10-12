@@ -7,7 +7,7 @@ export const TYPE_LABELS: Record<QuestionType, string> = {
 };
 export interface BuilderForm {
   section: Section; type: QuestionType; countText: string; mode: TrainingMode;
-  topicIds: string[] | undefined; difficulty: Difficulty | undefined;
+  topicIds: string[] | undefined; difficulty: Difficulty | undefined; mixed?: boolean;
 }
 export interface BuilderState { options: TrainingOptions; form: BuilderForm; preset: number | undefined }
 export function presetsOf(options: TrainingOptions) { return options.presets.filter((p) => p.kind === 'last' || p.kind === 'timed'); }
@@ -19,7 +19,7 @@ export function defaultForm(options: TrainingOptions, section: BuilderForm['sect
 }
 export function formOf(request: TrainingRequest, options: TrainingOptions): BuilderForm {
   return { ...defaultForm(options, request.section, request.questionTypes[0]),
-    countText: String(request.count), mode: request.mode, topicIds: request.topicIds?.length ? request.topicIds : undefined, difficulty: request.difficulty };
+    countText: String(request.count), mode: request.mode, mixed: request.questionTypes.length > 1, topicIds: request.topicIds?.length ? request.topicIds : undefined, difficulty: request.difficulty };
 }
 export function initialBuilder(options: TrainingOptions, section?: BuilderForm['section'], type?: QuestionType): BuilderState {
   const preset = section ? -1 : presetsOf(options).findIndex((p) => p.kind === 'last');
@@ -50,9 +50,12 @@ export function requestOf(state: BuilderState, exam: Exam): TrainingRequest | un
   if (state.preset !== undefined) return presetsOf(state.options)[state.preset]?.request;
   const { form, options } = state;
   const count = /^\d+$/.test(form.countText) ? Number(form.countText) : 0;
-  const questions = Math.min(count, available(state), options.maxQuestions);
+  if (available(state) === 0) return undefined;
+  // Сервер присылает один timed-набор для последнего раздела; размер секции общий для Verbal и Quant.
+  const timed = options.presets.find((p) => p.kind === 'timed' && p.request.section === form.section) ?? options.presets.find((p) => p.kind === 'timed');
+  const questions = form.mode === 'check' ? timed ? Math.min(timed.request.count, options.maxQuestions) : Math.min(count, available(state), options.maxQuestions) : Math.min(count, available(state), options.maxQuestions);
   if (questions < 1) return undefined;
-  return { exam, section: form.section, questionTypes: [form.type], count: questions, mode: form.mode,
+  return { exam, section: form.section, questionTypes: form.mode === 'check' && form.mixed ? options.types.filter((t) => t.section === form.section && t.topics.length).map((t) => t.questionType) : [form.type], count: questions, mode: form.mode,
     ...(form.topicIds && { topicIds: form.topicIds.filter((id) => topicsOf(state).some((topic) => topic.id === id)) }), ...(form.difficulty && { difficulty: form.difficulty }) };
 }
 export function minutes(options: TrainingOptions, request: TrainingRequest): number {

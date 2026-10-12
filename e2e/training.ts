@@ -5,9 +5,12 @@ import { e2eSlot } from '../tools/dev/e2e-slot';
 
 async function closeSession(page: Page) {
   // BackButton виден и в конструкторе: сначала ждём экран сессии, как прежде ждали его собственную ссылку.
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Text Completion|Sentence Equivalence|Quantitative Comparison|Multiple Choice|Все вопросы/);
+  if (await page.getByRole('dialog', { name: 'Вопросы', exact: true }).count()) await page.getByRole('dialog', { name: 'Вопросы', exact: true }).getByRole('button', { name: 'Назад', exact: true }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Text Completion|Sentence Equivalence|Quantitative Comparison|Multiple Choice/);
   if (new URL(page.url()).pathname.startsWith('/tg/')) await page.locator('#tg-mock-back').click();
-  else await page.getByRole('link', { name: 'Закрыть тренировку' }).click();
+  else await page.getByRole('button', { name: 'Закрыть тренировку' }).click();
+  const exit = page.getByRole('dialog', { name: 'Выйти из проверки?', exact: true });
+  if (await exit.count()) await exit.getByRole('button', { name: 'Выйти', exact: true }).click();
 }
 
 export async function actionButtonsFit(page: Page) {
@@ -20,12 +23,12 @@ export async function buildAndResume(page: Page) {
   await page.getByRole('link', { name: 'Настроить тренировку' }).click();
   await expect(page.getByRole('heading', { name: 'Новая тренировка' })).toBeVisible();
   if (new URL(page.url()).pathname.startsWith('/tg/')) await expect(page.locator('#tg-mock-back')).toBeVisible();
-  await page.getByRole('textbox', { name: 'Вопросов' }).fill('3');
+  await page.getByRole('button', { name: '5', exact: true }).click();
   await page.getByRole('button', { name: /Темы и сложность/ }).click();
   await expect(page.getByRole('heading', { name: 'Темы и сложность' })).toBeVisible();
   await page.getByRole('button', { name: 'Лёгкая', exact: true }).click();
   await page.getByRole('button', { name: /^Готово ·/ }).click();
-  await page.getByRole('button', { name: /^Начать ·/ }).click();
+  await page.getByRole('button', { name: /^(Начать ·|Начинаем…)/ }).click();
   await expect(page).toHaveURL(/\/training\/[0-9a-f-]{36}/);
   await expect(page.getByRole('heading', { name: /Text Completion|Sentence Equivalence/ })).toBeVisible();
   await closeSession(page);
@@ -33,9 +36,9 @@ export async function buildAndResume(page: Page) {
   await expect(resume).toContainText(/Вопрос\s1\sиз\s\d · Text Completion/);
   expect(await resume.textContent()).toMatch(/Вопрос\u00a01\u00a0из\u00a0\d/);
   await page.getByRole('link', { name: 'Настроить тренировку' }).click();
-  await expect(page.getByRole('radio', { name: 'Как в прошлый раз' })).toBeChecked();
+  await expect(page.getByRole('button', { name: /^Тип/ })).toContainText('Text Completion');
   // В devseed одно лёгкое задание этого типа: последняя сборка хранит ограниченное доступностью число.
-  await expect(page.getByRole('textbox', { name: 'Вопросов' })).toHaveValue('1');
+  await expect(page.getByRole('button', { name: /^(Начать ·|Начинаем…)/ })).toContainText('1\u00a0вопрос');
   if (new URL(page.url()).pathname.startsWith('/tg/')) await page.locator('#tg-mock-back').click();
   else await page.getByRole('button', { name: 'Назад', exact: true }).click();
   await expect(resume).toBeVisible();
@@ -47,15 +50,12 @@ export async function buildAndResume(page: Page) {
 
 export async function presetMatchesForm(page: Page) {
   await page.getByRole('link', { name: 'Настроить тренировку' }).click();
-  await page.getByRole('button', { name: 'Quant', exact: true }).click();
-  await page.getByRole('textbox', { name: 'Вопросов' }).fill('5');
-  await page.getByRole('radio', { name: 'Проверка на время' }).click();
-  await expect(page.getByRole('button', { name: 'Verbal', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByRole('textbox', { name: 'Вопросов' })).toHaveValue('12');
-  await expect(page.getByRole('button', { name: 'Проверка', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByRole('combobox', { name: 'Тип' }).locator('option:checked')).toHaveText('Text Completion · Sentence Equivalence');
+  await page.getByRole('button', { name: 'Проверка', exact: true }).click();
+  await expect(page.getByRole('group', { name: 'Вопросов', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: /^Тип/ }).click();
+  await page.getByRole('radio', { name: 'Все типы вперемешку', exact: true }).click();
   const posted = page.waitForRequest((req) => req.method() === 'POST' && new URL(req.url()).pathname === '/api/trainings');
-  await page.getByRole('button', { name: /^Начать ·/ }).click();
+  await page.getByRole('button', { name: /^(Начать ·|Начинаем…)/ }).click();
   expect(schemas.TrainingRequest.parse((await posted).postDataJSON())).toMatchObject({ exam: 'gre', section: 'verbal', count: 12, mode: 'check',
     questionTypes: ['text_completion', 'sentence_equivalence'] });
   await expect(page.getByRole('heading', { name: /Text Completion|Sentence Equivalence/ })).toBeVisible();
@@ -74,7 +74,7 @@ export async function resumeCounterStaysTogether(page: Page) {
     await route.fulfill({ response, json: schemas.TrainingSession.parse({ ...session, items }) });
   });
   await page.getByRole('link', { name: 'Настроить тренировку' }).click();
-  await page.getByRole('button', { name: /^Начать ·/ }).click();
+  await page.getByRole('button', { name: /^(Начать ·|Начинаем…)/ }).click();
   await closeSession(page);
   const resume = page.getByRole('link', { name: /Продолжить тренировку/ });
   await expect(resume).toContainText(/Вопрос\s1\sиз\s10/);
@@ -98,7 +98,7 @@ export async function unavailableStorageKeepsSession(page: Page) {
   await page.reload();
   await page.getByRole('link', { name: 'Настроить тренировку' }).click();
   await expect(page.getByText('Нет места на устройстве', { exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: /^Начать ·/ })).toBeDisabled();
+  await expect(page.getByRole('button', { name: /^(Начать ·|Начинаем…)/ })).toBeDisabled();
   if (new URL(page.url()).pathname.startsWith('/tg/')) await page.locator('#tg-mock-back').click();
   else await page.getByRole('button', { name: 'Назад', exact: true }).click();
   await expect(page.getByRole('link', { name: 'Настроить тренировку' })).toBeVisible();
@@ -109,7 +109,7 @@ export async function unavailableStorageKeepsSession(page: Page) {
 
 export async function offlineBuilder(page: Page) {
   await page.getByRole('link', { name: 'Настроить тренировку' }).click();
-  const start = page.getByRole('button', { name: /^Начать ·/ });
+  const start = page.getByRole('button', { name: /^(Начать ·|Начинаем…)/ });
   await expect(start).toBeEnabled();
   let attempts = 0;
   page.on('request', (req) => { if (req.method() === 'POST' && new URL(req.url()).pathname === '/api/trainings') attempts++; });
@@ -124,13 +124,21 @@ export async function offlineBuilder(page: Page) {
 }
 
 export async function startSession(page: Page, mode: 'practice' | 'check' = 'practice', count = 3, section = 'Verbal', type = 'text_completion') {
+  if (count < 5) await page.route('**/api/trainings/options?*', async (route) => {
+    const response = await route.fetch(); const options = schemas.TrainingOptions.parse(await response.json());
+    await route.fulfill({ response, json: { ...options,
+      types: options.types.map((row) => row.questionType !== type ? row : { ...row, topics: row.topics.map((topic, index) => ({ ...topic, available: index === 0 ? (count === 3 ? { easy: 1, medium: 1, hard: 1 } : { easy: count, medium: 0, hard: 0 }) : { easy: 0, medium: 0, hard: 0 } })) }),
+      presets: options.presets.map((preset) => preset.kind === 'timed' ? { ...preset, request: { ...preset.request, count } } : preset),
+    } });
+  }, { times: 1 });
   await page.getByRole('link', { name: 'Настроить тренировку' }).click();
   await page.getByRole('button', { name: section, exact: true }).click();
-  await page.getByRole('combobox', { name: 'Тип' }).selectOption(type);
-  await page.getByRole('textbox', { name: 'Вопросов' }).fill(String(count));
+  await page.getByRole('button', { name: 'Практика', exact: true }).click();
+  await chooseTrainingType(page, type);
+  await page.getByRole('button', { name: String(count <= 5 ? 5 : count <= 10 ? 10 : count <= 15 ? 15 : 20), exact: true }).click();
   await page.getByRole('button', { name: mode === 'check' ? 'Проверка' : 'Практика', exact: true }).click();
   const response = page.waitForResponse((r) => r.request().method() === 'POST' && new URL(r.url()).pathname === '/api/trainings');
-  await page.getByRole('button', { name: /^Начать ·/ }).click();
+  await page.getByRole('button', { name: /^(Начать ·|Начинаем…)/ }).click();
   const session = schemas.TrainingSession.parse(await (await response).json());
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(new RegExp('Text Completion|Sentence Equivalence|Quantitative Comparison|Multiple Choice'));
   return session;
@@ -155,7 +163,7 @@ export async function practiceThroughSummary(page: Page) {
   await pick(page, session.items[0]!.question);
   await page.getByRole('button', { name: 'Проверить', exact: true }).click();
   await expect(page.getByText('Верно.', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: /Дальше · 2 из/ }).click();
+  await page.getByRole('button', { name: /^Дальше$/ }).click();
   await pick(page, session.items[1]!.question, true);
   await page.getByRole('button', { name: 'Проверить', exact: true }).click();
   await expect(page.getByText('Неверно.', { exact: true })).toBeVisible();
@@ -165,10 +173,10 @@ export async function practiceThroughSummary(page: Page) {
   await expect(page.getByText('Incorrect.', { exact: true })).toBeVisible();
   await expect(page.getByTestId('explanation')).toHaveAttribute('lang', 'en');
   await page.getByRole('button', { name: 'RU', exact: true }).click();
-  await page.getByRole('button', { name: /Дальше · 3 из/ }).click();
+  await page.getByRole('button', { name: /^Дальше$/ }).click();
   await page.getByRole('button', { name: 'Не знаю', exact: true }).click();
   await expect(page.getByTestId('explanation')).toBeVisible();
-  await page.getByRole('button', { name: 'Итог', exact: true }).click();
+  await page.getByRole('button', { name: 'К итогу', exact: true }).click();
   await expect(page.getByRole('heading', { name: '1 из 3 верно' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Что повторить' })).toBeVisible();
   const request = page.waitForRequest((r) => r.method() === 'POST' && new URL(r.url()).pathname === '/api/trainings');
@@ -185,15 +193,15 @@ export async function checkWithReturn(page: Page) {
   await page.getByRole('button', { name: 'Отметить, чтобы вернуться' }).click();
   await page.getByRole('button', { name: 'Пропустить', exact: true }).click();
   await pick(page, session.items[1]!.question);
-  await page.getByRole('button', { name: 'Все вопросы', exact: true }).click();
+  await page.getByRole('button', { name: 'Вопросы', exact: true }).click();
   await expect(page.getByText('Отвечено 1 из 3 · отмечено 1')).toBeVisible();
   await page.getByRole('button', { name: 'Вопрос 1, без ответа, отмечен', exact: true }).click();
   await pick(page, session.items[0]!.question);
   await page.getByRole('button', { name: 'Снять отметку' }).click();
-  await page.getByRole('button', { name: 'Все вопросы', exact: true }).click();
+  await page.getByRole('button', { name: 'Вопросы', exact: true }).click();
   await page.getByRole('button', { name: 'Вопрос 3, без ответа', exact: true }).click();
   await page.getByRole('button', { name: 'К списку вопросов' }).click();
-  await page.getByRole('button', { name: 'Закончить', exact: true }).click();
+  await finishCheck(page);
   await expect(page.getByRole('heading', { name: '2 из 3 верно' })).toBeVisible();
   await page.getByRole('button', { name: 'Готово', exact: true }).click();
   await expect(page.getByRole('link', { name: /Продолжить тренировку/ })).toHaveCount(0);
@@ -204,7 +212,7 @@ export async function partialCheckAnswer(page: Page) {
   const session = await startSession(page, 'check', 50);
   const item = session.items.find(({ question }) => question.groups.length === 3);
   if (!item) throw new Error('fixture TC3 missing');
-  await page.getByRole('button', { name: 'Все вопросы', exact: true }).click();
+  await page.getByRole('button', { name: 'Вопросы', exact: true }).click();
   await page.getByRole('button', { name: `Вопрос ${item.position + 1}, без ответа`, exact: true }).click();
   const first = page.getByRole('radiogroup').nth(0).getByRole('radio').nth(0);
   await first.click();
@@ -216,17 +224,17 @@ export async function partialCheckAnswer(page: Page) {
       await page.reload();
       await expect(first).toHaveAttribute('aria-checked', 'true');
     }
-    await page.getByRole('button', { name: 'Все вопросы', exact: true }).click();
+    await page.getByRole('button', { name: 'Вопросы', exact: true }).click();
     await expect(page.getByText(`Отвечено 0 из ${session.items.length} · отмечено 1`, { exact: true })).toBeVisible();
     await expect(incomplete).toHaveAttribute('data-answered', 'false');
     if (!reload) await incomplete.click();
   }
   await incomplete.click();
   await pick(page, item.question);
-  await page.getByRole('button', { name: 'Все вопросы', exact: true }).click();
+  await page.getByRole('button', { name: 'Вопросы', exact: true }).click();
   await expect(page.getByText(`Отвечено 1 из ${session.items.length} · отмечено 1`, { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: `Вопрос ${item.position + 1}, отвечен, отмечен`, exact: true })).toHaveAttribute('data-answered', 'true');
-  await page.getByRole('button', { name: 'Закончить', exact: true }).click();
+  await finishCheck(page);
   await expect(page.getByRole('heading', { name: `1 из ${session.items.length} верно` })).toBeVisible();
 }
 
@@ -237,6 +245,8 @@ export async function timeRunsOut(page: Page, closed = false) {
   if (closed) await closeSession(page);
   await page.clock.fastForward((session.timeLimitSeconds! + 1) * 1000);
   if (closed) await page.goto((new URL(page.url()).pathname.startsWith('/tg') ? '/tg' : '') + '/training/' + session.id);
+  await expect(page.getByRole('heading', { name: 'Время вышло', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'К итогу', exact: true }).click();
   await expect(page.getByRole('heading', { name: '0 из 3 верно' })).toBeVisible();
   await expect(page.getByText('Время вышло — неотвеченные не считаются ошибками темы.')).toBeVisible();
   await expect(page.getByText('Не успели: 2\u00a0вопроса.')).toBeVisible();
@@ -247,7 +257,7 @@ export async function timeRunsOut(page: Page, closed = false) {
 export async function reloadSession(page: Page) {
   const session = await startSession(page);
   await page.getByRole('button', { name: 'Не знаю', exact: true }).click();
-  await page.getByRole('button', { name: /Дальше · 2 из/ }).click();
+  await page.getByRole('button', { name: /^Дальше$/ }).click();
   await pick(page, session.items[1]!.question);
   await expect(page.getByRole('button', { name: 'Проверить', exact: true })).toBeEnabled();
   await page.reload();
@@ -264,11 +274,11 @@ export async function offlineSession(page: Page, me: import('./fixtures').Me) {
   await page.context().setOffline(true);
   await pick(page, session.items[0]!.question);
   await page.getByRole('button', { name: 'Проверить', exact: true }).click();
-  await page.getByRole('button', { name: /Дальше · 2 из/ }).click();
+  await page.getByRole('button', { name: /^Дальше$/ }).click();
   await page.getByRole('button', { name: 'Не знаю', exact: true }).click();
-  await page.getByRole('button', { name: /Дальше · 3 из/ }).click();
+  await page.getByRole('button', { name: /^Дальше$/ }).click();
   await page.getByRole('button', { name: 'Не знаю', exact: true }).click();
-  await page.getByRole('button', { name: 'Итог', exact: true }).click();
+  await page.getByRole('button', { name: 'К итогу', exact: true }).click();
   await expect(page.getByRole('heading', { name: '1 из 3 верно' })).toBeVisible();
   const before = schemas.TrainingSession.parse(await me.api('GET', '/trainings/' + session.id));
   expect(before.items.every((item) => !item.answer)).toBe(true);
@@ -311,48 +321,76 @@ export async function stableTrainingScreens(page: Page, capture = true) {
   await page.clock.setFixedTime(new Date());
   const session = await startSession(page, 'practice', 50);
   if (capture) {
-    await checkScreen(page, 'training-question');
+    await checkScreen(page, 'training-b-question');
     await page.context().setOffline(true);
     await expect(page.getByText('Нет сети — ответы сохранятся и уйдут сами.')).toBeVisible();
-    await checkScreen(page, 'training-offline');
+    await checkScreen(page, 'training-b-offline');
     await page.context().setOffline(false);
   }
   await pick(page, session.items[0]!.question, true);
   await page.getByRole('button', { name: 'Проверить', exact: true }).click();
   await page.getByRole('button', { name: /^Почему не/ }).click();
-  if (capture) await checkScreen(page, 'training-explanation');
-  await page.getByRole('button', { name: /Дальше · 2 из/ }).click();
+  if (capture) await checkScreen(page, 'training-b-explanation');
+  await page.getByRole('button', { name: /^Дальше$/ }).click();
   await page.getByRole('button', { name: 'Не знаю', exact: true }).click();
-  await page.getByRole('button', { name: /Дальше · 3 из/ }).click();
+  if (capture) await checkScreen(page, 'training-b-dont-know');
+  await page.getByRole('button', { name: /^Дальше$/ }).click();
+  if (capture) {
+    await page.getByRole('button', { name: 'Предыдущий вопрос' }).click();
+    await checkScreen(page, 'training-b-past');
+    await page.getByRole('button', { name: 'К вопросу 3', exact: true }).click();
+  }
   await page.getByRole('button', { name: 'Не знаю', exact: true }).click();
-  await page.getByRole('button', { name: 'Итог', exact: true }).click();
+  await page.getByRole('button', { name: 'К итогу', exact: true }).click();
   await expect(page.getByRole('heading', { name: '0 из 3 верно' })).toBeVisible();
-  if (capture) await checkScreen(page, 'training-summary');
+  if (capture) await checkScreen(page, 'training-b-summary');
   await page.getByRole('button', { name: 'Готово', exact: true }).click();
   const check = await startSession(page, 'check', 50);
   await page.getByRole('button', { name: 'Отметить, чтобы вернуться' }).click();
-  if (capture) await checkScreen(page, 'training-timed');
+  if (capture) await checkScreen(page, 'training-b-timed');
   await page.getByRole('button', { name: 'Пропустить', exact: true }).click();
   await pick(page, check.items[1]!.question);
-  await page.getByRole('button', { name: 'Все вопросы', exact: true }).click();
+  await page.getByRole('button', { name: 'Вопросы', exact: true }).click();
   await expect(page.getByText('Отвечено 1 из 3 · отмечено 1')).toBeVisible();
-  if (capture) await checkScreen(page, 'training-overview');
-  await closeSession(page);
+  if (capture) await checkScreen(page, 'training-b-overview');
+  if (capture) {
+    await page.clock.setFixedTime(new Date(Date.now() + 271000));
+    await page.evaluate(() => window.dispatchEvent(new Event('pageshow')));
+    await expect(page.getByRole('heading', { name: 'Время вышло', exact: true })).toBeVisible();
+    await checkScreen(page, 'training-b-timeout');
+    await page.getByRole('button', { name: 'К итогу', exact: true }).click();
+    await page.getByRole('button', { name: 'Готово', exact: true }).click();
+  } else await closeSession(page);
   if (!capture) return session;
   for (const [type, section, count, name] of [
-    ['text_completion', 'Verbal', 2, 'training-tc2'], ['text_completion', 'Verbal', 3, 'training-tc3'],
-    ['sentence_equivalence', 'Verbal', 1, 'training-se'], ['quantitative_comparison', 'Quant', 1, 'training-qc'], ['multiple_choice', 'Quant', 1, 'training-mc'],
+    ['text_completion', 'Verbal', 2, 'training-b-tc2'], ['text_completion', 'Verbal', 3, 'training-b-tc3'],
+    ['sentence_equivalence', 'Verbal', 1, 'training-b-se'], ['quantitative_comparison', 'Quant', 1, 'training-b-qc'], ['multiple_choice', 'Quant', 1, 'training-b-mc'],
   ] as const) {
     blanks = count;
-    await startSession(page, 'practice', 50, section, type);
+    const session = await startSession(page, 'practice', 50, section, type);
     await checkScreen(page, name);
+    if (type === 'sentence_equivalence' || type === 'quantitative_comparison' || count === 3) {
+      await pick(page, session.items[0]!.question);
+      if (count === 3) await checkScreen(page, 'training-b-tc3-selected');
+      await page.getByRole('button', { name: 'Проверить', exact: true }).click();
+      await expect(page.getByText('Верно.', { exact: true })).toBeVisible();
+      await checkScreen(page, `${name}-correct`);
+    }
     await closeSession(page);
   }
   return session;
 }
 
 export async function trainingBack(page: Page) {
-  if (new URL(page.url()).pathname.startsWith('/tg/')) await page.locator('#tg-mock-back').click();
+  if (new URL(page.url()).pathname.startsWith('/tg/')) {
+    const native = page.locator('#tg-mock-back');
+    await expect(native).toBeVisible();
+    // Родная кнопка находится вне WebView. В подмене DOM её перекрывает верхний слой dialog.
+    if (await page.locator('dialog[open]').count()) await native.dispatchEvent('click');
+    else await native.click();
+  }
+  else if (new URL(page.url()).pathname.includes('/report/')) await page.getByRole('dialog').getByRole('button', { name: 'Назад', exact: true }).click();
+  else if (/\/review\/\d+$/.test(new URL(page.url()).pathname)) await page.getByRole('button', { name: 'Закрыть тренировку', exact: true }).click();
   else await page.getByRole('link', { name: 'Назад', exact: true }).click();
 }
 
@@ -360,10 +398,10 @@ export async function finishForReview(page: Page) {
   const session = await startSession(page, 'check');
   await pick(page, session.items[0]!.question, true);
   await expect(page.getByTestId('explanation')).toHaveCount(0);
-  await page.getByRole('button', { name: /Дальше · 2 из/ }).click();
+  await page.getByRole('button', { name: /^Дальше$/ }).click();
   await pick(page, session.items[1]!.question);
-  await page.getByRole('button', { name: 'Все вопросы', exact: true }).click();
-  await page.getByRole('button', { name: 'Закончить', exact: true }).click();
+  await page.getByRole('button', { name: 'Вопросы', exact: true }).click();
+  await finishCheck(page);
   await expect(page.getByRole('heading', { name: '1 из 3 верно' })).toBeVisible();
   return session;
 }
@@ -382,8 +420,8 @@ export async function reviewAllAnswers(page: Page) {
   await page.getByRole('button', { name: 'Ошибки · 2' }).click();
   await expect(page.getByRole('link', { name: /Вопрос 2, верно/ })).toHaveCount(0);
   await page.getByRole('link', { name: /Вопрос 1, неверно/ }).click();
-  await expect(page.getByText('ваш ответ', { exact: true })).toBeVisible();
-  await expect(page.getByText('верный', { exact: true }).first()).toBeVisible();
+  await expect(page.getByText('Ваш ответ', { exact: true }).first()).toBeVisible();
+  await expect(page.getByText('Верный ответ', { exact: true }).first()).toBeVisible();
   if (!new URL(page.url()).pathname.startsWith('/tg/') && (page.viewportSize()?.width ?? 0) >= 900) {
     const prompt = await page.locator('section').filter({ has: page.locator('[lang="en"]') }).first().boundingBox();
     const explanation = await page.getByTestId('explanation').boundingBox();
@@ -420,8 +458,7 @@ export async function reportFromQuestionAndReview(page: Page, me: import('./fixt
   // Только синтетический ввод: тело сообщения не читается и не печатается.
   await page.getByRole('textbox', { name: 'Что не так' }).fill('Synthetic e2e fixture');
   await page.getByRole('button', { name: 'Отправить', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Спасибо!' })).toBeVisible();
-  await page.getByRole('button', { name: 'Вернуться к вопросу' }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Спасибо — проверим и поправим' })).toBeVisible();
   await expect(page.getByRole('heading', { name: /Text Completion/ })).toBeVisible();
   if (offline) {
     expect(await reportCount(me, session.id)).toBe(0);
@@ -430,16 +467,15 @@ export async function reportFromQuestionAndReview(page: Page, me: import('./fixt
   await expect.poll(() => reportCount(me, session.id)).toBe(1);
   for (let index = 0; index < session.items.length; index++) {
     await page.getByRole('button', { name: 'Не знаю', exact: true }).click();
-    await page.getByRole('button', { name: index < session.items.length - 1 ? /Дальше ·/ : 'Итог', exact: true }).click();
+    await page.getByRole('button', { name: index < session.items.length - 1 ? /^Дальше$/ : 'К итогу', exact: true }).click();
   }
   await page.getByRole('link', { name: 'Все ответы и разборы' }).click();
   await page.getByRole('link', { name: /Вопрос 2, без ответа/ }).click();
   await page.getByRole('link', { name: 'Сообщить об ошибке' }).click();
   await page.getByRole('button', { name: 'В разборе', exact: true }).click();
   await page.getByRole('button', { name: 'Отправить', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Спасибо!' })).toBeVisible();
+  await expect(page.getByRole('status').filter({ hasText: 'Спасибо — проверим и поправим' })).toBeVisible();
   await expect.poll(() => reportCount(me, session.id)).toBe(2);
-  await page.getByRole('button', { name: 'Вернуться к вопросу' }).click();
   await expect(page.getByRole('heading', { name: 'Вопрос 2', exact: true })).toBeVisible();
 }
 
@@ -449,18 +485,17 @@ export async function stableReviewScreens(page: Page) {
   await page.goto((new URL(page.url()).pathname.startsWith('/tg/') ? '/tg' : '') + '/training/' + session.id);
   await page.getByRole('link', { name: 'Все ответы и разборы' }).click();
   await expect(page.getByRole('heading', { name: 'Разбор тренировки' })).toBeVisible();
-  await checkScreen(page, 'training-review');
+  await checkScreen(page, 'training-b-review');
   await page.getByRole('link', { name: /Вопрос 1, неверно/ }).click();
   await page.getByRole('button', { name: /^Почему не/ }).click();
-  await checkScreen(page, 'training-review-item');
+  await checkScreen(page, 'training-b-review-item');
   await page.getByRole('link', { name: 'Сообщить об ошибке' }).click();
   await page.getByRole('button', { name: 'В разборе', exact: true }).click();
   await page.getByRole('textbox', { name: 'Что не так' }).fill('Проверьте, пожалуйста, разбор этого задания.');
-  await checkScreen(page, 'training-report');
+  await checkScreen(page, 'training-b-report');
   await page.getByRole('button', { name: 'Отправить', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Спасибо!' })).toBeVisible();
-  await checkScreen(page, 'training-report-saved');
-  await trainingBack(page);
+  await expect(page.getByRole('status').filter({ hasText: 'Спасибо — проверим и поправим' })).toBeVisible();
+  await checkScreen(page, 'training-b-report-feedback');
   await expect(page.getByRole('heading', { name: 'Вопрос 1', exact: true })).toBeVisible();
 }
 
@@ -469,16 +504,16 @@ export async function reportDraftAndLimit(page: Page) {
   await startSession(page);
   await page.getByRole('link', { name: 'Сообщить об ошибке' }).click();
   const input = page.getByRole('textbox', { name: 'Что не так' });
-  await page.getByRole('button', { name: 'В переводе', exact: true }).click();
+  await page.getByRole('button', { name: 'В разборе', exact: true }).click();
   await input.fill('Synthetic draft');
   await expect(page.getByRole('status').filter({ hasText: 'Черновик сохранён' })).toHaveCount(1);
   await page.reload();
   await expect(input).toHaveValue('Synthetic draft');
-  await expect(page.getByRole('button', { name: 'В переводе', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('button', { name: 'В разборе', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await input.fill('');
   await page.evaluate(() => {
     const source = document.createElement('textarea'); source.id = 'clipboard-fixture'; source.value = 'first\nsecond';
-    document.body.append(source); source.focus(); source.select();
+    (document.querySelector('dialog[open]') ?? document.body).append(source); source.focus(); source.select();
   });
   await page.keyboard.press('ControlOrMeta+c');
   await page.evaluate(() => { document.getElementById('clipboard-fixture')?.remove(); });
@@ -490,7 +525,7 @@ export async function reportDraftAndLimit(page: Page) {
   // Настоящий буфер обмена и родная вставка: WebKit помечает её insertFromPaste.
   await page.evaluate(() => {
     const source = document.createElement('textarea'); source.id = 'clipboard-fixture'; source.value = 'b'.repeat(201);
-    document.body.append(source); source.focus(); source.select();
+    (document.querySelector('dialog[open]') ?? document.body).append(source); source.focus(); source.select();
   });
   await page.keyboard.press('ControlOrMeta+c');
   await page.evaluate(() => { document.getElementById('clipboard-fixture')?.remove(); });
@@ -523,8 +558,9 @@ export async function reportDraftAndLimit(page: Page) {
   await page.getByRole('button', { name: 'Другое', exact: true }).click();
   await input.fill('Synthetic queued draft');
   await page.getByRole('button', { name: 'Отправить', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Спасибо!' })).toBeVisible();
+  await expect(page.getByRole('status').filter({ hasText: 'Спасибо — проверим и поправим' })).toBeVisible();
   await page.reload();
+  await page.getByRole('link', { name: 'Сообщить об ошибке' }).click();
   await expect(input).toHaveValue('');
   await expect(page.getByRole('button', { name: 'Отправить', exact: true })).toBeDisabled();
 }
@@ -553,10 +589,11 @@ export async function continuousReportSwipes(page: Page) {
   await page.getByRole('link', { name: 'Сообщить об ошибке' }).click();
   await expect(page.getByRole('textbox', { name: 'Что не так' })).toHaveValue('');
   await page.getByRole('button', { name: 'Другое', exact: true }).click();
+  await page.getByRole('textbox', { name: 'Что не так' }).fill('Synthetic report');
   await page.getByRole('button', { name: 'Отправить', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Спасибо!' })).toBeVisible();
+  await expect(page.getByRole('status').filter({ hasText: 'Спасибо — проверим и поправим' })).toBeVisible();
   expect(await restores()).toBe(0);
-  await trainingBack(page); await closeSession(page);
+  await closeSession(page);
   await expect(page.getByRole('heading', { name: 'Тренировка' })).toBeVisible();
   await expect.poll(restores).toBe(1);
 }
@@ -617,10 +654,54 @@ export async function reportDraftWritesAndQuota(page: Page) {
     await expect(page.getByRole('alert')).toHaveCount(0);
     await expect(page.getByRole('status').filter({ hasText: 'Черновик не сохранён на устройстве' })).toHaveCount(1);
   }
-  await page.getByRole('button', { name: 'В переводе', exact: true }).click();
+  await page.getByRole('button', { name: 'В разборе', exact: true }).click();
   await page.getByRole('button', { name: 'Отправить', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Спасибо!' })).toBeVisible();
+  await expect(page.getByRole('status').filter({ hasText: 'Спасибо — проверим и поправим' })).toBeVisible();
   await expect.poll(() => reported.length).toBe(1);
   expect(reported[0]).toMatchObject({ message: 'Error: training report draft storage unavailable' });
   expect(JSON.stringify(reported)).not.toContain('Synthetic private draft');
+}
+
+export async function chooseTrainingType(page: Page, type: string) {
+  const labels: Record<string, string> = { text_completion: 'Text Completion', sentence_equivalence: 'Sentence Equivalence', quantitative_comparison: 'Quantitative Comparison', multiple_choice: 'Multiple Choice' };
+  await page.getByRole('button', { name: /^Тип/ }).click();
+  await page.getByRole('radio', { name: labels[type], exact: true }).click();
+}
+export async function finishCheck(page: Page) {
+  await page.getByRole('button', { name: 'Завершить проверку', exact: true }).click();
+  const confirmation = page.getByRole('dialog', { name: /^Без ответа:/ });
+  if (await confirmation.count()) await confirmation.getByRole('button', { name: 'Завершить проверку', exact: true }).click();
+}
+
+export async function stableCheckReviewScreens(page: Page) {
+  await page.route('**/api/trainings', async (route) => {
+    const response = await route.fetch();
+    const session = schemas.TrainingSession.parse(await response.json());
+    await route.fulfill({ response, json: { ...session, timeLimitSeconds: 315, items: session.items.toSorted((a, b) => a.question.id.localeCompare(b.question.id)).slice(0, 3).map((item, position) => ({ ...item, position })) } });
+  });
+  await page.route('**/api/trainings/*/answers', (route) => route.fulfill({ status: 204 }));
+  await page.route('**/api/trainings/*/finish', (route) => route.fulfill({ status: 200, json: { correct: 1, total: 3, unanswered: 1, durationSeconds: 115, review: [] } }));
+  const now = new Date();
+  await page.clock.setFixedTime(now);
+  const session = await startSession(page, 'check', 50, 'Quant', 'quantitative_comparison');
+  await page.clock.setFixedTime(new Date(now.getTime() + 100000));
+  await pick(page, session.items[0]!.question, true);
+  await page.getByRole('button', { name: 'Отметить, чтобы вернуться' }).click();
+  await page.getByRole('button', { name: 'Дальше', exact: true }).click();
+  await page.clock.setFixedTime(new Date(now.getTime() + 115000));
+  await pick(page, session.items[1]!.question);
+  await page.getByRole('button', { name: 'Отметить, чтобы вернуться' }).click();
+  await page.getByRole('button', { name: 'Вопросы', exact: true }).click();
+  await finishCheck(page);
+  await page.getByRole('link', { name: 'Все ответы и разборы' }).click();
+  await checkScreen(page, 'training-b-review-check');
+  await page.getByRole('button', { name: 'Отмеченные · 2', exact: true }).click();
+  await checkScreen(page, 'training-b-review-flagged');
+  await page.getByRole('link', { name: /^Вопрос 1,/ }).click();
+  await page.getByRole('button', { name: /^Почему не/ }).click();
+  await checkScreen(page, 'training-b-review-qc');
+  await page.getByRole('button', { name: 'Следующий', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Вопрос 2', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'К итогу', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '1 из 3 верно', exact: true })).toBeVisible();
 }

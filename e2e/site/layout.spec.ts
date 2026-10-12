@@ -31,11 +31,11 @@ test('панель по ширине, экзамен аккаунта и про�
 
 test('возврат во вкладку сохраняет конструктор и введённое число вопросов', async ({ site: page }) => {
   await page.getByRole('link', { name: /^Quant/ }).click();
-  await page.getByRole('textbox', { name: 'Вопросов' }).fill('5');
+  await page.getByRole('button', { name: '5', exact: true }).click();
   await navLink(page, 'Слова').click();
   await navLink(page, 'Тренировка').click();
   await expect(page).toHaveURL(/\/training\/new\?section=quant$/);
-  await expect(page.getByRole('textbox', { name: 'Вопросов' })).toHaveValue('5');
+  await expect(page.getByRole('button', { name: '5', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Назад', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Тренировка', exact: true })).toBeVisible();
 });
@@ -44,6 +44,6 @@ test('главная начинает тренировку в режиме фо�
   await page.getByRole('button', { name: 'Начать', exact: true }).click();
   await expect(page.getByRole('heading', { name: /Text Completion/ })).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'Разделы' })).toHaveCount(0);
-  await page.getByRole('link', { name: 'Закрыть тренировку' }).click();
+  await page.getByRole('button', { name: 'Закрыть тренировку' }).click();
   await expect(page.getByRole('link', { name: /Продолжить тренировку/ })).toBeVisible();
 });

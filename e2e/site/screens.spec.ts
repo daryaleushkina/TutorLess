@@ -54,20 +54,23 @@ test('главная T2, пустые вкладки и настройки', asy
 
 test('конструктор и темы тренировки', async ({ site: page }) => {
   await page.getByRole('link', { name: 'Настроить тренировку' }).click();
-  await expect(page.getByRole('button', { name: /^Начать ·/ })).toBeEnabled();
-  await checkScreen(page, 'training-builder');
+  await expect(page.getByRole('button', { name: /^(Начать ·|Начинаем…)/ })).toBeEnabled();
+  await checkScreen(page, 'training-b-builder');
+  await page.getByRole('button', { name: /^Тип/ }).click();
+  await checkScreen(page, 'training-b-types');
+  await page.getByRole('radio', { name: 'Text Completion', exact: true }).click();
   await page.getByRole('button', { name: /Темы и сложность/ }).click();
   await expect(page.getByRole('heading', { name: 'Темы и сложность' })).toBeVisible();
-  await checkScreen(page, 'training-topics');
+  await checkScreen(page, 'training-b-topics');
   await page.getByRole('button', { name: /^Готово ·/ }).click();
-  await page.getByRole('button', { name: /^Начать ·/ }).click();
+  await page.getByRole('button', { name: /^(Начать ·|Начинаем…)/ }).click();
   await expect(page.getByRole('heading', { name: /Text Completion/ })).toBeVisible();
-  await page.getByRole('link', { name: 'Закрыть тренировку' }).click();
+  await page.getByRole('button', { name: 'Закрыть тренировку' }).click();
   await expect(page.getByRole('link', { name: /Продолжить тренировку/ })).toBeVisible();
   await checkScreen(page, 'home-training');
 });
 
-import { stableTrainingScreens, stableReviewScreens } from '../training';
+import { stableTrainingScreens, stableReviewScreens, stableCheckReviewScreens } from '../training';
 test('вопросы, разбор, проверка со списком и итог', async ({ site: page }) => { await stableTrainingScreens(page); });
 test('все ответы, отдельный разбор и жалоба', async ({ site: page }) => { await stableReviewScreens(page); });
 
@@ -108,3 +111,5 @@ test('T5-offline: загрузить нечего', async ({ site }) => homeNoNe
 
 import { homeFirstOfflineScreen } from '../shellScreens';
 test('T2-offline: отказ старта внутри первой карточки', async ({ site: page }) => { await homeFirstOfflineScreen(page); });
+
+test('проверка: все ответы, отмеченные и разбор Quant по фильтру', async ({ site: page }) => { await stableCheckReviewScreens(page); });

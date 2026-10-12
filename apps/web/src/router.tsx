@@ -60,18 +60,19 @@ const settingsRoute = createRoute({ getParentRoute: () => tabsRoute, path: 'sett
 const builderRoute = createRoute({ getParentRoute: () => appRoute, path: 'training/new',
   validateSearch: z.object({ section: schemas.Section.optional().catch(undefined), type: schemas.QuestionType.optional().catch(undefined) }),
 }).lazy(() => import('./training/routes.lazy').then((m) => m.builderRoute));
-const trainingRoute = createRoute({ getParentRoute: () => appRoute, path: 'training/$trainingId' })
+const trainingRoute = createRoute({ getParentRoute: () => appRoute, path: 'training/$trainingId', validateSearch: z.object({ language: z.enum(['ru', 'en']).optional().catch(undefined) }) })
   .lazy(() => import('./training/routes.lazy').then((m) => m.sessionRoute));
 
-const reviewRoute = createRoute({ getParentRoute: () => appRoute, path: 'training/$trainingId/review' })
+const reviewSearch = z.object({ filter: z.enum(['all', 'mistakes', 'flagged']).optional().catch(undefined), language: z.enum(['ru', 'en']).optional().catch(undefined) });
+const reviewRoute = createRoute({ getParentRoute: () => appRoute, path: 'training/$trainingId/review', validateSearch: reviewSearch })
   .lazy(() => import('./training/routes.lazy').then((m) => m.reviewRoute));
 const trainingPosition = z.object({ trainingId: z.string(), position: z.string().regex(/^(0|[1-9]\d*)$/)
   .transform(Number).refine(Number.isSafeInteger).nullable().catch(null) });
 const positionParams = { parse: (params: Record<string, string>) => trainingPosition.parse(params), stringify: (params: z.infer<typeof trainingPosition>) => ({ ...params, position: String(params.position) }) };
-const reviewItemRoute = createRoute({ getParentRoute: () => appRoute, path: 'training/$trainingId/review/$position', params: positionParams })
+const reviewItemRoute = createRoute({ getParentRoute: () => appRoute, path: 'training/$trainingId/review/$position', params: positionParams, validateSearch: reviewSearch })
   .lazy(() => import('./training/routes.lazy').then((m) => m.reviewItemRoute));
 const reportRoute = createRoute({ getParentRoute: () => appRoute, path: 'training/$trainingId/report/$position', params: positionParams,
-  validateSearch: z.object({ returnTo: z.enum(['session', 'review']).catch('session').default('session') }),
+  validateSearch: z.object({ returnTo: z.enum(['session', 'review']).catch('session').default('session'), language: z.enum(['ru', 'en']).optional(), filter: z.enum(['all', 'mistakes', 'flagged']).optional() }),
 }).lazy(() => import('./training/routes.lazy').then((m) => m.reportRoute));
 
 const routeTree = rootRoute.addChildren([

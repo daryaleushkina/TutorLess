@@ -9,13 +9,13 @@ const signedIn = { 'GET /api/me': () => json(user({ activeExam: 'toefl' })),
 test('вкладка хранит адрес конструктора и его форму при переключении', async () => {
   fakeServer(signedIn);
   const { screen, router } = await renderApp({ path: '/training/new?section=quant' });
-  await expect.element(screen.getByRole('textbox', { name: 'Вопросов' })).toBeVisible();
-  await screen.getByRole('textbox', { name: 'Вопросов' }).fill('5');
+  await expect.element(screen.getByRole('group', { name: 'Вопросов', exact: true })).toBeVisible();
+  await screen.getByRole('button', { name: '5', exact: true }).click();
   await screen.getByRole('navigation', { name: 'Разделы' }).getByRole('link', { name: 'Слова' }).click();
   await expect.element(screen.getByText('Здесь будут слова: учить, повторять и искать.')).toBeVisible();
   await screen.getByRole('navigation', { name: 'Разделы' }).getByRole('link', { name: 'Тренировка', exact: true }).click();
   await expect.poll(() => router.state.location.href).toBe('/training/new?section=quant');
-  await expect.element(screen.getByRole('textbox', { name: 'Вопросов' })).toHaveValue('5');
+  await expect.element(screen.getByRole('button', { name: '5', exact: true })).toHaveAttribute('aria-pressed', 'true');
 });
 
 test('широкий сайт: экзамен аккаунта сверху, профиль снизу', async () => {

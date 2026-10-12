@@ -179,8 +179,12 @@ export class TrainingRepository {
       { ...t, drafts: { ...t.drafts, [position]: selection } });
   }
 
-  async moveTo(id: string, position: number): Promise<void> {
-    await this.edit(id, (t) => position >= 0 && position < t.session.items.length ? { ...t, position } : t);
+  async moveTo(id: string, position: number, practiceReturnPosition?: number): Promise<void> {
+    await this.edit(id, (t) => position >= 0 && position < t.session.items.length ? { ...t, position, practiceReturnPosition } : t);
+  }
+
+  async acknowledgeTimeout(id: string): Promise<void> {
+    await this.edit(id, (t) => t.finish?.timedOut ? { ...t, timeoutSeen: true } : t);
   }
 
   async finish(id: string, timedOut: boolean): Promise<void> {
