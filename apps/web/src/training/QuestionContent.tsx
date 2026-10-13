@@ -4,7 +4,7 @@ import { CheckIcon } from '../components/icons';
 import { dictionaries } from '../i18n/dict';
 import { useI18n } from '../i18n/i18n';
 import type { Locale } from '../i18n/locale';
-import { answerFormat } from './answerFormats';
+import { answerFormat, answerStateLabel } from './answerFormats';
 import styles from './Training.module.css';
 import { NumericAnswer } from './NumericAnswer';
 import { Passage } from './Passage';
@@ -68,7 +68,7 @@ function ChoiceAnswer({ question: q, selection, revealed, onSelect, compact = fa
         const wrong = revealed && checked && !correct;
         const content = <><span className={styles.choiceIndicator} data-many={q.selectCount !== 1} aria-hidden="true">{q.selectCount !== 1 && <CheckIcon />}</span><span lang="en" className={styles.optionText}>{option.text}</span>{revealed && (correct || wrong) && <span className={styles.optionMark}>{correct ? t.training.question_correct_mark : t.training.question_yours_mark}</span>}</>;
         return <button key={option.id} className={styles.option} type="button" role={q.selectCount === 1 ? 'radio' : 'checkbox'}
-          disabled={revealed} aria-checked={checked} data-result={correct ? checked ? 'correct' : 'missed' : wrong ? 'wrong' : undefined}
+          disabled={revealed} aria-label={revealed ? `${option.text}, ${answerStateLabel(t.training, checked, correct)}` : undefined} aria-checked={checked} data-result={correct ? checked ? 'correct' : 'missed' : wrong ? 'wrong' : undefined}
           onClick={() => onSelect(option.id)}>{content}</button>;
       })}
     </div>

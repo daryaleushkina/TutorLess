@@ -2,7 +2,7 @@ import type { Page, Locator } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { schemas, trainingNumericSolution, type Question } from '../packages/api-client/src';
 import { checkScreen, expect } from './fixtures';
-import { pick, startSession } from './training';
+import { pick, startSession, finishCheck } from './training';
 
 const raw: unknown = JSON.parse(readFileSync(new URL('../api/conformance/question-types.json', import.meta.url), 'utf8'));
 if (!raw || typeof raw !== 'object' || !('answers' in raw) || !Array.isArray(raw.answers)) throw new Error('invalid conformance fixtures');
@@ -35,8 +35,18 @@ async function chooseAnswer(page: Page, q: Question, partial = false) {
   } else await pick(page, q);
 }
 
-export async function newTypesSession(page: Page, [type, section]: typeof NEW_TYPES[number]) {
-  const session = await startSession(page, 'practice', 50, section, type);
+export async function newTypesSession(page: Page, [type, section]: typeof NEW_TYPES[number], mode: 'practice' | 'check' = 'practice') {
+  const announced = new Set<string>();
+  page.on('request', (request) => {
+    const path = new URL(request.url()).pathname;
+    if (path === '/api/home' || request.method() === 'POST' && /^\/api\/trainings(?:$|\/[^/]+\/(?:answers|finish)$)/.test(path)) {
+      expect(request.headers()['x-training-capabilities']?.split(',')).toEqual(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice', 'multiple_choice_multi', 'numeric_entry', 'select_in_passage', 'passage']);
+      announced.add(path === '/api/home' ? 'home' : path.endsWith('/answers') ? 'answers' : path.endsWith('/finish') ? 'finish' : 'start');
+    }
+  });
+  const home = page.waitForResponse((r) => new URL(r.url()).pathname === '/api/home');
+  await page.reload(); await home;
+  const session = await startSession(page, mode, 50, section, type);
   expect(session.items.every((i) => !i.question.figure)).toBe(true);
   if (section === 'Verbal') expect(session.items.some((i) => i.question.passage)).toBe(true);
   const delivered = new Set<number>();
@@ -54,24 +64,35 @@ export async function newTypesSession(page: Page, [type, section]: typeof NEW_TY
   await page.context().setOffline(true);
   let correct = 0;
   for (const item of session.items) {
+    await expect(page.getByLabel(`Вопрос ${item.position + 1} из ${session.items.length}`, { exact: true })).toBeVisible();
     const partial = type === 'multiple_choice_multi' && item.position === 0 && item.question.answer.length > 1;
     await chooseAnswer(page, item.question, partial);
-    await page.getByRole('button', { name: 'Проверить', exact: true }).click();
-    await expect(page.getByText(partial ? 'Неверно.' : 'Верно.', { exact: true })).toBeVisible();
+    if (mode === 'practice') {
+      await page.getByRole('button', { name: 'Проверить', exact: true }).click();
+      await expect(page.getByText(partial ? 'Неверно.' : 'Верно.', { exact: true })).toBeVisible();
+    }
     if (!partial) correct++;
     if (item.position === 0) {
       await page.context().setOffline(false); await page.reload();
       if (item.question.passage && item.question.questionType !== 'select_in_passage' && page.viewportSize()!.width < 900) await page.getByRole('tab', { name: 'Вопрос', exact: true }).click();
-      await expect(page.getByText(partial ? 'Неверно.' : 'Верно.', { exact: true })).toBeVisible();
+      if (mode === 'practice') await expect(page.getByText(partial ? 'Неверно.' : 'Верно.', { exact: true })).toBeVisible();
+      else {
+        await expect(page.getByLabel(`Вопрос 1 из ${session.items.length}`, { exact: true })).toBeVisible();
+        if (type === 'numeric_entry') await expect(page.getByRole('textbox').first()).not.toHaveValue('');
+        else if (type === 'select_in_passage') await expect(page.getByRole('button', { name: item.question.passage!.paragraphs.flatMap((p) => p.sentences).find((s) => item.question.answer.includes(s.id))!.text, exact: true })).toHaveAttribute('aria-pressed', 'true');
+        else await expect(page.getByRole(item.question.selectCount === 1 ? 'radio' : 'checkbox', { name: item.question.groups[0]!.options.find((o) => item.question.answer.includes(o.id))!.text, exact: true })).toHaveAttribute('aria-checked', 'true');
+      }
       expect(delivered.size).toBe(0); await page.context().setOffline(true);
     }
-    await page.getByRole('button', { name: item.position === session.items.length - 1 ? 'К итогу' : 'Дальше', exact: true }).click();
+    await page.getByRole('button', { name: item.position === session.items.length - 1 ? mode === 'check' ? 'К списку вопросов' : 'К итогу' : 'Дальше', exact: true }).click();
   }
+  if (mode === 'check') await finishCheck(page);
   await expect(page.getByRole('heading', { name: `${correct} из ${session.items.length} верно`, exact: true })).toBeVisible();
   const result = page.waitForResponse((r) => r.request().method() === 'POST' && r.url().endsWith(`/api/trainings/${session.id}/finish`));
   sync = true; await page.context().setOffline(false);
   expect(schemas.TrainingSummary.parse(await (await result).json()).correct).toBe(correct);
   await expect.poll(() => delivered.size).toBe(session.items.length);
+  expect([...announced].sort()).toEqual(['answers', 'finish', 'home', 'start']);
 }
 
 export async function numericConformanceUi(page: Page) {
@@ -226,6 +247,7 @@ export async function explicitNumericExamples(page: Page) {
   await page.reload(); await expect(number).toHaveValue('22,5');
   await page.getByRole('button', { name: 'Проверить', exact: true }).click();
   await expect(page.getByText('Верно.', { exact: true })).toBeVisible();
+  await expect(page.getByText('22,5', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Дальше', exact: true }).click();
   await page.getByRole('textbox', { name: 'Числитель', exact: true }).fill('9');
   await page.getByRole('textbox', { name: 'Знаменатель', exact: true }).fill('15');
@@ -245,4 +267,72 @@ export async function flaggedHover(page: Page) {
   const selectedBackground = await marked.evaluate((button) => getComputedStyle(button).backgroundColor);
   await marked.hover();
   await expect(marked).toHaveCSS('background-color', selectedBackground);
+}
+
+
+export async function readingKeyboard(page: Page, mode: 'practice' | 'check') {
+  await page.route('**/api/trainings', async (route) => {
+    const response = await route.fetch(); const session = schemas.TrainingSession.parse(await response.json());
+    const q = session.items.find((i) => i.question.passage)!.question;
+    await route.fulfill({ response, json: { ...session, items: Array.from({ length: 3 }, (_, position) => ({ position, question: { ...q, id: `00000000-0000-4000-8000-00000000009${position}` } })) } });
+  });
+  await page.route('**/api/trainings/*/answers', (route) => route.fulfill({ status: 204 }));
+  const session = await startSession(page, mode, 50, 'Verbal', 'multiple_choice');
+  await chooseAnswer(page, session.items[0]!.question);
+  if (mode === 'practice') await page.getByRole('button', { name: 'Проверить', exact: true }).click();
+  await page.getByRole('button', { name: 'Дальше', exact: true }).click();
+  await expect(page.getByLabel('Вопрос 2 из 3', { exact: true })).toBeVisible();
+  if (mode === 'practice') {
+    await chooseAnswer(page, session.items[1]!.question);
+    await page.getByRole('button', { name: 'Проверить', exact: true }).click();
+  }
+  if (page.viewportSize()!.width < 900) {
+    const tab = page.getByRole('tab', { name: 'Вопрос', exact: true });
+    await tab.focus(); await page.keyboard.press('ArrowLeft');
+    await expect(page.getByRole('tab', { name: 'Текст', exact: true })).toBeFocused();
+    await expect(page.getByLabel('Вопрос 2 из 3', { exact: true })).toBeVisible();
+    await page.keyboard.press('ArrowRight'); await expect(tab).toBeFocused();
+  }
+  const panel = page.getByRole('tabpanel', { name: page.viewportSize()!.width < 900 ? 'Вопрос' : 'Текст', exact: true });
+  await panel.focus(); await page.keyboard.press('ArrowLeft'); await page.keyboard.press('ArrowRight');
+  await expect(page.getByLabel('Вопрос 2 из 3', { exact: true })).toBeVisible();
+}
+
+export async function partialBatch(page: Page) {
+  const number = conformance.answers.find((c) => c.correct && c.question.questionType === 'numeric_entry' && c.question.numericEntry?.format === 'number')!.question;
+  const fraction = conformance.answers.find((c) => c.correct && c.question.questionType === 'numeric_entry' && c.question.numericEntry?.format === 'fraction')!.question;
+  const sentence = conformance.answers.find((c) => c.correct && c.question.questionType === 'select_in_passage')!.question;
+  const questions = [number, fraction, sentence, number, sentence];
+  await page.route('**/api/trainings', async (route) => {
+    const response = await route.fetch(); const session = schemas.TrainingSession.parse(await response.json());
+    await route.fulfill({ response, json: { ...session, items: questions.map((question, position) => ({ position, question })) } });
+  });
+  const sent = new Map<number, import('../packages/api-client/src').GivenAnswer>();
+  await page.route('**/api/trainings/*/answers', async (route) => {
+    for (const answer of schemas.AnswerBatch.parse(route.request().postDataJSON()).answers) sent.set(answer.position, answer);
+    await route.fulfill({ status: 204 });
+  });
+  await page.route('**/api/trainings/*/finish', (route) => route.fulfill({ status: 200, json: { correct: 1, total: 5, unanswered: 4, durationSeconds: 0, review: [] } }));
+  await startSession(page, 'check', 50, 'Quant', 'numeric_entry');
+  const input = page.getByRole('textbox', { name: 'Ответ', exact: true });
+  await input.fill('-');
+  await page.keyboard.press('ArrowLeft'); await page.keyboard.press('ArrowRight');
+  await expect(page.getByLabel('Вопрос 1 из 5', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Пропустить', exact: true }).click();
+  await page.getByRole('textbox', { name: 'Числитель', exact: true }).fill('9');
+  await page.getByRole('button', { name: 'Пропустить', exact: true }).click();
+  await page.getByRole('button', { name: 'Отметить, чтобы вернуться', exact: true }).click();
+  await page.getByRole('button', { name: 'Пропустить', exact: true }).click();
+  await page.getByRole('textbox', { name: 'Ответ', exact: true }).fill('-');
+  await page.getByRole('textbox', { name: 'Ответ', exact: true }).fill('');
+  await page.getByRole('button', { name: 'Пропустить', exact: true }).click();
+  await chooseAnswer(page, sentence);
+  await page.getByRole('button', { name: 'К списку вопросов', exact: true }).click();
+  await finishCheck(page);
+  await expect.poll(() => sent.size).toBe(5);
+  for (let position = 0; position < 4; position++) {
+    expect(sent.get(position)).not.toHaveProperty('numericAnswer');
+    expect(sent.get(position)).not.toHaveProperty('sentenceId');
+  }
+  expect(sent.get(4)?.sentenceId).toBe(sentence.answer[0]);
 }

@@ -1,6 +1,7 @@
 import { useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { useI18n } from '../i18n/i18n';
 import type { Question } from '@greprep/api-client';
+import { answerStateLabel } from './answerFormats';
 import type { AnswerProps } from './QuestionContent';
 import styles from './Training.module.css';
 
@@ -13,7 +14,7 @@ export function Passage({ question, selection = [], revealed = false, onSelect }
       const checked = selection.includes(sentence.id);
       const correct = revealed && question.answer.includes(sentence.id);
       const wrong = revealed && checked && !correct;
-      return selectable ? <span key={sentence.id}>{index > 0 && ' '}<button className={styles.sentence} type="button" disabled={revealed} aria-pressed={checked}
+      return selectable ? <span key={sentence.id}>{index > 0 && ' '}<button className={styles.sentence} type="button" disabled={revealed} aria-pressed={checked} aria-label={revealed ? `${sentence.text}, ${answerStateLabel(t.training, checked, correct)}` : undefined}
         data-result={correct ? checked ? 'correct' : 'missed' : wrong ? 'wrong' : undefined} onClick={() => onSelect?.(sentence.id)}>{sentence.text}
         {revealed && (correct || wrong) && <small lang={locale} className={styles.sentenceMark}>{correct ? t.training.sentence_correct_mark : t.training.sentence_yours_mark}</small>}
       </button></span> : <span key={sentence.id}>{index > 0 && ' '}{sentence.text}</span>;

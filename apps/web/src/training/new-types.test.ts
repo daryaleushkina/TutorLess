@@ -75,3 +75,22 @@ const legacy = z.object({ answers: z.array(z.discriminatedUnion('badAnswer', [
 for (const c of legacy.answers) if (!c.badAnswer) test(`реестр прежних форматов: ${c.name}`, () => {
   expect(answerFormat(c.question)?.isCorrect(c.question, c.answer)).toBe(c.correct);
 });
+
+
+for (const key of [undefined, { number: 'broken' }, { number: '' }]) test(`числовой кодек сохраняет форму независимо от ключа ${JSON.stringify(key)}`, () => {
+  const original = fixture.answers.find((c) => c.question.questionType === 'numeric_entry' && c.question.numericEntry?.format === 'number')!;
+  const q = { ...original.question, numericAnswer: key };
+  const answer = draftAnswer(q, ['22,5']);
+  expect(answer.numericAnswer).toEqual({ number: '22.5' });
+  expect(answerFormat(q)?.isComplete(q, answer)).toBe(true);
+});
+
+for (const c of fixture.answers.filter((c) => c.question.questionType === 'numeric_entry' || c.question.questionType === 'select_in_passage')) test(`пачка проверки не содержит неполный ввод: ${c.name}`, () => {
+  const q = c.question;
+  const values = q.questionType === 'select_in_passage' ? [[], ['missing'], ['', 'unexpected']] : q.numericEntry?.format === 'fraction' ? [[], ['9'], ['9', '-']] : [[], ['-'], ['.']];
+  for (const value of values) {
+    const answer = draftAnswer(q, value);
+    expect(answer).not.toHaveProperty('numericAnswer');
+    expect(answer).not.toHaveProperty('sentenceId');
+  }
+});

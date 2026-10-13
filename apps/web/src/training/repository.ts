@@ -3,6 +3,8 @@ import { reportError } from '../errors/report';
 import { type ReportDraft, pendingReportSchema, storedTraining, type StoredTraining } from './model';
 import { TrainingRules } from './rules';
 import { TrainingStore, TrainingOwnerChangedError, TrainingStorageBlockedError, type TrainingOwner } from './store';
+import { answerFormat } from './answerFormats';
+import type { LeavingDraft } from './leavingDraftStore';
 import { SUPPORTED_TYPES, TRAINING_HEADERS } from './capabilities';
 
 export { SUPPORTED_TYPES } from './capabilities';
@@ -41,8 +43,9 @@ export class TrainingRepository {
   private unauthorized: (error: ApiError) => void = () => {};
   private edits = new Map<string, number>();
 
+  // Позднее чтение часов сохраняет единое время репозитория и экрана при подмене часов в проверках.
   constructor(readonly store = new TrainingStore(), private api: TrainingApi = TRAINING_API, private report = reportError,
-    private now: () => number = Date.now, private locks: LockManager | null | undefined = globalThis.navigator?.locks) {
+    private now: () => number = () => Date.now(), private locks: LockManager | null | undefined = globalThis.navigator?.locks) {
     store.subscribe((change) => {
       if (change.kind === 'owner' || change.kind === 'training' && change.activeChanged) this.activeKnown = false;
       if (change.remote) void this.refreshOwner().catch((error: unknown) => this.storageFailed(error));
@@ -97,11 +100,54 @@ export class TrainingRepository {
       try {
         const owner = await this.store.signIn(userId);
         if (generation !== this.generation) return;
-        this.owner = owner; this.authenticated = true; this.setStatus('ready'); this.requestSync();
+        this.owner = owner;
+        await this.restoreLeavingDrafts(owner);
+        if (generation !== this.generation) return;
+        this.authenticated = true; this.setStatus('ready'); this.requestSync();
       } catch (error) { if (generation === this.generation) this.storageFailed(error); }
     });
     this.authChanges = this.initializing;
     return this.initializing;
+  }
+
+  checkpointDraft(id: string, draft: LeavingDraft, owner: TrainingOwner | null = this.owner ?? null): void {
+    if (!this.draftOwner(owner) || !owner) throw new TrainingOwnerChangedError();
+    try { this.store.leavingDrafts.put(owner, id, draft); }
+    catch (error) { this.reportStorage(error); throw error; }
+  }
+  clearCheckpoint(id: string, draft: LeavingDraft, owner: TrainingOwner | null = this.owner ?? null): void {
+    if (!this.draftOwner(owner) || !owner) return;
+    try { this.store.leavingDrafts.remove(owner, id, draft); }
+    catch (error) {
+      // Ответ уже в IndexedDB; отказ очистки страховочного журнала не отменяет сохранение.
+      this.reportStorage(error);
+    }
+  }
+  private async restoreLeavingDrafts(owner: TrainingOwner): Promise<void> {
+    let checkpoints: { id: string; draft: LeavingDraft }[];
+    try { checkpoints = this.store.leavingDrafts.take(owner); }
+    catch (error) {
+      // При запрете localStorage IndexedDB остаётся основным хранилищем; журнал не мог сохраниться.
+      this.reportStorage(error); return;
+    }
+    for (const { id, draft } of checkpoints) {
+      const training = await this.store.get(owner, id);
+      if (training && !training.finish && training.session.items[draft.position]) {
+        await this.store.update(owner, id, (t) => {
+          if (t.finish || t.session.mode === 'practice' && t.answers[String(draft.position)]) return t;
+          // Из журнала берём метаданные; поля ответа заново собирает кодек, чтобы старое число не пережило неполный ввод.
+          const answer = t.session.mode === 'check' && draft.answer ? {
+            position: draft.position, dontKnow: false, flagged: draft.answer.flagged,
+            answeredAt: draft.answer.answeredAt, elapsedMs: draft.answer.elapsedMs,
+            ...(answerFormat(t.session.items[draft.position]!.question)?.encode(t.session.items[draft.position]!.question, draft.ids) ?? { optionIds: [] }),
+          } : undefined;
+          return { ...t, drafts: { ...t.drafts, [draft.position]: draft.ids },
+            ...(answer && { answers: { ...t.answers, [draft.position]: answer }, unsent: [...new Set([...t.unsent, draft.position])] }),
+          };
+        });
+      }
+      this.clearCheckpoint(id, draft, owner);
+    }
   }
 
   /** 401 оставляет владельца и его очередь на диске до следующего входа. */
@@ -110,6 +156,7 @@ export class TrainingRepository {
   async signOut(): Promise<void> {
     const userId = this.userId;
     this.pause();
+    try { this.store.leavingDrafts.clear(); } catch (error) { this.reportStorage(error); }
     this.userId = undefined; this.owner = undefined; this.activeKnown = false;
     const cleared = this.authChanges.then(async () => {
       try {

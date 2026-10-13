@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { BackIcon, CheckIcon, ChevronRightIcon } from '../components/icons';
 import { StatusScreen } from '../components/StatusScreen';
 import { useI18n } from '../i18n/i18n';
-import { TYPE_LABELS } from './builder';
+import { questionTitle } from './answerFormats';
 import type { StoredTraining } from './model';
 import { answerFormat, Cross, Explanation, Options, QuestionPrompt, SessionIcon, Verdict } from './QuestionContent';
 import { ReadTraining, TrainingHeading } from './ReadTraining';
@@ -60,9 +60,9 @@ function ReviewList({ training }: { training: StoredTraining }) {
     {shown.length === 0 ? <p>{filter === 'flagged' ? text.review_no_flagged : text.review_no_mistakes}</p> : <ul className={styles.reviewList}>{shown.map(({ position, question }) => {
       const state = outcome(position);
       const description = state === 'correct' ? text.review_correct : state === 'wrong' ? text.review_wrong : text.review_unanswered;
-      return <li key={position}><Link to="/training/$trainingId/review/$position" params={{ trainingId: training.session.id, position }} search={{ filter, language: selectedLanguage }} className={styles.reviewRow} aria-label={`${text.review_question(position + 1)}, ${description}, ${TYPE_LABELS[question.questionType]}, ${question.topicTitle[locale]}`}>
+      return <li key={position}><Link to="/training/$trainingId/review/$position" params={{ trainingId: training.session.id, position }} search={{ filter, language: selectedLanguage }} className={styles.reviewRow} aria-label={`${text.review_question(position + 1)}, ${description}, ${questionTitle(question, text)}, ${question.topicTitle[locale]}`}>
         <span className={styles.reviewNumber}>{position + 1}</span>
-        <span className={styles.grow}><span lang="en">{TYPE_LABELS[question.questionType]}</span><span className={styles.note}>{description}{training.answers[String(position)]?.flagged && ` · ${text.overview_flagged}`}</span></span>
+        <span className={styles.grow}><span lang={question.passage || !answerFormat(question)?.title ? 'en' : locale}>{questionTitle(question, text)}</span><span className={styles.note}>{description}{training.answers[String(position)]?.flagged && ` · ${text.overview_flagged}`}</span></span>
         <span className={styles.reviewOutcome} data-outcome={state} aria-hidden="true">{state === 'correct' ? <CheckIcon /> : state === 'wrong' ? <Cross /> : <SessionIcon><path d="M7 12h10" /></SessionIcon>}</span>
         <span className={styles.reviewTime}>{formatTime(training.answers[String(position)]?.elapsedMs ?? 0)}</span><ChevronRightIcon />
       </Link></li>;

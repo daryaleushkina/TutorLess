@@ -489,3 +489,70 @@ test('запись сессии старого формата без exam чит
   expect(loaded?.session).toEqual(session);
   expect(loaded?.session).not.toHaveProperty('exam');
 });
+
+for (const mode of ['practice', 'check'] as const) test(`журнал ухода восстанавливает ${mode} до отправки, не раскрывая неполную форму`, async () => {
+  const m = make(); await m.repo.signedIn('a');
+  const owner = m.repo.reportOwner()!, session = trainingSession({ mode });
+  await m.store.put(owner, storedTraining(session, NOW));
+  const ids = [session.items[0]!.question.groups[0]!.options[0]!.id];
+  const draft = { position: 0, ids, ...(mode === 'check' && { answer: givenAnswer({ optionIds: ids }) }) };
+  m.repo.checkpointDraft(session.id, draft);
+  const next = make(m.name); await next.repo.signedIn('a');
+  expect((await next.repo.get(session.id))?.drafts?.['0']).toEqual(ids);
+  expect((await next.repo.get(session.id))?.unsent).toEqual(mode === 'check' ? [0] : []);
+  expect(m.store.leavingDrafts.take(owner)).toEqual([]);
+  await next.repo.sync();
+  expect(next.api.answers).toHaveBeenCalledTimes(mode === 'check' ? 1 : 0);
+});
+
+test('журнал ухода не возвращает ответы законченной сессии, отсутствующие вопросы и чужой аккаунт', async () => {
+  const m = make(); const { owner, t } = await seed(m, trainingSession().id, true);
+  m.repo.checkpointDraft(t.session.id, { position: 0, ids: ['B'] });
+  await m.repo.signedIn('a');
+  expect((await m.repo.get(t.session.id))?.answers['0']?.optionIds).toEqual(['A']);
+  m.repo.checkpointDraft(t.session.id, { position: 100, ids: ['B'] });
+  await m.repo.signedIn('a');
+  m.repo.checkpointDraft('00000000-0000-4000-8000-000000000099', { position: 0, ids: ['B'] });
+  await m.repo.signedIn('a');
+  m.repo.checkpointDraft(t.session.id, { position: 0, ids: ['B'] });
+  await m.repo.signedIn('b');
+  expect(await m.repo.list()).toEqual([]); expect(m.store.leavingDrafts.take(owner)).toEqual([]);
+  await m.repo.signOut();
+  expect(() => m.repo.checkpointDraft(t.session.id, { position: 0, ids: [] })).toThrow();
+  m.repo.clearCheckpoint(t.session.id, { position: 0, ids: [] });
+});
+
+test('отказ журнала не блокирует основной IndexedDB и не раскрывает текст ошибки', async () => {
+  const m = make(); vi.spyOn(m.store.leavingDrafts, 'take').mockImplementation(() => { throw new Error('synthetic private input'); });
+  await m.repo.signedIn('a'); expect(m.repo.storageStatus()).toBe('ready');
+  expect(m.report).toHaveBeenCalledWith(expect.objectContaining({ message: 'training storage failed: Error' }));
+  vi.spyOn(m.store.leavingDrafts, 'clear').mockImplementation(() => { throw new Error('synthetic private input'); });
+  await m.repo.signOut(); expect(m.repo.reportOwner()).toBeNull();
+});
+
+test('журнал: неполный ввод не восстанавливает устаревший числовой ответ, отметка сохраняется', async () => {
+  const m = make(); await m.repo.signedIn('a');
+  const owner = m.repo.reportOwner()!;
+  const question = { ...trainingSession().items[0]!.question, questionType: 'numeric_entry' as const, groups: [], selectCount: 0, answer: [], numericEntry: { format: 'fraction' as const }, numericAnswer: { numerator: '3', denominator: '5' } };
+  const session = trainingSession({ mode: 'check', items: [{ position: 0, question }] });
+  await m.store.put(owner, storedTraining(session, NOW));
+  // Схема журнала допускает оба поля, но ответ на сервер определяется последним вводом, а не старой записью.
+  m.repo.checkpointDraft(session.id, { position: 0, ids: ['9', ''], answer: givenAnswer({ optionIds: [], numericAnswer: { numerator: '9', denominator: '15' }, flagged: true }) });
+  await m.repo.signedIn('a');
+  const answer = (await m.repo.get(session.id))?.answers['0'];
+  expect(answer).toMatchObject({ optionIds: [], flagged: true });
+  expect(answer).not.toHaveProperty('numericAnswer');
+  await m.repo.sync();
+  expect(m.api.answers).toHaveBeenCalledWith(session.id, { answers: [answer] });
+});
+
+test('репозиторий использует текущие часы, даже если они подменены после создания', async () => {
+  const m = make();
+  const repo = new TrainingRepository(m.store, m.api, m.report);
+  vi.spyOn(repo, 'requestSync').mockImplementation(() => {});
+  await repo.signedIn('a');
+  const now = Date.parse('2026-10-13T09:00:00Z');
+  vi.spyOn(Date, 'now').mockReturnValue(now);
+  const id = await repo.start({ ...request, questionTypes: [...request.questionTypes] });
+  expect((await repo.get(id))?.startedAtMillis).toBe(now);
+});

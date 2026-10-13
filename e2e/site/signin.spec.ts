@@ -40,9 +40,11 @@ for (const [button, provider] of PROVIDERS) {
     // Нажатие только запускает уход. Всю цепочку перенаправлений ждём как навигацию до конечного адреса.
     await page.getByRole('button', { name: button }).click({ noWaitAfter: true });
     await page.waitForURL((url) => url.pathname === '/');
+    const home = page.waitForResponse((r) => new URL(r.url()).pathname === '/api/home');
     await pickInitialExam(page);
     await expect(page.getByRole('heading', { level: 1, name: 'Тренировка' })).toBeVisible();
     await expect(page).toHaveURL(/\/$/);
+    await home;
     await page.reload();
     await expect(page.getByText('После каждого ответа — разбор на вашем языке: почему верно и где ловушка в остальных вариантах.')).toBeVisible();
 
