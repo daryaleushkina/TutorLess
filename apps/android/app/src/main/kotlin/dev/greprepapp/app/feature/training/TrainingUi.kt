@@ -6,6 +6,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -15,11 +16,18 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -31,15 +39,25 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.toggleableState
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -50,7 +68,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import dev.greprepapp.api.models.GivenAnswer
 import dev.greprepapp.api.models.LocalizedText
 import dev.greprepapp.api.models.Question
 import dev.greprepapp.api.models.QuestionOption
@@ -87,6 +104,9 @@ fun QuestionType.label(): String =
             QuestionType.SENTENCE_EQUIVALENCE -> R.string.type_sentence_equivalence
             QuestionType.QUANTITATIVE_COMPARISON -> R.string.type_quantitative_comparison
             QuestionType.MULTIPLE_CHOICE -> R.string.type_multiple_choice
+            QuestionType.MULTIPLE_CHOICE_MULTI -> R.string.type_multiple_choice_multi
+            QuestionType.NUMERIC_ENTRY -> R.string.type_numeric_entry
+            QuestionType.SELECT_IN_PASSAGE -> R.string.type_select_in_passage
         },
     )
 
@@ -94,6 +114,8 @@ fun QuestionType.label(): String =
 @Composable
 @ReadOnlyComposable
 fun Question.typeLabel(): String {
+    if (passage != null) return stringResource(R.string.type_reading_comprehension)
+    if (numericEntry?.format == dev.greprepapp.api.models.NumericEntry.Format.FRACTION) return stringResource(R.string.type_fraction_entry)
     val note =
         when {
             questionType == QuestionType.TEXT_COMPLETION && groups.size == 2 -> R.string.type_two_blanks
@@ -123,6 +145,19 @@ fun richText(text: String): AnnotatedString =
         }
     }
 
+/** Отдельные латинские переменные курсивом; слова условия и числа остаются прямыми. */
+internal fun mathText(value: String): AnnotatedString =
+    buildAnnotatedString {
+        append(value)
+        Regex("(?<![A-Za-z])[A-Za-z](?![A-Za-z])").findAll(value).forEach {
+            addStyle(
+                SpanStyle(fontStyle = FontStyle.Italic, fontFamily = dev.greprepapp.design.MathFamily),
+                it.range.first,
+                it.range.last + 1,
+            )
+        }
+    }
+
 /** Как вариант отмечен на экране. */
 enum class OptionMark { None, Selected, Correct, Wrong }
 
@@ -136,7 +171,7 @@ fun OptionRow(
     option: QuestionOption,
     mark: OptionMark,
     modifier: Modifier = Modifier,
-    letter: String? = option.id,
+    chosen: Boolean = true,
     multiple: Boolean = false,
     onClick: (() -> Unit)? = null,
 ) {
@@ -146,6 +181,7 @@ fun OptionRow(
         when (mark) {
             OptionMark.Selected -> colors.surface2
             OptionMark.Correct -> colors.rightSoft
+            OptionMark.Wrong -> colors.wrongSoft
             else -> colors.surface
         }
     val interaction = remember { MutableInteractionSource() }
@@ -155,32 +191,85 @@ fun OptionRow(
             OptionMark.Wrong -> stringResource(R.string.question_yours_mark)
             else -> null
         }
+    val answerState =
+        if (multiple && onClick == null) {
+            stringResource(
+                when {
+                    mark == OptionMark.Wrong -> R.string.question_selected_wrong
+                    mark == OptionMark.Correct && chosen -> R.string.question_selected_correct
+                    mark == OptionMark.Correct -> R.string.question_omitted_correct
+                    else -> R.string.question_not_selected
+                },
+            )
+        } else {
+            markText
+        }
     val clickable =
         if (onClick != null) {
-            Modifier
-                .pressScale(interaction)
-                .selectable(
-                    selected = mark == OptionMark.Selected,
-                    interactionSource = interaction,
-                    indication = ripple(),
-                    role = if (multiple) Role.Checkbox else Role.RadioButton,
-                    onClick = onClick,
-                )
+            Modifier.pressScale(interaction).then(
+                if (multiple) {
+                    Modifier.toggleable(
+                        value = mark == OptionMark.Selected,
+                        interactionSource = interaction,
+                        indication = ripple(),
+                        role = Role.Checkbox,
+                        onValueChange = { onClick() },
+                    )
+                } else {
+                    Modifier.selectable(
+                        selected = mark == OptionMark.Selected,
+                        interactionSource = interaction,
+                        indication = ripple(),
+                        role = Role.RadioButton,
+                        onClick = onClick,
+                    )
+                },
+            )
         } else {
-            Modifier.semantics(mergeDescendants = true) { if (markText != null) stateDescription = markText }
+            Modifier.semantics(mergeDescendants = true) {
+                if (answerState != null) stateDescription = answerState
+                if (multiple) {
+                    role = Role.Checkbox
+                    toggleableState = if (chosen) ToggleableState.On else ToggleableState.Off
+                }
+            }
         }
     Surface(
         color = container,
         shape = RoundedCornerShape(GpRadius.m),
-        border = if (mark == OptionMark.Selected) BorderStroke(GpSize.hairline, selectionColor) else null,
-        modifier = modifier.fillMaxWidth().then(clickable).testTag("option.${option.id}"),
+        border =
+            when (mark) {
+                OptionMark.Selected -> BorderStroke(GpSize.hairline, selectionColor)
+                OptionMark.Correct -> if (chosen) BorderStroke(GpSize.hairline, colors.right) else null
+                OptionMark.Wrong -> BorderStroke(GpSize.hairline, colors.wrong)
+                else -> null
+            },
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .then(clickable)
+                .then(if (mark == OptionMark.Correct && !chosen) Modifier.dashedOutline(colors.right, GpRadius.m) else Modifier)
+                .testTag("option.${option.id}"),
     ) {
         Row(
             modifier = Modifier.heightIn(min = GpSize.opt).padding(horizontal = GpSpace.s12, vertical = GpSpace.s8),
             horizontalArrangement = Arrangement.spacedBy(GpSpace.s12),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (letter != null) LetterBadge(letter, mark, selectionColor)
+            val checked = mark == OptionMark.Selected || (mark in listOf(OptionMark.Correct, OptionMark.Wrong) && chosen)
+            if (multiple) {
+                Checkbox(
+                    checked = checked,
+                    onCheckedChange = null,
+                    colors = CheckboxDefaults.colors(checkedColor = colors.text, checkmarkColor = colors.bg, uncheckedColor = colors.text3),
+                )
+            } else {
+                RadioButton(
+                    selected = checked,
+                    onClick = null,
+                    colors = RadioButtonDefaults.colors(selectedColor = colors.text, unselectedColor = colors.text3),
+                )
+            }
             Text(
                 text = option.text,
                 style =
@@ -193,66 +282,6 @@ fun OptionRow(
                 Text(text = markText, style = Gp.type.meta, color = markColor)
                 MarkDot(correct = mark == OptionMark.Correct, color = markColor)
             }
-        }
-    }
-}
-
-@Composable
-private fun LetterBadge(
-    letter: String,
-    mark: OptionMark,
-    selectionColor: Color,
-) {
-    val colors = Gp.colors
-    val (bg, fg) =
-        when (mark) {
-            OptionMark.Selected -> selectionColor to colors.bg
-            OptionMark.Correct -> colors.surface to colors.right
-            else -> colors.surface2 to colors.text2
-        }
-    Box(
-        modifier = Modifier.size(GpSize.icon).background(bg, CircleShape),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(text = letter, style = Gp.type.seg, color = fg)
-    }
-}
-
-/** Вариант пропуска Text Completion (макет R5): компактная капсула, выбранная — спокойная подложка. */
-@Composable
-fun OptionChip(
-    option: QuestionOption,
-    selected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val colors = Gp.colors
-    val interaction = remember { MutableInteractionSource() }
-    Surface(
-        color = if (selected) colors.surface2 else colors.surface,
-        shape = RoundedCornerShape(GpRadius.m),
-        border = if (selected) BorderStroke(GpSize.hairline, colors.text) else null,
-        modifier =
-            modifier
-                .pressScale(interaction)
-                .selectable(
-                    selected = selected,
-                    interactionSource = interaction,
-                    indication = ripple(),
-                    role = Role.RadioButton,
-                    onClick = onClick,
-                ).testTag("option.${option.id}"),
-    ) {
-        Box(
-            modifier = Modifier.heightIn(min = GpSize.tapTarget).padding(horizontal = GpSpace.s14),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = option.text,
-                style =
-                    Gp.type.opt.copy(localeList = English),
-                color = colors.text,
-            )
         }
     }
 }
@@ -280,13 +309,14 @@ fun MarkDot(
 
 /**
  * Текст задания с пропусками. Где пропусков несколько, выбранное слово сразу встаёт в свой пропуск — фраза
- * читается целиком (макет R5); у одного пропуска место остаётся пустым, варианты — под текстом.
+ * читается целиком (макет R5); выбранное слово видно и у одного пропуска.
  */
 @Composable
 fun PromptText(
     question: Question,
     selection: List<String>,
     modifier: Modifier = Modifier,
+    revealed: Boolean = false,
 ) {
     val colors = Gp.colors
     val selectionColor = colors.text
@@ -308,8 +338,31 @@ fun PromptText(
                         .getOrNull(i)
                         ?.options
                         ?.firstOrNull { it.id in selection }
-                if (many && chosen != null) {
-                    withStyle(SpanStyle(color = selectionColor, fontWeight = Gp.type.opt.fontWeight)) { append(chosen.text) }
+                if (chosen != null) {
+                    withStyle(
+                        SpanStyle(
+                            color =
+                                if (!revealed) {
+                                    selectionColor
+                                } else if (chosen.id in question.answer) {
+                                    colors.right
+                                } else {
+                                    colors.wrong
+                                },
+                            background =
+                                if (!revealed) {
+                                    androidx.compose.ui.graphics.Color.Transparent
+                                } else if (chosen.id in
+                                    question.answer
+                                ) {
+                                    colors.rightSoft
+                                } else {
+                                    colors.wrongSoft
+                                },
+                            textDecoration = if (revealed && chosen.id !in question.answer) TextDecoration.LineThrough else null,
+                            fontWeight = Gp.type.opt.fontWeight,
+                        ),
+                    ) { append(chosen.text) }
                 } else {
                     withStyle(SpanStyle(textDecoration = TextDecoration.Underline, color = colors.text2)) { append(BLANK_GAP) }
                 }
@@ -318,7 +371,29 @@ fun PromptText(
     // Для TalkBack пропуск — словом, а не пробелами.
     val spoken =
         parts.foldIndexed("") { i, acc, part ->
-            acc + part + if (i < parts.lastIndex) " $blank ${if (many) BLANK_NUMBERS.getOrElse(i) { "" } else ""} " else ""
+            val chosen =
+                question.groups
+                    .getOrNull(i)
+                    ?.options
+                    ?.firstOrNull { it.id in selection }
+                    ?.let { option ->
+                        option.text +
+                            if (revealed) {
+                                ", " +
+                                    stringResource(
+                                        if (option.id in
+                                            question.answer
+                                        ) {
+                                            R.string.review_correct
+                                        } else {
+                                            R.string.review_wrong
+                                        },
+                                    )
+                            } else {
+                                ""
+                            }
+                    }
+            acc + part + if (i < parts.lastIndex) " ${chosen ?: blank} " else ""
         }
     Text(
         text = text,
@@ -330,91 +405,105 @@ fun PromptText(
 
 /**
  * Разбор после ответа (макет R4): узел-вердикт на нити слева, одна фраза «Верно» или «Неверно. Верный ответ —
- * A, equivocal», объяснение ключа; второй уровень — «Почему не …?» по нажатию; язык — переключатель RU/EN рядом
+ * equivocal», объяснение ключа; второй уровень — «Почему не …?» по нажатию; язык — переключатель RU/EN рядом
  * (PRODUCT.md, «Разбор ошибок»).
  */
 @Composable
 fun ExplanationPanel(
     question: Question,
-    answer: GivenAnswer?,
+    answer: RecordedAnswer?,
     english: Boolean,
     whyNotOpen: Boolean,
     onLanguage: (Boolean) -> Unit,
     onToggleWhyNot: () -> Unit,
     modifier: Modifier = Modifier,
+    onTopic: (() -> Unit)? = null,
+    topicStarting: Boolean = false,
 ) {
     val colors = Gp.colors
     val chosen = answer?.optionIds.orEmpty()
-    val correct = chosen.isNotEmpty() && TrainingRules.isCorrect(question, chosen)
     val wrongChosen = chosen.filterNot { it in question.answer }
     val whyNot = question.explanation.options.filter { it.optionId in wrongChosen }
-    Row(modifier = modifier.fillMaxWidth().height(IntrinsicSize.Min).testTag("explanation")) {
-        Column(
-            modifier = Modifier.width(GpSize.icon).fillMaxHeight(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            MarkDot(correct = correct, color = if (correct) colors.right else colors.wrong, size = GpSize.icon)
-            Box(
-                Modifier
-                    .padding(top = GpSpace.s4)
-                    .width(GpSize.hairline)
-                    .weight(1f)
-                    .background(colors.line),
-            )
+    Column(modifier = modifier.fillMaxWidth().testTag("explanation"), verticalArrangement = Arrangement.spacedBy(GpSpace.s16)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Text(stringResource(R.string.explanation_title), style = Gp.type.h2, modifier = Modifier.weight(1f))
+            LanguageSwitch(english = english, onChange = onLanguage)
         }
-        Column(
-            modifier = Modifier.weight(1f).padding(start = GpSpace.s14),
-            verticalArrangement = Arrangement.spacedBy(GpSpace.s12),
+        Text(
+            text = richText(question.explanation.solution.pick(english)),
+            style = Gp.type.explainBody.withLanguage(english),
+            color = colors.text,
+            modifier = Modifier.testTag("explanation.solution"),
+        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(GpSpace.s8),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text = verdict(question, correct, chosen.isEmpty(), english),
-                style = Gp.type.body,
-                color = colors.text,
-                modifier = Modifier.padding(top = GpSpace.s2).testTag("explanation.verdict"),
-            )
-            Text(
-                text = richText(question.explanation.solution.pick(english)),
-                style = Gp.type.explainBody.withLanguage(english),
-                color = colors.text,
-                modifier = Modifier.testTag("explanation.solution"),
-            )
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(GpSpace.s8),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                if (whyNot.isNotEmpty()) {
-                    WhyNotChip(
-                        text = whyNotLabel(question, wrongChosen, english),
-                        open = whyNotOpen,
-                        onClick = onToggleWhyNot,
-                        modifier = Modifier.weight(1f, fill = false),
+            if (whyNot.isNotEmpty()) {
+                WhyNotChip(
+                    text = whyNotLabel(question, wrongChosen, english),
+                    open = whyNotOpen,
+                    onClick = onToggleWhyNot,
+                    modifier = Modifier.weight(1f, fill = false),
+                )
+            }
+        }
+        if (whyNotOpen) {
+            whyNot.forEach { item ->
+                Surface(
+                    color = colors.surface,
+                    shape = RoundedCornerShape(GpRadius.l),
+                    modifier = Modifier.fillMaxWidth().testTag("explanation.whyNot"),
+                ) {
+                    Text(
+                        text = richText(item.text.pick(english)),
+                        style = Gp.type.meta.withLanguage(english),
+                        color = colors.text,
+                        modifier = Modifier.padding(GpSpace.s16),
                     )
                 }
-                LanguageSwitch(english = english, onChange = onLanguage)
-            }
-            if (whyNotOpen) {
-                whyNot.forEach { item ->
-                    Surface(
-                        color = colors.surface,
-                        shape = RoundedCornerShape(GpRadius.l),
-                        modifier = Modifier.fillMaxWidth().testTag("explanation.whyNot"),
-                    ) {
-                        Text(
-                            text = richText(item.text.pick(english)),
-                            style = Gp.type.meta.withLanguage(english),
-                            color = colors.text,
-                            modifier = Modifier.padding(GpSpace.s16),
-                        )
-                    }
-                }
             }
         }
+        val topicText = stringResource(R.string.question_topic, question.topicTitle.pick(english))
+        if (onTopic == null) {
+            Text(topicText, style = Gp.type.action, modifier = Modifier.testTag("question.topic"))
+        } else {
+            LinkText(topicText, onTopic, Modifier.testTag("question.topic"), enabled = !topicStarting)
+        }
+    }
+}
+
+@Composable
+fun AnswerVerdict(
+    question: Question,
+    answer: RecordedAnswer?,
+    english: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val correct = answer?.response?.let { it.isCorrect(question) } == true
+    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(GpSpace.s12), verticalAlignment = Alignment.CenterVertically) {
+        if (answer?.dontKnow == true) {
+            Icon(painterResource(R.drawable.ic_tab_words), null, tint = Gp.colors.text2)
+        } else {
+            MarkDot(correct, if (correct) Gp.colors.right else Gp.colors.wrong)
+        }
+        Text(
+            text =
+                if (answer?.dontKnow == true) {
+                    buildAnnotatedString { append(stringResource(R.string.verdict_dont_know)) }
+                } else {
+                    verdict(question, correct, answer?.response?.isEmpty != false, english)
+                },
+            style = Gp.type.body,
+            color = Gp.colors.text,
+            modifier = Modifier.testTag("explanation.verdict"),
+        )
     }
 }
 
 private fun TextStyle.withLanguage(english: Boolean): TextStyle = if (english) copy(localeList = English) else this
 
-/** «Неверно. Верный ответ — A, equivocal.» на языке разбора. */
+/** «Неверно. Верный ответ — equivocal.» на языке разбора. */
 @Composable
 private fun verdict(
     question: Question,
@@ -451,14 +540,22 @@ private fun verdict(
     }
 }
 
-/** «A, equivocal», «A, intransigent и C, obdurate»; в Text Completion с пропусками — слова по порядку. */
+/** «equivocal», «A, intransigent и C, obdurate»; в Text Completion с пропусками — слова по порядку. */
 private fun answerList(
     question: Question,
     and: String,
 ): String {
+    if (question.numericAnswer != null) return NumericResponseComponent.keyText(question)
+    if (question.questionType == QuestionType.SELECT_IN_PASSAGE) {
+        return question.passage
+            ?.paragraphs
+            ?.flatMap { it.sentences }
+            ?.firstOrNull { it.id in question.answer }
+            ?.text
+            .orEmpty()
+    }
     val options = question.groups.flatMap { it.options }.associateBy { it.id }
-    val many = question.groups.size > 1
-    val items = question.answer.mapNotNull { id -> options[id]?.let { if (many) it.text else "$id, ${it.text}" } }
+    val items = question.answer.mapNotNull { id -> options[id]?.text }
     return if (items.size <= 1) items.joinToString() else items.dropLast(1).joinToString(", ") + " $and " + items.last()
 }
 
@@ -548,32 +645,64 @@ fun SegmentedChoice(
     modifier: Modifier = Modifier,
     tags: List<String>? = null,
 ) {
-    val colors = Gp.colors
-    SingleChoiceSegmentedButtonRow(modifier = modifier.background(colors.surface2, CircleShape)) {
-        options.forEachIndexed { i, text ->
-            SegmentedButton(
-                selected = i == selected,
-                onClick = { onSelect(i) },
+    ContentChoices(options, selected, onSelect, modifier, tags.orEmpty())
+}
+
+/** Ширина каждого выбора следует за текстом, а FlowRow переносит целые кнопки при крупном шрифте. */
+@Composable
+internal fun ContentChoices(
+    options: List<String>,
+    selected: Int,
+    onSelect: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    tags: List<String> = emptyList(),
+) {
+    FlowRow(
+        modifier = modifier.background(Gp.colors.surface2, RoundedCornerShape(GpRadius.l)).selectableGroup(),
+        horizontalArrangement = Arrangement.spacedBy(GpSpace.s4),
+        verticalArrangement = Arrangement.spacedBy(GpSpace.s4),
+    ) {
+        options.forEachIndexed { index, text ->
+            val interaction = remember { MutableInteractionSource() }
+            Surface(
+                color = if (selected == index) Gp.colors.surface else Gp.colors.surface2,
                 shape = CircleShape,
-                border = androidx.compose.foundation.BorderStroke(0.dp, Color.Transparent),
-                colors =
-                    SegmentedButtonDefaults.colors(
-                        activeContainerColor = colors.surface,
-                        activeContentColor = colors.text,
-                        activeBorderColor = Color.Transparent,
-                        inactiveContainerColor = colors.surface2,
-                        inactiveContentColor = colors.text2,
-                        inactiveBorderColor = Color.Transparent,
-                    ),
-                icon = {},
-                modifier = tags?.getOrNull(i)?.let { Modifier.testTag(it) } ?: Modifier,
+                modifier =
+                    Modifier
+                        .width(IntrinsicSize.Min)
+                        .widthIn(min = GpSize.tapTarget)
+                        .selectable(
+                            selected = selected == index,
+                            role = Role.RadioButton,
+                            interactionSource = interaction,
+                            indication = ripple(),
+                            onClick = { onSelect(index) },
+                        ).then(tags.getOrNull(index)?.let { Modifier.testTag(it) } ?: Modifier),
             ) {
-                Text(
-                    text = text,
-                    style = Gp.type.seg,
-                    maxLines = 1,
-                )
+                Box(
+                    Modifier.heightIn(min = GpSize.tapTarget).padding(horizontal = GpSpace.s12, vertical = GpSpace.s8),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(text, style = Gp.type.seg, color = Gp.colors.text, softWrap = false)
+                }
             }
         }
     }
 }
+
+/** Пунктир отличает верный невыбранный ответ и вопрос без ответа без опоры только на цвет. */
+internal fun Modifier.dashedOutline(
+    color: Color,
+    radius: Dp,
+): Modifier =
+    drawWithContent {
+        drawContent()
+        val stroke = GpSize.hairline.toPx()
+        drawRoundRect(
+            color,
+            topLeft = Offset(stroke / 2, stroke / 2),
+            size = Size(size.width - stroke, size.height - stroke),
+            cornerRadius = CornerRadius(radius.toPx()),
+            style = Stroke(stroke, pathEffect = PathEffect.dashPathEffect(floatArrayOf(GpSpace.s4.toPx(), GpSpace.s4.toPx()))),
+        )
+    }

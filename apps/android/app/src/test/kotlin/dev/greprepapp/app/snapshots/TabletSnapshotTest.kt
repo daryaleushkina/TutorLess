@@ -38,53 +38,188 @@ import org.robolectric.annotation.GraphicsMode
 class TabletSnapshotTest(
     theme: String,
 ) : SnapshotBase(theme) {
-    @Test
-    fun trainingBuilder() = snap("tablet-training-builder") { TrainingScreens.Builder() }
+    @Test fun rcMulti() = snap("tablet-b-r7-multi", large = false) { NewTrainingScreens.Screen("r7-multi") }
 
-    @Test
-    fun trainingQuestionWrong() = snap("tablet-training-question-wrong") { TrainingScreens.Session(TrainingScreens.tcWrong) }
+    @Test fun rcMultiLarge() = snap("tablet-b-r7-multi-large", large = true) { NewTrainingScreens.Screen("r7-multi") }
 
-    @Test
-    fun trainingSummary() = snap("tablet-training-summary") { TrainingScreens.Session(TrainingScreens.summary) }
+    @Test fun rcMultiReview() = snap("tablet-b-r7-multi-review", large = false) { NewTrainingScreens.Screen("r7-multi-review") }
 
-    @Test
-    fun trainingReview() = snap("tablet-training-review") { TrainingScreens.Review() }
+    @Test fun rcMultiReviewLarge() = snap("tablet-b-r7-multi-review-large", large = true) { NewTrainingScreens.Screen("r7-multi-review") }
 
-    @Test
-    fun trainingTopics() = snap("tablet-training-topics") { TrainingScreens.Builder(TrainingScreens.topics) }
+    @Test fun numericLengthError() = snap("tablet-b-r11-long", large = false) { NewTrainingScreens.Screen("r11-long") }
 
-    @Test
-    fun trainingCheck() = snap("tablet-training-check") { TrainingScreens.Session(TrainingScreens.qcTimed) }
+    @Test fun numericLengthErrorLarge() = snap("tablet-b-r11-long-large", large = true) { NewTrainingScreens.Screen("r11-long") }
 
-    @Test
-    fun trainingOverview() = snap("tablet-training-overview") { TrainingScreens.Session(TrainingScreens.overview) }
+    @Test fun newType0() = snap("tablet-b-r7", large = false) { NewTrainingScreens.Screen("r7") }
 
-    @Test
-    fun trainingBuilderLarge() = snap("tablet-training-builder-large", large = true) { TrainingScreens.Builder() }
+    @Test fun newType0Large() = snap("tablet-b-r7-large", large = true) { NewTrainingScreens.Screen("r7") }
 
-    @Test
-    fun trainingQuestionLarge() = snap("tablet-training-question-large", large = true) { TrainingScreens.Session(TrainingScreens.tcWrong) }
+    @Test fun newType1() = snap("tablet-b-r7-text", large = false) { NewTrainingScreens.Screen("r7-text") }
 
-    @Test
-    fun trainingSummaryLarge() = snap("tablet-training-summary-large", large = true) { TrainingScreens.Session(TrainingScreens.summary) }
+    @Test fun newType1Large() = snap("tablet-b-r7-text-large", large = true) { NewTrainingScreens.Screen("r7-text") }
 
-    @Test
-    fun trainingReviewLarge() = snap("tablet-training-review-large", large = true) { TrainingScreens.Review() }
+    @Test fun newType2() = snap("tablet-b-r7-review", large = false) { NewTrainingScreens.Screen("r7-review") }
 
-    @Test
-    fun trainingCheckLarge() = snap("tablet-training-check-large", large = true) { TrainingScreens.Session(TrainingScreens.qcTimed) }
+    @Test fun newType2Large() = snap("tablet-b-r7-review-large", large = true) { NewTrainingScreens.Screen("r7-review") }
 
-    @Test
-    fun trainingTopicsLarge() = snap("tablet-training-topics-large", large = true) { TrainingScreens.Builder(TrainingScreens.topics) }
+    @Test fun newType3() = snap("tablet-b-r8", large = false) { NewTrainingScreens.Screen("r8") }
 
-    @Test
-    fun trainingOverviewLarge() = snap("tablet-training-overview-large", large = true) { TrainingScreens.Session(TrainingScreens.overview) }
+    @Test fun newType3Large() = snap("tablet-b-r8-large", large = true) { NewTrainingScreens.Screen("r8") }
 
-    @Test
-    fun trainingBuilderStartOffline() =
-        snap("tablet-training-builder-start-offline") {
-            TrainingScreens.Builder(TrainingScreens.builderCustom.copy(problem = dev.greprepapp.app.feature.training.StartProblem.Offline))
+    @Test fun newType4() = snap("tablet-b-r8-correct", large = false) { NewTrainingScreens.Screen("r8-correct") }
+
+    @Test fun newType4Large() = snap("tablet-b-r8-correct-large", large = true) { NewTrainingScreens.Screen("r8-correct") }
+
+    @Test fun newType5() = snap("tablet-b-r8-wrong", large = false) { NewTrainingScreens.Screen("r8-wrong") }
+
+    @Test fun newType5Large() = snap("tablet-b-r8-wrong-large", large = true) { NewTrainingScreens.Screen("r8-wrong") }
+
+    @Test fun newType6() = snap("tablet-b-r10", large = false) { NewTrainingScreens.Screen("r10") }
+
+    @Test fun newType6Large() = snap("tablet-b-r10-large", large = true) { NewTrainingScreens.Screen("r10") }
+
+    @Test fun newType7() = snap("tablet-b-r10-checked", large = false) { NewTrainingScreens.Screen("r10-checked") }
+
+    @Test fun newType7Large() = snap("tablet-b-r10-checked-large", large = true) { NewTrainingScreens.Screen("r10-checked") }
+
+    @Test fun newType8() = snap("tablet-b-r11", large = false) { NewTrainingScreens.Screen("r11") }
+
+    @Test fun newType8Large() = snap("tablet-b-r11-large", large = true) { NewTrainingScreens.Screen("r11") }
+
+    @Test fun newType9() = snap("tablet-b-r11-bad", large = false) { NewTrainingScreens.Screen("r11-bad") }
+
+    @Test fun newType9Large() = snap("tablet-b-r11-bad-large", large = true) { NewTrainingScreens.Screen("r11-bad") }
+
+    @Test fun newType10() = snap("tablet-b-r11-correct", large = false) { NewTrainingScreens.Screen("r11-correct") }
+
+    @Test fun newType10Large() = snap("tablet-b-r11-correct-large", large = true) { NewTrainingScreens.Screen("r11-correct") }
+
+    @Test fun newType11() = snap("tablet-b-r11b", large = false) { NewTrainingScreens.Screen("r11b") }
+
+    @Test fun newType11Large() = snap("tablet-b-r11b-large", large = true) { NewTrainingScreens.Screen("r11b") }
+
+    @Test fun trainingB0() = snap("tablet-b-r1") { TrainingScreens.Builder() }
+
+    @Test fun trainingBLarge0() = snap("tablet-b-r1-large", large = true) { TrainingScreens.Builder() }
+
+    @Test fun trainingB1() = snap("tablet-b-r1-custom") { TrainingScreens.Builder(TrainingScreens.builderCustom) }
+
+    @Test fun trainingBLarge1() = snap("tablet-b-r1-custom-large", large = true) { TrainingScreens.Builder(TrainingScreens.builderCustom) }
+
+    @Test fun trainingB2() = snap("tablet-b-r2") { TrainingScreens.Builder(TrainingScreens.topics) }
+
+    @Test fun trainingBLarge2() = snap("tablet-b-r2-large", large = true) { TrainingScreens.Builder(TrainingScreens.topics) }
+
+    @Test fun trainingB3() = snap("tablet-b-r3") { TrainingScreens.Session(TrainingScreens.tcSelected) }
+
+    @Test fun trainingBLarge3() = snap("tablet-b-r3-large", large = true) { TrainingScreens.Session(TrainingScreens.tcSelected) }
+
+    @Test fun trainingB4() = snap("tablet-b-r4") { TrainingScreens.Session(TrainingScreens.tcWrong) }
+
+    @Test fun trainingBLarge4() = snap("tablet-b-r4-large", large = true) { TrainingScreens.Session(TrainingScreens.tcWrong) }
+
+    @Test fun trainingB5() = snap("tablet-b-r4-dk") { TrainingScreens.Session(TrainingScreens.dontKnow) }
+
+    @Test fun trainingBLarge5() = snap("tablet-b-r4-dk-large", large = true) { TrainingScreens.Session(TrainingScreens.dontKnow) }
+
+    @Test fun trainingB6() = snap("tablet-b-r5") { TrainingScreens.Session(TrainingScreens.tc3Partial) }
+
+    @Test fun trainingBLarge6() = snap("tablet-b-r5-large", large = true) { TrainingScreens.Session(TrainingScreens.tc3Partial) }
+
+    @Test fun trainingB7() = snap("tablet-b-r6-question") { TrainingScreens.Session(TrainingScreens.seSelected) }
+
+    @Test fun trainingBLarge7() = snap("tablet-b-r6-question-large", large = true) { TrainingScreens.Session(TrainingScreens.seSelected) }
+
+    @Test fun trainingB8() = snap("tablet-b-r6") { TrainingScreens.Session(TrainingScreens.seCorrect) }
+
+    @Test fun trainingBLarge8() = snap("tablet-b-r6-large", large = true) { TrainingScreens.Session(TrainingScreens.seCorrect) }
+
+    @Test fun trainingB9() = snap("tablet-b-r9") { TrainingScreens.Session(TrainingScreens.qcPractice) }
+
+    @Test fun trainingBLarge9() = snap("tablet-b-r9-large", large = true) { TrainingScreens.Session(TrainingScreens.qcPractice) }
+
+    @Test fun trainingB10() = snap("tablet-b-single-choice") { TrainingScreens.Session(TrainingScreens.mcSelected) }
+
+    @Test fun trainingBLarge10() =
+        snap(
+            "tablet-b-single-choice-large",
+            large = true,
+        ) { TrainingScreens.Session(TrainingScreens.mcSelected) }
+
+    @Test fun trainingB11() = snap("tablet-b-r14") { TrainingScreens.Session(TrainingScreens.qcTimed) }
+
+    @Test fun trainingBLarge11() = snap("tablet-b-r14-large", large = true) { TrainingScreens.Session(TrainingScreens.qcTimed) }
+
+    @Test fun trainingB12() = snap("tablet-b-r14-list") { TrainingScreens.Session(TrainingScreens.overview) }
+
+    @Test fun trainingBLarge12() = snap("tablet-b-r14-list-large", large = true) { TrainingScreens.Session(TrainingScreens.overview) }
+
+    @Test fun trainingB13() = snap("tablet-b-r14-timeout") { TrainingScreens.Session(TrainingScreens.summaryTimedOut) }
+
+    @Test fun trainingBLarge13() =
+        snap(
+            "tablet-b-r14-timeout-large",
+            large = true,
+        ) { TrainingScreens.Session(TrainingScreens.summaryTimedOut) }
+
+    @Test fun trainingB14() = snap("tablet-b-r15") { TrainingScreens.Session(TrainingScreens.summary) }
+
+    @Test fun trainingBLarge14() = snap("tablet-b-r15-large", large = true) { TrainingScreens.Session(TrainingScreens.summary) }
+
+    @Test fun trainingB15() = snap("tablet-b-r15-perfect") { TrainingScreens.Session(TrainingScreens.summaryPerfect) }
+
+    @Test fun trainingBLarge15() =
+        snap(
+            "tablet-b-r15-perfect-large",
+            large = true,
+        ) { TrainingScreens.Session(TrainingScreens.summaryPerfect) }
+
+    @Test fun trainingB16() = snap("tablet-b-r16") { TrainingScreens.Review() }
+
+    @Test fun trainingBLarge16() = snap("tablet-b-r16-large", large = true) { TrainingScreens.Review() }
+
+    @Test fun trainingB17() = snap("tablet-b-r19") { TrainingScreens.ReviewItem() }
+
+    @Test fun trainingBLarge17() = snap("tablet-b-r19-large", large = true) { TrainingScreens.ReviewItem() }
+
+    @Test fun trainingB18() = snap("tablet-b-r20") { TrainingScreens.Session(TrainingScreens.past) }
+
+    @Test fun trainingBLarge18() = snap("tablet-b-r20-large", large = true) { TrainingScreens.Session(TrainingScreens.past) }
+
+    @Test fun trainingB19() = snap("tablet-b-r17") { TrainingScreens.Report() }
+
+    @Test fun trainingBLarge19() = snap("tablet-b-r17-large", large = true) { TrainingScreens.Report() }
+
+    @Test fun trainingB20() = snap("tablet-b-r17-failed") { TrainingScreens.Report(failed = true) }
+
+    @Test fun trainingBLarge20() = snap("tablet-b-r17-failed-large", large = true) { TrainingScreens.Report(failed = true) }
+
+    @Test fun trainingB21() = snap("tablet-b-builder-offline") { TrainingScreens.Builder(TrainingScreens.builderOffline) }
+
+    @Test fun trainingBLarge21() =
+        snap("tablet-b-builder-offline-large", large = true) {
+            TrainingScreens.Builder(TrainingScreens.builderOffline)
         }
+
+    @Test fun trainingB22() = snap("tablet-b-builder-empty") { TrainingScreens.Builder(TrainingScreens.builderNoQuestions) }
+
+    @Test fun trainingBLarge22() =
+        snap("tablet-b-builder-empty-large", large = true) {
+            TrainingScreens.Builder(TrainingScreens.builderNoQuestions)
+        }
+
+    @Test fun trainingTypesSheet() =
+        snap(
+            "tablet-b-r1-types",
+            beforeCapture = { compose.onNodeWithTag("builder.type").performClick() },
+        ) { TrainingScreens.Builder() }
+
+    @Test fun trainingTypesSheetLarge() =
+        snap(
+            "tablet-b-r1-types-large",
+            large = true,
+            beforeCapture = { compose.onNodeWithTag("builder.type").performClick() },
+        ) { TrainingScreens.Builder() }
 
     @Test
     fun home() = snap("tablet-home") { Home() }

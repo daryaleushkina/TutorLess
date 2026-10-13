@@ -16,6 +16,8 @@ enum TrainingFixture {
     }
     private struct Summary: Decodable { let session: TrainingSession }
     private struct Seed: Decodable {
+        enum CodingKeys: String, CodingKey { case questions, topics }
+        enum ItemKeys: String, CodingKey { case type }
         struct Item: Decodable {
             struct Body: Decodable {
                 let prompt: String
@@ -33,17 +35,35 @@ enum TrainingFixture {
             let answer: [String]
             let explanation: Components.Schemas.Explanation
         }
-        let questions: [Item]
+        private let questions: [Item]
+        var items: [Item] { questions }
         struct Topic: Decodable {
             let id: String
             let title: Components.Schemas.LocalizedText
         }
         let topics: [Topic]
+
+        init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            var source = try container.nestedUnkeyedContainer(forKey: .questions)
+            var supported: [Item] = []
+            while !source.isAtEnd {
+                let item = try source.superDecoder()
+                let header = try item.container(keyedBy: ItemKeys.self)
+                let type = try header.decode(String.self, forKey: .type)
+                // Общий seed уже содержит формы части 3; Apple проверяет только объявленные возможности.
+                if API.trainingTypes.contains(where: { $0.rawValue == type }) {
+                    supported.append(try Item(from: item))
+                }
+            }
+            questions = supported
+            topics = try container.decode([Topic].self, forKey: .topics)
+        }
     }
     static func sample(_ type: Components.Schemas.QuestionType, blanks: Int = 1) -> Question {
         let url = Bundle(for: ResourceBundle.self).url(forResource: "questions", withExtension: "json")!
         let seed = try! JSONDecoder().decode(Seed.self, from: Data(contentsOf: url))
-        let q = seed.questions.first { $0.type == type && $0.body.groups.count == blanks }!
+        let q = seed.items.first { $0.type == type && $0.body.groups.count == blanks }!
         return Question(
             id: q.id, questionType: q.type,
             section: type == .textCompletion || type == .sentenceEquivalence ? .verbal : .quant,
@@ -97,11 +117,11 @@ enum TrainingFixture {
             .init(
                 kind: "last",
                 request: .init(
-                    exam: currentExam, section: .verbal, questionTypes: [.textCompletion], count: 10, mode: .practice)),
+                    exam: .gre, section: .verbal, questionTypes: [.textCompletion], count: 10, mode: .practice)),
             .init(
                 kind: "timed",
                 request: .init(
-                    exam: currentExam, section: .verbal, questionTypes: [.textCompletion, .sentenceEquivalence],
+                    exam: .gre, section: .verbal, questionTypes: [.textCompletion, .sentenceEquivalence],
                     count: 12, mode: .check)),
         ],
         maxQuestions: 30)

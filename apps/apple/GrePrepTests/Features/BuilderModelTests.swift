@@ -209,7 +209,7 @@ struct BuilderModelTests {
             .init(
                 kind: "last",
                 request: .init(
-                    exam: currentExam, section: .quant, questionTypes: [.quantitativeComparison], topicIds: ["numbers"],
+                    exam: .gre, section: .quant, questionTypes: [.quantitativeComparison], topicIds: ["numbers"],
                     difficulty: .hard,
                     count: 5, mode: .check))
         ]

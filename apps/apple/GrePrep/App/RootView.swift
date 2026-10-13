@@ -11,8 +11,8 @@ struct RootView: View {
             case let .signedOut(reason):
                 SignInView(app: app, reason: reason)
             case .signedIn:
-                if let today = app.today {
-                    MainView(today: today)
+                if let shell = app.shell {
+                    ShellRootView(model: shell)
                 }
             }
         }
@@ -21,12 +21,13 @@ struct RootView: View {
             if phase == .active {
                 app.retrySessionIfNeeded()
                 app.trainings.sync()
+                Task { await app.shell?.refresh() }
             }
         }
         .onChange(of: app.network.isOnline) { _, online in
             if online { app.trainings.sync() }
-            // Монитор общий: «Сегодня» обновляется и пока открыт другой раздел.
-            Task { await app.today?.networkChanged() }
+            // Главная обновляется и пока открыт другой раздел.
+            Task { await app.shell?.networkChanged() }
         }
     }
 }

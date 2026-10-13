@@ -15,6 +15,7 @@ final class SignInModel {
     enum Message: Equatable {
         case notConnectedYet(Method)
         case offline
+        case cancelled
         case tooManyAttempts
         case failed
     }
@@ -68,7 +69,10 @@ final class SignInModel {
         switch result {
         case let .failure(error):
             // Человек сам закрыл окно Apple — это не ошибка.
-            if (error as? ASAuthorizationError)?.code == .canceled { return }
+            if (error as? ASAuthorizationError)?.code == .canceled {
+                message = .cancelled
+                return
+            }
             // Без аккаунта разработчика у сборки нет права на вход с Apple, и система отказывает всегда:
             // честно сказать «ещё не подключён» и не засорять журнал ошибок (#6).
             guard app.config.appleSignInEnabled else {
@@ -149,6 +153,8 @@ final class SignInModel {
             if (error as? ASWebAuthenticationSessionError)?.code != .canceledLogin {
                 app.report("\(provider) web auth: \(error)", route: "sign-in")
                 message = .failed
+            } else {
+                message = .cancelled
             }
             return
         }
@@ -183,7 +189,7 @@ final class SignInModel {
         let failure = APIFailure(error)
         switch failure {
         case .cancelled:
-            return
+            message = .cancelled
         case .offline:
             message = .offline
         case let .server(_, code, _) where code == "too_many_requests":

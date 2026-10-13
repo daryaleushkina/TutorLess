@@ -16,30 +16,30 @@ struct AppModelTests {
         return (app, store)
     }
 
-    @Test("есть токен — сразу «Сегодня», без ожидания сети")
+    @Test("есть токен — сразу оболочка, без ожидания сети")
     func launchSignedIn() {
         let (app, _) = app(token: "t")
         #expect(app.phase == .signedIn)
-        #expect(app.today != nil)
+        #expect(app.shell != nil)
     }
 
-    @Test("«Сегодня» читает общую сеть, даже когда его экран не открыт")
-    func todayReadsSharedNetwork() async throws {
-        server.on("GET /api/today", .json(200, Fixture.todayJSON))
+    @Test("оболочка читает общую сеть, даже когда его экран не открыт")
+    func shellReadsSharedNetwork() async throws {
+        ShellFixture.stub(server)
         let (app, _) = app(token: "t")
-        let model = try #require(app.today)
+        let model = try #require(app.shell)
         await model.refresh()
         app.network.set(online: false)
-        #expect(model.staleReason == .offline)
-        #expect(model.content == .plan(Fixture.plan))
-        #expect(server.requests("GET /api/today").count == 1)
+        #expect(model.staleProblem == .offline)
+        #expect(model.home?.stats == ShellFixture.stats)
+        #expect(server.requests("GET /api/home").count == 1)
     }
 
     @Test("нет токена — экран входа")
     func launchSignedOut() {
         let (app, _) = app()
         #expect(app.phase == .signedOut(nil))
-        #expect(app.today == nil)
+        #expect(app.shell == nil)
     }
 
     @Test("Keychain не читается — экран входа и отчёт на сервер")
@@ -54,7 +54,7 @@ struct AppModelTests {
 
     @Test("вход сохраняет токен и стирает план прошлого человека")
     func didSignIn() throws {
-        try cache.save(Fixture.todayDTO)
+        try cache.save(ShellFixture.snapshot)
         let (app, tokens) = app()
         try app.didSignIn(
             SignedIn(
@@ -69,14 +69,14 @@ struct AppModelTests {
         #expect(app.phase == .signedIn)
     }
 
-    @Test("выход: токен и план стёрты сразу, сервер получает выход со старым токеном")
+    @Test("выход из профиля: сервер получает старый токен, после подтверждения данные стираются")
     func signOut() async throws {
         server.on("POST /api/auth/logout", .status(204))
-        try cache.save(Fixture.todayDTO)
+        try cache.save(ShellFixture.snapshot)
         let (app, tokens) = app(token: "old")
-        app.signOut()
+        await app.requestSignOut()
         #expect(app.phase == .signedOut(nil))
-        #expect(app.today == nil)
+        #expect(app.shell == nil)
         #expect(try tokens.token() == nil)
         #expect(cache.load() == nil)
         await eventually { !server.requests("POST /api/auth/logout").isEmpty }
@@ -84,10 +84,10 @@ struct AppModelTests {
     }
 
     @Test("сервер ответил 401 — вход закончился, человек видит почему")
-    func unauthorizedFromToday() async throws {
-        server.on("GET /api/today", .json(401, Fixture.error("unauthorized")))
+    func unauthorizedFromShell() async throws {
+        server.on("GET /api/me", .json(401, Fixture.error("unauthorized")))
         let (app, tokens) = app(token: "expired")
-        await app.today?.refresh()
+        await app.shell?.refresh()
         #expect(app.phase == .signedOut(.sessionExpired))
         #expect(try tokens.token() == nil)
     }
@@ -100,17 +100,18 @@ struct AppModelLifecycleTests {
     let cache = temporaryCache()
 
     @Test("план, пришедший после выхода, не возвращается на устройство")
-    func lateTodayAfterSignOut() async throws {
+    func lateShellAfterSignOut() async throws {
         let gate = StubServer.Gate()
-        server.on("GET /api/today", .gated(gate, 200, Fixture.todayJSON))
+        ShellFixture.stub(server)
+        server.on("GET /api/me", .gated(gate, 200, ShellFixture.json(ShellFixture.user())))
         server.on("POST /api/auth/logout", .status(204))
         let app = AppModel(
             config: server.config(), tokens: MemoryTokenStore("old"), cache: cache, network: NetworkMonitor(),
             session: server.session)
-        let model = try #require(app.today)
+        let model = try #require(app.shell)
         let inFlight = Task { await model.refresh() }
-        await eventually { !server.requests("GET /api/today").isEmpty }
-        app.signOut()
+        await eventually { !server.requests("GET /api/me").isEmpty }
+        await app.requestSignOut()
         gate.open()
         await inFlight.value
         #expect(cache.load() == nil)
@@ -120,15 +121,16 @@ struct AppModelLifecycleTests {
     @Test("401 на запрос прошлого человека не выкидывает того, кто вошёл после")
     func late401AfterNewSignIn() async throws {
         let gate = StubServer.Gate()
-        server.on("GET /api/today", .gated(gate, 401, Fixture.error("unauthorized")))
+        ShellFixture.stub(server)
+        server.on("GET /api/me", .gated(gate, 401, Fixture.error("unauthorized")))
         server.on("POST /api/auth/logout", .status(204))
         let tokens = MemoryTokenStore("old")
         let app = AppModel(
             config: server.config(), tokens: tokens, cache: cache, network: NetworkMonitor(), session: server.session)
-        let old = try #require(app.today)
+        let old = try #require(app.shell)
         let inFlight = Task { await old.refresh() }
-        await eventually { !server.requests("GET /api/today").isEmpty }
-        app.signOut()
+        await eventually { !server.requests("GET /api/me").isEmpty }
+        await app.requestSignOut()
         try app.didSignIn(SignedIn(token: "new", user: Fixture.user))
         gate.open()
         await inFlight.value
@@ -151,13 +153,13 @@ struct AppModelLifecycleTests {
     }
 
     @Test("Keychain не стёр токен при выходе — вход всё равно не возвращается при следующем запуске")
-    func signOutWhenClearFails() throws {
+    func signOutWhenClearFails() async throws {
         server.on("POST /api/client-errors", .status(204))
         server.on("POST /api/auth/logout", .status(204))
         let tokens = UndeletableTokenStore(token: "t")
         let app = AppModel(
             config: server.config(), tokens: tokens, cache: cache, network: NetworkMonitor(), session: server.session)
-        app.signOut()
+        await app.requestSignOut()
         #expect(app.phase == .signedOut(nil))
         let relaunched = AppModel(
             config: server.config(), tokens: tokens, cache: cache, network: NetworkMonitor(), session: server.session)
@@ -166,15 +168,15 @@ struct AppModelLifecycleTests {
 
     @Test("токен читается из Keychain один раз, а не на каждый запрос")
     func tokenIsCached() async throws {
-        server.on("GET /api/today", .json(200, Fixture.todayJSON))
+        ShellFixture.stub(server)
         let tokens = CountingTokenStore(token: "t")
         let app = AppModel(
             config: server.config(), tokens: tokens, cache: cache, network: NetworkMonitor(), session: server.session)
-        let model = try #require(app.today)
+        let model = try #require(app.shell)
         await model.refresh()
         await model.refresh()
         #expect(tokens.reads == 1)
-        #expect(server.requests("GET /api/today").allSatisfy { $0.authorization == "Bearer t" })
+        #expect(server.requests("GET /api/home").allSatisfy { $0.authorization == "Bearer t" })
     }
 }
 

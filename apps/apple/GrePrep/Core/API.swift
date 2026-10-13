@@ -2,8 +2,10 @@ import Foundation
 import GPAPI
 import OSLog
 
-typealias TodayDTO = Components.Schemas.Today
 typealias UserDTO = Components.Schemas.User
+typealias Exam = Components.Schemas.Exam
+typealias ExamInfo = Components.Schemas.ExamInfo
+typealias HomeDTO = Components.Schemas.Home
 
 /// Успешный вход: токен уходит в Keychain, пользователь — на экран.
 struct SignedIn: Sendable, Equatable {
@@ -17,13 +19,27 @@ struct API: Sendable {
     private let client: Client
     private let clientKind: Components.Schemas.ClientKind
     private let appVersion: String
+    let connection: ServerConnection
+    private var confirmsConnection = true
 
-    init(config: AppConfig, session: URLSession = API.session, tokens: any TokenStore) {
-        client = GPAPIClient.make(baseURL: config.apiBaseURL, session: session) {
-            // Нечитаемый Keychain — то же, что «токена нет»: запрос уйдёт без входа, сервер ответит 401, и
-            // человек увидит экран входа. Сама ошибка Keychain уже записана при старте (AppModel).
-            (try? tokens.token()) ?? nil
-        }
+    /// Составное обновление подтверждает связь только после всех своих запросов; остальные вызовы — сразу.
+    func withoutConnectionConfirmation() -> API {
+        var api = self
+        api.confirmsConnection = false
+        return api
+    }
+
+    init(
+        config: AppConfig, session: URLSession = API.session, tokens: any TokenStore,
+        connection: ServerConnection = ServerConnection()
+    ) {
+        self.connection = connection
+        client = GPAPIClient.make(
+            baseURL: config.apiBaseURL, session: Self.withCapabilities(session),
+            token: {
+                // Ошибка Keychain уже сообщается корнем; отсутствие токена сервер подтвердит ответом 401.
+                try? tokens.token()
+            })
         clientKind = config.clientKind == .macos ? .macos : .ios
         appVersion = config.appVersion
     }
@@ -37,6 +53,7 @@ struct API: Sendable {
         configuration.waitsForConnectivity = false
         configuration.httpCookieStorage = nil
         configuration.urlCache = nil
+        configuration.httpAdditionalHeaders = [Self.capabilitiesHeader: Self.capabilities]
         return URLSession(configuration: configuration)
     }()
 
@@ -122,20 +139,20 @@ struct API: Sendable {
         switch output {
         case let .ok(ok):
             guard case let .json(value) = ok.body else { throw .unexpected("training: unexpected body") }
-            return value
+            return await confirmed(value)
         case let .default(status, error): throw failure(status, error)
         }
     }
 
-    func trainingOptions() async throws(APIFailure) -> TrainingOptions {
+    func trainingOptions(exam: Exam = .gre) async throws(APIFailure) -> TrainingOptions {
         let output = try await call {
             try await client.getTrainingOptions(
-                query: .init(exam: currentExam, types: Components.Schemas.QuestionType.allCases))
+                query: .init(exam: exam, types: Self.trainingTypes))
         }
         switch output {
         case let .ok(ok):
             guard case let .json(value) = ok.body else { throw .unexpected("training: unexpected body") }
-            return value
+            return await confirmed(value)
         case let .default(status, error): throw failure(status, error)
         }
     }
@@ -145,7 +162,7 @@ struct API: Sendable {
         switch output {
         case let .created(created):
             guard case let .json(value) = created.body else { throw .unexpected("training: unexpected body") }
-            return value
+            return await confirmed(value)
         case let .default(status, error): throw failure(status, error)
         }
     }
@@ -155,7 +172,9 @@ struct API: Sendable {
             try await client.submitTrainingAnswers(path: .init(trainingId: id), body: .json(.init(answers: answers)))
         }
         switch output {
-        case .noContent: return
+        case .noContent:
+            await connection.succeeded()
+            return
         case let .default(status, error): throw failure(status, error)
         }
     }
@@ -165,7 +184,9 @@ struct API: Sendable {
             try await client.finishTraining(path: .init(trainingId: id), body: .json(finish))
         }
         switch output {
-        case .ok: return
+        case .ok:
+            await connection.succeeded()
+            return
         case let .default(status, error): throw failure(status, error)
         }
     }
@@ -175,21 +196,60 @@ struct API: Sendable {
             try await client.reportQuestion(path: .init(questionId: id), body: .json(report))
         }
         switch output {
-        case .noContent: return
+        case .noContent:
+            await connection.succeeded()
+            return
         case let .default(status, error): throw failure(status, error)
         }
     }
 
-    func today() async throws(APIFailure) -> TodayDTO {
-        let output = try await call { try await client.getToday() }
+    func exams() async throws(APIFailure) -> [ExamInfo] {
+        let output = try await call { try await client.getExams() }
         switch output {
         case let .ok(ok):
-            guard case let .json(today) = ok.body else { throw .unexpected("today: unexpected body") }
-            return today
-        case let .default(status, error):
-            throw failure(status, error)
+            guard case let .json(value) = ok.body else { throw .unexpected("exams: unexpected body") }
+            return await confirmed(value.exams)
+        case let .default(status, error): throw failure(status, error)
         }
     }
+
+    func home(exam: Exam) async throws(APIFailure) -> HomeDTO {
+        let output = try await call {
+            try await client.getHome(
+                query: .init(exam: exam, tz: TimeZone.current.identifier, types: Self.trainingTypes))
+        }
+        switch output {
+        case let .ok(ok):
+            guard case let .json(value) = ok.body else { throw .unexpected("home: unexpected body") }
+            return await confirmed(value)
+        case let .default(status, error): throw failure(status, error)
+        }
+    }
+
+    func setExam(_ exam: Exam) async throws(APIFailure) -> UserDTO {
+        let output = try await call { try await client.setActiveExam(body: .json(.init(exam: exam))) }
+        switch output {
+        case let .ok(ok):
+            guard case let .json(value) = ok.body else { throw .unexpected("exam: unexpected body") }
+            return await confirmed(value)
+        case let .default(status, error): throw failure(status, error)
+        }
+    }
+
+    func setLocale(_ locale: Components.Schemas.Locale) async throws(APIFailure) -> UserDTO {
+        let output = try await call { try await client.setLocale(body: .json(.init(locale: locale))) }
+        switch output {
+        case let .ok(ok):
+            guard case let .json(value) = ok.body else { throw .unexpected("locale: unexpected body") }
+            return await confirmed(value)
+        case let .default(status, error): throw failure(status, error)
+        }
+    }
+
+    // Полный список клиента, а не allCases договора: новые формы появятся в части 3 (решение Даши 12.10.2026).
+    static let trainingTypes: [Components.Schemas.QuestionType] = [
+        .textCompletion, .sentenceEquivalence, .multipleChoice, .quantitativeComparison,
+    ]
 
     /// Ошибка на устройстве — в таблицу client_errors. Не бросает: отчёт об ошибке не должен сам стать ошибкой
     /// на экране; не дошёл — значит, нет сети, и сообщить всё равно некуда.
@@ -219,6 +279,26 @@ struct API: Sendable {
         String(String.UnicodeScalarView(text.unicodeScalars.prefix(limit)))
     }
 
+    private static let capabilitiesHeader = "X-Training-Capabilities"
+    private static var capabilities: String { trainingTypes.map(\.rawValue).joined(separator: ",") }
+
+    /// В приложении общая сессия уже имеет заголовок; переданный тестовый/специальный транспорт сохраняет
+    /// свою конфигурацию. Bearer ставится единственным GPAPIClient.make, возможности — URLSession.
+    private static func withCapabilities(_ session: URLSession) -> URLSession {
+        let configuration = session.configuration
+        if configuration.httpAdditionalHeaders?[capabilitiesHeader] as? String == capabilities { return session }
+        var headers = configuration.httpAdditionalHeaders ?? [:]
+        headers[capabilitiesHeader] = capabilities
+        configuration.httpAdditionalHeaders = headers
+        return URLSession(
+            configuration: configuration, delegate: session.delegate, delegateQueue: session.delegateQueue)
+    }
+
+    private func confirmed<T: Sendable>(_ value: T) async -> T {
+        if confirmsConnection { await connection.succeeded() }
+        return value
+    }
+
     // MARK: - Разбор
 
     private func call<T>(_ request: () async throws -> T) async throws(APIFailure) -> T {
@@ -244,6 +324,3 @@ struct API: Sendable {
         return .response(status: status, code: error.code, requestID: error.requestId)
     }
 }
-
-// Выбор экзамена в редизайне заменит эту константу (решение Даши 09.10.2026).
-let currentExam: Components.Schemas.Exam = .gre

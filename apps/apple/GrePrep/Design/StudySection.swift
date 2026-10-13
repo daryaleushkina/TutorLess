@@ -1,11 +1,9 @@
 import GPAPI
 import SwiftUI
 
-typealias TodayStateDTO = Components.Schemas.StepState
-
-/// Раздел подготовки и его цвета: узел ленты, подпись и мягкая поверхность (DESIGN.md, «Цвета разделов»).
+/// Разделы каталога: цвет метки и контрастный цвет подписи разделены токенами.
 enum StudySection: String, Hashable, Sendable, CaseIterable {
-    case verbal, quant, words, essay
+    case verbal, quant, words, essay, reading, listening, writing, speaking
 
     init(_ dto: Components.Schemas.Section) {
         switch dto {
@@ -13,9 +11,10 @@ enum StudySection: String, Hashable, Sendable, CaseIterable {
         case .quant: self = .quant
         case .words: self = .words
         case .essay: self = .essay
-        // Новые разделы пока не приходят на экраны GRE; оформление заменит редизайн.
-        case .reading, .listening, .speaking: self = .verbal
-        case .writing: self = .essay
+        case .reading: self = .reading
+        case .listening: self = .listening
+        case .writing: self = .writing
+        case .speaking: self = .speaking
         }
     }
 
@@ -26,6 +25,10 @@ enum StudySection: String, Hashable, Sendable, CaseIterable {
         case .quant: "Quant"
         case .words: "Слова"
         case .essay: "Эссе"
+        case .reading: "Reading"
+        case .listening: "Listening"
+        case .writing: "Writing"
+        case .speaking: "Speaking"
         }
     }
 
@@ -35,6 +38,10 @@ enum StudySection: String, Hashable, Sendable, CaseIterable {
         case .quant: Color(.quant)
         case .words: Color(.words)
         case .essay: Color(.essay)
+        case .reading: Color(.reading)
+        case .listening: Color(.listening)
+        case .writing: Color(.writing)
+        case .speaking: Color(.speaking)
         }
     }
 
@@ -45,6 +52,10 @@ enum StudySection: String, Hashable, Sendable, CaseIterable {
         case .quant: Color(.quantInk)
         case .words: Color(.wordsInk)
         case .essay: Color(.essayInk)
+        case .reading: Color(.readingInk)
+        case .listening: Color(.listeningInk)
+        case .writing: Color(.writingInk)
+        case .speaking: Color(.speakingInk)
         }
     }
 
@@ -54,6 +65,10 @@ enum StudySection: String, Hashable, Sendable, CaseIterable {
         case .quant: Color(.quantSoft)
         case .words: Color(.wordsSoft)
         case .essay: Color(.essaySoft)
+        case .reading: Color(.readingSoft)
+        case .listening: Color(.listeningSoft)
+        case .writing: Color(.writingSoft)
+        case .speaking: Color(.speakingSoft)
         }
     }
 
@@ -64,6 +79,23 @@ enum StudySection: String, Hashable, Sendable, CaseIterable {
         case .quant: "function"
         case .words: "rectangle.on.rectangle"
         case .essay: "pencil.line"
+        case .reading: "book"
+        case .listening: "headphones"
+        case .writing: "pencil"
+        case .speaking: "mic"
+        }
+    }
+
+    var emptyTypes: LocalizedStringResource {
+        switch self {
+        case .verbal: "Text Completion · Sentence Equivalence · Reading Comprehension"
+        case .quant: "Quantitative Comparison · Multiple Choice"
+        case .essay: "Analyze an Issue · 30 минут"
+        case .reading: "Complete the Words · Read in Daily Life · Academic Passage"
+        case .listening: "Choose a Response · Conversation · Announcement · Academic Talk"
+        case .writing: "Build a Sentence · Write an Email · Academic Discussion"
+        case .speaking: "Listen and Repeat · Take an Interview"
+        case .words: ""
         }
     }
 }

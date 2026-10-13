@@ -222,7 +222,7 @@ final class SessionModel {
         repeatProblem = nil
         defer { startingRepeat = false }
         let request = TrainingRequest(
-            exam: s.training.session.exam ?? currentExam, section: s.training.session.section,
+            exam: s.training.session.exam ?? .gre, section: s.training.session.section,
             questionTypes: s.training.session.questionTypes,
             topicIds: result.review.map(\.topicId),
             count: TrainingRules.repeatCount(result.review.reduce(0) { $0 + $1.mistakes }), mode: .practice)

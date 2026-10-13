@@ -41,8 +41,8 @@ tools/dev/backlog.sh           # пересобрать это зеркало
 - [#23](https://github.com/daryaleushkina/TutorLess/issues/23) Задания Quant: формулы сверх Unicode — дроби, степени, корни
 - [#24](https://github.com/daryaleushkina/TutorLess/issues/24) Админка: правка проверенного задания — новой версией, не на месте; очередь жалоб
 - [#32](https://github.com/daryaleushkina/TutorLess/issues/32) Сайт: «Назад» (BackLink) перехватывает Cmd/Ctrl-клик и среднюю кнопку
-- [#34](https://github.com/daryaleushkina/TutorLess/issues/34) Жалобы на задания: повтор после потерянного ответа создаёт дубль
 - [#41](https://github.com/daryaleushkina/TutorLess/issues/41) Apple: снимок training-report-failed-ipad-dark нестабилен — фон системной кнопки «Отмена»
 - [#42](https://github.com/daryaleushkina/TutorLess/issues/42) Вход через Telegram на сайте и в приложениях: убрать (решение Даши 10.10.2026)
 - [#43](https://github.com/daryaleushkina/TutorLess/issues/43) Android: конструктор на 320 dp при шрифте 200 % — «Тип» рвётся на буквы, кнопка «Начать» обрезана
 - [#44](https://github.com/daryaleushkina/TutorLess/issues/44) Токены тени и затемнения для стиля B (шторка, всплывающее окно)
+- [#45](https://github.com/daryaleushkina/TutorLess/issues/45) Numeric entry: optional unit before and after the answer box ($ ___ , ___ %)

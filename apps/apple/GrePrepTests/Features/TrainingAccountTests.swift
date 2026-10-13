@@ -17,19 +17,19 @@ struct TrainingAccountTests {
             network: NetworkMonitor(), session: server.session)
     }
 
-    @Test func unreadableStorageDoesNotBlockSignInTodayOrSignOut() async throws {
-        try cache.save(Fixture.todayDTO)
+    @Test func unreadableStorageDoesNotBlockSignInShellOrSignOut() async throws {
+        try cache.save(ShellFixture.snapshot)
         try Data("private damaged storage".utf8).write(to: store.directory)
-        server.on("GET /api/today", .json(200, Fixture.todayJSON))
+        ShellFixture.stub(server)
         server.on("GET /api/trainings/options", .json(200, TrainingFixture.json(TrainingFixture.options)))
         server.on("POST /api/client-errors", .status(204))
         server.on("POST /api/auth/logout", .status(204))
         let app = app()
         try app.didSignIn(.init(token: "new", user: Fixture.user))
         #expect(app.phase == .signedIn)
-        let today = try #require(app.today)
-        await today.refresh()
-        if case .loading = today.content { Issue.record("план не загрузился") }
+        let shell = try #require(app.shell)
+        await shell.refresh()
+        #expect(shell.home != nil)
         do {
             _ = try await app.trainings.options()
             Issue.record("тренировки доступны при сбое хранилища")
@@ -37,7 +37,7 @@ struct TrainingAccountTests {
         await eventually { !server.requests("POST /api/client-errors").isEmpty }
         let messages = try server.requests("POST /api/client-errors").map { try $0.json()["message"] as? String ?? "" }
         #expect(messages.allSatisfy { !$0.contains(store.directory.path) && !$0.contains("private damaged storage") })
-        app.signOut()
+        await app.requestSignOut()
         #expect(app.phase == .signedOut(nil) && app.trainings.trainings.isEmpty)
     }
 
@@ -87,7 +87,7 @@ struct TrainingAccountTests {
         server.on("POST /api/auth/logout", .status(204))
         let app = app()
         await eventually { app.trainings.trainings[t.id] != nil }
-        app.signOut()
+        await app.requestSignOut()
         await eventually { !FileManager.default.fileExists(atPath: store.directory.path) }
         #expect(app.trainings.trainings.isEmpty)
     }
@@ -113,7 +113,7 @@ struct TrainingAccountTests {
         server.on("GET /api/trainings/options", .json(200, TrainingFixture.json(TrainingFixture.options)))
         let app = app()
         _ = try await app.trainings.options()
-        app.signOut()
+        await app.requestSignOut()
         try app.didSignIn(.init(token: "new", user: Fixture.user))
         _ = try await app.trainings.options()
         #expect(try store.load { _ in }.isEmpty)

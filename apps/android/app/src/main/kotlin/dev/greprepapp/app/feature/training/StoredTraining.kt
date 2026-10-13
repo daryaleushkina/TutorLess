@@ -1,6 +1,5 @@
 package dev.greprepapp.app.feature.training
 
-import dev.greprepapp.api.models.GivenAnswer
 import dev.greprepapp.api.models.LocalizedText
 import dev.greprepapp.api.models.Question
 import dev.greprepapp.api.models.TrainingFinish
@@ -22,13 +21,15 @@ data class StoredTraining(
     val session: TrainingSession,
     /** Начало по часам устройства: от него идёт таймер «Проверки». Часы сервера здесь не помогут — нет сети. */
     val startedAtMillis: Long,
-    val answers: Map<Int, GivenAnswer> = emptyMap(),
+    val answers: Map<Int, RecordedAnswer> = emptyMap(),
     val unsent: Set<Int> = emptySet(),
     val position: Int = 0,
     val finish: TrainingFinish? = null,
     val finishSent: Boolean = false,
     /** Сервер подтвердил, что тренировки больше нет: новые локальные действия не оживляют её очередь. */
     val rejected: Boolean = false,
+    /** Порядок запуска на устройстве сохраняется и при совпадении часов, и после перезапуска. */
+    val creationOrder: Long = 0,
 ) {
     val id: String get() = session.id
     val total: Int get() = session.items.size
@@ -40,7 +41,7 @@ data class StoredTraining(
 
     fun question(position: Int): Question = session.items[position].question
 
-    fun answer(position: Int): GivenAnswer? = answers[position]
+    fun answer(position: Int): RecordedAnswer? = answers[position]
 }
 
 /** Тема из «Что повторить» (макет R15). positions — с нуля, на экране — с единицы. */
@@ -71,48 +72,6 @@ object TrainingRules {
     /** Сколько вопросов в «Повторить»: по два на ошибку, но не меньше пяти и не больше десяти. */
     fun repeatCount(mistakes: Int): Int = (mistakes * 2).coerceIn(5, 10)
 
-    /** Верен только полный ответ: в Text Completion с тремя пропусками и в Sentence Equivalence — все части. */
-    fun isCorrect(
-        question: Question,
-        optionIds: List<String>,
-    ): Boolean = optionIds.size == question.answer.size && optionIds.toSet() == question.answer.toSet()
-
-    /** В каждой группе выбрано столько, сколько нужно: можно «Проверить». */
-    fun isComplete(
-        question: Question,
-        optionIds: List<String>,
-    ): Boolean = missingGroups(question, optionIds).isEmpty()
-
-    /** Номера пропусков, где выбор ещё не сделан: «Осталось выбрать слово для пропуска (iii)». */
-    fun missingGroups(
-        question: Question,
-        optionIds: List<String>,
-    ): List<Int> =
-        question.groups.indices.filter { g ->
-            question.groups[g].options.count { it.id in optionIds } < question.selectCount
-        }
-
-    /**
-     * Нажатие на вариант. В пропуске с одним ответом — замена выбора в этой группе (как переключатель); там,
-     * где ответов два (Sentence Equivalence), — переключение, а третий выбор вытесняет самый ранний: нажатие
-     * никогда не «молчит».
-     */
-    fun toggle(
-        question: Question,
-        selection: List<String>,
-        optionId: String,
-    ): List<String> {
-        val group = question.groups.firstOrNull { g -> g.options.any { it.id == optionId } } ?: return selection
-        val inGroup = group.options.map { it.id }.toSet()
-        if (question.selectCount == 1) {
-            return selection.filterNot { it in inGroup } + optionId
-        }
-        if (optionId in selection) return selection - optionId
-        val chosen = selection.filter { it in inGroup }
-        val trimmed = if (chosen.size >= question.selectCount) selection - chosen.first() else selection
-        return trimmed + optionId
-    }
-
     /** Осталось секунд у «Проверки»; null — в «Практике» таймера нет. Не меньше нуля. */
     fun remainingSeconds(
         training: StoredTraining,
@@ -135,13 +94,13 @@ object TrainingRules {
         val byTopic = LinkedHashMap<String, TopicReview>()
         training.session.items.forEach { item ->
             val answer = training.answers[item.position]
-            val chosen = answer?.optionIds.orEmpty()
-            if (chosen.isNotEmpty() && isCorrect(item.question, chosen)) {
+            val response = answer?.response ?: emptyResponse(item.question)
+            if (!response.isEmpty && response.isCorrect(item.question)) {
                 correct++
                 return@forEach
             }
             val dontKnow = answer?.dontKnow == true
-            if (chosen.isEmpty()) {
+            if (response.isEmpty) {
                 unanswered++
                 if (timedOut && !dontKnow) return@forEach
             }

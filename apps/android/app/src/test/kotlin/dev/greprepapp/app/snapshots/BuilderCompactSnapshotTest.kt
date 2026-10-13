@@ -29,7 +29,7 @@ class BuilderCompactSnapshotTest(
     @Test
     fun builderFont200Russian() =
         snap(
-            "training-builder-320-font-200-ru",
+            "b-training-builder-320-font-200-ru",
             systemFontScale = 2f,
             beforeCapture = { compose.onNodeWithTag("builder.count").performScrollTo() },
         ) { TrainingScreens.Builder() }
@@ -38,19 +38,19 @@ class BuilderCompactSnapshotTest(
     @Config(qualifiers = "en-w320dp-h800dp-160dpi")
     fun builderFont200English() =
         snap(
-            "training-builder-320-font-200-en",
+            "b-training-builder-320-font-200-en",
             systemFontScale = 2f,
             beforeCapture = { compose.onNodeWithTag("builder.count").performScrollTo() },
         ) { TrainingScreens.Builder() }
 
     @Test
     fun longLabelFont200Russian() =
-        snap("training-builder-label-320-font-200-ru", systemFontScale = 2f) { Label("Режим", "Количество вопросов") }
+        snap("b-training-builder-label-320-font-200-ru", systemFontScale = 2f) { Label("Режим", "Количество вопросов") }
 
     @Test
     @Config(qualifiers = "en-w320dp-h800dp-160dpi")
     fun longLabelFont200English() =
-        snap("training-builder-label-320-font-200-en", systemFontScale = 2f) { Label("Mode", "Number of questions") }
+        snap("b-training-builder-label-320-font-200-en", systemFontScale = 2f) { Label("Mode", "Number of questions") }
 
     @Composable
     private fun Label(

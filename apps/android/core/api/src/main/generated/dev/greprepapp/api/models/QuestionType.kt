@@ -31,7 +31,7 @@ import kotlinx.serialization.Serializable
 /**
  * Типы GRE (решение Даши 12.10.2026). multiple_choice и multiple_choice_multi бывают в Quant и Reading Comprehension; select_in_passage — в Verbal, numeric_entry — в Quant.
  *
- * Values: TEXT_COMPLETION,SENTENCE_EQUIVALENCE,QUANTITATIVE_COMPARISON,MULTIPLE_CHOICE
+ * Values: TEXT_COMPLETION,SENTENCE_EQUIVALENCE,QUANTITATIVE_COMPARISON,MULTIPLE_CHOICE,MULTIPLE_CHOICE_MULTI,NUMERIC_ENTRY,SELECT_IN_PASSAGE
  */
 @Serializable
 enum class QuestionType(val value: kotlin.String) {
@@ -46,7 +46,16 @@ enum class QuestionType(val value: kotlin.String) {
     QUANTITATIVE_COMPARISON("quantitative_comparison"),
 
     @SerialName(value = "multiple_choice")
-    MULTIPLE_CHOICE("multiple_choice");
+    MULTIPLE_CHOICE("multiple_choice"),
+
+    @SerialName(value = "multiple_choice_multi")
+    MULTIPLE_CHOICE_MULTI("multiple_choice_multi"),
+
+    @SerialName(value = "numeric_entry")
+    NUMERIC_ENTRY("numeric_entry"),
+
+    @SerialName(value = "select_in_passage")
+    SELECT_IN_PASSAGE("select_in_passage");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use

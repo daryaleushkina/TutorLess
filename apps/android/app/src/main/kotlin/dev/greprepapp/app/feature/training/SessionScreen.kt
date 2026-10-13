@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -26,6 +27,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -36,6 +38,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,9 +50,12 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -72,8 +80,6 @@ import greprep.design.GpSize
 import greprep.design.GpSpace
 import kotlin.math.roundToInt
 
-/** Точек прогресса не больше, чем помещается в шапку; дальше — только «12 из 40». */
-private const val MAX_DOTS = 20
 private const val SECONDS_PER_MINUTE = 60
 private const val TIMER_FORMAT = "%d:%02d"
 private const val NBSP = '\u00A0'
@@ -83,9 +89,12 @@ private const val NBSP = '\u00A0'
 class SessionActions(
     val onClose: () -> Unit = {},
     val onSelect: (String) -> Unit = {},
+    val onEditResponse: (ResponseEdit) -> Unit = {},
     val onCheck: () -> Unit = {},
     val onDontKnow: () -> Unit = {},
     val onNext: () -> Unit = {},
+    val onPrevious: () -> Unit = {},
+    val onPastExplanation: () -> Unit = {},
     val onFlag: () -> Unit = {},
     val onOverview: () -> Unit = {},
     val onCloseOverview: () -> Unit = {},
@@ -96,6 +105,7 @@ class SessionActions(
     val onReport: (Int) -> Unit = {},
     val onReview: () -> Unit = {},
     val onRepeat: () -> Unit = {},
+    val onTopic: (String) -> Unit = {},
 )
 
 /** Сессия тренировки: вопрос за вопросом, а в конце — итог (макеты R3–R6, R9, R14, R15). */
@@ -111,6 +121,7 @@ fun SessionScreen(
         hiltViewModel<SessionViewModel, SessionViewModel.Factory>(key = trainingId) { it.create(trainingId) },
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val interfaceEnglish = LocalConfiguration.current.locales[0].language == "en"
     val repeat by viewModel.repeat.collectAsStateWithLifecycle()
     LaunchedEffect(repeat.started) {
         repeat.started?.let {
@@ -126,11 +137,17 @@ fun SessionScreen(
         repeat = repeat,
         actions =
             SessionActions(
-                onClose = onClose,
+                onClose = {
+                    viewModel.saveVisitTime()
+                    onClose()
+                },
                 onSelect = viewModel::select,
+                onEditResponse = viewModel::editResponse,
                 onCheck = viewModel::check,
                 onDontKnow = viewModel::dontKnow,
                 onNext = viewModel::next,
+                onPrevious = viewModel::previous,
+                onPastExplanation = viewModel::showPastExplanation,
                 onFlag = viewModel::toggleFlag,
                 onOverview = viewModel::openOverview,
                 onCloseOverview = viewModel::closeOverview,
@@ -139,10 +156,22 @@ fun SessionScreen(
                 onLanguage = viewModel::setEnglish,
                 onToggleWhyNot = viewModel::toggleWhyNot,
                 onReport = { position ->
-                    (state as? UiState.Active)?.screen?.training?.let { onReport(it.reportTarget(position)) }
+                    (state as? UiState.Active)?.screen?.training?.let {
+                        onReport(
+                            it.reportTarget(position).copy(
+                                translationAllowed =
+                                    (state as? UiState.Active)?.screen?.let { screen ->
+                                        screen.revealed && screen.english != null &&
+                                            screen.english != interfaceEnglish
+                                    } ==
+                                        true,
+                            ),
+                        )
+                    }
                 },
                 onReview = onReview,
                 onRepeat = viewModel::repeatMistakes,
+                onTopic = viewModel::repeatTopic,
             ),
         modifier = modifier,
     )
@@ -155,10 +184,105 @@ fun SessionContent(
     actions: SessionActions,
     modifier: Modifier = Modifier,
 ) {
+    val screen = (state as? UiState.Active)?.screen
+    var exitConfirmation by rememberSaveable { mutableStateOf(false) }
+    var finishConfirmation by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(screen?.training?.isFinished) {
+        if (screen?.training?.isFinished == true) {
+            // Время идёт и в подтверждении: окончание сессии убирает все её модальные действия.
+            exitConfirmation = false
+            finishConfirmation = false
+        }
+    }
+
+    fun close() {
+        if (screen?.training?.isCheck == true && !screen.training.isFinished) exitConfirmation = true else actions.onClose()
+    }
+
+    fun finish() {
+        if (screen != null && unansweredCount(screen) > 0) finishConfirmation = true else actions.onFinish()
+    }
+    val guarded =
+        SessionActions(
+            onClose = ::close,
+            onSelect = actions.onSelect,
+            onEditResponse = actions.onEditResponse,
+            onCheck = actions.onCheck,
+            onDontKnow = actions.onDontKnow,
+            onNext = actions.onNext,
+            onPrevious = actions.onPrevious,
+            onPastExplanation = actions.onPastExplanation,
+            onFlag = actions.onFlag,
+            onOverview = actions.onOverview,
+            onCloseOverview = actions.onCloseOverview,
+            onGoTo = actions.onGoTo,
+            onFinish = ::finish,
+            onLanguage = actions.onLanguage,
+            onToggleWhyNot = actions.onToggleWhyNot,
+            onReport = actions.onReport,
+            onReview = actions.onReview,
+            onRepeat = actions.onRepeat,
+            onTopic = actions.onTopic,
+        )
+    BackHandler(enabled = screen != null && !screen.training.isFinished && !screen.overview) { close() }
     TrainingKeyboard(onKey = { key ->
-        val screen = (state as? UiState.Active)?.screen
-        screen != null && sessionKey(key, screen, repeat, actions)
-    }, modifier = modifier) { SessionBody(state, repeat, actions) }
+        screen != null && !exitConfirmation && !finishConfirmation && sessionKey(key, screen, repeat, guarded)
+    }, modifier = modifier) {
+        SessionBody(state, repeat, guarded)
+    }
+    if (screen?.overview == true && !screen.training.isFinished) {
+        TrainingSheet(onDismiss = actions.onCloseOverview, tag = "overview") {
+            screen.remainingSeconds?.let { TimerPill(it, screen.position, screen.training.total) }
+            OverviewDetails(
+                screen,
+                screen.training.session.section
+                    .study(),
+                guarded,
+            )
+            GpPrimaryButton(
+                stringResource(R.string.overview_finish),
+                ::finish,
+                modifier = Modifier.fillMaxWidth().testTag("overview.finish"),
+            )
+        }
+    }
+    if (exitConfirmation) {
+        AlertDialog(
+            onDismissRequest = { exitConfirmation = false },
+            title = { Text(stringResource(R.string.check_exit_title)) },
+            text = { Text(stringResource(R.string.check_exit_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    exitConfirmation = false
+                    actions.onClose()
+                }, modifier = Modifier.testTag("session.exit")) { Text(stringResource(R.string.check_exit)) }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    exitConfirmation = false
+                }, modifier = Modifier.testTag("session.stay")) { Text(stringResource(R.string.check_stay)) }
+            },
+            modifier = Modifier.testTag("session.exit.confirm"),
+        )
+    }
+    if (finishConfirmation && screen != null && !screen.training.isFinished) {
+        AlertDialog(
+            onDismissRequest = { finishConfirmation = false },
+            title = { Text(stringResource(R.string.check_finish_title, unansweredCount(screen))) },
+            confirmButton = {
+                TextButton(onClick = {
+                    finishConfirmation = false
+                    actions.onFinish()
+                }, modifier = Modifier.testTag("overview.confirm.finish")) { Text(stringResource(R.string.overview_finish)) }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    finishConfirmation = false
+                }, modifier = Modifier.testTag("overview.cancel")) { Text(stringResource(R.string.check_stay)) }
+            },
+            modifier = Modifier.testTag("overview.confirm"),
+        )
+    }
 }
 
 private fun sessionKey(
@@ -167,6 +291,10 @@ private fun sessionKey(
     repeat: SessionViewModel.RepeatState,
     actions: SessionActions,
 ): Boolean {
+    if (key == Key.DirectionLeft && s.result == null && s.position > 0) {
+        actions.onPrevious()
+        return true
+    }
     if (key == Key.Enter) {
         when {
             s.result != null -> {
@@ -236,12 +364,64 @@ private fun SessionBody(
                 s.training.session.section
                     .study()
             val result = s.result
+            var timeoutSeen by rememberSaveable(s.training.id) { mutableStateOf(false) }
             SectionBackground(modifier = modifier) {
                 when {
-                    result != null -> SummaryPane(s, result, section, repeat, actions)
-                    s.overview && !Gp.isWide -> OverviewPane(s, section, actions)
-                    else -> QuestionPane(s, section, actions)
+                    s.training.finish?.timedOut == true && !timeoutSeen -> {
+                        TimeoutPane(s, onSummary = { timeoutSeen = true })
+                    }
+
+                    result != null -> {
+                        SummaryPane(s, result, section, repeat, actions)
+                    }
+
+                    else -> {
+                        QuestionPane(s, section, actions, repeat)
+                    }
                 }
+            }
+        }
+    }
+}
+
+/** Окончание времени — отдельный шаг, с той же закреплённой нижней панелью (R14-timeout). */
+@Composable
+private fun TimeoutPane(
+    screen: Screen,
+    onSummary: () -> Unit,
+) {
+    Scaffold(
+        containerColor = Color.Transparent,
+        modifier = Modifier.testTag("session.timeout"),
+        bottomBar = {
+            BottomActions {
+                GpPrimaryButton(
+                    stringResource(R.string.timeout_summary),
+                    onSummary,
+                    modifier = Modifier.fillMaxWidth().testTag("timeout.summary"),
+                )
+            }
+        },
+    ) { padding ->
+        Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+            Column(
+                Modifier.widthIn(max = GpLayout.contentMax).fillMaxWidth().padding(GpLayout.gutter),
+                verticalArrangement = Arrangement.spacedBy(GpSpace.s12),
+            ) {
+                Surface(color = Gp.colors.surface2, shape = RoundedCornerShape(GpRadius.m)) {
+                    Icon(
+                        painterResource(R.drawable.ic_timer),
+                        contentDescription = null,
+                        tint = Gp.colors.text2,
+                        modifier = Modifier.padding(GpSpace.s8),
+                    )
+                }
+                Text(stringResource(R.string.timeout_title), style = Gp.type.h1, modifier = Modifier.semantics { heading() })
+                Text(
+                    stringResource(R.string.timeout_message, screen.training.total - unansweredCount(screen), screen.training.total),
+                    style = Gp.type.body,
+                    color = Gp.colors.text2,
+                )
             }
         }
     }
@@ -256,36 +436,32 @@ private fun QuestionPane(
     s: Screen,
     section: StudySection,
     actions: SessionActions,
+    repeat: SessionViewModel.RepeatState,
 ) {
     Scaffold(
         containerColor = Color.Transparent,
         topBar = { SessionHeader(s, section, actions) },
         bottomBar = {
-            if (s.overview && Gp.isWide) {
-                BottomActions {
-                    ActionRow(
-                        secondary = stringResource(R.string.overview_back, s.position + 1) to actions.onCloseOverview,
-                        primary = stringResource(R.string.overview_finish),
-                        onPrimary = actions.onFinish,
-                        primaryTag = "overview.finish",
-                        secondaryTag = "overview.back",
-                    )
-                }
-            } else {
+            Column(Modifier.imePadding()) {
+                repeat.problem?.let { StatusLine(R.drawable.ic_error, startProblemText(it), Modifier.testTag("topic.problem")) }
                 QuestionActions(s, actions)
             }
         },
     ) { padding ->
         val question: @Composable () -> Unit = {
+            if (s.browsingPast) {
+                StatusLine(
+                    R.drawable.ic_resume,
+                    stringResource(R.string.question_past_notice, s.position + 1, s.frontier + 1),
+                )
+            }
+            if (s.revealed) AnswerVerdict(s.question, s.training.answer(s.position), s.explanationInEnglish())
             QuestionHeading(s.question, section, onReport = { actions.onReport(s.position) })
             QuestionBody(s, actions)
-            if (!s.revealed && !s.overview) {
-                val last = s.keyboardGroup?.options?.lastIndex ?: 0
-                KeyHint("A–${('A'.code + last).toChar()}", stringResource(R.string.keyboard_choose))
-            }
         }
+
         val companion: @Composable () -> Unit = {
-            if (s.revealed) {
+            if (s.revealed && (!s.browsingPast || s.pastExplanation)) {
                 ExplanationPanel(
                     question = s.question,
                     answer = s.training.answer(s.position),
@@ -293,13 +469,32 @@ private fun QuestionPane(
                     whyNotOpen = s.whyNotOpen,
                     onLanguage = actions.onLanguage,
                     onToggleWhyNot = actions.onToggleWhyNot,
+                    onTopic = null,
+                    topicStarting = repeat.starting,
                     modifier = Modifier.padding(top = GpSpace.s8),
                 )
-            } else if (s.training.isCheck) {
-                OverviewDetails(s, section, actions)
+            } else if (s.browsingPast) {
+                LinkText(
+                    stringResource(R.string.question_show_explanation),
+                    actions.onPastExplanation,
+                    Modifier.testTag("question.showExplanation"),
+                )
             }
         }
-        if (Gp.isWide) {
+        if (s.question.passage != null && s.question.questionType != QuestionType.SELECT_IN_PASSAGE) {
+            ReadingQuestionLayout(
+                padding = padding,
+                question = s.question,
+                firstForPassage =
+                    s.training.session.items
+                        .take(s.position)
+                        .none { it.question.passage?.id == s.question.passage?.id },
+                revealed = s.revealed,
+            ) {
+                question()
+                if (s.revealed) companion()
+            }
+        } else if (Gp.isWide && s.revealed && s.question.questionType != QuestionType.SELECT_IN_PASSAGE) {
             TrainingSplit(padding, "question", question, companion)
         } else {
             SessionColumn(padding = padding, tag = "question") {
@@ -323,8 +518,8 @@ private fun SessionColumn(
                 Modifier
                     .widthIn(max = GpLayout.contentMax + GpLayout.gutter * 2)
                     .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
                     .padding(padding)
+                    .verticalScroll(rememberScrollState())
                     .padding(horizontal = GpLayout.gutter, vertical = GpSpace.s8)
                     .testTag(tag),
             verticalArrangement = Arrangement.spacedBy(GpSpace.s20),
@@ -358,29 +553,28 @@ private fun QuestionBody(
     s: Screen,
     actions: SessionActions,
 ) {
-    val q = s.question
-    when (q.questionType) {
-        QuestionType.QUANTITATIVE_COMPARISON -> Quantities(q)
-        QuestionType.MULTIPLE_CHOICE -> PlainPrompt(q)
-        else -> PromptText(question = q, selection = if (s.revealed) q.answer else s.selection)
-    }
-    if (s.revealed) {
-        RevealedOptions(
-            q,
-            s.training
-                .answer(s.position)
-                ?.optionIds
-                .orEmpty(),
-        )
-    } else {
-        ChoosableOptions(q, s.selection, actions.onSelect)
-    }
+    QuestionContent(
+        s.question,
+        if (s.revealed) s.training.answer(s.position)?.response ?: emptyResponse(s.question) else s.response,
+        revealed = s.revealed,
+        onEditResponse = actions.onEditResponse,
+        selectionLimitHit = s.selectionLimitHit,
+        includePassage = false,
+    )
 }
 
 @Composable
-private fun PlainPrompt(question: Question) {
+internal fun PlainPrompt(question: Question) {
     Text(
-        text = question.prompt,
+        text =
+            if (question.section ==
+                dev.greprepapp.api.models.Section.QUANT
+            ) {
+                mathText(question.prompt)
+            } else {
+                androidx.compose.ui.text
+                    .AnnotatedString(question.prompt)
+            },
         style = (if (Gp.isWide) Gp.type.qTextWide else Gp.type.qText).copy(localeList = English),
         color = Gp.colors.text,
         modifier = Modifier.testTag("question.prompt"),
@@ -397,8 +591,8 @@ fun Quantities(
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(GpSpace.s16)) {
         question.condition?.let {
             Text(
-                text = it,
-                style = (if (Gp.isWide) Gp.type.senseEn else Gp.type.lead).copy(localeList = English),
+                text = mathText(it),
+                style = (if (Gp.isWide) Gp.type.senseEn else Gp.type.lead).copy(localeList = English, fontFamily = MathFamily),
                 color = colors.text,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth().testTag("question.condition"),
@@ -425,8 +619,8 @@ private fun Quantity(
         ) {
             Text(text = label, style = Gp.type.eyebrow, color = Gp.colors.text3)
             Text(
-                text = value,
-                style = (if (Gp.isWide) Gp.type.scoreNumWide else Gp.type.scoreNum).copy(localeList = English, fontFamily = MathFamily),
+                text = mathText(value),
+                style = (if (Gp.isWide) Gp.type.qTextWide else Gp.type.qText).copy(localeList = English, fontFamily = MathFamily),
                 color = Gp.colors.text,
                 textAlign = TextAlign.Center,
             )
@@ -434,9 +628,9 @@ private fun Quantity(
     }
 }
 
-/** Варианты до ответа: одна группа — строки с буквами; несколько пропусков — группы (i), (ii), (iii). */
+/** Варианты до ответа: одна группа — строки с системным выбором; несколько пропусков — группы (i), (ii), (iii). */
 @Composable
-private fun ChoosableOptions(
+internal fun ChoosableOptions(
     question: Question,
     selection: List<String>,
     onSelect: (String) -> Unit,
@@ -452,13 +646,20 @@ private fun ChoosableOptions(
                 )
             }
             if (many) {
-                // У пропуска три коротких варианта — рядом, а не столбиком на полэкрана (макет R5).
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(GpSpace.s8),
-                    verticalArrangement = Arrangement.spacedBy(GpSpace.s8),
-                ) {
+                // Каждый пропуск — отдельная группа полного ответа (макет R5).
+                Column(verticalArrangement = Arrangement.spacedBy(GpSpace.s8)) {
                     group.options.forEach { option ->
-                        OptionChip(option, selected = option.id in selection, onClick = { onSelect(option.id) })
+                        OptionRow(
+                            option,
+                            if (option.id in
+                                selection
+                            ) {
+                                OptionMark.Selected
+                            } else {
+                                OptionMark.None
+                            },
+                            onClick = { onSelect(option.id) },
+                        )
                     }
                 }
             } else {
@@ -467,7 +668,7 @@ private fun ChoosableOptions(
                         OptionRow(
                             option = option,
                             mark = if (option.id in selection) OptionMark.Selected else OptionMark.None,
-                            multiple = question.selectCount > 1,
+                            multiple = question.questionType == QuestionType.MULTIPLE_CHOICE_MULTI || question.selectCount > 1,
                             onClick = { onSelect(option.id) },
                         )
                     }
@@ -488,34 +689,33 @@ fun RevealedOptions(
     modifier: Modifier = Modifier,
 ) {
     val many = question.groups.size > 1
+    var all by rememberSaveable(question.id) { mutableStateOf(false) }
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(GpSpace.s8)) {
         question.groups.forEachIndexed { g, group ->
-            val shown = group.options.filter { it.id in question.answer || it.id in chosen }
-            val rest = group.options - shown.toSet()
+            if (many) Text(BLANK_NUMBERS.getOrElse(g) { "" }, style = Gp.type.meta, color = Gp.colors.text2)
+            val shown = group.options.filter { all || it.id in question.answer || it.id in chosen }
+
             shown.forEach { option ->
                 OptionRow(
                     option = option,
-                    mark = if (option.id in question.answer) OptionMark.Correct else OptionMark.Wrong,
-                    letter = if (many) BLANK_NUMBERS.getOrElse(g) { "" } else option.id,
+                    mark =
+                        when (option.id) {
+                            in question.answer -> OptionMark.Correct
+                            in chosen -> OptionMark.Wrong
+                            else -> OptionMark.None
+                        },
+                    multiple = question.questionType == QuestionType.MULTIPLE_CHOICE_MULTI || question.selectCount > 1,
+                    chosen = option.id in chosen,
                 )
             }
-            if (rest.isNotEmpty()) {
-                val others = stringResource(R.string.question_others)
-                Text(
-                    text = rest.joinToString("   ") { if (many) it.text else "${it.id} ${it.text}" },
-                    style = Gp.type.meta.copy(localeList = English),
-                    color = Gp.colors.text2,
-                    modifier =
-                        Modifier
-                            .padding(horizontal = GpSpace.s12)
-                            .semantics { contentDescription = "$others: ${rest.joinToString { it.text }}" },
-                )
-            }
+        }
+        if (!all && question.groups.flatMap { it.options }.any { it.id !in question.answer && it.id !in chosen }) {
+            LinkText(stringResource(R.string.question_all_options), { all = true }, Modifier.testTag("question.allOptions"))
         }
     }
 }
 
-/** Шапка сессии: закрыть, конец сессии точками или таймер «Проверки», справа — отметка и список вопросов. */
+/** Шапка сессии: счётчик или таймер, инструменты, под ними полоса прогресса (R3, R14). */
 @Composable
 private fun SessionHeader(
     s: Screen,
@@ -523,54 +723,72 @@ private fun SessionHeader(
     actions: SessionActions,
 ) {
     Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
-        Row(
-            modifier =
-                Modifier
-                    .widthIn(max = GpLayout.sessionMax)
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .heightIn(min = GpSize.opt)
-                    .padding(horizontal = GpSpace.s4),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            IconButton(onClick = actions.onClose, modifier = Modifier.testTag("session.close")) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_close),
-                    contentDescription = stringResource(R.string.question_close),
-                    tint = Gp.colors.text,
-                )
-            }
-            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                val remaining = s.remainingSeconds
-                if (remaining != null) {
-                    TimerPill(remaining, s.position, s.training.total)
-                } else {
-                    ProgressDots(s, section)
-                }
-            }
-            if (s.training.isCheck && !s.overview) {
-                IconButton(onClick = actions.onFlag, modifier = Modifier.testTag("question.flag")) {
+        Column(Modifier.widthIn(max = GpLayout.sessionMax).fillMaxWidth().statusBarsPadding()) {
+            Row(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = GpSize.opt)
+                        .padding(horizontal = GpSpace.s4),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                IconButton(onClick = actions.onClose, modifier = Modifier.testTag("session.close")) {
                     Icon(
-                        painter = painterResource(if (s.flagged) R.drawable.ic_flag_filled else R.drawable.ic_flag),
-                        contentDescription = stringResource(if (s.flagged) R.string.question_unflag else R.string.question_flag),
-                        tint = if (s.flagged) section.ink(Gp.colors) else Gp.colors.text,
-                    )
-                }
-                IconButton(onClick = actions.onOverview, modifier = Modifier.testTag("question.overview")) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_grid_view),
-                        contentDescription = stringResource(R.string.question_overview),
+                        painter = painterResource(R.drawable.ic_close),
+                        contentDescription = stringResource(R.string.question_close),
                         tint = Gp.colors.text,
                     )
                 }
-            } else {
-                Spacer(Modifier.size(GpSize.tapTarget + GpSpace.s4))
+                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    val remaining = s.remainingSeconds
+                    if (remaining != null) {
+                        TimerPill(remaining, s.position, s.training.total)
+                    } else {
+                        ProgressDots(s, section)
+                    }
+                }
+                if (s.training.isCheck && !s.overview) {
+                    IconButton(onClick = actions.onFlag, modifier = Modifier.testTag("question.flag")) {
+                        Icon(
+                            painter = painterResource(if (s.flagged) R.drawable.ic_flag_filled else R.drawable.ic_flag),
+                            contentDescription = stringResource(if (s.flagged) R.string.question_unflag else R.string.question_flag),
+                            tint = if (s.flagged) section.ink(Gp.colors) else Gp.colors.text,
+                        )
+                    }
+                    IconButton(onClick = actions.onOverview, modifier = Modifier.testTag("question.overview")) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_grid_view),
+                            contentDescription = stringResource(R.string.question_overview),
+                            tint = Gp.colors.text,
+                        )
+                    }
+                } else if (s.position > 0) {
+                    PreviousButton(s, actions)
+                } else {
+                    Spacer(Modifier.size(GpSize.tapTarget))
+                }
+            }
+            // Счётчик уже озвучивает номер: декоративная полоса не дублирует его для TalkBack.
+            Box(
+                Modifier
+                    .padding(horizontal = GpLayout.gutter)
+                    .fillMaxWidth()
+                    .height(GpSpace.s2)
+                    .background(Gp.colors.line)
+                    .clearAndSetSemantics {},
+            ) {
+                Box(
+                    Modifier
+                        .fillMaxWidth((s.position + 1).toFloat() / s.training.total)
+                        .height(GpSpace.s2)
+                        .background(Gp.colors.text),
+                )
             }
         }
     }
 }
 
-/** Конец сессии виден заранее (DESIGN.md, «Правило одной задачи»): точка на вопрос и «4 из 10». */
+/** Конец сессии виден заранее (DESIGN.md, «Правило одной задачи»): «4 из 10». */
 
 @Composable
 private fun ProgressDots(
@@ -585,21 +803,13 @@ private fun ProgressDots(
         horizontalArrangement = Arrangement.spacedBy(GpSpace.s8),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (total <= MAX_DOTS) {
-            Row(horizontalArrangement = Arrangement.spacedBy(GpSpace.s4)) {
-                repeat(total) { i ->
-                    val answer = s.training.answer(i)
-                    val color =
-                        when {
-                            answer != null && TrainingRules.isCorrect(s.training.question(i), answer.optionIds) -> colors.right
-                            answer != null -> colors.wrong
-                            i == s.position -> colors.text
-                            else -> colors.line
-                        }
-                    Box(Modifier.size(if (i == s.position) GpSpace.s8 else GpSpace.s6).background(color, CircleShape))
-                }
-            }
-        }
+        Text(
+            text =
+                s.training.session.section
+                    .label(),
+            style = Gp.type.meta,
+            color = section.ink(Gp.colors),
+        )
         Text(
             text = stringResource(R.string.question_of, s.position + 1, total),
             style = (if (Gp.isWide) Gp.type.sessionCountWide else Gp.type.sessionCount).copy(fontFeatureSettings = "tnum"),
@@ -617,11 +827,20 @@ private fun TimerPill(
 ) {
     val minutes = remaining / SECONDS_PER_MINUTE
     val seconds = remaining % SECONDS_PER_MINUTE
-    val description = stringResource(R.string.timer_description, minutes, seconds, position + 1, total)
+    val description =
+        if (minutes > 0) {
+            pluralStringResource(R.plurals.timer_minutes_description, minutes, minutes, position + 1, total)
+        } else {
+            stringResource(R.string.timer_less_minute_description, position + 1, total)
+        }
     Surface(
         color = Gp.colors.surface2,
         shape = CircleShape,
-        modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = description }.testTag("session.timer"),
+        modifier =
+            Modifier.testTag("session.timer").clearAndSetSemantics {
+                contentDescription = description
+                liveRegion = LiveRegionMode.Polite
+            },
     ) {
         // При крупном шрифте переносим целиком подпись прогресса под таймер:
         // цифры и слова остаются целыми, а шапка растёт вместе с пилюлей.
@@ -644,7 +863,7 @@ private fun TimerPill(
                 Text(
                     text = TIMER_FORMAT.format(minutes, seconds),
                     style = Gp.type.scoreNum.copy(fontFeatureSettings = "tnum"),
-                    color = Gp.colors.text,
+                    color = if (remaining <= SECONDS_PER_MINUTE) Gp.colors.wrong else Gp.colors.text,
                     softWrap = false,
                 )
             }
@@ -694,22 +913,41 @@ private fun QuestionActions(
         if (s.isLast) {
             stringResource(if (s.training.isCheck) R.string.question_to_list else R.string.question_result)
         } else {
-            stringResource(R.string.question_next, s.position + 2, total)
+            stringResource(R.string.question_next_plain)
         }
     when {
-        s.training.isCheck -> {
-            BottomActions(note = { Note(stringResource(R.string.question_check_note)) }) {
-                ActionRow(
-                    secondary = stringResource(R.string.question_skip) to actions.onNext,
-                    primary = nextLabel,
-                    onPrimary = actions.onNext,
-                    primaryTag = "question.next",
+        s.browsingPast -> {
+            BottomActions {
+                GpPrimaryButton(
+                    stringResource(R.string.question_return, s.frontier + 1),
+                    actions.onNext,
+                    modifier = Modifier.fillMaxWidth().testTag("question.return"),
                 )
             }
         }
 
+        s.training.isCheck -> {
+            BottomActions {
+                Row(horizontalArrangement = Arrangement.spacedBy(GpSpace.s12), verticalAlignment = Alignment.CenterVertically) {
+                    PreviousButton(s, actions)
+                    GpPrimaryButton(
+                        text =
+                            if (s.isLast) {
+                                stringResource(R.string.question_to_list)
+                            } else if (s.canCheck) {
+                                stringResource(R.string.question_next_plain)
+                            } else {
+                                stringResource(R.string.question_skip)
+                            },
+                        onClick = actions.onNext,
+                        modifier = Modifier.weight(1f).testTag("question.next"),
+                    )
+                }
+            }
+        }
+
         s.revealed -> {
-            BottomActions(note = { KeyHint("→", stringResource(R.string.keyboard_next)) }) {
+            BottomActions {
                 GpPrimaryButton(
                     text = nextLabel,
                     onClick = actions.onNext,
@@ -740,6 +978,10 @@ private fun missingNote(s: Screen): String? {
     if (s.selection.isEmpty()) return null
     val missing = s.missing
     if (missing.isEmpty()) return null
+    if (q.questionType == QuestionType.MULTIPLE_CHOICE_MULTI && q.selectCount > 0) {
+        val remaining = q.selectCount - s.selection.size
+        return pluralStringResource(R.plurals.question_missing_choices, remaining, remaining)
+    }
     return when {
         q.groups.size > 1 && missing.size == 1 -> stringResource(R.string.question_missing_blank, BLANK_NUMBERS[missing[0]])
         q.groups.size > 1 -> stringResource(R.string.question_missing_blanks, missing.joinToString(", ") { BLANK_NUMBERS[it] })
@@ -786,34 +1028,6 @@ private fun ActionRow(
     }
 }
 
-/** Список вопросов «Проверки»: где ответ, где отметка; отсюда — к любому вопросу или «Закончить». */
-@Composable
-private fun OverviewPane(
-    s: Screen,
-    section: StudySection,
-    actions: SessionActions,
-) {
-    Scaffold(
-        containerColor = Color.Transparent,
-        topBar = { SessionHeader(s, section, actions) },
-        bottomBar = {
-            BottomActions {
-                ActionRow(
-                    secondary = stringResource(R.string.overview_back, s.position + 1) to actions.onCloseOverview,
-                    primary = stringResource(R.string.overview_finish),
-                    onPrimary = actions.onFinish,
-                    primaryTag = "overview.finish",
-                    secondaryTag = "overview.back",
-                )
-            }
-        },
-    ) { padding ->
-        SessionColumn(padding = padding, tag = "overview") {
-            OverviewDetails(s, section, actions)
-        }
-    }
-}
-
 @Composable
 private fun OverviewDetails(
     s: Screen,
@@ -824,13 +1038,7 @@ private fun OverviewDetails(
     val answered =
         s.training.session.items
             .count {
-                TrainingRules.isComplete(
-                    it.question,
-                    s.training
-                        .answer(it.position)
-                        ?.optionIds
-                        .orEmpty(),
-                )
+                (s.training.answer(it.position)?.response ?: emptyResponse(it.question)).isComplete(it.question)
             }
     val flagged = (0 until s.training.total).count { s.flaggedAt(it) }
     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(GpSpace.s20)) {
@@ -862,7 +1070,7 @@ private fun OverviewCell(
 ) {
     val colors = Gp.colors
     val answer = s.training.answer(position)
-    val isAnswered = TrainingRules.isComplete(s.training.question(position), answer?.optionIds.orEmpty())
+    val isAnswered = (answer?.response ?: emptyResponse(s.training.question(position))).isComplete(s.training.question(position))
     val isFlagged = s.flaggedAt(position)
     val state =
         listOfNotNull(
@@ -872,10 +1080,24 @@ private fun OverviewCell(
     val description = stringResource(R.string.overview_item, position + 1, state)
     Surface(
         onClick = onClick,
-        color = if (isAnswered) colors.surface2 else colors.surface,
-        shape = CircleShape,
-        border = BorderStroke(GpSize.hairline, if (position == s.position) colors.text else colors.line),
-        modifier = Modifier.size(GpSize.button).semantics { contentDescription = description }.testTag("overview.$position"),
+        color = if (isAnswered) colors.surface3 else colors.surface,
+        shape = RoundedCornerShape(GpRadius.m),
+        border =
+            if (position ==
+                s.position
+            ) {
+                BorderStroke(GpSize.hairline, colors.text)
+            } else if (isAnswered) {
+                BorderStroke(GpSize.hairline, colors.line)
+            } else {
+                null
+            },
+        modifier =
+            Modifier
+                .size(GpSize.button)
+                .then(if (!isAnswered && position != s.position) Modifier.dashedOutline(colors.lineStrong, GpRadius.m) else Modifier)
+                .semantics { contentDescription = description }
+                .testTag("overview.$position"),
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(
@@ -929,35 +1151,64 @@ private fun SummaryPane(
                     )
                 } else {
                     val count = TrainingRules.repeatCount(mistakes)
-                    ActionRow(
-                        secondary = stringResource(R.string.summary_done) to actions.onClose,
-                        primary =
-                            stringResource(R.string.summary_repeat, pluralStringResource(R.plurals.questions_count, count, count)),
-                        onPrimary = actions.onRepeat,
-                        primaryBusy = repeat.starting,
-                        primaryTag = "summary.repeat",
-                        secondaryTag = "summary.done",
-                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(GpSpace.s8)) {
+                        GpPrimaryButton(
+                            text = stringResource(R.string.summary_repeat, pluralStringResource(R.plurals.questions_count, count, count)),
+                            onClick = actions.onRepeat,
+                            busy = repeat.starting,
+                            modifier = Modifier.fillMaxWidth().testTag("summary.repeat"),
+                        )
+                        TextButton(onClick = actions.onClose, modifier = Modifier.fillMaxWidth().testTag("summary.done")) {
+                            Text(stringResource(R.string.summary_done), style = Gp.type.action)
+                        }
+                    }
                 }
             }
         },
     ) { padding ->
         val score: @Composable () -> Unit = {
-            Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(GpSpace.s12)) {
-                Text(
-                    text = result.correct.toString(),
-                    style = (if (Gp.isWide) Gp.type.numXxlWide else Gp.type.numXxl).copy(fontFeatureSettings = "tnum"),
-                    color = section.ink(colors),
-                    modifier = Modifier.testTag("summary.correct"),
-                )
-                Text(
-                    text = pluralStringResource(R.plurals.summary_correct_of, result.total, result.total),
-                    style = if (Gp.isWide) Gp.type.numLabelWide else Gp.type.numLabel,
-                    color = colors.text2,
-                    modifier = Modifier.padding(bottom = GpSpace.s6),
-                )
+            Surface(color = colors.surface, shape = RoundedCornerShape(GpRadius.l), modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(GpSpace.s24), verticalArrangement = Arrangement.spacedBy(GpSpace.s16)) {
+                    Text(text = summaryLine(s, result), style = Gp.type.meta, color = colors.text2)
+                    Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(GpSpace.s12)) {
+                        Text(
+                            text = result.correct.toString(),
+                            style = (if (Gp.isWide) Gp.type.numXxlWide else Gp.type.numXxl).copy(fontFeatureSettings = "tnum"),
+                            color = section.ink(colors),
+                            modifier = Modifier.testTag("summary.correct"),
+                        )
+                        Text(
+                            text = pluralStringResource(R.plurals.summary_correct_of, result.total, result.total),
+                            style = if (Gp.isWide) Gp.type.numLabelWide else Gp.type.numLabel,
+                            color = colors.text2,
+                            modifier = Modifier.padding(bottom = GpSpace.s6),
+                        )
+                    }
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(GpSpace.s8),
+                        verticalArrangement = Arrangement.spacedBy(GpSpace.s8),
+                    ) {
+                        s.training.session.items.forEach { item ->
+                            val correct =
+                                s.training
+                                    .answer(item.position)
+                                    ?.response
+                                    ?.let { it.isCorrect(item.question) } == true
+                            val summaryAnswerDescription =
+                                stringResource(R.string.review_question, item.position + 1) + ", " +
+                                    stringResource(if (correct) R.string.review_correct else R.string.review_wrong)
+                            MarkDot(
+                                correct,
+                                if (correct) colors.right else colors.wrong,
+                                Modifier.semantics { contentDescription = summaryAnswerDescription }.testTag(
+                                    "summary.answer.${item.position}",
+                                ),
+                            )
+                        }
+                    }
+                }
             }
-            Text(text = summaryLine(s, result), style = Gp.type.meta, color = colors.text2)
+            LinkText(stringResource(R.string.summary_all_answers), actions.onReview, Modifier.testTag("summary.review"))
             if (s.training.finish?.timedOut == true) {
                 StatusLine(icon = R.drawable.ic_timer, text = stringResource(R.string.summary_timed_out))
             }
@@ -982,13 +1233,8 @@ private fun SummaryPane(
                     color = colors.text,
                     modifier = Modifier.padding(top = GpSpace.s8).semantics { heading() },
                 )
-                result.review.forEach { topic -> ReviewTopic(topic, section) }
+                result.review.forEach { topic -> ReviewTopic(topic, section, { actions.onTopic(topic.topicId) }, repeat.starting) }
             }
-            LinkText(
-                text = stringResource(R.string.summary_all_answers),
-                onClick = actions.onReview,
-                modifier = Modifier.testTag("summary.review"),
-            )
         }
         if (Gp.isWide) {
             TrainingSplit(padding, "summary", score, review)
@@ -1005,6 +1251,8 @@ private fun SummaryPane(
 private fun ReviewTopic(
     topic: TopicReview,
     section: StudySection,
+    onClick: () -> Unit,
+    busy: Boolean,
 ) {
     val english = LocalConfiguration.current.locales[0].language == "en"
     val and = stringResource(R.string.summary_and)
@@ -1012,7 +1260,16 @@ private fun ReviewTopic(
     val list = if (numbers.size == 1) numbers[0] else numbers.dropLast(1).joinToString(", ") + " $and " + numbers.last()
     val where =
         if (numbers.size == 1) stringResource(R.string.summary_question, list) else stringResource(R.string.summary_questions, list)
-    Row(horizontalArrangement = Arrangement.spacedBy(GpSpace.s12), verticalAlignment = Alignment.Top) {
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .heightIn(min = GpSize.tapTarget)
+                .clickable(enabled = !busy, role = Role.Button, onClick = onClick)
+                .testTag("summary.topic.${topic.topicId}"),
+        horizontalArrangement = Arrangement.spacedBy(GpSpace.s12),
+        verticalAlignment = Alignment.Top,
+    ) {
         Box(Modifier.padding(top = GpSpace.s8).size(GpSpace.s8).background(section.color(Gp.colors), CircleShape))
         Column(verticalArrangement = Arrangement.spacedBy(GpSpace.s2)) {
             Text(text = topic.title.pick(english), style = Gp.type.h3, color = Gp.colors.text)
@@ -1054,12 +1311,13 @@ fun LinkText(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     Box(
         modifier =
             modifier
                 .heightIn(min = GpSize.tapTarget)
-                .clickable(role = Role.Button, onClick = onClick),
+                .clickable(enabled = enabled, role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.CenterStart,
     ) {
         Text(text = text, style = Gp.type.action, color = Gp.colors.text)
@@ -1075,3 +1333,18 @@ internal fun startProblemText(problem: StartProblem): String =
             StartProblem.Failed -> R.string.builder_start_failed
         },
     )
+
+private fun unansweredCount(s: Screen): Int =
+    s.training.session.items.count {
+        !(s.training.answer(it.position)?.response ?: emptyResponse(it.question)).isComplete(it.question)
+    }
+
+@Composable
+private fun PreviousButton(
+    s: Screen,
+    actions: SessionActions,
+) {
+    IconButton(onClick = actions.onPrevious, enabled = s.position > 0, modifier = Modifier.testTag("question.previous")) {
+        Icon(painterResource(R.drawable.ic_arrow_back), stringResource(R.string.question_previous), tint = Gp.colors.text)
+    }
+}

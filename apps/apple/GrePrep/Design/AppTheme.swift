@@ -40,6 +40,7 @@ struct GPDesignTokens {
 extension EnvironmentValues {
     @Entry var gpType = GPType.dark
     @Entry var gpWideLayout = false
+    @Entry var gpTrainingOffline = false
 }
 
 private struct GPDesignTokensModifier: ViewModifier {

@@ -69,7 +69,19 @@ fun ShellState.startRequest(): TrainingRequest? {
                 last.request.questionTypes.all { questionType ->
                     available.any { it.section == last.request.section && it.questionType == questionType }
                 }
-        }?.let { return it.request.copy(source = null, count = it.propertySize) }
+        }?.let {
+            return it.request.copy(
+                source = null,
+                count =
+                    if (it.request.mode ==
+                        TrainingMode.CHECK
+                    ) {
+                        BuilderViewModel.checkCount(options, it.request.section)
+                    } else {
+                        it.propertySize
+                    },
+            )
+        }
     return TrainingRequest(
         selectedExam,
         type.section,
@@ -418,6 +430,9 @@ fun dev.greprepapp.api.models.QuestionType.displayName(): String =
         dev.greprepapp.api.models.QuestionType.SENTENCE_EQUIVALENCE -> "Sentence Equivalence"
         dev.greprepapp.api.models.QuestionType.QUANTITATIVE_COMPARISON -> "Quantitative Comparison"
         dev.greprepapp.api.models.QuestionType.MULTIPLE_CHOICE -> "Multiple Choice"
+        dev.greprepapp.api.models.QuestionType.MULTIPLE_CHOICE_MULTI -> "Multiple Answers"
+        dev.greprepapp.api.models.QuestionType.NUMERIC_ENTRY -> "Numeric Entry"
+        dev.greprepapp.api.models.QuestionType.SELECT_IN_PASSAGE -> "Select in Passage"
     }
 
 private fun Section.description(): Int =

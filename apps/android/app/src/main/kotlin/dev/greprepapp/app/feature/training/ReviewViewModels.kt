@@ -23,7 +23,7 @@ class ReviewViewModel
     @AssistedInject
     constructor(
         @Assisted trainingId: String,
-        repository: TrainingRepository,
+        private val repository: TrainingRepository,
     ) : ViewModel() {
         @AssistedFactory
         interface Factory {
@@ -46,6 +46,44 @@ class ReviewViewModel
                 .training(trainingId)
                 .map { t -> if (t == null) UiState.Missing else UiState.Ready(t, TrainingRules.result(t)) }
                 .stateIn(viewModelScope, SharingStarted.Eagerly, UiState.Loading)
+        private val mutableStart = MutableStateFlow(SessionViewModel.RepeatState())
+        val topicStart: StateFlow<SessionViewModel.RepeatState> = mutableStart.asStateFlow()
+
+        fun startTopic(topicId: String) {
+            val training = (state.value as? UiState.Ready)?.training ?: return
+            val request = topicPracticeRequest(training, topicId) ?: return
+            if (mutableStart.value.starting) return
+            mutableStart.value = SessionViewModel.RepeatState(starting = true)
+            viewModelScope.launch {
+                mutableStart.value =
+                    when (val started = repository.start(request)) {
+                        is StartResult.Started -> {
+                            SessionViewModel.RepeatState(started = started.trainingId)
+                        }
+
+                        StartResult.NoQuestions -> {
+                            SessionViewModel.RepeatState(problem = StartProblem.NoQuestions)
+                        }
+
+                        is StartResult.Failed -> {
+                            SessionViewModel.RepeatState(
+                                problem =
+                                    if (started.problem ==
+                                        TrainingProblem.Offline
+                                    ) {
+                                        StartProblem.Offline
+                                    } else {
+                                        StartProblem.Failed
+                                    },
+                            )
+                        }
+                    }
+            }
+        }
+
+        fun consumeStarted() {
+            mutableStart.value = SessionViewModel.RepeatState()
+        }
     }
 
 /**
@@ -75,7 +113,7 @@ class ReportViewModel
             val sent: Boolean = false,
             val failed: Boolean = false,
         ) {
-            val canSend: Boolean get() = kind != null && !sending && !sent
+            val canSend: Boolean get() = kind != null && (kind != QuestionReport.Kind.OTHER || text.isNotBlank()) && !sending && !sent
         }
 
         private val mutableState = MutableStateFlow(UiState())
@@ -83,7 +121,7 @@ class ReportViewModel
 
         fun setKind(kind: QuestionReport.Kind) = mutableState.update { it.copy(kind = kind) }
 
-        fun setText(text: String) = mutableState.update { it.copy(text = text.takeCodePoints(MAX_TEXT)) }
+        fun setText(text: String) = mutableState.update { it.copy(text = text.takeCodePoints(QuestionReportLimits.TEXT_CODE_POINTS)) }
 
         fun send() {
             val s = mutableState.value
@@ -99,8 +137,7 @@ class ReportViewModel
             }
         }
 
-        private companion object {
-            /** Как в договоре (QuestionReport.text, maxLength — в символах Unicode, не в UTF-16). */
-            const val MAX_TEXT = 2000
+        fun prepareNextReport() {
+            if (mutableState.value.sent) mutableState.value = UiState()
         }
     }

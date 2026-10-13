@@ -2,6 +2,7 @@ package dev.greprepapp.app.feature.training
 
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -79,6 +80,8 @@ internal fun TrainingSplit(
     left: @Composable () -> Unit,
     right: @Composable () -> Unit,
     leftScrollable: Boolean = true,
+    leftScroll: ScrollState = rememberScrollState(),
+    rightScroll: ScrollState = rememberScrollState(),
 ) {
     Box(Modifier.fillMaxSize().padding(padding).testTag(tag), contentAlignment = Alignment.TopCenter) {
         Row(
@@ -97,7 +100,7 @@ internal fun TrainingSplit(
                             1f,
                         ).fillMaxHeight()
                         .then(
-                            if (leftScrollable) Modifier.verticalScroll(rememberScrollState()) else Modifier,
+                            if (leftScrollable) Modifier.verticalScroll(leftScroll) else Modifier,
                         ).testTag("$tag.left"),
                 verticalArrangement = Arrangement.spacedBy(GpSpace.s20),
             ) { left() }
@@ -106,35 +109,11 @@ internal fun TrainingSplit(
                     Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .verticalScroll(rememberScrollState())
+                        .verticalScroll(rightScroll)
                         .testTag("$tag.right"),
                 verticalArrangement = Arrangement.spacedBy(GpSpace.s20),
             ) { right() }
         }
-    }
-}
-
-/** Подсказки не занимают место на сенсорном устройстве; роль Key берётся из общей типографики. */
-@Composable
-internal fun KeyHint(
-    key: String,
-    label: String,
-) {
-    if (!hasHardwareKeyboard()) return
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(GpSpace.s8)) {
-        Surface(
-            color = Gp.colors.surface,
-            shape = RoundedCornerShape(GpRadius.s),
-            border = BorderStroke(GpSize.hairline, Gp.colors.line),
-        ) {
-            Text(
-                key,
-                style = Gp.type.caption,
-                color = Gp.colors.text2,
-                modifier = Modifier.padding(horizontal = GpSpace.s6, vertical = GpSpace.s4),
-            )
-        }
-        Text(label, style = Gp.type.caption, color = Gp.colors.text2)
     }
 }
 
