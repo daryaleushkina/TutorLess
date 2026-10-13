@@ -13,3 +13,6 @@ test('API от человека не выдаёт черновики и слов
   const foreign = wordList(await me.api('GET', '/words?exam=toefl'));
   expect(foreign.words.map((word) => word.lemma)).toEqual(['foreignling']);
 });
+
+import { wordsKeepPreviousList } from '../words';
+test('R5: новый поиск сохраняет прежний список', async ({ miniApp }) => wordsKeepPreviousList(miniApp));

@@ -1,5 +1,5 @@
 import { getWord, getWords, type Exam } from '@greprep/api-client';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { wordPrefix } from './search';
 import { useAccount } from '../session/session';
 
@@ -12,6 +12,7 @@ export function useWords(exam: Exam, q: string) {
   const prefix = wordPrefix(q);
   return useInfiniteQuery({
     queryKey: ['words', owner, exam, prefix],
+    placeholderData: keepPreviousData,
     initialPageParam: undefined as string | undefined,
     queryFn: ({ signal, pageParam }) => getWords({ exam, q: prefix, limit: WORD_PAGE_SIZE, after: pageParam }, { signal }),
     getNextPageParam: (page) => page.nextCursor,

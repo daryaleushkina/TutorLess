@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { wordPrefix, wordSearch } from './search';
+import { wordPrefix, wordSearch, wordSearchParams } from './search';
 
 describe('поиск слов', () => {
   it.each([[' ZOR ', 'zor'], ['   ', ''], ['ZOR%_', 'zor%_'], ['glim-let', 'glim-let']])('нормализует %s', (input, want) => {
@@ -9,5 +9,9 @@ describe('поиск слов', () => {
     expect(wordSearch.parse({ q: ' ZOR ' })).toEqual({ q: ' ZOR ' });
     for (const q of [null, 1, [], 'z'.repeat(129)]) expect(wordSearch.parse({ q }).q).toBeUndefined();
     expect(wordSearch.parse({}).q).toBeUndefined();
+  });
+  it('сохраняет применённый запрос в ссылке и опускает пустой параметр', () => {
+    expect(wordSearchParams(' ZOR ')).toEqual({ q: ' ZOR ' });
+    expect(wordSearchParams('')).toEqual({});
   });
 });

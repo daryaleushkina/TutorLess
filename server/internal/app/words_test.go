@@ -105,3 +105,14 @@ func TestWordsForbiddenThroughHTTP(t *testing.T) {
 		wantError(t, e.do(t, call{method: "GET", path: path, bearer: token}), http.StatusForbidden, "forbidden")
 	}
 }
+
+func TestWordsRejectControlCharacters(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t, nil)
+	token, _ := e.devSignIn(t, "words-control-prefix", "")
+	for _, q := range []string{"\x00", "\x01", "zor\t", "\u0085"} {
+		t.Run(url.QueryEscape(q), func(t *testing.T) {
+			wantError(t, e.do(t, call{method: "GET", path: "/api/words?exam=gre&q=" + url.QueryEscape(q), bearer: token}), http.StatusBadRequest, "bad_request")
+		})
+	}
+}

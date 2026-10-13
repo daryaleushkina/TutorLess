@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"unicode"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -52,7 +53,12 @@ func (s *Service) GetWords(ctx context.Context, p api.GetWordsParams) (*api.Word
 		return nil, err
 	}
 	limit := p.Limit.Or(50)
-	prefix := strings.ToLower(strings.TrimSpace(p.Q.Or("")))
+	rawPrefix := p.Q.Or("")
+	// Проверяем до TrimSpace: управляющий символ на краю тоже является неверным вводом.
+	if strings.ContainsFunc(rawPrefix, unicode.IsControl) {
+		return nil, apperr.Invalid("word prefix contains control characters", nil)
+	}
+	prefix := strings.ToLower(strings.TrimSpace(rawPrefix))
 	c := wordCursor{Exam: string(p.Exam), Q: prefix}
 	if after, ok := p.After.Get(); ok {
 		var err error

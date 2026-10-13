@@ -57,7 +57,10 @@ export async function wordsRecovery(page: Page) {
   await expect(page.getByRole('link', { name: /^zorble\b/ })).toBeVisible();
   await page.context().setOffline(true);
   await page.getByRole('searchbox').fill('zor');
-  await expect(page.getByRole('heading', { name: 'Нет сети' })).toBeVisible();
+  await expect(page.getByText('Нет сети — обновим, когда она появится.', { exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: /^zorble\b/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Нет сети', exact: true })).toHaveCount(0);
+  await expect.poll(() => new URL(page.url()).searchParams.get('q')).toBe('zor');
   await page.context().setOffline(false);
   await expect(page.getByRole('link', { name: /^zorble\b/ })).toBeVisible();
 }
@@ -85,3 +88,31 @@ export async function wordsRace(page: Page) {
 }
 
 export function wordList(data: unknown) { return schemas.WordList.parse(data); }
+
+export async function wordsKeepPreviousList(page: Page) {
+  let release = () => {};
+  const held = new Promise<void>((resolve) => { release = resolve; });
+  let reached = false;
+  await page.route('**/api/words?**', async (route) => {
+    if (new URL(route.request().url()).searchParams.get('q') === 'flim') {
+      reached = true; await held;
+      await route.continue();
+    } else {
+      const url = new URL(route.request().url()); url.searchParams.set('limit', '2');
+      await route.fulfill({ response: await route.fetch({ url: url.toString() }) });
+    }
+  });
+  await navLink(page, 'Слова').click();
+  await expect(page.getByRole('link', { name: /^zorble\b/ })).toBeVisible();
+  const list = page.getByRole('list', { name: 'Слова', exact: true });
+  const before = await list.boundingBox();
+  await page.getByRole('searchbox').fill('flim');
+  await expect.poll(() => reached).toBe(true);
+  await expect(page.getByRole('link', { name: /^zorble\b/ })).toBeVisible();
+  await expect(list.locator('..')).toHaveAttribute('aria-busy', 'true');
+  expect((await list.boundingBox())?.height).toBe(before?.height);
+  await expect(page.getByRole('button', { name: 'Показать ещё' })).toBeDisabled();
+  release();
+  await expect(page.getByRole('link', { name: 'flimble', exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: /^zorble\b/ })).toHaveCount(0);
+}

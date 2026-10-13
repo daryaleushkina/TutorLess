@@ -7,3 +7,6 @@ test('ошибка, повтор и отсутствие сети', async ({ sit
   await wordsRecovery(site);
 });
 test('запоздавший поиск не заменяет свежий', async ({ site }) => wordsRace(site));
+
+import { wordsKeepPreviousList } from '../words';
+test('R5: новый поиск сохраняет прежний список', async ({ site }) => wordsKeepPreviousList(site));

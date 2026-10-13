@@ -8,6 +8,7 @@ import { useBackButton } from '../../telegram/hooks';
 import { useActiveExam } from '../../training/exam';
 import { useOnline } from '../../useOnline';
 import { useWord } from '../../words/hooks';
+import { wordSearchParams } from '../../words/search';
 import styles from '../screens.module.css';
 
 export function WordScreen() {
@@ -16,7 +17,7 @@ export function WordScreen() {
   const { wordId } = useParams({ from: '/app/tabs/words/$wordId' });
   const { q = '' } = useSearch({ from: '/app/tabs/words/$wordId' });
   const navigate = useNavigate();
-  useBackButton(shell === 'telegram' ? () => { void navigate({ to: '/words', search: { q } }); } : null);
+  useBackButton(shell === 'telegram' ? () => { void navigate({ to: '/words', search: wordSearchParams(q) }); } : null);
   const query = useWord(useActiveExam(), wordId);
   const online = useOnline();
   const error = query.error ?? query.failureReason;
@@ -24,7 +25,7 @@ export function WordScreen() {
   const missing = isApiError(error) && error.status === 404;
   const word = query.data;
   return <div className={styles.wordsCard}>
-    {shell === 'site' && <Link to="/words" search={{ q }} className={styles.wordsBack}><BackIcon />{t.back}</Link>}
+    {shell === 'site' && <Link to="/words" search={wordSearchParams(q)} className={styles.wordsBack}><BackIcon />{t.back}</Link>}
     {offline ? <StatusScreen live icon={<OfflineIcon />} title={t.home.offlineTitle} text={t.words.offline} action={{ label: t.home.retry, onClick: () => void query.refetch() }} />
       : query.isError ? <StatusScreen live icon={<AlertIcon />} title={missing ? t.words.missing : t.words.cardFailed}
         {...(!missing && { action: { label: t.home.retry, onClick: () => void query.refetch() } })} />
