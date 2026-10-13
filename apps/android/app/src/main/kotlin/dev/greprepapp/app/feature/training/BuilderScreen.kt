@@ -6,7 +6,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,8 +31,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.RadioButton
@@ -42,12 +42,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
@@ -56,9 +58,10 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.greprepapp.api.models.Difficulty
@@ -81,9 +84,6 @@ import greprep.design.GpRadius
 import greprep.design.GpSize
 import greprep.design.GpSpace
 
-/** Поле «Вопросов» — капсула под две цифры (DESIGN.md, «Число»). */
-private val CountFieldWidth = GpSpace.s72 + GpSpace.s4
-
 /** Действия конструктора одним набором — снимки экранов подставляют пустые. */
 class BuilderActions(
     val onBack: () -> Unit = {},
@@ -91,6 +91,8 @@ class BuilderActions(
     val onPreset: (Int) -> Unit = {},
     val onSection: (Section) -> Unit = {},
     val onType: (dev.greprepapp.api.models.QuestionType) -> Unit = {},
+    val onMixed: () -> Unit = {},
+    val onToggleAllTopics: () -> Unit = {},
     val onCount: (String) -> Unit = {},
     val onMode: (TrainingMode) -> Unit = {},
     val onTopics: () -> Unit = {},
@@ -127,6 +129,8 @@ fun BuilderScreen(
                 onPreset = viewModel::selectPreset,
                 onSection = viewModel::setSection,
                 onType = viewModel::setType,
+                onMixed = viewModel::setMixed,
+                onToggleAllTopics = viewModel::toggleAllTopics,
                 onCount = viewModel::setCount,
                 onMode = viewModel::setMode,
                 onTopics = viewModel::openTopics,
@@ -147,7 +151,7 @@ fun BuilderContent(
 ) {
     TrainingKeyboard(onKey = { key ->
         if (key == Key.Enter && !state.starting && state.content is Content.Ready) {
-            if (state.editingTopics) {
+            if (state.editingTopics && BuilderViewModel.available(state.content.options, state.content.form) > 0) {
                 actions.onCloseTopics()
             } else if (BuilderViewModel.requestOf(state.content) != null) {
                 actions.onStart()
@@ -201,34 +205,21 @@ private fun BuilderForm(
     val request = BuilderViewModel.requestOf(c)
     Column(modifier = Modifier.fillMaxSize().padding(padding).imePadding()) {
         Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
-            if (Gp.isWide) {
-                TrainingSplit(PaddingValues(), "builder", left = {
-                    if (c.presets.isNotEmpty()) Presets(c, actions.onPreset)
-                    state.problem?.let {
-                        BuilderProblem(it)
-                    }
-                }, right = { CustomCard(c, actions) })
-            } else {
-                Column(
-                    modifier =
-                        Modifier
-                            .widthIn(max = GpLayout.contentMax + GpLayout.gutter * 2)
-                            .fillMaxWidth()
-                            .verticalScroll(
-                                rememberScrollState(),
-                            ).padding(horizontal = GpLayout.gutter, vertical = GpSpace.s8)
-                            .testTag("builder.form"),
-                    verticalArrangement = Arrangement.spacedBy(GpSpace.s24),
-                ) {
-                    if (c.presets.isNotEmpty()) Presets(c, actions.onPreset)
-                    CustomCard(c, actions)
-                    state.problem?.let {
-                        BuilderProblem(it)
-                    }
-                }
+            Column(
+                modifier =
+                    Modifier
+                        .widthIn(max = GpLayout.contentMax + GpLayout.gutter * 2)
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = GpLayout.gutter, vertical = GpSpace.s8)
+                        .testTag("builder.form"),
+                verticalArrangement = Arrangement.spacedBy(GpSpace.s24),
+            ) {
+                CustomCard(c, actions)
             }
         }
-        BottomActions(note = { KeyHint("Enter", stringResource(R.string.keyboard_start)) }) {
+
+        BottomActions(note = state.problem?.let { problem -> { BuilderProblem(problem) } }) {
             val label =
                 if (request == null) {
                     stringResource(R.string.builder_nothing)
@@ -240,10 +231,9 @@ private fun BuilderForm(
                     )
                 }
             GpPrimaryButton(
-                text = label,
+                text = if (state.starting) stringResource(R.string.builder_starting) else label,
                 onClick = actions.onStart,
-                enabled = request != null,
-                busy = state.starting,
+                enabled = request != null && !state.starting,
                 modifier = Modifier.fillMaxWidth().testTag("builder.start"),
             )
         }
@@ -259,68 +249,6 @@ private fun BuilderProblem(problem: StartProblem) {
     )
 }
 
-/** Готовые наборы — переключателем: выбранный уже стоит, «Начать» начнёт его (макет R1). */
-@Composable
-private fun Presets(
-    c: Content.Ready,
-    onSelect: (Int) -> Unit,
-) {
-    Group(modifier = Modifier.selectableGroup()) {
-        c.presets.forEachIndexed { i, preset ->
-            if (i > 0) Divider()
-            val selected = c.preset == i
-            Row(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .selectable(selected = selected, role = Role.RadioButton, onClick = { onSelect(i) })
-                        .heightIn(min = GpSize.rowTall)
-                        .padding(start = GpSpace.s16, end = GpSpace.s8, top = GpSpace.s8, bottom = GpSpace.s8)
-                        .testTag("builder.preset.${preset.kind}"),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(GpSpace.s2)) {
-                    Text(text = presetTitle(preset), style = Gp.type.body.copy(fontWeight = FontWeight.W500), color = Gp.colors.text)
-                    Text(
-                        text = presetSubtitle(preset, c.options),
-                        style = Gp.type.footnote.copy(fontWeight = FontWeight.W400),
-                        color = Gp.colors.textSecondary,
-                    )
-                }
-                RadioButton(
-                    selected = selected,
-                    onClick = null,
-                    colors = RadioButtonDefaults.colors(selectedColor = Gp.colors.accent, unselectedColor = Gp.colors.line),
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun presetTitle(preset: TrainingPreset): String =
-    stringResource(if (preset.kind == BuilderViewModel.PRESET_LAST) R.string.builder_preset_last else R.string.builder_preset_timed)
-
-/** «Verbal · Text Completion · 10 · Практика»; у «Проверки на время» — «Verbal · 12 вопросов · 18 мин, как секция экзамена». */
-@Composable
-private fun presetSubtitle(
-    preset: TrainingPreset,
-    options: TrainingOptions,
-): String {
-    val r = preset.request
-    val section = r.section.label()
-    if (preset.kind == BuilderViewModel.PRESET_TIMED) {
-        return stringResource(
-            R.string.builder_preset_timed_subtitle,
-            section,
-            pluralStringResource(R.plurals.questions_count, r.count, r.count),
-            BuilderViewModel.minutes(options, r),
-        )
-    }
-    val mode = stringResource(if (r.mode == TrainingMode.CHECK) R.string.mode_check else R.string.mode_practice)
-    return (listOf(section) + r.questionTypes.map { it.label() } + r.count.toString() + mode).joinToString(" · ")
-}
-
 /** Своя сборка: без рубрики, поля показывают то, что выбрано (макет R1). */
 @Composable
 private fun CustomCard(
@@ -330,21 +258,34 @@ private fun CustomCard(
     val f = c.form
     Group {
         FieldRow(label = stringResource(R.string.builder_section)) {
+            val sections =
+                c.options.types
+                    .filter { t ->
+                        t.topics.any { it.available.easy + it.available.medium + it.available.hard > 0 }
+                    }.map { it.section }
+                    .distinct()
             SegmentedChoice(
-                options = listOf(stringResource(R.string.section_verbal), stringResource(R.string.section_quant)),
-                selected = if (f.section == Section.QUANT) 1 else 0,
-                onSelect = { actions.onSection(if (it == 1) Section.QUANT else Section.VERBAL) },
-                tags = listOf("builder.section.verbal", "builder.section.quant"),
+                options = sections.map { it.label() },
+                selected = sections.indexOf(f.section),
+                onSelect = { actions.onSection(sections[it]) },
+                tags = sections.map { "builder.section.${it.value}" },
             )
         }
         Divider()
         TypeRow(c, actions)
         Divider()
-        val countLabel = stringResource(R.string.builder_count)
-        FieldRow(label = countLabel) {
-            CountField(text = f.countText, label = countLabel, onChange = actions.onCount)
+        if (f.mode == TrainingMode.PRACTICE) {
+            FieldRow(label = stringResource(R.string.builder_count)) {
+                ContentChoices(
+                    options = BuilderViewModel.PRACTICE_COUNTS.map(Int::toString),
+                    selected = BuilderViewModel.PRACTICE_COUNTS.map(Int::toString).indexOf(f.countText),
+                    onSelect = { actions.onCount(BuilderViewModel.PRACTICE_COUNTS.map(Int::toString)[it]) },
+                    modifier = Modifier.testTag("builder.count"),
+                    tags = BuilderViewModel.PRACTICE_COUNTS.map(Int::toString).map { "builder.count.$it" },
+                )
+            }
+            Divider()
         }
-        Divider()
         Column(modifier = Modifier.padding(bottom = GpSpace.s12)) {
             FieldRow(label = stringResource(R.string.builder_mode)) {
                 SegmentedChoice(
@@ -355,9 +296,21 @@ private fun CustomCard(
                 )
             }
             Text(
-                text = stringResource(if (f.mode == TrainingMode.CHECK) R.string.mode_check_hint else R.string.mode_practice_hint),
-                style = Gp.type.footnote.copy(fontWeight = FontWeight.W400),
-                color = Gp.colors.textSecondary,
+                text =
+                    if (f.mode == TrainingMode.CHECK) {
+                        val r = BuilderViewModel.requestOf(c)
+                        val minutes = r?.let { BuilderViewModel.minutes(c.options, it) } ?: 0
+                        val count = r?.count ?: 0
+                        stringResource(
+                            R.string.mode_check_section_hint,
+                            pluralStringResource(R.plurals.training_minutes, minutes, minutes),
+                            pluralStringResource(R.plurals.questions_count, count, count),
+                        )
+                    } else {
+                        stringResource(R.string.mode_practice_hint)
+                    },
+                style = Gp.type.meta,
+                color = Gp.colors.text2,
                 modifier = Modifier.padding(horizontal = GpSpace.s16),
             )
         }
@@ -367,11 +320,23 @@ private fun CustomCard(
         LinkRow(
             label = stringResource(R.string.builder_topics),
             value =
-                if (f.topicIds == null) {
-                    stringResource(R.string.builder_topics_all)
-                } else {
-                    stringResource(R.string.builder_topics_some, selected, topics.size)
-                },
+                listOf(
+                    if (f.topicIds ==
+                        null
+                    ) {
+                        stringResource(R.string.builder_topics_all)
+                    } else {
+                        stringResource(R.string.builder_topics_some, selected, topics.size)
+                    },
+                    stringResource(
+                        when (f.difficulty) {
+                            null -> R.string.difficulty_any
+                            Difficulty.EASY -> R.string.difficulty_easy
+                            Difficulty.MEDIUM -> R.string.difficulty_medium
+                            Difficulty.HARD -> R.string.difficulty_hard
+                        },
+                    ).lowercase(LocalConfiguration.current.locales[0]),
+                ).joinToString(" · "),
             onClick = actions.onTopics,
             enabled = topics.isNotEmpty(),
             tag = "builder.topics",
@@ -385,83 +350,64 @@ private fun TypeRow(
     c: Content.Ready,
     actions: BuilderActions,
 ) {
-    var open by remember { mutableStateOf(false) }
-    val types = c.options.types.filter { it.section == c.form.section }
+    var open by rememberSaveable { mutableStateOf(false) }
+    val types =
+        c.options.types.filter {
+            it.section == c.form.section &&
+                it.topics.any { topic -> topic.available.easy + topic.available.medium + topic.available.hard > 0 }
+        }
     Box {
         LinkRow(
             label = stringResource(R.string.builder_type),
-            value = c.form.type.label(),
+            value = if (c.form.mixed) stringResource(R.string.builder_all_types) else c.form.type.label(),
             onClick = { open = true },
             tag = "builder.type",
-            valueStyle = Gp.type.callout.copy(fontWeight = FontWeight.W400, localeList = English),
+            valueStyle = Gp.type.explainBody.copy(localeList = English),
         )
-        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            types.forEach { t ->
-                val empty = t.topics.isEmpty()
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            text =
-                                if (empty) {
-                                    "${t.questionType.label()} · ${stringResource(
-                                        R.string.builder_type_soon,
-                                    )}"
-                                } else {
-                                    t.questionType.label()
+        if (open) {
+            TrainingSheet(onDismiss = { open = false }, tag = "builder.types.sheet") {
+                Text(stringResource(R.string.builder_type), style = Gp.type.h2)
+                types.filter { it.topics.isNotEmpty() }.forEach { t ->
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .selectable(
+                                selected = !c.form.mixed && c.form.type == t.questionType,
+                                role = Role.RadioButton,
+                                onClick = {
+                                    open = false
+                                    actions.onType(t.questionType)
                                 },
-                            style = Gp.type.body,
-                        )
-                    },
-                    enabled = !empty,
-                    onClick = {
-                        open = false
-                        actions.onType(t.questionType)
-                    },
-                    modifier = Modifier.testTag("builder.type.${t.questionType.value}"),
-                )
+                            ).heightIn(min = GpSize.opt)
+                            .testTag("builder.type.${t.questionType.value}"),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        RadioButton(selected = !c.form.mixed && c.form.type == t.questionType, onClick = null)
+                        Text(t.questionType.label(), style = Gp.type.opt)
+                    }
+                }
+                if (c.form.mode == TrainingMode.CHECK) {
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .selectable(
+                                selected = c.form.mixed,
+                                role = Role.RadioButton,
+                                onClick = {
+                                    open = false
+                                    actions.onMixed()
+                                },
+                            ).heightIn(min = GpSize.opt)
+                            .testTag("builder.type.all"),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        RadioButton(selected = c.form.mixed, onClick = null)
+                        Text(stringResource(R.string.builder_all_types), style = Gp.type.opt)
+                    }
+                }
             }
         }
     }
-}
-
-/** «Вопросов» — капсула на fill с числом по центру, любое значение (DESIGN.md, «Число»). */
-@Composable
-private fun CountField(
-    text: String,
-    label: String,
-    onChange: (String) -> Unit,
-) {
-    val colors = Gp.colors
-    BasicTextField(
-        value = text,
-        onValueChange = onChange,
-        singleLine = true,
-        textStyle =
-            Gp.type.body.copy(
-                color = colors.text,
-                fontWeight = FontWeight.W600,
-                textAlign = TextAlign.Center,
-                fontFeatureSettings = "tnum",
-            ),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        cursorBrush = SolidColor(colors.text),
-        modifier =
-            Modifier
-                .width(CountFieldWidth)
-                .height(GpSpace.s40)
-                .semantics { contentDescription = label }
-                .testTag("builder.count"),
-        decorationBox = { field ->
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .background(colors.fill, CircleShape)
-                        .border(GpSize.hairline, colors.line, CircleShape),
-                contentAlignment = Alignment.Center,
-            ) { field() }
-        },
-    )
 }
 
 /** Секция-список на плотной поверхности (компонент card). */
@@ -470,7 +416,7 @@ private fun Group(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    Surface(color = Gp.colors.surface, shape = RoundedCornerShape(GpRadius.xxl), modifier = modifier.fillMaxWidth()) {
+    Surface(color = Gp.colors.surface, shape = RoundedCornerShape(GpRadius.l), modifier = modifier.fillMaxWidth()) {
         Column { content() }
     }
 }
@@ -481,17 +427,24 @@ private fun Divider() {
 }
 
 @Composable
-private fun FieldRow(
+internal fun FieldRow(
     label: String,
     control: @Composable () -> Unit,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth().heightIn(min = GpSize.rowTall).padding(horizontal = GpSpace.s16, vertical = GpSpace.s8),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(GpSpace.s12),
+    FlowRow(
+        modifier = Modifier.fillMaxWidth().heightIn(min = GpSize.opt).padding(horizontal = GpSpace.s16, vertical = GpSpace.s8),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalArrangement = Arrangement.spacedBy(GpSpace.s8),
     ) {
-        Text(text = label, style = Gp.type.body, color = Gp.colors.text, modifier = Modifier.weight(1f))
-        control()
+        // FlowRow оставляет короткую подпись целой, перенося управление. Если даже сама
+        // подпись шире строки, обычный перенос по словам сохраняет весь текст.
+        Text(
+            text = label,
+            style = Gp.type.opt,
+            color = Gp.colors.text,
+            modifier = Modifier.padding(end = GpSpace.s12).align(Alignment.CenterVertically),
+        )
+        Box(Modifier.align(Alignment.CenterVertically)) { control() }
     }
 }
 
@@ -503,28 +456,41 @@ private fun LinkRow(
     onClick: () -> Unit,
     tag: String,
     enabled: Boolean = true,
-    valueStyle: TextStyle = Gp.type.callout.copy(fontWeight = FontWeight.W400),
+    valueStyle: TextStyle = Gp.type.explainBody,
 ) {
-    Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
-                .heightIn(min = GpSize.rowTall)
-                .padding(start = GpSpace.s16, end = GpSpace.s12)
-                .semantics(mergeDescendants = true) { contentDescription = "$label: $value" }
-                .testTag(tag),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(GpSpace.s8),
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    BoxWithConstraints(
+        Modifier
+            .fillMaxWidth()
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+            .heightIn(min = GpSize.opt)
+            .padding(horizontal = GpSpace.s16, vertical = GpSpace.s8)
+            .semantics(mergeDescendants = true) { contentDescription = "$label: $value" }
+            .testTag(tag),
     ) {
-        Text(text = label, style = Gp.type.body, color = Gp.colors.text, modifier = Modifier.weight(1f))
-        Text(text = value, style = valueStyle, color = Gp.colors.textSecondary)
-        Icon(
-            painter = painterResource(R.drawable.ic_chevron_right),
-            contentDescription = null,
-            tint = Gp.colors.textSecondary,
-            modifier = Modifier.size(GpSpace.s20),
-        )
+        val needed =
+            with(density) {
+                (
+                    measurer.measure(label, Gp.type.opt, maxLines = 1).size.width +
+                        measurer.measure(value, valueStyle, maxLines = 1).size.width
+                ).toDp()
+            } + GpSpace.s20 + GpSpace.s16
+        if (needed > maxWidth) {
+            Column(verticalArrangement = Arrangement.spacedBy(GpSpace.s4)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(label, style = Gp.type.opt, modifier = Modifier.weight(1f))
+                    Icon(painterResource(R.drawable.ic_chevron_right), null, tint = Gp.colors.text2, modifier = Modifier.size(GpSpace.s20))
+                }
+                Text(value, style = valueStyle, color = Gp.colors.text2)
+            }
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(GpSpace.s8)) {
+                Text(label, style = Gp.type.opt, modifier = Modifier.weight(1f))
+                Text(value, style = valueStyle, color = Gp.colors.text2)
+                Icon(painterResource(R.drawable.ic_chevron_right), null, tint = Gp.colors.text2, modifier = Modifier.size(GpSpace.s20))
+            }
+        }
     }
 }
 
@@ -542,8 +508,24 @@ private fun TopicsContent(
     val topicList: @Composable () -> Unit = {
         Text(
             text = (listOf(f.section.label(), f.type.label())).joinToString(" · "),
-            style = Gp.type.subhead,
-            color = Gp.colors.textSecondary,
+            style = Gp.type.meta,
+            color = Gp.colors.text2,
+        )
+        Text(
+            text =
+                if (available < (f.count ?: 0)) {
+                    pluralStringResource(R.plurals.topics_available_short, available, available, available)
+                } else {
+                    pluralStringResource(R.plurals.topics_available, available, available)
+                },
+            style = Gp.type.meta,
+            color = Gp.colors.text2,
+            modifier = Modifier.testTag("topics.available"),
+        )
+        LinkText(
+            text = stringResource(if (f.topicIds?.isEmpty() == true) R.string.topics_select_all else R.string.topics_clear_all),
+            onClick = actions.onToggleAllTopics,
+            modifier = Modifier.testTag("topics.toggleAll"),
         )
         Group {
             topics.forEachIndexed { i, topic ->
@@ -564,7 +546,7 @@ private fun TopicsContent(
                                 value = checked,
                                 role = Role.Checkbox,
                                 onValueChange = { actions.onToggleTopic(topic.id) },
-                            ).heightIn(min = GpSize.rowTall)
+                            ).heightIn(min = GpSize.opt)
                             .padding(start = GpSpace.s16, end = GpSpace.s8)
                             .testTag("topic.${topic.id}"),
                     verticalAlignment = Alignment.CenterVertically,
@@ -572,26 +554,26 @@ private fun TopicsContent(
                 ) {
                     Text(
                         text = topic.title.pick(english),
-                        style = Gp.type.body,
+                        style = Gp.type.opt,
                         color = Gp.colors.text,
                         modifier = Modifier.weight(1f),
                     )
                     Text(
                         text = count.toString(),
-                        style = Gp.type.subhead.copy(fontFeatureSettings = "tnum"),
-                        color = Gp.colors.textSecondary,
+                        style = Gp.type.meta.copy(fontFeatureSettings = "tnum"),
+                        color = Gp.colors.text2,
                     )
                     Checkbox(
                         checked = checked,
                         onCheckedChange = null,
-                        colors = CheckboxDefaults.colors(checkedColor = Gp.colors.accent, checkmarkColor = Gp.colors.onAccent),
+                        colors = CheckboxDefaults.colors(checkedColor = Gp.colors.text, checkmarkColor = Gp.colors.bg),
                     )
                 }
             }
         }
     }
     val difficulty: @Composable () -> Unit = {
-        Text(text = stringResource(R.string.topics_difficulty), style = Gp.type.subhead, color = Gp.colors.textSecondary)
+        Text(text = stringResource(R.string.topics_difficulty), style = Gp.type.meta, color = Gp.colors.text2)
         SegmentedChoice(
             options =
                 listOf(
@@ -626,7 +608,16 @@ private fun TopicsContent(
                     }
                 }
             }
-            BottomActions(note = { KeyHint("Enter", stringResource(R.string.summary_done)) }) {
+            BottomActions(
+                note =
+                    if (f.topicIds?.isEmpty() ==
+                        true
+                    ) {
+                        { Text(stringResource(R.string.topics_choose_one), style = Gp.type.meta) }
+                    } else {
+                        null
+                    },
+            ) {
                 GpPrimaryButton(
                     text = stringResource(R.string.topics_done, pluralStringResource(R.plurals.tasks_count, available, available)),
                     onClick = actions.onCloseTopics,

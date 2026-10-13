@@ -147,7 +147,7 @@ class SignInViewModelTest {
         }
 
     @Test
-    fun tokenThatCannotBeSavedFailsHonestly() =
+    fun tokenThatCannotBeSavedReturnsFailure() =
         runTest(main.dispatcher) {
             val (graph, vm) = setUp()
             graph.tokens.saveFailure = IOException("disk full")
@@ -158,7 +158,7 @@ class SignInViewModelTest {
         }
 
     @Test
-    fun keystoreHardwareFailureOnSaveFailsHonestly() =
+    fun keystoreHardwareFailureOnSaveReturnsFailure() =
         runTest(main.dispatcher) {
             val (graph, vm) = setUp()
             graph.tokens.saveFailure = ProviderException("keystore hardware")
@@ -173,7 +173,7 @@ class SignInViewModelTest {
     fun providersWithoutAccountsSayNotConnectedYet() =
         runTest(main.dispatcher) {
             val (_, vm) = setUp()
-            for (method in listOf(Method.Telegram, Method.Apple, Method.Google)) {
+            for (method in listOf(Method.Apple, Method.Google)) {
                 vm.signInWith(method)
                 assertEquals(Message.NotConnectedYet(method), vm.state.value.message)
             }

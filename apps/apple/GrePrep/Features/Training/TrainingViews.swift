@@ -1,6 +1,10 @@
 import GPAPI
 import SwiftUI
 
+#if os(iOS)
+    import UIKit
+#endif
+
 /// Названия GRE не переводятся; тексты режима и сложности совпадают с Android.
 extension Components.Schemas.QuestionType {
     var label: String {
@@ -28,7 +32,7 @@ extension Components.Schemas.Difficulty {
     }
 }
 extension Components.Schemas.LocalizedText {
-    var localized: String { Locale.current.language.languageCode?.identifier == "en" ? en : ru }
+    var localized: String { InterfaceLocale.current.language.languageCode?.identifier == "en" ? en : ru }
 }
 
 enum TrainingEntry: Hashable, Identifiable {
@@ -37,7 +41,7 @@ enum TrainingEntry: Hashable, Identifiable {
     var id: Self { self }
 }
 
-/// Тренировки поверх вкладок: системный стек ведёт внутрь задачи, «Сегодня» возвращает к сохранённым разделам.
+/// Тренировки поверх вкладок: системный стек ведёт внутрь задачи и возвращает к сохранённым разделам.
 struct TrainingFlow: View {
     let trainings: TrainingModel
     let onClose: () -> Void
@@ -78,12 +82,12 @@ struct TrainingFlow: View {
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(action: onClose) { Label("Сегодня", systemImage: "chevron.backward") }
+                    Button(action: onClose) { Label("Тренировка", systemImage: "chevron.backward") }
                         .accessibilityIdentifier("training.close")
                 }
             }
         }
-        .tint(Color(.accent))
+        .tint(Color(.text))
         .onAppear {
             // State(initialValue:) вычислялся при каждом пересчёте родителя, даже если SwiftUI сохранял State.
             if sessionID == nil, builder == nil { builder = BuilderModel(trainings: trainings, prefill: prefill) }
@@ -97,6 +101,8 @@ struct TrainingBuilderView: View {
     var onStarted: (String) -> Void = { _ in }
     @Environment(AppModel.self) private var app
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.textScale) private var textScale
+    @ScaledMetric(relativeTo: .body) private var countSize = GPSize.tapTarget
     @State private var countText: String
     @FocusState private var countFocused: Bool
 
@@ -118,13 +124,13 @@ struct TrainingBuilderView: View {
                 case .loading:
                     VStack(spacing: GPSpace.s12) {
                         ProgressView()
-                        Text("Загружаем темы").gpText(GPType.subhead)
+                        Text("Загружаем темы").gpText(\.meta)
                     }.frame(maxWidth: .infinity, maxHeight: .infinity).accessibilityIdentifier("builder.loading")
                 case let .unavailable(problem): unavailable(problem)
                 case .ready: ready(wide: wide)
                 }
             }
-            .background { SectionGlow(section: StudySection(model.form.section)) }
+            .background(Color(.bg).ignoresSafeArea())
             .navigationTitle(wide ? Text("") : Text("Новая тренировка"))
         }
         #if os(iOS)
@@ -155,7 +161,7 @@ struct TrainingBuilderView: View {
             } icon: {
                 Image(systemName: problem == .offline ? "wifi.slash" : "exclamationmark.triangle")
             }
-            .gpText(GPType.title3)
+            .gpText(\.h2)
         } description: {
             Text(
                 LocalizedStringKey(
@@ -169,38 +175,57 @@ struct TrainingBuilderView: View {
     }
 
     private func ready(wide: Bool) -> some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: GPSpace.s24) {
-                if wide {
-                    Text("Новая тренировка").gpText(GPType.title2Wide)
-                    HStack(alignment: .top, spacing: GPSpace.s24) {
-                        if !model.presets.isEmpty { presets.frame(maxWidth: .infinity) }
-                        custom.frame(maxWidth: .infinity)
+        ScrollViewReader { proxy in
+            VStack(spacing: 0) {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: GPSpace.s24) {
+                        if wide {
+                            Text("Новая тренировка").gpText(\.startTitleWide)
+                            HStack(alignment: .top, spacing: GPSpace.s24) {
+                                if !model.presets.isEmpty { presets.frame(maxWidth: .infinity) }
+                                custom.frame(maxWidth: .infinity)
+                            }
+                        } else {
+                            if !model.presets.isEmpty { presets }
+                            custom
+                        }
+                        if let problem = model.problem {
+                            problemText(problem).gpText(\.meta)
+                                .foregroundStyle(Color(.text2)).accessibilityIdentifier("builder.problem")
+                        }
+                        if wide {
+                            startButton.fixedSize(horizontal: true, vertical: false).frame(
+                                maxWidth: .infinity, alignment: .trailing)
+                        }
                     }
-                } else {
-                    if !model.presets.isEmpty { presets }
-                    custom
+                    .frame(maxWidth: wide ? GPLayout.sessionMax : GPLayout.contentMax)
+                    .padding(GPLayout.gutter)
+                    .frame(maxWidth: .infinity)
                 }
-                if let problem = model.problem {
-                    problemText(problem).gpText(GPType.subhead)
-                        .foregroundStyle(Color(.textSecondary)).accessibilityIdentifier("builder.problem")
-                }
-                if wide {
-                    startButton.fixedSize(horizontal: true, vertical: false).frame(
-                        maxWidth: .infinity, alignment: .trailing)
+                .scrollBounceBehavior(.basedOnSize)
+                if !wide {
+                    startButton.padding(.horizontal, GPLayout.gutter).padding(.vertical, GPSpace.s12)
+                        .frame(maxWidth: GPLayout.contentMax + GPLayout.gutter * 2).frame(maxWidth: .infinity)
+                        .background(Color(.bg))
                 }
             }
-            .frame(maxWidth: wide ? GPLayout.contentMax + GPLayout.sidebarMax : GPLayout.contentMax)
-            .padding(GPLayout.gutter)
-            .frame(maxWidth: .infinity)
-        }
-        .scrollBounceBehavior(.basedOnSize)
-        .safeAreaInset(edge: .bottom) {
-            if !wide {
-                startButton.padding(.horizontal, GPLayout.gutter).padding(.vertical, GPSpace.s12)
-                    .frame(maxWidth: GPLayout.contentMax + GPLayout.gutter * 2).frame(maxWidth: .infinity)
-                    .background(Color(.bg))
-            }
+            #if os(iOS)
+                .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidShowNotification)) { _ in
+                    // Прокрутка после раскладки клавиатуры не спорит с её автоматическим сдвигом поля.
+                    if countFocused { proxy.scrollTo("builder.count-row", anchor: .top) }
+                }
+                .toolbar {
+                    ToolbarItemGroup(placement: .keyboard) {
+                        Spacer()
+                        Button("Готово") { countFocused = false }
+                        .accessibilityIdentifier("builder.keyboardDone")
+                    }
+                }
+            #else
+                .onChange(of: countFocused) { _, focused in
+                    if focused { proxy.scrollTo("builder.count-row", anchor: .top) }
+                }
+            #endif
         }
     }
 
@@ -214,22 +239,22 @@ struct TrainingBuilderView: View {
                     HStack(spacing: GPSpace.s16) {
                         VStack(alignment: .leading, spacing: GPSpace.s4) {
                             if let kind = TrainingPresetKind(rawValue: preset.kind) {
-                                Text(kind.label).gpText(GPType.headline)
+                                Text(kind.label).gpText(\.sectionName)
                             }
-                            Text(verbatim: presetSubtitle(preset)).gpText(GPType.subhead).foregroundStyle(
-                                Color(.textSecondary)
+                            Text(verbatim: presetSubtitle(preset)).gpText(\.meta).foregroundStyle(
+                                Color(.text2)
                             )
                             .fixedSize(horizontal: false, vertical: true)
                         }
                         Spacer(minLength: 0)
                         Image(systemName: model.preset == index ? "checkmark.circle.fill" : "circle")
-                            .foregroundStyle(model.preset == index ? Color(.text) : Color(.textSecondary))
+                            .foregroundStyle(model.preset == index ? Color(.text) : Color(.text2))
                     }.frame(minHeight: GPSize.tapTarget).padding(GPSpace.s16).contentShape(Rectangle())
                 }
                 .buttonStyle(.plain).accessibilityAddTraits(model.preset == index ? .isSelected : [])
                 .accessibilityIdentifier("builder.preset.\(preset.kind)")
             }
-        }.background(Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.xxl))
+        }.background(Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.l))
     }
 
     private func presetSubtitle(_ preset: Components.Schemas.TrainingPreset) -> String {
@@ -241,7 +266,7 @@ struct TrainingBuilderView: View {
                     "\(section) · \(TrainingCopy.questions(r.count)) · \(model.minutes(r)) мин, как секция экзамена")
         }
         return
-            "\(section) · \(r.questionTypes.map(\.label).joined(separator: ", ")) · \(r.count) · \(String(localized: r.mode.label))"
+            "\(section) · \(r.questionTypes.map(\.label).joined(separator: ", ")) · \(r.count) · \(String(interface: r.mode.label))"
     }
 
     private var custom: some View {
@@ -262,7 +287,7 @@ struct TrainingBuilderView: View {
                     ForEach(model.types, id: \.questionType) { type in
                         Text(
                             verbatim: type.questionType.label
-                                + (type.topics.isEmpty ? " · " + String(localized: "скоро") : "")
+                                + (type.topics.isEmpty ? " · " + String(interface: "скоро") : "")
                         )
                         .tag(type.questionType)
                         .disabled(type.topics.isEmpty)
@@ -274,15 +299,17 @@ struct TrainingBuilderView: View {
             field {
                 Text("Вопросов")
                 Spacer()
-                TextField("Вопросов", text: $countText)
+                // В каталоге подпись рядом; внутри очищенного числового поля подсказки нет.
+                TextField("", text: $countText)
                     .focused($countFocused)
                     .textFieldStyle(.plain).multilineTextAlignment(.center).monospacedDigit()
-                    .frame(width: GPSpace.s72 + GPSpace.s4, height: GPSize.tapTarget)
-                    .background(Color(.fill), in: Capsule()).accessibilityIdentifier("builder.count")
+                    .frame(width: countSize * textScale, height: countSize * textScale)
+                    .background(Color(.surface2), in: Capsule()).accessibilityIdentifier("builder.count")
+                    .accessibilityLabel("Вопросов")
                     #if os(iOS)
                         .keyboardType(.numberPad)
                     #endif
-            }
+            }.id("builder.count-row")
             line
             VStack(alignment: .leading, spacing: GPSpace.s8) {
                 ViewThatFits(in: .horizontal) {
@@ -296,7 +323,7 @@ struct TrainingBuilderView: View {
                         modes
                     }
                 }
-                Text(model.form.mode.hint).gpText(GPType.subhead).foregroundStyle(Color(.textSecondary))
+                Text(model.form.mode.hint).gpText(\.meta).foregroundStyle(Color(.text2))
                     .fixedSize(horizontal: false, vertical: true)
             }.padding(GPSpace.s16)
             line
@@ -308,14 +335,14 @@ struct TrainingBuilderView: View {
                 HStack(spacing: GPSpace.s12) {
                     Text("Темы и сложность")
                     Spacer()
-                    Text(verbatim: topicSummary).foregroundStyle(Color(.textSecondary))
-                    Image(systemName: "chevron.forward").foregroundStyle(Color(.textSecondary))
-                }.frame(minHeight: GPSize.row).contentShape(Rectangle())
+                    Text(verbatim: topicSummary).foregroundStyle(Color(.text2))
+                    Image(systemName: "chevron.forward").foregroundStyle(Color(.text3))
+                }.frame(minHeight: GPSize.sectionRow).contentShape(Rectangle())
             }.buttonStyle(.plain).padding(.horizontal, GPSpace.s16).accessibilityIdentifier("builder.topics")
         }
-        .gpText(GPType.body)
+        .gpText(\.body)
         .foregroundStyle(Color(.text))
-        .background(Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.xxl))
+        .background(Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.l))
     }
 
     private var modes: some View {
@@ -326,16 +353,16 @@ struct TrainingBuilderView: View {
     }
     private var topicSummary: String {
         let topics =
-            model.form.topicIDs.map { String(localized: "\($0.count) из \(model.topics.count)") }
-            ?? String(localized: "все")
-        return model.form.difficulty.map { "\(topics) · \(String(localized: $0.label))" } ?? topics
+            model.form.topicIDs.map { String(interface: "\($0.count) из \(model.topics.count)") }
+            ?? String(interface: "все")
+        return model.form.difficulty.map { "\(topics) · \(String(interface: $0.label))" } ?? topics
     }
     private var line: some View { Divider().overlay(Color(.line)).padding(.horizontal, GPSpace.s16) }
     private func field(@ViewBuilder content: () -> some View) -> some View {
         ViewThatFits(in: .horizontal) {
             HStack(spacing: GPSpace.s12, content: content)
             VStack(alignment: .leading, spacing: GPSpace.s8, content: content)
-        }.frame(minHeight: GPSize.row).padding(.horizontal, GPSpace.s16).padding(.vertical, GPSpace.s4)
+        }.frame(minHeight: GPSize.sectionRow).padding(.horizontal, GPSpace.s16).padding(.vertical, GPSpace.s4)
     }
     private var startButton: some View {
         Button {
@@ -348,9 +375,9 @@ struct TrainingBuilderView: View {
                 } else {
                     Text("Заданий пока нет")
                 }
-            }.opacity(model.starting ? 0 : 1).overlay { if model.starting { ProgressView().tint(Color(.onAccent)) } }
+            }.opacity(model.starting ? 0 : 1).overlay { if model.starting { BusyIndicator() } }
         }
-        .buttonStyle(PrimaryCapsuleStyle())
+        .buttonStyle(PrimaryCapsuleStyle(isBusy: model.starting))
         .disabled(model.starting || model.request == nil).keyboardShortcut(.defaultAction)
         .accessibilityIdentifier("builder.start")
     }
@@ -371,12 +398,12 @@ struct TrainingTopicsView: View {
             let wide = geometry.size.width >= GPLayout.breakpointWide
             ScrollView {
                 VStack(alignment: .leading, spacing: GPSpace.s24) {
-                    if wide { Text("Темы и сложность").gpText(GPType.title2Wide) }
+                    if wide { Text("Темы и сложность").gpText(\.h1Wide) }
                     Text(
                         verbatim:
                             "\(TrainingText.sectionLabel(model.form.section)) · \(model.form.type.label)"
                     )
-                    .gpText(GPType.subhead).foregroundStyle(StudySection(model.form.section).color)
+                    .gpText(\.meta).foregroundStyle(StudySection(model.form.section).ink)
                     topics
                     difficulty
                     if wide {
@@ -393,7 +420,7 @@ struct TrainingTopicsView: View {
                             .background(Color(.bg))
                     }
                 }
-                .background { SectionGlow(section: StudySection(model.form.section)) }
+                .background(Color(.bg).ignoresSafeArea())
                 .navigationTitle(wide ? Text("") : Text("Темы и сложность"))
         }
         #if os(iOS)
@@ -410,21 +437,21 @@ struct TrainingTopicsView: View {
                         set: { _ in model.toggleTopic(topic.id) })
                 ) {
                     HStack(spacing: GPSpace.s12) {
-                        Text(verbatim: topic.title.localized).gpText(GPType.body).fixedSize(
+                        Text(verbatim: topic.title.localized).gpText(\.body).fixedSize(
                             horizontal: false, vertical: true)
                         Spacer(minLength: GPSpace.s8)
-                        Text(model.available(in: topic), format: .number).gpText(GPType.subhead).monospacedDigit()
-                            .foregroundStyle(Color(.textSecondary))
+                        Text(model.available(in: topic), format: .number).gpText(\.meta).monospacedDigit()
+                            .foregroundStyle(Color(.text2))
                     }
-                }.tint(StudySection(model.form.section).color).frame(minHeight: GPSize.rowTall)
+                }.tint(StudySection(model.form.section).ink).frame(minHeight: GPSize.tapTarget)
                     .padding(.vertical, GPSpace.s8).accessibilityIdentifier("builder.topic.\(topic.id)")
             }
         }.padding(.horizontal, GPSpace.s16).background(
-            Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.xxl))
+            Color(.surface), in: RoundedRectangle(cornerRadius: GPRadius.l))
     }
     private var difficulty: some View {
         VStack(alignment: .leading, spacing: GPSpace.s12) {
-            Text("Сложность").gpText(GPType.body)
+            Text("Сложность").gpText(\.body)
             Picker("Сложность", selection: Binding(get: { model.form.difficulty }, set: model.setDifficulty)) {
                 Text("Любая").tag(Optional<Components.Schemas.Difficulty>.none)
                 ForEach(Components.Schemas.Difficulty.allCases, id: \.self) { Text($0.label).tag(Optional($0)) }
@@ -448,13 +475,13 @@ enum TrainingCopy {
         let and = String(localized: LocalizedStringResource("и", locale: locale))
         return numbers.dropLast().joined(separator: ", ") + " \(and) " + last
     }
-    static func questions(_ count: Int) -> String { String(localized: "\(count) вопросов") }
-    static func tasks(_ count: Int) -> String { String(localized: "\(count) заданий") }
-    static func mistakes(_ count: Int) -> String { String(localized: "\(count) ошибок") }
+    static func questions(_ count: Int) -> String { String(interface: "\(count) вопросов") }
+    static func tasks(_ count: Int) -> String { String(interface: "\(count) заданий") }
+    static func mistakes(_ count: Int) -> String { String(interface: "\(count) ошибок") }
     static func continuation(_ training: StoredTraining) -> String {
         let section = TrainingText.sectionLabel(training.session.section)
         let types = training.session.questionTypes.map(\.label).joined(separator: " · ")
-        let position = String(localized: "вопрос \(training.position + 1) из \(training.total)")
+        let position = String(interface: "вопрос \(training.position + 1) из \(training.total)")
             .replacingOccurrences(of: " ", with: "\u{00A0}")
         return "\(section) · \(types) · \(position)"
     }

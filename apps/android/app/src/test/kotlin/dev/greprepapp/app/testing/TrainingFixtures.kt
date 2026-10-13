@@ -26,7 +26,6 @@ import dev.greprepapp.api.models.TrainingSummary
 import dev.greprepapp.api.models.TrainingTopic
 import dev.greprepapp.api.models.TrainingType
 import dev.greprepapp.api.models.WeekStats
-import dev.greprepapp.app.feature.training.CURRENT_EXAM
 import kotlinx.coroutines.CompletableDeferred
 import retrofit2.Response
 
@@ -193,7 +192,7 @@ object Fixtures {
         timeLimitSeconds: Int? = null,
     ): TrainingSession =
         TrainingSession(
-            exam = CURRENT_EXAM,
+            exam = dev.greprepapp.api.models.Exam.GRE,
             id = id,
             mode = mode,
             section = questions.first().section,
@@ -248,7 +247,7 @@ object Fixtures {
             kind = "last",
             request =
                 TrainingRequest(
-                    exam = CURRENT_EXAM,
+                    exam = dev.greprepapp.api.models.Exam.GRE,
                     section = Section.QUANT,
                     questionTypes = setOf(QuestionType.QUANTITATIVE_COMPARISON),
                     count = 5,
@@ -261,7 +260,7 @@ object Fixtures {
             kind = "timed",
             request =
                 TrainingRequest(
-                    exam = CURRENT_EXAM,
+                    exam = dev.greprepapp.api.models.Exam.GRE,
                     section = Section.VERBAL,
                     questionTypes = setOf(QuestionType.TEXT_COMPLETION, QuestionType.SENTENCE_EQUIVALENCE),
                     count = 12,
@@ -309,12 +308,15 @@ class FakeTrainingsApi : TrainingsApi {
     val finishes = mutableListOf<Pair<String, TrainingFinish>>()
     val reports = mutableListOf<Pair<String, QuestionReport>>()
 
+    var homeGate: kotlinx.coroutines.CompletableDeferred<Unit>? = null
+
     override suspend fun getHome(
         exam: dev.greprepapp.api.models.Exam,
         tz: String,
         types: List<QuestionType>,
     ): Response<Home> {
         homeCalls += Triple(exam, tz, types)
+        homeGate?.await()
         return home.toResponse()
     }
 

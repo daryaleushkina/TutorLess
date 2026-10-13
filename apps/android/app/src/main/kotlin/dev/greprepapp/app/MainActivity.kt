@@ -1,36 +1,139 @@
 package dev.greprepapp.app
 
+import android.content.Context
+import android.content.res.Configuration
 import android.os.Bundle
-import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.core.graphics.drawable.toDrawable
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import dev.greprepapp.app.core.AppConfig
+import dev.greprepapp.app.core.report.ClientErrorReporter
 import dev.greprepapp.app.core.session.SessionManager
-import dev.greprepapp.app.core.session.SessionState
+import dev.greprepapp.app.core.theme.AppNightMode
+import dev.greprepapp.app.core.theme.AppTheme
+import dev.greprepapp.app.core.theme.ThemeManager
+import dev.greprepapp.app.core.theme.isThemeReady
+import dev.greprepapp.app.core.theme.shouldKeepSplash
 import dev.greprepapp.design.GpTheme
+import greprep.design.GpDarkColors
+import greprep.design.GpLightColors
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/**
- * Одна активность на всё приложение. AppCompat — ради языка приложения на Android 7–12 (переключатель в
- * настройках); на 13+ язык ведёт система.
- */
+/** Одна активность; AppCompat ведёт ночные ресурсы, язык интерфейса приходит из аккаунта. */
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     @Inject lateinit var session: SessionManager
 
     @Inject lateinit var config: AppConfig
 
+    @Inject lateinit var shell: dev.greprepapp.app.feature.shell.ShellRepository
+
+    @Inject lateinit var cleanup: dev.greprepapp.app.core.LegacyCacheCleanup
+
+    @Inject lateinit var themes: ThemeManager
+
+    @Inject lateinit var reporter: ClientErrorReporter
+
+    @Inject lateinit var contentInstaller: dev.greprepapp.app.ui.ActivityContentInstaller
+
+    private var contentInstalled = false
+    private var themeResourcesTimedOut = false
+
+    override fun attachBaseContext(newBase: Context) {
+        // В тестах и при запуске Activity отдельно от Application тоже не берём тему системы.
+        if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_UNSPECIFIED) {
+            AppCompatDelegate.setDefaultNightMode(AppNightMode.initialMode(newBase))
+        }
+        super.attachBaseContext(newBase)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Заставка держится, пока читается сохранённый вход: без неё мигнул бы экран входа.
-        installSplashScreen().setKeepOnScreenCondition { session.state.value == SessionState.Restoring }
+        installSplashScreen().setKeepOnScreenCondition {
+            shouldKeepSplash(themes.state.value, session.state.value, resources.configuration.uiMode, themeResourcesTimedOut)
+        }
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            GpTheme {
-                AppRoot(session = session, config = config)
+        lifecycleScope.launch { cleanup.run() }
+        lifecycleScope.launch {
+            // В фоне Android может задержать uiMode. Каждый START начинает новый срок,
+            // а STOP отменяет ожидание, чтобы не принять задержку за ошибку ресурсов.
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                themes.state.collectLatest { state ->
+                    themeResourcesTimedOut = false
+                    if (!state.restoring) {
+                        installContentWhenReady()
+                        delay(THEME_RESOURCES_TIMEOUT_MS)
+                        if (!isThemeReady(themes.state.value, resources.configuration.uiMode)) {
+                            reporter.report("theme resources mismatch", route = "theme")
+                            themeResourcesTimedOut = true
+                            installContentWhenReady()
+                        }
+                    }
+                }
             }
         }
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        installContentWhenReady()
+    }
+
+    private fun installContentWhenReady() {
+        val state = themes.state.value
+        if (state.restoring || (!themeResourcesTimedOut && !isThemeReady(state, resources.configuration.uiMode))) return
+        // configChanges=uiMode оставляет Activity живой: окно и системные панели обновляем явно,
+        // Compose получает новую конфигурацию и выбор темы без второго AppRoot.
+        val dark = state.theme == AppTheme.Dark
+        window.setBackgroundDrawable((if (dark) GpDarkColors.bg else GpLightColors.bg).toArgb().toDrawable())
+        enableEdgeToEdge()
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            isAppearanceLightStatusBars = !dark
+            isAppearanceLightNavigationBars = !dark
+        }
+        if (!contentInstalled) {
+            contentInstalled = true
+            contentInstaller.install(this) {
+                val choice by themes.state.collectAsStateWithLifecycle()
+                val account by shell.state.collectAsStateWithLifecycle()
+                val base = androidx.compose.ui.platform.LocalContext.current
+                val deviceConfiguration = androidx.compose.ui.platform.LocalConfiguration.current
+                val localized =
+                    androidx.compose.runtime.remember(base, deviceConfiguration, account.user?.locale) {
+                        val configuration = Configuration(deviceConfiguration)
+                        account.user?.locale?.let { configuration.setLocale(java.util.Locale.forLanguageTag(it.value)) }
+                        base.createConfigurationContext(configuration)
+                    }
+                androidx.compose.runtime.CompositionLocalProvider(
+                    androidx.compose.ui.platform.LocalConfiguration provides localized.resources.configuration,
+                    androidx.compose.ui.platform.LocalResources provides localized.resources,
+                ) {
+                    GpTheme(darkTheme = choice.theme == AppTheme.Dark, largeText = choice.largeText) {
+                        AppRoot(session = session, config = config, modifier = Modifier.semantics { testTagsAsResourceId = true })
+                    }
+                }
+            }
+        }
+    }
+
+    private companion object {
+        // Производитель может не прислать uiMode: двух секунд хватает на обычное обновление ресурсов,
+        // после этого важнее открыть экран, чем бесконечно удерживать заставку.
+        const val THEME_RESOURCES_TIMEOUT_MS = 2_000L
     }
 }

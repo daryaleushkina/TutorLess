@@ -1,6 +1,9 @@
 package dev.greprepapp.app.di
 
 import android.content.Context
+import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.emptyPreferences
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,13 +22,16 @@ import dev.greprepapp.app.core.Ticker
 import dev.greprepapp.app.core.report.ClientErrorReporter
 import dev.greprepapp.app.core.session.KeystoreTokenStore
 import dev.greprepapp.app.core.session.TokenStore
-import dev.greprepapp.app.feature.today.TodayCache
+import dev.greprepapp.app.core.theme.DataStoreThemeStore
+import dev.greprepapp.app.core.theme.ThemeStore
+import dev.greprepapp.app.feature.shell.ShellCache
 import dev.greprepapp.app.feature.training.TrainingStore
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import okhttp3.HttpUrl.Companion.toHttpUrl
+import java.io.File
 import java.time.Clock
 import javax.inject.Singleton
 
@@ -65,10 +71,32 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun todayCache(
+    fun themeStore(
         @ApplicationContext context: Context,
         reporter: ClientErrorReporter,
-    ): TodayCache = TodayCache(context.noBackupFilesDir, reporter)
+        @AppScope scope: CoroutineScope,
+        @IoDispatcher io: CoroutineDispatcher,
+    ): ThemeStore {
+        // DataStore файла темы не становится общей Hilt-привязкой Preferences для других настроек.
+        val dataStore =
+            PreferenceDataStoreFactory.create(
+                corruptionHandler =
+                    ReplaceFileCorruptionHandler {
+                        reporter.report("theme data corrupted", route = DataStoreThemeStore.ROUTE)
+                        emptyPreferences()
+                    },
+                scope = CoroutineScope(scope.coroutineContext + io),
+                produceFile = { File(context.noBackupFilesDir, "theme.preferences_pb") },
+            )
+        return DataStoreThemeStore(dataStore, reporter)
+    }
+
+    @Provides
+    @Singleton
+    fun shellCache(
+        @ApplicationContext context: Context,
+        reporter: ClientErrorReporter,
+    ): ShellCache = ShellCache(context.noBackupFilesDir, reporter)
 
     @Provides
     @Singleton

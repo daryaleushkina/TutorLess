@@ -3,6 +3,11 @@
 <!-- Отладочная сборка (project.yml). Отличие от Info.plist — http до своего Мака: локальный сервер. -->
 <plist version="1.0">
 <dict>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>bgDark</string>
+	</dict>
 	<key>GPAPIBaseURL</key>
 	<string>$(GP_API_BASE_URL)</string>
 	<key>GPAppleSignInEnabled</key>

@@ -5,7 +5,6 @@ import dev.greprepapp.api.models.AnswerBatch
 import dev.greprepapp.api.models.DevSignIn
 import dev.greprepapp.api.models.QuestionReport
 import dev.greprepapp.api.models.Session
-import dev.greprepapp.api.models.Today
 import dev.greprepapp.api.models.TrainingFinish
 import dev.greprepapp.api.models.TrainingOptions
 import dev.greprepapp.api.models.TrainingRequest
@@ -13,11 +12,11 @@ import dev.greprepapp.api.models.TrainingSession
 import dev.greprepapp.api.models.TrainingSummary
 import dev.greprepapp.app.testing.Fixtures
 import dev.greprepapp.app.testing.session
-import dev.greprepapp.app.testing.starterPlan
 import mockwebserver3.Dispatcher
 import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
 import mockwebserver3.RecordedRequest
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -36,7 +35,49 @@ class FakeServer {
 
     @Volatile var down = false
 
-    @Volatile var plan: Today = starterPlan
+    @Volatile var user = session().user.copy(activeExam = dev.greprepapp.api.models.ActiveExam.GRE)
+
+    @Volatile var localeStatus = 200
+
+    @Volatile var examStatus = 200
+
+    @Volatile var examGate: java.util.concurrent.CountDownLatch? = null
+
+    @Volatile var home =
+        dev.greprepapp.api.models
+            .Home(
+                null,
+                emptyList(),
+                0,
+                null,
+                dev.greprepapp.api.models
+                    .WeekStats(0, 0, 0),
+            )
+    val examChanges = CopyOnWriteArrayList<dev.greprepapp.api.models.ExamChoice>()
+    val localeChanges = CopyOnWriteArrayList<dev.greprepapp.api.models.LocaleChoice>()
+    val requests = CopyOnWriteArrayList<RecordedRequest>()
+    val exams =
+        dev.greprepapp.api.models.ExamList(
+            listOf(
+                dev.greprepapp.api.models.ExamInfo(
+                    dev.greprepapp.api.models.Exam.GRE,
+                    listOf(
+                        dev.greprepapp.api.models.Section.VERBAL,
+                        dev.greprepapp.api.models.Section.QUANT,
+                        dev.greprepapp.api.models.Section.ESSAY,
+                    ),
+                ),
+                dev.greprepapp.api.models.ExamInfo(
+                    dev.greprepapp.api.models.Exam.TOEFL,
+                    listOf(
+                        dev.greprepapp.api.models.Section.READING,
+                        dev.greprepapp.api.models.Section.LISTENING,
+                        dev.greprepapp.api.models.Section.WRITING,
+                        dev.greprepapp.api.models.Section.SPEAKING,
+                    ),
+                ),
+            ),
+        )
 
     // Тренировки: что выдать и что пришло.
     @Volatile var trainingOptions: TrainingOptions = Fixtures.options(listOf(Fixtures.timedPreset))
@@ -47,8 +88,11 @@ class FakeServer {
     val answers = CopyOnWriteArrayList<AnswerBatch>()
     val finishes = CopyOnWriteArrayList<TrainingFinish>()
     val reports = CopyOnWriteArrayList<QuestionReport>()
+    private val trainings = ConcurrentHashMap<String, TrainingSession>()
 
     val url get() = server.url("/")
+
+    fun close() = server.close()
 
     init {
         server.dispatcher =
@@ -69,6 +113,7 @@ class FakeServer {
     }
 
     private fun handle(request: RecordedRequest): MockResponse {
+        requests += request
         if (down) {
             return MockResponse
                 .Builder()
@@ -86,12 +131,101 @@ class FakeServer {
                 val body = ApiJson.decodeFromString(DevSignIn.serializer(), request.body!!.utf8())
                 val fresh = "tok-${body.name}-${issued.incrementAndGet()}"
                 valid += fresh
-                json(200, ApiJson.encodeToString(Session.serializer(), session(fresh)))
+                json(200, ApiJson.encodeToString(Session.serializer(), session(fresh).copy(user = user)))
             }
 
-            "/api/today" -> {
-                if (token != null && token in valid) {
-                    json(200, ApiJson.encodeToString(Today.serializer(), plan))
+            "/api/exams" -> {
+                json(
+                    200,
+                    ApiJson.encodeToString(
+                        dev.greprepapp.api.models.ExamList
+                            .serializer(),
+                        exams,
+                    ),
+                )
+            }
+
+            "/api/me" -> {
+                if (token in
+                    valid
+                ) {
+                    json(
+                        200,
+                        ApiJson.encodeToString(
+                            dev.greprepapp.api.models.User
+                                .serializer(),
+                            user,
+                        ),
+                    )
+                } else {
+                    error(401, "unauthorized")
+                }
+            }
+
+            "/api/me/exam" -> {
+                val choice =
+                    ApiJson.decodeFromString(
+                        dev.greprepapp.api.models.ExamChoice
+                            .serializer(),
+                        request.body!!.utf8(),
+                    )
+                examChanges += choice
+                examGate?.await()
+                if (examStatus != 200) {
+                    error(examStatus, "internal")
+                } else {
+                    user =
+                        user.copy(
+                            activeExam =
+                                dev.greprepapp.api.models.ActiveExam
+                                    .decode(choice.exam.value),
+                        )
+                    json(
+                        200,
+                        ApiJson.encodeToString(
+                            dev.greprepapp.api.models.User
+                                .serializer(),
+                            user,
+                        ),
+                    )
+                }
+            }
+
+            "/api/me/locale" -> {
+                val choice =
+                    ApiJson.decodeFromString(
+                        dev.greprepapp.api.models.LocaleChoice
+                            .serializer(),
+                        request.body!!.utf8(),
+                    )
+                localeChanges += choice
+                if (localeStatus != 200) {
+                    error(localeStatus, "internal")
+                } else {
+                    user = user.copy(locale = choice.locale)
+                    json(
+                        200,
+                        ApiJson.encodeToString(
+                            dev.greprepapp.api.models.User
+                                .serializer(),
+                            user,
+                        ),
+                    )
+                }
+            }
+
+            "/api/home" -> {
+                if (token in
+                    valid
+                ) {
+                    json(
+                        200,
+                        ApiJson.encodeToString(
+                            dev.greprepapp.api.models.Home
+                                .serializer(),
+                            home,
+                        ),
+                    )
                 } else {
                     error(401, "unauthorized")
                 }
@@ -124,17 +258,43 @@ class FakeServer {
         val body = request.body?.utf8().orEmpty()
         return when {
             path == "/api/trainings/options" -> {
-                json(200, ApiJson.encodeToString(TrainingOptions.serializer(), trainingOptions))
+                json(
+                    200,
+                    ApiJson.encodeToString(
+                        TrainingOptions.serializer(),
+                        if (request.target.contains(
+                                "exam=toefl",
+                            )
+                        ) {
+                            trainingOptions.copy(types = emptyList(), presets = emptyList())
+                        } else {
+                            trainingOptions
+                        },
+                    ),
+                )
             }
 
             path == "/api/trainings" -> {
                 starts += ApiJson.decodeFromString(TrainingRequest.serializer(), body)
-                json(201, ApiJson.encodeToString(TrainingSession.serializer(), nextSession))
+                val training = nextSession
+                trainings[training.id] = training
+                json(201, ApiJson.encodeToString(TrainingSession.serializer(), training))
             }
 
             path.endsWith("/answers") -> {
-                answers += ApiJson.decodeFromString(AnswerBatch.serializer(), body)
-                MockResponse.Builder().code(204).build()
+                val batch = ApiJson.decodeFromString(AnswerBatch.serializer(), body)
+                val training = trainings[path.removePrefix("/api/trainings/").substringBefore('/')] ?: nextSession
+                if (batch.answers.any { answer ->
+                        training.items.firstOrNull { it.position == answer.position }?.question?.let {
+                            !acceptsAnswer(it, answer)
+                        } ?: true
+                    }
+                ) {
+                    error(400, "bad_answer")
+                } else {
+                    answers += batch
+                    MockResponse.Builder().code(204).build()
+                }
             }
 
             path.endsWith("/finish") -> {

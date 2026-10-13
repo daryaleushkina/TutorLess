@@ -1,15 +1,32 @@
 <!doctype html>
-<html lang="ru">
+<html lang="ru" data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <!-- viewport-fit=cover: без него env(safe-area-inset-*) вне Telegram — нули (навык telegram-mini-app) -->
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="color-scheme" content="light dark" />
+    <meta name="color-scheme" content="dark" />
+    <!-- Выбор устройства до CSS и первого кадра; ключ тот же, что в styles/theme.ts. -->
+    <script>
+      (() => {
+        let theme = 'dark';
+        try {
+          if (localStorage.getItem('greprep.theme') === 'light') theme = 'light';
+        } catch {
+          // Запрет хранилища сохраняет тёмное умолчание.
+        }
+        try { if (localStorage.getItem('greprep.textSize') === 'large') document.documentElement.dataset.textSize = 'large'; } catch { /* Размер по умолчанию. */ }
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.style.colorScheme = theme;
+        document.querySelector('meta[name="color-scheme"]').setAttribute('content', theme);
+      })();
+    </script>
+    <link rel="preload" href="/node_modules/@fontsource-variable/onest/files/onest-cyrillic-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/node_modules/@fontsource-variable/onest/files/onest-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
     <!-- Сайт и мини-апп не индексируются, пока нет бренда и публичных страниц -->
     <meta name="robots" content="noindex" />
-    <!-- Знак — лента шагов (components/BrandMark.tsx) на фиолетовом Verbal: --color-verbal светлой темы -->
+    <!-- Знак — лента шагов (components/BrandMark.tsx) на Verbal «Лаванды»: --color-verbal светлой темы (#5A3FD6) -->
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <title>GrePrepApp</title>
+    <title>Tutorless</title>
   </head>
   <body>
     <div id="root"></div>

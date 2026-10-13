@@ -22,12 +22,38 @@ function en(one: string, other: string): Plural {
   return (n) => (enRules.select(n) === 'one' ? one : other).replace('#', String(n));
 }
 
-/** Число шагов — словом: при трёх-четырёх шагах слово читается быстрее цифры (шагов не больше восьми, договор). */
-const ruSteps = ['', 'Один шаг', 'Два шага', 'Три шага', 'Четыре шага', 'Пять шагов', 'Шесть шагов', 'Семь шагов', 'Восемь шагов'];
-const enSteps = ['', 'One step', 'Two steps', 'Three steps', 'Four steps', 'Five steps', 'Six steps', 'Seven steps', 'Eight steps'];
-
+const topicCountRu = ru({ one: '# тема', few: '# темы', many: '# тем', other: '# темы' });
+const availableCountRu = ru({ one: '# задание', few: '# задания', many: '# заданий', other: '# задания' });
+const questionCountRu = ru({ one: '# вопроса', few: '# вопросов', many: '# вопросов', other: '# вопроса' });
+const availableCountEn = en('# question available', '# questions available');
+const questionCountEn = en('# question', '# questions');
+const topicCountEn = en('# topic', '# topics');
 
 const trainingRu = {
+  review_next: 'Следующий',
+  report_toast: 'Спасибо — проверим и поправим',
+  topics_title: 'Темы', builder_starting: 'Начинаем…', topics_done_count: (selected: number, total: number) => `Готово · ${topicCountRu(selected)} из ${total}`,
+  type_number_title: 'Ввод числа', type_fraction_title: 'Ввод дробью', type_multi_title: 'Несколько ответов', sentence_correct_mark: 'верное', sentence_yours_mark: 'ваше', passage_tabs: 'Текст или вопрос', passage_text: 'Текст', passage_question: 'Вопрос', passage_paragraph: (n: number) => `Абзац ${n}`,
+  instruction_all: 'Выберите все подходящие варианты.', instruction_count: (n: number) => `Выберите ${n} ответа.`,
+  instruction_number: 'Введите ответ числом.', instruction_fraction: 'Введите ответ дробью. Сокращать не нужно.', instruction_sentence: 'Нажмите на предложение в тексте.',
+  numeric_answer: 'Ответ', numeric_numerator: 'Числитель', numeric_denominator: 'Знаменатель', numeric_fraction_hint: 'Сверху — числитель, снизу — знаменатель',
+  numeric_too_long: 'Не больше 128 символов в\u00a0поле. Сократите запись числа.',
+  question_selected_correct: 'выбран, верный', question_omitted_correct: 'не выбран, верный', question_selected_wrong: 'выбран, неверный', question_not_selected: 'не выбран',
+  numeric_error: 'Так число не записать: одна запятая или точка, минус — только впереди.', numeric_integer_error: 'Введите целое число: минус — только впереди.', numeric_zero: 'Знаменатель не может быть нулём',
+  question_return: 'Вернуться', instruction_two: 'Выберите два слова.', instruction_blanks: 'Выберите по одному слову для каждого пропуска.', instruction_one: 'Выберите один ответ.',
+  answer_yours: 'Ваш ответ', answer_correct: 'Верный ответ', all_options: 'Все варианты', hide_options: 'Свернуть варианты',
+  explanation_title: 'Разбор', verdict_dont_know: 'Разберём', dont_know_note: 'Задание попадёт в «Повторить мои ошибки»',
+  previous_question: 'Предыдущий вопрос', next_question: 'Следующий вопрос', show_explanation: 'Показать разбор',
+  previous_notice: (position: number, current: number) => `Это вопрос ${position} — ответ уже засчитан, изменить его нельзя. Вы остановились на вопросе ${current}.`,
+  timeout_title: 'Время вышло', timeout_text: (answered: number, total: number) => `Ответы сохранены: ${answered} из ${total}. Остальные засчитаны как без ответа — их разберём вместе со всеми.`,
+  to_summary: 'К итогу', continue_check: 'Продолжить', finish_confirm: (count: number) => `Без ответа: ${count}. Завершить?`,
+  exit_check: 'Выйти из проверки?', exit_practice: 'Выйти из тренировки?', exit_save: 'Ответы сохранятся, время продолжит идти', exit_action: 'Выйти',
+  review_flagged: (count: number) => `Отмеченные · ${count}`, review_no_flagged: 'Отмеченных вопросов нет.',
+  review_time: 'Время на вопрос', review_slow: 'дольше среднего',
+  types_mixed: 'Все типы вперемешку', topics_clear: 'Снять все', topics_select: 'Выбрать все', topics_empty: 'Выберите хотя бы одну тему',
+  topics_available: (count: number, shortened: boolean) => `Подходит ${availableCountRu(count)}${shortened ? ` — тренировка будет из ${questionCountRu(count)}` : ''}`,
+  check_hint: (count: string, minutes: number) => `На время, как на экзамене: ${minutes} мин на ${count}, разбор — в конце.`,
+  question_offline: 'Нет сети — ответы сохранятся и уйдут сами.',
   question_report: 'Сообщить об ошибке', summary_all_answers: 'Все ответы и разборы',
   review_title_practice: 'Разбор тренировки', review_title_check: 'Разбор проверки',
   review_all: (count: number) => `Все · ${count}`, review_mistakes: (count: number) => `Ошибки · ${count}`,
@@ -49,11 +75,11 @@ const trainingRu = {
   report_failed: 'Не получилось сохранить сообщение. Освободите место на устройстве и попробуйте снова.',
 
   explanation_language: 'Язык разбора', question_select_hint: 'выбрать ответ',
-  question_check: 'Проверить', question_dont_know: 'Не знаю', question_result: 'Итог', question_skip: 'Пропустить',
-  question_next: (position: number, total: number) => `Дальше · ${position} из ${total}`,
+  question_check: 'Проверить', question_dont_know: 'Не знаю', question_result: 'К итогу', question_skip: 'Пропустить',
+  question_next: (_position: number, _total: number) => 'Дальше',
   question_of: (position: number, total: number) => `${position} из ${total}`,
   question_progress_description: (position: number, total: number) => `Вопрос ${position} из ${total}`,
-  question_to_list: 'К списку вопросов', question_flag: 'Отметить, чтобы вернуться', question_unflag: 'Снять отметку', question_overview: 'Все вопросы',
+  question_to_list: 'К списку вопросов', question_flag: 'Отметить, чтобы вернуться', question_unflag: 'Снять отметку', question_overview: 'Вопросы',
   question_missing_blank: (blanks: string) => `Осталось выбрать слово для пропуска ${blanks}`,
   question_missing_blanks: (blanks: string) => `Осталось выбрать слова для пропусков ${blanks}`,
   question_pick_one_more: 'Выберите ещё один ответ', question_check_note: 'Разбор — после последнего вопроса',
@@ -61,9 +87,10 @@ const trainingRu = {
   type_two_blanks: 'два пропуска', type_three_blanks: 'три пропуска', type_two_answers: 'два ответа',
   timer_description: (minutes: number, seconds: number, position: number, total: number) => `Осталось ${minutes} мин ${seconds} с, вопрос ${position} из ${total}`,
   overview_summary: (answered: number, total: number, flagged: number) => `Отвечено ${answered} из ${total} · отмечено ${flagged}`,
-  overview_finish: 'Закончить', overview_back: (position: number) => `К вопросу ${position}`,
+  overview_finish: 'Завершить проверку', overview_back: (position: number) => `К вопросу ${position}`,
   overview_answered: 'отвечен', overview_flagged: 'отмечен', overview_empty: 'без ответа', overview_item: (position: number, state: string) => `Вопрос ${position}, ${state}`,
   summary_correct_of: (correct: number, total: number) => `${correct} из ${total} верно`,
+  summary_of: (total: number) => `из ${total}`,
   summary_of_limit: (duration: string, limit: number) => `${duration} из ${limit}`,
   summary_timed_out: 'Время вышло — неотвеченные не считаются ошибками темы.', summary_review: 'Что повторить',
   summary_question: (positions: string) => `вопрос ${positions}`, summary_questions: (positions: string) => `вопросы ${positions}`, summary_and: 'и',
@@ -86,7 +113,7 @@ const trainingRu = {
   training_failed_message: "Мы уже знаем об ошибке. Попробуйте ещё раз чуть позже.",
   training_retry: "Повторить",
   training_missing_title: "Тренировки нет на устройстве",
-  training_missing_message: "Она могла устареть. Начните новую с экрана «Сегодня».",
+  training_missing_message: "Она могла устареть. Начните новую с экрана «Тренировка».",
   question_close: "Закрыть тренировку",
   builder_preset_last: "Как в прошлый раз",
   builder_preset_timed: "Проверка на время",
@@ -106,7 +133,7 @@ const trainingRu = {
   builder_start_failed: "Не получилось начать тренировку. Попробуйте ещё раз.",
   mode_practice: "Практика",
   mode_check: "Проверка",
-  mode_practice_hint: "Разбор после каждого вопроса, без таймера",
+  mode_practice_hint: "Разбор сразу после каждого ответа, без таймера.",
   mode_check_hint: "Таймер как на экзамене, разбор в конце",
   difficulty_any: "Любая",
   difficulty_easy: "Лёгкая",
@@ -116,6 +143,30 @@ const trainingRu = {
   topics_done: (count: string) => `Готово · ${count}`,
 };
 const trainingEn = {
+  review_next: 'Next',
+  report_toast: 'Thank you — we’ll check and fix it',
+  topics_title: 'Topics', builder_starting: 'Starting…', topics_done_count: (selected: number, total: number) => `Done · ${selected} of ${topicCountEn(total)}`,
+  type_number_title: 'Numeric Entry', type_fraction_title: 'Fraction Entry', type_multi_title: 'Multiple Answer', sentence_correct_mark: 'correct', sentence_yours_mark: 'yours', passage_tabs: 'Passage or question', passage_text: 'Passage', passage_question: 'Question', passage_paragraph: (n: number) => `Paragraph ${n}`,
+  instruction_all: 'Select all that apply.', instruction_count: (n: number) => `Choose ${n} answers.`,
+  instruction_number: 'Enter a numeric answer.', instruction_fraction: 'Enter a fraction. You do not need to simplify it.', instruction_sentence: 'Select a sentence in the passage.',
+  numeric_answer: 'Answer', numeric_numerator: 'Numerator', numeric_denominator: 'Denominator', numeric_fraction_hint: 'Numerator above, denominator below',
+  numeric_too_long: 'Use no more than 128 characters per field. Shorten the number.',
+  question_selected_correct: 'selected, correct', question_omitted_correct: 'not selected, correct', question_selected_wrong: 'selected, incorrect', question_not_selected: 'not selected',
+  numeric_error: 'Use one comma or decimal point, and a minus sign only at the beginning.', numeric_integer_error: 'Enter a whole number, with a minus sign only at the beginning.', numeric_zero: 'The denominator cannot be zero',
+  question_return: 'Return', instruction_two: 'Choose two words.', instruction_blanks: 'Choose one word for each blank.', instruction_one: 'Choose one answer.',
+  answer_yours: 'Your answer', answer_correct: 'Correct answer', all_options: 'All options', hide_options: 'Hide options',
+  explanation_title: 'Explanation', verdict_dont_know: 'Let’s work through it', dont_know_note: 'Added to “Repeat my mistakes”',
+  previous_question: 'Previous question', next_question: 'Next question', show_explanation: 'Show explanation',
+  previous_notice: (position: number, current: number) => `This is question ${position}. Your answer has been recorded and cannot be changed. You stopped at question ${current}.`,
+  timeout_title: 'Time is up', timeout_text: (answered: number, total: number) => `${answered} of ${total} answers saved. The rest count as unanswered; you can review them all.`,
+  to_summary: 'View results', continue_check: 'Continue', finish_confirm: (count: number) => `${count} unanswered. Finish?`,
+  exit_check: 'Leave the check?', exit_practice: 'Leave the practice?', exit_save: 'Your answers will be saved and the timer will keep running', exit_action: 'Leave',
+  review_flagged: (count: number) => `Flagged · ${count}`, review_no_flagged: 'No flagged questions.',
+  review_time: 'Time per question', review_slow: 'longer than average',
+  types_mixed: 'All types mixed', topics_clear: 'Clear all', topics_select: 'Select all', topics_empty: 'Choose at least one topic',
+  topics_available: (count: number, shortened: boolean) => `${availableCountEn(count)}${shortened ? ` — your practice will have ${questionCountEn(count)}` : ''}`,
+  check_hint: (count: string, minutes: number) => `Exam pace: ${minutes} minutes for ${count}, explanations at the end.`,
+  question_offline: 'No connection — answers will be saved and sent automatically.',
   question_report: 'Report a mistake', summary_all_answers: 'All answers and explanations',
   review_title_practice: 'Practice review', review_title_check: 'Check review',
   review_all: (count: number) => `All · ${count}`, review_mistakes: (count: number) => `Mistakes · ${count}`,
@@ -138,7 +189,7 @@ const trainingEn = {
 
   explanation_language: 'Explanation language', question_select_hint: 'choose an answer',
   question_check: 'Check answer', question_dont_know: 'I don’t know', question_result: 'Summary', question_skip: 'Skip',
-  question_next: (position: number, total: number) => `Next · ${position} of ${total}`,
+  question_next: (_position: number, _total: number) => 'Next',
   question_of: (position: number, total: number) => `${position} of ${total}`,
   question_progress_description: (position: number, total: number) => `Question ${position} of ${total}`,
   question_to_list: 'To the question list', question_flag: 'Flag to return', question_unflag: 'Remove flag', question_overview: 'All questions',
@@ -152,6 +203,7 @@ const trainingEn = {
   overview_finish: 'Finish', overview_back: (position: number) => `To question ${position}`,
   overview_answered: 'answered', overview_flagged: 'flagged', overview_empty: 'unanswered', overview_item: (position: number, state: string) => `Question ${position}, ${state}`,
   summary_correct_of: (correct: number, total: number) => `${correct} of ${total} correct`,
+  summary_of: (total: number) => `of ${total}`,
   summary_of_limit: (duration: string, limit: number) => `${duration} of ${limit}`,
   summary_timed_out: 'Time is up — unanswered questions don’t count as topic mistakes.', summary_review: 'What to review',
   summary_question: (positions: string) => `question ${positions}`, summary_questions: (positions: string) => `questions ${positions}`, summary_and: 'and',
@@ -173,7 +225,7 @@ const trainingEn = {
   training_failed_message: "We already know about it. Please try again a little later.",
   training_retry: "Try again",
   training_missing_title: "This practice isn’t on the device",
-  training_missing_message: "It may have expired. Start a new one from Today.",
+  training_missing_message: "It may have expired. Start a new one from Practice.",
   question_close: "Close practice",
   builder_preset_last: "Same as last time",
   builder_preset_timed: "Timed check",
@@ -207,42 +259,25 @@ type TrainingDict = typeof trainingRu & { questionsCount: Plural };
 export interface Dict {
   training: TrainingDict;
   back: string;
-  tabs: { today: string; words: string; exam: string; progress: string; settings: string; sections: string };
+  tabs: { train: string; words: string; exam: string; progress: string; settings: string; sections: string };
   sections: Record<Section, string>;
-  today: {
-    title: string;
-    plan: string;
-    loading: string;
-    steps: Plural;
-    aboutMinutes: Plural;
-    minutes: Plural;
-    approxShort: (n: number) => string;
-    short: (n: number) => string;
-    noSteps: string;
-    start: string;
-    now: (title: string) => string;
-    allDoneLine: string;
-    allDoneTitle: string;
-    tomorrow: string;
-    offlineTitle: string;
-    offlineText: string;
-    failedTitle: string;
-    failedText: string;
-    retry: string;
-    staleOffline: string;
-    staleFailed: string;
-    needNetwork: string;
+  navigation: { exam: string; chooseExam: string; examSwitch: (name: string) => string; profile: string };
+  home: {
+    loading: string; first: string; firstNote: string; chooseSection: string; configure: string; empty: string;
+    start: string; starting: string; minutes: Plural; duration: (n: number) => string; approxShort: (n: number) => string;
+    offlineTitle: string; offlineText: string; failedTitle: string; failedText: string; retry: string;
+    staleOffline: string; staleFailed: string; needNetwork: string; mistakes: string; mistakeCount: Plural; weakSpot: string; correct: string; week: string; days: Plural; answers: Plural; toeflEmpty: string;
   };
-  placeholder: { soon: string; words: string; exam: string; step: string };
-  progress: { emptyTitle: string; emptyText: string };
-  settings: { signOut: string; signOutFailed: string; signOutOffline: string; version: (v: string) => string };
+  placeholder: { words: string; exam: string; toefl: string };
+  progress: { emptyTitle: string; emptyText: string; first: string };
+  settings: { signOut: string; signOutFailed: string; signOutOffline: string; version: (v: string) => string; language: string; theme: string; textSize: string; light: string; dark: string; normal: string; large: string; subscription: string; identities: string; contact: string; saveFailed: string; localeFailed: string; telegram: string };
+  exams: { title: string; lead: string; gre: string; toefl: string; chooseFailed: string; changeFailed: string; offline: string; note: string };
   signIn: {
-    tagline: string;
-    telegram: string;
+    tagline: string; title: string;
     apple: string;
     google: string;
     legal: string;
-    notConnected: Record<'telegram' | 'apple' | 'google', string>;
+    notConnected: Record<'apple' | 'google', string>;
     offline: string;
     tooMany: string;
     failed: string;
@@ -262,56 +297,48 @@ export interface Dict {
 const dictRu: Dict = {
   training: { ...trainingRu, questionsCount: ru({ one: "#\u00a0вопрос", few: "#\u00a0вопроса", many: "#\u00a0вопросов", other: "#\u00a0вопроса" }) },
   back: 'Назад',
-  tabs: { today: 'Сегодня', words: 'Слова', exam: 'Экзамен', progress: 'Прогресс', settings: 'Настройки', sections: 'Разделы' },
+  tabs: { train: 'Тренировка', words: 'Слова', exam: 'Экзамен', progress: 'Прогресс', settings: 'Профиль', sections: 'Разделы' },
   sections: { reading: 'Reading', listening: 'Listening', writing: 'Writing', speaking: 'Speaking', verbal: 'Verbal', quant: 'Quant', words: 'Слова', essay: 'Эссе' },
-  today: {
-    title: 'Сегодня',
-    plan: 'План на сегодня',
-    loading: 'Загружаем план на сегодня',
-    steps: (n) => ruSteps[n] ?? ru({ one: '# шаг', few: '# шага', many: '# шагов', other: '# шага' })(n),
-    aboutMinutes: ru({ one: 'около # минуты', few: 'около # минут', many: 'около # минут', other: 'около # минуты' }),
+  navigation: { exam: 'Экзамен', chooseExam: 'Выбрать экзамен', examSwitch: (name) => `Экзамен: ${name}, сменить`, profile: 'Профиль' },
+  home: {
+    loading: 'Загружаем тренировку', first: 'Первая тренировка',
+    firstNote: 'После каждого ответа — разбор на вашем языке: почему верно и где ловушка в остальных вариантах.',
+    chooseSection: 'Разделы', configure: 'Настроить тренировку', empty: 'Пока нет доступных заданий',
+    start: 'Начать', starting: 'Начинаем…',
     minutes: ru({ one: '# минута', few: '# минуты', many: '# минут', other: '# минуты' }),
-    approxShort: (n) => `~${n} мин`,
-    short: (n) => `${n} мин`,
-    noSteps: 'На сегодня шагов нет',
-    start: 'Начать',
-    now: (title) => `Сейчас: ${title}`,
-    allDoneLine: 'На сегодня всё.',
-    allDoneTitle: 'На сегодня всё',
-    tomorrow: 'Завтра здесь будет новый план.',
-    offlineTitle: 'Нет сети',
-    offlineText: 'План на сегодня загрузится, когда появится сеть.',
-    failedTitle: 'Не получилось загрузить план',
-    failedText: 'Мы уже знаем об ошибке. Попробуйте ещё раз чуть позже.',
-    retry: 'Повторить',
-    staleOffline: 'Нет сети — план обновится сам, когда она появится.',
-    staleFailed: 'Не получилось обновить план — покажем свежий, как только сервер ответит.',
-    needNetwork: 'Чтобы начать, нужна сеть. Когда она появится, всё заработает.',
+    duration: (n) => n < 60 ? `${n} мин` : `${Math.floor(n / 60)} ч ${n % 60} мин`,
+    approxShort: (n) => `~${n}\u00a0мин`,
+    offlineTitle: 'Нет сети', offlineText: 'Тренировка загрузится, когда сеть вернётся.',
+    failedTitle: 'Не получилось загрузить тренировку', failedText: 'Мы уже знаем об ошибке. Попробуйте ещё раз чуть позже.',
+    retry: 'Попробовать снова', staleOffline: 'Нет сети — обновим, когда она появится.',
+    staleFailed: 'Не получилось обновить — покажем свежее, как только сервер ответит.',
+    needNetwork: 'Чтобы начать, нужна сеть: задания скачаются целиком, и дальше можно без неё.',
+    mistakes: 'Повторить мои ошибки', mistakeCount: ru({ one: '# задание из прошлых тренировок', few: '# задания из прошлых тренировок', many: '# заданий из прошлых тренировок', other: '# задания из прошлых тренировок' }),
+    weakSpot: 'Слабое место', correct: 'верно', week: 'Эта неделя', days: ru({ one: '# день', few: '# дня', many: '# дней', other: '# дня' }), answers: ru({ one: '# задание', few: '# задания', many: '# заданий', other: '# задания' }), toeflEmpty: 'Здесь будут тренировки по четырём частям TOEFL.',
   },
   placeholder: {
-    soon: 'Скоро',
-    words: 'Здесь будет словарь: слова на сегодня, повторение и поиск.',
-    exam: 'Здесь будут пробный экзамен как настоящий GRE и эссе с оценкой.',
-    step: 'Здесь начнётся шаг. Тренировки и слова появятся в следующих частях.',
+    words: 'Здесь будут слова: учить, повторять и искать.',
+    exam: 'Здесь будут пробные экзамены GRE и эссе с оценкой.', toefl: 'Здесь будут пробные экзамены TOEFL с оценкой Writing и Speaking.',
   },
   progress: {
-    emptyTitle: 'Тренировок ещё не было',
-    emptyText: 'Здесь появятся темы, где больше всего ошибок, — по порядку, с чего начать.',
+    emptyTitle: 'Здесь появится ваш прогресс',
+    emptyText: 'Здесь будет точность по разделам, история тренировок и примерный балл.',
+    first: 'Первая тренировка',
   },
   settings: {
     signOut: 'Выйти',
     signOutFailed: 'Не получилось выйти. Попробуйте ещё раз.',
     signOutOffline: 'Нет сети — выйти получится, когда она появится.',
-    version: (v) => `Версия ${v}`,
+    version: (v) => `Версия ${v}`, language: 'Язык', theme: 'Тема', textSize: 'Размер текста', light: 'Светлая', dark: 'Тёмная', normal: 'Обычный', large: 'Крупнее', subscription: 'Подписка', identities: 'Способы входа', contact: 'Написать нам', saveFailed: 'Не получилось сохранить настройку на устройстве. Попробуйте ещё раз.', localeFailed: 'Не получилось сохранить язык. Попробуйте ещё раз.', telegram: 'Вход через Telegram',
   },
+  exams: { title: 'К какому экзамену готовитесь?', lead: 'От него зависят задания, слова и пробный экзамен. Сменить можно в любой момент.', gre: 'Магистратура и PhD', toefl: 'Английский для учёбы', chooseFailed: 'Не получилось сохранить выбор. Попробуйте ещё раз.', changeFailed: 'Не получилось сменить экзамен. Попробуйте ещё раз.', offline: 'Нет сети — выбрать экзамен получится, когда она вернётся.', note: 'У каждого экзамена свой прогресс, при смене он не теряется.' },
   signIn: {
-    tagline: 'Подготовка к GRE® с разбором каждой ошибки — по-русски и по-английски.',
-    telegram: 'Войти через Telegram',
+    title: 'GRE® и TOEFL® без репетитора',
+    tagline: 'Вопросы как на настоящем экзамене и разбор каждой ошибки на вашем языке.',
     apple: 'Вход с Apple',
     google: 'Войти с аккаунтом Google',
     legal: 'Продолжая, вы принимаете условия и политику конфиденциальности.',
     notConnected: {
-      telegram: 'Вход через Telegram ещё не подключён — он появится до беты.',
       apple: 'Вход с Apple ещё не подключён — он появится до беты.',
       google: 'Вход через Google ещё не подключён — он появится до беты.',
     },
@@ -340,56 +367,45 @@ const dictRu: Dict = {
 const dictEn: Dict = {
   training: { ...trainingEn, questionsCount: en("#\u00a0question", "#\u00a0questions") },
   back: 'Back',
-  tabs: { today: 'Today', words: 'Words', exam: 'Exam', progress: 'Progress', settings: 'Settings', sections: 'Sections' },
+  tabs: { train: 'Practice', words: 'Words', exam: 'Exam', progress: 'Progress', settings: 'Profile', sections: 'Sections' },
   sections: { reading: 'Reading', listening: 'Listening', writing: 'Writing', speaking: 'Speaking', verbal: 'Verbal', quant: 'Quant', words: 'Words', essay: 'Essay' },
-  today: {
-    title: 'Today',
-    plan: 'Today’s plan',
-    loading: 'Loading today’s plan',
-    steps: (n) => enSteps[n] ?? en('# step', '# steps')(n),
-    aboutMinutes: en('about # minute', 'about # minutes'),
-    minutes: en('# minute', '# minutes'),
-    approxShort: (n) => `~${n} min`,
-    short: (n) => `${n} min`,
-    noSteps: 'No steps for today',
-    start: 'Start',
-    now: (title) => `Now: ${title}`,
-    allDoneLine: 'That’s all for today.',
-    allDoneTitle: 'That’s all for today',
-    tomorrow: 'Tomorrow there will be a new plan here.',
-    offlineTitle: 'No connection',
-    offlineText: 'Today’s plan will load once you’re back online.',
-    failedTitle: 'Couldn’t load the plan',
-    failedText: 'We already know about the error. Please try again a bit later.',
-    retry: 'Try again',
-    staleOffline: 'No connection — the plan will update by itself once it’s back.',
-    staleFailed: 'Couldn’t update the plan — we’ll show a fresh one as soon as the server responds.',
-    needNetwork: 'You need a connection to start. Once it’s back, everything will work.',
+  navigation: { exam: 'Exam', chooseExam: 'Choose an exam', examSwitch: (name) => `Exam: ${name}, change`, profile: 'Profile' },
+  home: {
+    loading: 'Loading practice', first: 'First practice',
+    firstNote: 'After each answer, get an explanation in your language: why it’s correct and where the other options mislead.',
+    chooseSection: 'Sections', configure: 'Customize practice', empty: 'No questions available yet',
+    start: 'Start', starting: 'Starting…',
+    minutes: en('# minute', '# minutes'), duration: (n) => n < 60 ? `${n} min` : `${Math.floor(n / 60)} hr ${n % 60} min`, approxShort: (n) => `~${n}\u00a0min`,
+    offlineTitle: 'No connection', offlineText: 'Practice will load once you’re back online.',
+    failedTitle: 'Couldn’t load practice', failedText: 'We already know about the error. Please try again a bit later.',
+    retry: 'Try again', staleOffline: 'No connection — practice will update by itself once it’s back.',
+    staleFailed: 'Couldn’t update practice — we’ll show fresh data as soon as the server responds.',
+    needNetwork: 'You need a connection to download the questions. After that, you can practice offline.',
+    mistakes: 'Review my mistakes', mistakeCount: en('# question from previous practice', '# questions from previous practice'), weakSpot: 'Weak spot', correct: 'correct', week: 'This week', days: en('# day', '# days'), answers: en('# question', '# questions'), toeflEmpty: 'Practice the four TOEFL sections here.',
   },
   placeholder: {
-    soon: 'Coming soon',
-    words: 'The dictionary will live here: today’s words, review and search.',
-    exam: 'Practice tests just like the real GRE and scored essays will live here.',
-    step: 'The step will start here. Practice and words arrive in the next parts.',
+    words: 'Learn, review and look up words here.',
+    exam: 'GRE practice tests and scored essays will be here.', toefl: 'TOEFL practice tests and Writing and Speaking feedback will be here.',
   },
   progress: {
-    emptyTitle: 'No practice yet',
-    emptyText: 'Topics with the most mistakes will appear here — in order, starting with the first to work on.',
+    emptyTitle: 'Your progress will appear here',
+    emptyText: 'See what you do well and what needs more practice here.',
+    first: 'First practice',
   },
   settings: {
     signOut: 'Sign out',
     signOutFailed: 'Couldn’t sign out. Please try again.',
     signOutOffline: 'No connection — you can sign out once it’s back.',
-    version: (v) => `Version ${v}`,
+    version: (v) => `Version ${v}`, language: 'Language', theme: 'Theme', textSize: 'Text size', light: 'Light', dark: 'Dark', normal: 'Normal', large: 'Larger', subscription: 'Subscription', identities: 'Sign-in methods', contact: 'Contact us', saveFailed: 'Couldn’t save this setting on your device. Please try again.', localeFailed: 'Couldn’t save your language. Please try again.', telegram: 'Signed in with Telegram',
   },
+  exams: { title: 'Which exam are you preparing for?', lead: 'Your questions, words and practice tests depend on it. You can change it anytime.', gre: 'Graduate school and PhD', toefl: 'English for study', chooseFailed: 'Couldn’t save your choice. Please try again.', changeFailed: 'Couldn’t change the exam. Please try again.', offline: 'You need a connection to choose an exam.', note: 'Each exam keeps its own progress when you switch.' },
   signIn: {
-    tagline: 'GRE® prep that explains every mistake — in Russian and in English.',
-    telegram: 'Log in with Telegram',
+    title: 'GRE® and TOEFL® without a tutor',
+    tagline: 'Exam-style questions with explanations for every mistake in your language.',
     apple: 'Sign in with Apple',
     google: 'Sign in with Google',
     legal: 'By continuing, you accept the terms and the privacy policy.',
     notConnected: {
-      telegram: 'Log-in with Telegram isn’t connected yet — it will be before the beta.',
       apple: 'Sign in with Apple isn’t connected yet — it will be before the beta.',
       google: 'Sign-in with Google isn’t connected yet — it will be before the beta.',
     },
@@ -419,4 +435,4 @@ export const dictionaries: Readonly<Record<Locale, Dict>> = { ru: dictRu, en: di
 
 /** Дисклеймер ETS — всегда по-английски (PRODUCT.md, «Brand Commitments»). */
 export const GRE_DISCLAIMER =
-  'GRE® is a registered trademark of Educational Testing Service (ETS). This product is not endorsed or approved by ETS.';
+  'GRE® and TOEFL® are registered trademarks of Educational Testing Service (ETS). This product is not endorsed or approved by ETS.';

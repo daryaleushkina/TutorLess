@@ -27,62 +27,34 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.em
-import androidx.compose.ui.unit.sp
 import dev.greprepapp.app.R
 import dev.greprepapp.design.Gp
+import greprep.design.GpSignInApple
+import greprep.design.GpSignInGoogle
 import greprep.design.GpSize
 import greprep.design.GpSpace
 
 /*
- * Кнопки входа — официального вида по правилам каждой компании (решение Даши 05.10.2026, DESIGN.md,
- * «Правило официальных кнопок»): шрифт, размер и цвета у них свои, а не токены «Шагов». Значения ниже — из
- * гайдлайнов компаний, а не наш выбор: Telegram — системный шрифт 16/600; Apple — 17/500; Google — Roboto
- * Medium 14/20 с разрядкой 0,25 px.
- *
- * Системный шрифт Android — это Roboto, но не везде: у Samsung свой (SamsungOne), а Google требует именно
- * Roboto Medium. Поэтому Roboto (OFL) лежит в приложении — кнопки одинаковы на всех телефонах.
+ * Кнопка Apple — системный шрифт платформы, как на вебе и Apple (решение 10.10.2026).
+ * Официальная типографика — в токенах; Google требует Roboto Medium, в том числе на Samsung.
  */
-private val Roboto =
-    FontFamily(
-        Font(R.font.roboto_medium, FontWeight.W500),
-        Font(R.font.roboto_semibold, FontWeight.W600),
+private val Roboto = FontFamily(Font(R.font.roboto_medium, GpSignInGoogle.fontWeight))
+private val AppleText =
+    TextStyle(
+        fontFamily = GpSignInApple.fontFamily,
+        fontSize = GpSignInApple.fontSize,
+        lineHeight = GpSignInApple.lineHeight,
+        fontWeight = GpSignInApple.fontWeight,
     )
-private val TelegramText = TextStyle(fontFamily = Roboto, fontSize = 16.sp, lineHeight = 20.sp, fontWeight = FontWeight.W600)
-private val AppleText = TextStyle(fontFamily = Roboto, fontSize = 17.sp, lineHeight = 20.sp, fontWeight = FontWeight.W500)
 private val GoogleText =
     TextStyle(
         fontFamily = Roboto,
-        fontSize = 14.sp,
-        lineHeight = 20.sp,
-        fontWeight = FontWeight.W500,
-        letterSpacing = 0.018.em,
+        fontSize = GpSignInGoogle.fontSize,
+        lineHeight = GpSignInGoogle.lineHeight,
+        fontWeight = GpSignInGoogle.fontWeight,
+        letterSpacing = GpSignInGoogle.tracking,
     )
-
-/** Новая кнопка Telegram: синяя капсула с самолётиком. */
-@Composable
-fun TelegramSignInButton(
-    busy: Boolean,
-    enabled: Boolean,
-    onClick: () -> Unit,
-) {
-    val colors = Gp.colors
-    ProviderButton(
-        text = stringResource(R.string.signin_telegram),
-        textStyle = TelegramText,
-        logo = R.drawable.ic_logo_telegram,
-        logoTint = colors.signInTelegramText,
-        container = colors.signInTelegramBg,
-        content = colors.signInTelegramText,
-        border = null,
-        busy = busy,
-        enabled = enabled,
-        onClick = onClick,
-        tag = "signin.telegram",
-    )
-}
 
 /** «Вход с Apple»: только чёрная (светлая тема) или белая (тёмная). */
 @Composable
@@ -159,7 +131,7 @@ private fun ProviderButton(
             ),
         // Высота — минимум, а не жёстко: при крупном шрифте подпись переносится и кнопка растёт, а не режет её.
         contentPadding = PaddingValues(horizontal = GpSpace.s12, vertical = GpSpace.s8),
-        modifier = Modifier.fillMaxWidth().heightIn(min = GpSize.buttonCompact).testTag(tag),
+        modifier = Modifier.fillMaxWidth().heightIn(min = GpSize.button).testTag(tag),
     ) {
         Box(contentAlignment = Alignment.Center) {
             Row(

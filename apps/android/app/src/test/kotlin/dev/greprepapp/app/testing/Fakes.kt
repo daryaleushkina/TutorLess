@@ -2,7 +2,6 @@ package dev.greprepapp.app.testing
 
 import dev.greprepapp.api.apis.AuthApi
 import dev.greprepapp.api.apis.PublicApi
-import dev.greprepapp.api.apis.TodayApi
 import dev.greprepapp.api.models.AuthorizationCodeSignIn
 import dev.greprepapp.api.models.ClientError
 import dev.greprepapp.api.models.DevSignIn
@@ -12,10 +11,7 @@ import dev.greprepapp.api.models.Locale
 import dev.greprepapp.api.models.Role
 import dev.greprepapp.api.models.Section
 import dev.greprepapp.api.models.Session
-import dev.greprepapp.api.models.StepState
 import dev.greprepapp.api.models.TelegramMiniAppSignIn
-import dev.greprepapp.api.models.Today
-import dev.greprepapp.api.models.TodayStep
 import dev.greprepapp.api.models.User
 import dev.greprepapp.app.core.AppForeground
 import dev.greprepapp.app.core.NetworkStatus
@@ -64,38 +60,6 @@ fun <T> Reply<T>.toResponse(): Response<T> =
         }
     }
 
-fun plan(vararg steps: TodayStep): Today = Today(date = "2026-10-06", steps = steps.toList())
-
-fun step(
-    id: String,
-    section: Section = Section.VERBAL,
-    state: StepState = StepState.NEXT,
-    minutes: Int = 10,
-    title: String = "Шаг $id",
-): TodayStep = TodayStep(id = id, section = section, title = title, minutes = minutes, state = state)
-
-/** План по умолчанию — как у сервера каркаса для нового человека (server/internal/today). */
-val starterPlan: Today =
-    plan(
-        step("words", Section.WORDS, StepState.CURRENT, 5, "Слова: повторение"),
-        step("verbal", Section.VERBAL, StepState.NEXT, 10, "Verbal: Text Completion"),
-        step("quant", Section.QUANT, StepState.NEXT, 10, "Quant: Quantitative Comparison"),
-    )
-
-class FakeTodayApi : TodayApi {
-    var reply: Reply<Today> = Reply.Ok(starterPlan)
-    var calls = 0
-
-    /** Задержать ответ, пока тест не отпустит его (поздний ответ после выхода). */
-    var gate: CompletableDeferred<Unit>? = null
-
-    override suspend fun getToday(): Response<Today> {
-        calls++
-        gate?.await()
-        return reply.toResponse()
-    }
-}
-
 fun session(token: String? = "token-1"): Session =
     Session(
         expiresAt = "2026-11-05T00:00:00Z",
@@ -133,7 +97,13 @@ class FakeAuthApi : AuthApi {
 class FakePublicApi : PublicApi {
     val reports = mutableListOf<ClientError>()
 
-    override suspend fun getExams(): Response<dev.greprepapp.api.models.ExamList> = error("not used")
+    var exams: Reply<dev.greprepapp.api.models.ExamList> =
+        Reply.Ok(
+            dev.greprepapp.api.models
+                .ExamList(emptyList()),
+        )
+
+    override suspend fun getExams(): Response<dev.greprepapp.api.models.ExamList> = exams.toResponse()
 
     override suspend fun getHealth(): Response<Health> = error("not used")
 

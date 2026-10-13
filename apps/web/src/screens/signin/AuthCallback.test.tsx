@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
-import { apiError, fakeServer, json, renderApp, STARTER, user } from '../../test/app';
+import { apiError, fakeServer, json, renderApp, OPTIONS, user } from '../../test/app';
 
 /** Попытка, которую оставил бы beginSignIn перед уходом к провайдеру. */
 function storeAttempt(state = 'state-1', returnTo = '/') {
   sessionStorage.setItem(
     'greprep.signIn',
     JSON.stringify({
-      provider: 'telegram',
+      provider: 'google',
       state,
       nonce: 'nonce-0123456789abcdef',
       codeVerifier: 'v'.repeat(43),
@@ -20,19 +20,19 @@ function storeAttempt(state = 'state-1', returnTo = '/') {
 const signedOut = { 'GET /api/me': () => apiError(401, 'unauthorized') };
 
 describe('возврат от провайдера', () => {
-  it('код меняется на сессию на сервере (куки, PKCE, nonce, язык) — дальше «Сегодня»', async () => {
+  it('код меняется на сессию на сервере (куки, PKCE, nonce, язык) — дальше «Тренировка»', async () => {
     storeAttempt();
     const { requests } = fakeServer({
       ...signedOut,
       'POST /api/auth/oidc/code': () => json({ expiresAt: '2026-11-05T10:00:00Z', user: user() }),
-      'GET /api/today': () => json(STARTER),
+      'GET /api/trainings/options': () => json(OPTIONS),
     });
     const { screen, router } = await renderApp({ path: '/auth/callback?code=c-1&state=state-1' });
-    await expect.element(screen.getByText('Три шага · около 25 минут')).toBeVisible();
+    await expect.element(screen.getByText('После каждого ответа — разбор на вашем языке: почему верно и где ловушка в остальных вариантах.')).toBeVisible();
     expect(router.state.location.pathname).toBe('/');
     const body: unknown = await requests.find((r) => r.url.endsWith('/api/auth/oidc/code'))?.json();
     expect(body).toEqual({
-      provider: 'telegram',
+      provider: 'google',
       code: 'c-1',
       codeVerifier: 'v'.repeat(43),
       redirectUri: `${location.origin}/auth/callback`,
@@ -61,11 +61,11 @@ describe('возврат от провайдера', () => {
   });
 
   it('успешный вход возвращает адрес попытки вместе с параметрами и якорем', async () => {
-    storeAttempt('state-1', '/step/words?from=plan#details');
-    fakeServer({ ...signedOut, 'POST /api/auth/oidc/code': () => json({ expiresAt: '2026-11-05T10:00:00Z', user: user() }), 'GET /api/today': () => json(STARTER) });
+    storeAttempt('state-1', '/words?from=plan#details');
+    fakeServer({ ...signedOut, 'POST /api/auth/oidc/code': () => json({ expiresAt: '2026-11-05T10:00:00Z', user: user() }), 'GET /api/trainings/options': () => json(OPTIONS) });
     const { screen, router } = await renderApp({ path: '/auth/callback?code=c&state=state-1' });
-    await expect.element(screen.getByText('Шаг words')).toBeVisible();
-    expect(router.state.location.href).toBe('/step/words?from=plan#details');
+    await expect.element(screen.getByRole('heading', { name: 'Слова', exact: true })).toBeVisible();
+    expect(router.state.location.href).toBe('/words?from=plan#details');
   });
 
   it.each(['missing-code', 'expired'])('неудача %s сохраняет адрес следующей попытки', async (failure) => {
@@ -153,14 +153,14 @@ describe('гонка с запросом «кто вошёл»', () => {
         setTimeout(releaseMe, 50);
         return json({ expiresAt: '2026-11-05T10:00:00Z', user: user() });
       },
-      'GET /api/today': () => json(STARTER),
+      'GET /api/trainings/options': () => json(OPTIONS),
     });
     const { screen, router } = await renderApp({ path: '/auth/callback?code=c-1&state=state-1' });
-    await expect.element(screen.getByText('Три шага · около 25 минут')).toBeVisible();
-    // Ответ /api/me пришёл (и обработан, пока экран «Сегодня») — сессия осталась.
+    await expect.element(screen.getByText('После каждого ответа — разбор на вашем языке: почему верно и где ловушка в остальных вариантах.')).toBeVisible();
+    // Ответ /api/me пришёл (и обработан, пока экран «Тренировка») — сессия осталась.
     await expect.poll(() => meReturned).toBe(true);
     await expect.poll(() => router.state.location.pathname).toBe('/');
     expect(router.state.location.pathname).toBe('/');
-    await expect.element(screen.getByText('Три шага · около 25 минут')).toBeVisible();
+    await expect.element(screen.getByText('После каждого ответа — разбор на вашем языке: почему верно и где ловушка в остальных вариантах.')).toBeVisible();
   });
 });

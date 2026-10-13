@@ -1,14 +1,13 @@
 // Маршруты. Одно дерево на обе оболочки: мини-апп живёт под /tg (basepath), сайт — в корне.
-//   /                 «Сегодня»          (вкладка)
+//   /                 «Тренировка»          (вкладка)
 //   /words /exam /progress               (вкладки; пока заглушки до своих фич)
-//   /settings         настройки          (на компьютере — пункт панели, на телефоне — экран из «Прогресса»)
-//   /step/$stepId     шаг из ленты       (пока заглушка; тренировки — ROADMAP §5)
+//   /settings         настройки          (на компьютере — пункт панели, на телефоне — аватар в шапке)
 //   /training/new     конструктор        (ленивый маршрут)
 //   /training/$trainingId локальная сессия и итог
 //   /signin           вход               (только сайт)
 //   /auth/callback    возврат от провайдера входа (только сайт)
 import type { QueryClient } from '@tanstack/react-query';
-import { createRootRouteWithContext, createRoute, createRouter, lazyRouteComponent, Outlet, type RouterHistory } from '@tanstack/react-router';
+import { createRootRouteWithContext, createRoute, createRouter, createLazyRoute, lazyRouteComponent, Outlet, type RouterHistory } from '@tanstack/react-router';
 import { schemas } from '@greprep/api-client';
 import { z } from 'zod';
 import { safeReturnTo } from './auth/returnTo';
@@ -17,7 +16,7 @@ import { loadSections, SectionLoadError } from './sections';
 import { Crashed, reportRouteError } from './errors/ErrorBoundary';
 import { AppGate, TabsLayout } from './layout/AppLayout';
 import { SignInScreen } from './screens/signin/SignInScreen';
-import { TodayScreen } from './screens/today/TodayScreen';
+import { HomeScreen } from './screens/home/HomeScreen';
 import { TELEGRAM_BASE, type Shell } from './shell';
 
 export interface RouterContext {
@@ -46,39 +45,40 @@ const callbackRoute = createRoute({ getParentRoute: () => rootRoute, path: 'auth
 const appRoute = createRoute({ getParentRoute: () => rootRoute, id: 'app', component: AppGate });
 const tabsRoute = createRoute({ getParentRoute: () => appRoute, id: 'tabs', component: TabsLayout });
 
-const todayRoute = createRoute({ getParentRoute: () => tabsRoute, path: '/', component: TodayScreen });
+const homeRoute = createRoute({ getParentRoute: () => tabsRoute, path: '/', component: HomeScreen });
+// Фабрика маршрутов загружается с первым экраном. Иначе WebKit может закэшировать отказ её
+// общего чанка в офлайне; новый URL пакета разделов не сбрасывает отказ статической зависимости.
 const wordsRoute = createRoute({ getParentRoute: () => tabsRoute, path: 'words', errorComponent: SectionUnavailable })
-  .lazy(() => loadSections().then((m) => m.wordsRoute));
+  .lazy(() => loadSections().then((m) => createLazyRoute('/app/tabs/words')({ component: m.WordsScreen })));
 const examRoute = createRoute({ getParentRoute: () => tabsRoute, path: 'exam', errorComponent: SectionUnavailable })
-  .lazy(() => loadSections().then((m) => m.examRoute));
+  .lazy(() => loadSections().then((m) => createLazyRoute('/app/tabs/exam')({ component: m.ExamScreen })));
 const progressRoute = createRoute({ getParentRoute: () => tabsRoute, path: 'progress', errorComponent: SectionUnavailable })
-  .lazy(() => loadSections().then((m) => m.progressRoute));
+  .lazy(() => loadSections().then((m) => createLazyRoute('/app/tabs/progress')({ component: m.ProgressScreen })));
 const settingsRoute = createRoute({ getParentRoute: () => tabsRoute, path: 'settings', errorComponent: SectionUnavailable })
-  .lazy(() => loadSections().then((m) => m.settingsRoute));
-const stepRoute = createRoute({ getParentRoute: () => appRoute, path: 'step/$stepId', errorComponent: SectionUnavailable })
-  .lazy(() => loadSections().then((m) => m.stepRoute));
+  .lazy(() => loadSections().then((m) => createLazyRoute('/app/tabs/settings')({ component: m.SettingsScreen })));
 
 const builderRoute = createRoute({ getParentRoute: () => appRoute, path: 'training/new',
-  validateSearch: z.object({ section: z.enum(['verbal', 'quant']).optional().catch(undefined), type: schemas.QuestionType.optional().catch(undefined) }),
+  validateSearch: z.object({ section: schemas.Section.optional().catch(undefined), type: schemas.QuestionType.optional().catch(undefined) }),
 }).lazy(() => import('./training/routes.lazy').then((m) => m.builderRoute));
-const trainingRoute = createRoute({ getParentRoute: () => appRoute, path: 'training/$trainingId' })
+const trainingRoute = createRoute({ getParentRoute: () => appRoute, path: 'training/$trainingId', validateSearch: z.object({ language: z.enum(['ru', 'en']).optional().catch(undefined) }) })
   .lazy(() => import('./training/routes.lazy').then((m) => m.sessionRoute));
 
-const reviewRoute = createRoute({ getParentRoute: () => appRoute, path: 'training/$trainingId/review' })
+const reviewSearch = z.object({ filter: z.enum(['all', 'mistakes', 'flagged']).optional().catch(undefined), language: z.enum(['ru', 'en']).optional().catch(undefined) });
+const reviewRoute = createRoute({ getParentRoute: () => appRoute, path: 'training/$trainingId/review', validateSearch: reviewSearch })
   .lazy(() => import('./training/routes.lazy').then((m) => m.reviewRoute));
 const trainingPosition = z.object({ trainingId: z.string(), position: z.string().regex(/^(0|[1-9]\d*)$/)
   .transform(Number).refine(Number.isSafeInteger).nullable().catch(null) });
 const positionParams = { parse: (params: Record<string, string>) => trainingPosition.parse(params), stringify: (params: z.infer<typeof trainingPosition>) => ({ ...params, position: String(params.position) }) };
-const reviewItemRoute = createRoute({ getParentRoute: () => appRoute, path: 'training/$trainingId/review/$position', params: positionParams })
+const reviewItemRoute = createRoute({ getParentRoute: () => appRoute, path: 'training/$trainingId/review/$position', params: positionParams, validateSearch: reviewSearch })
   .lazy(() => import('./training/routes.lazy').then((m) => m.reviewItemRoute));
 const reportRoute = createRoute({ getParentRoute: () => appRoute, path: 'training/$trainingId/report/$position', params: positionParams,
-  validateSearch: z.object({ returnTo: z.enum(['session', 'review']).catch('session').default('session') }),
+  validateSearch: z.object({ returnTo: z.enum(['session', 'review']).catch('session').default('session'), language: z.enum(['ru', 'en']).optional().catch(undefined), filter: z.enum(['all', 'mistakes', 'flagged']).optional().catch(undefined) }),
 }).lazy(() => import('./training/routes.lazy').then((m) => m.reportRoute));
 
 const routeTree = rootRoute.addChildren([
   signInRoute,
   callbackRoute,
-  appRoute.addChildren([tabsRoute.addChildren([todayRoute, wordsRoute, examRoute, progressRoute, settingsRoute]), stepRoute, builderRoute, trainingRoute, reviewRoute, reviewItemRoute, reportRoute]),
+  appRoute.addChildren([tabsRoute.addChildren([homeRoute, wordsRoute, examRoute, progressRoute, settingsRoute]), builderRoute, trainingRoute, reviewRoute, reviewItemRoute, reportRoute]),
 ]);
 
 /** history — для тестов (память вместо адресной строки); в приложении — адресная строка браузера. */

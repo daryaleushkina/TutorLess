@@ -8,9 +8,9 @@ import dev.greprepapp.api.ApiResult
 import dev.greprepapp.api.GrePrepApi
 import dev.greprepapp.api.apiCall
 import dev.greprepapp.api.apiCallNoContent
+import dev.greprepapp.api.apis.AccountApi
 import dev.greprepapp.api.apis.AuthApi
 import dev.greprepapp.api.apis.PublicApi
-import dev.greprepapp.api.apis.TodayApi
 import dev.greprepapp.api.apis.TrainingsApi
 import dev.greprepapp.app.core.AppConfig
 import dev.greprepapp.app.core.session.AccountResolver
@@ -56,7 +56,14 @@ object NetworkModule {
             base
                 .newBuilder()
                 .addInterceptor { chain ->
-                    val request = chain.request()
+                    val request =
+                        chain
+                            .request()
+                            .newBuilder()
+                            .header(
+                                "X-Training-Capabilities",
+                                dev.greprepapp.app.feature.training.TrainingRepository.CAPABILITIES,
+                            ).build()
                     val token = holder.token
                     if (token.isNullOrEmpty() || request.header(AUTHORIZATION) != null) {
                         chain.proceed(request)
@@ -78,7 +85,7 @@ object NetworkModule {
 
     // Экраны получают только свою часть договора — в тестах её легко подменить.
     @Provides
-    fun todayApi(api: GrePrepApi): TodayApi = api.today
+    fun accountApi(api: GrePrepApi): AccountApi = api.account
 
     @Provides
     fun authApi(

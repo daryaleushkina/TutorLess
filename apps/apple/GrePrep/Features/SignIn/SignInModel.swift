@@ -3,18 +3,19 @@ import Foundation
 import GPAPI
 import Observation
 
-/// Вход вне Telegram: Telegram, Apple, Google (PRODUCT.md, «Stack», вход) и подмена в отладочной сборке.
+/// Вход: Apple и Google (PRODUCT.md, «Stack», вход) и подмена в отладочной сборке.
 @MainActor
 @Observable
 final class SignInModel {
     enum Method: Hashable {
-        case telegram, apple, google, development
+        case apple, google, development
     }
 
     /// Что сказать под кнопками. Без всплывающих окон: ответ рядом с тем, что нажали (PRODUCT.md, доступность).
     enum Message: Equatable {
         case notConnectedYet(Method)
         case offline
+        case cancelled
         case tooManyAttempts
         case failed
     }
@@ -68,7 +69,10 @@ final class SignInModel {
         switch result {
         case let .failure(error):
             // Человек сам закрыл окно Apple — это не ошибка.
-            if (error as? ASAuthorizationError)?.code == .canceled { return }
+            if (error as? ASAuthorizationError)?.code == .canceled {
+                message = .cancelled
+                return
+            }
             // Без аккаунта разработчика у сборки нет права на вход с Apple, и система отказывает всегда:
             // честно сказать «ещё не подключён» и не засорять журнал ошибок (#6).
             guard app.config.appleSignInEnabled else {
@@ -107,14 +111,20 @@ final class SignInModel {
         }
     }
 
-    // MARK: - Telegram и Google
+    // MARK: - Google
 
     /// authenticate — системное окно входа (WebAuthenticationSession из SwiftUI); в тестах — подмена.
     func signInWithWeb(
         _ provider: WebProvider,
         authenticate: (URL, URL) async throws -> URL
     ) async {
-        let method: Method = provider == .telegram ? .telegram : .google
+        let method: Method
+        let apiProvider: Components.Schemas.IdentityProvider
+        switch provider {
+        case .google:
+            method = .google
+            apiProvider = .google
+        }
         guard let config = app.config.webProviders[provider] else {
             // Аккаунтов у провайдеров ещё нет (ROADMAP §2): кнопка есть, вход — когда Даша их заведёт.
             message = .notConnectedYet(method)
@@ -143,6 +153,8 @@ final class SignInModel {
             if (error as? ASWebAuthenticationSessionError)?.code != .canceledLogin {
                 app.report("\(provider) web auth: \(error)", route: "sign-in")
                 message = .failed
+            } else {
+                message = .cancelled
             }
             return
         }
@@ -150,7 +162,7 @@ final class SignInModel {
             let code = try WebSignIn.code(from: callback, expectedState: attempt.state)
             try finish(
                 await app.api.signInWithAuthorizationCode(
-                    provider: provider == .telegram ? .telegram : .google,
+                    provider: apiProvider,
                     code: code, codeVerifier: attempt.codeVerifier,
                     redirectURI: attempt.redirectURI.absoluteString, nonce: attempt.nonce, locale: locale
                 ))
@@ -177,7 +189,7 @@ final class SignInModel {
         let failure = APIFailure(error)
         switch failure {
         case .cancelled:
-            return
+            message = .cancelled
         case .offline:
             message = .offline
         case let .server(_, code, _) where code == "too_many_requests":

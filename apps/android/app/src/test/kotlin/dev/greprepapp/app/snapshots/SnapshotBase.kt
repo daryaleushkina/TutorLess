@@ -10,7 +10,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.captureToImage
-import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.Density
 import com.github.takahirom.roborazzi.captureRoboImage
@@ -18,22 +17,20 @@ import dev.greprepapp.app.core.session.SignOutReason
 import dev.greprepapp.app.feature.shell.AppTab
 import dev.greprepapp.app.feature.shell.MainScaffold
 import dev.greprepapp.app.feature.shell.SettingsScreen
-import dev.greprepapp.app.feature.shell.StepPlaceholderScreen
 import dev.greprepapp.app.feature.signin.SignInContent
 import dev.greprepapp.app.feature.signin.SignInViewModel
-import dev.greprepapp.app.feature.today.TodayContent
-import dev.greprepapp.app.feature.today.TodayPlan
-import dev.greprepapp.app.feature.today.TodayViewModel.Content
-import dev.greprepapp.app.feature.today.TodayViewModel.UiState
-import dev.greprepapp.app.testing.starterPlan
+import dev.greprepapp.app.testing.createAppComposeRule
 import dev.greprepapp.design.GpTheme
 import org.junit.Rule
 
-/** Общее для снимков: съёмка через правило Compose, экраны входа и «Сегодня» с готовым состоянием. */
+/** Общее для снимков: съёмка через правило Compose, экраны входа и оболочки с готовым состоянием. */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 abstract class SnapshotBase(
     private val theme: String,
 ) {
-    @get:Rule val compose = createComposeRule()
+    private var capturingLarge = false
+
+    @get:Rule val compose = createAppComposeRule()
 
     /**
      * Снять экран. Часы Compose стоят — крутилка загрузки и пульсация не делают кадр каждый раз другим.
@@ -47,8 +44,10 @@ abstract class SnapshotBase(
         name: String,
         large: Boolean = false,
         systemFontScale: Float = 1f,
+        beforeCapture: (() -> Unit)? = null,
         content: @Composable () -> Unit,
     ) {
+        capturingLarge = large
         var attempt by mutableIntStateOf(0)
         compose.mainClock.autoAdvance = false
         compose.setContent {
@@ -56,14 +55,34 @@ abstract class SnapshotBase(
             // конфигурацию всего процесса и задевает следующие тесты.
             val density = LocalDensity.current
             key(attempt) {
-                CompositionLocalProvider(LocalDensity provides Density(density.density, systemFontScale)) {
-                    GpTheme(darkTheme = theme == "dark", largeText = large) { content() }
+                CompositionLocalProvider(
+                    LocalDensity provides Density(density.density, systemFontScale),
+                    androidx.compose.ui.platform.LocalInspectionMode provides true,
+                ) {
+                    // Нажатие перед кадром не должно записать временный ripple: сценарии проверяют реальное нажатие,
+                    // а эталон — устойчивое состояние экрана после него.
+                    if (beforeCapture != null) {
+                        CompositionLocalProvider(androidx.compose.material3.LocalRippleConfiguration provides null) {
+                            GpTheme(darkTheme = theme == "dark", largeText = large) { content() }
+                        }
+                    } else {
+                        GpTheme(darkTheme = theme == "dark", largeText = large) { content() }
+                    }
                 }
             }
         }
         repeat(ATTEMPTS) {
             compose.mainClock.advanceTimeBy(FRAME_TIME)
             compose.waitForIdle()
+            if (beforeCapture != null) {
+                // ScrollTo ожидает кадры; на время действия отпускаем тестовые часы.
+                compose.mainClock.autoAdvance = true
+                beforeCapture()
+                compose.waitForIdle()
+                compose.mainClock.autoAdvance = false
+                compose.mainClock.advanceTimeBy(FRAME_TIME)
+                compose.waitForIdle()
+            }
             val frame = compose.onRoot().captureToImage().asAndroidBitmap()
             if (!frame.isSingleColor()) {
                 frame.captureRoboImage("src/test/snapshots/$name-$theme.png")
@@ -81,20 +100,61 @@ abstract class SnapshotBase(
     ) = SignInContent(state, reason, showsDevelopmentSignIn = false, onProvider = {}, onDevelopment = {})
 
     @Composable
-    protected fun Today(
-        state: UiState,
-        tab: AppTab = AppTab.Today,
-    ) = MainScaffold(appVersion = "0.1.0 (1)", onSignOut = {}, initialTab = tab) {
-        TodayContent(state = state, onRefresh = {}, onSelect = {})
+    protected fun Home(
+        state: dev.greprepapp.app.feature.shell.ShellState = ShellFixtures.first,
+        tab: AppTab = AppTab.Training,
+        action: dev.greprepapp.app.feature.shell.HomeAction =
+            dev.greprepapp.app.feature.shell
+                .HomeAction(),
+        active: dev.greprepapp.app.feature.training.ContinueTraining? = null,
+    ) = MainScaffold(appVersion = "0.1.0 (1)", onSignOut = {}, initialTab = tab, profile = state) {
+        dev.greprepapp.app.feature.shell
+            .TrainingHome(state, action, active, {}, {}, {}, {})
     }
 
     @Composable
-    protected fun Settings() = SettingsScreen(appVersion = "0.1.0 (1)", onSignOut = {}, onBack = {})
-
-    @Composable
-    protected fun Step() = StepPlaceholderScreen(step = TodayPlan.from(starterPlan).steps[1], onBack = {})
-
-    protected val starter = UiState(content = Content.Plan(TodayPlan.from(starterPlan)))
+    protected fun Settings() {
+        if (dev.greprepapp.design.Gp.isWide) {
+            MainScaffold(
+                appVersion = "0.1.0 (1)",
+                onSignOut = {},
+                profile = ShellFixtures.first,
+                theme =
+                    dev.greprepapp.app.core.theme.ThemeState(
+                        theme =
+                            if (theme ==
+                                "dark"
+                            ) {
+                                dev.greprepapp.app.core.theme.AppTheme.Dark
+                            } else {
+                                dev.greprepapp.app.core.theme.AppTheme.Light
+                            },
+                        restoring = false,
+                        largeText = capturingLarge,
+                    ),
+            ) {}
+        } else {
+            SettingsScreen(
+                appVersion = "0.1.0 (1)",
+                onSignOut = {},
+                onBack = {},
+                profile = ShellFixtures.first,
+                theme =
+                    dev.greprepapp.app.core.theme.ThemeState(
+                        theme =
+                            if (theme ==
+                                "dark"
+                            ) {
+                                dev.greprepapp.app.core.theme.AppTheme.Dark
+                            } else {
+                                dev.greprepapp.app.core.theme.AppTheme.Light
+                            },
+                        restoring = false,
+                        largeText = capturingLarge,
+                    ),
+            )
+        }
+    }
 
     private fun Bitmap.isSingleColor(): Boolean {
         val first = getPixel(0, 0)

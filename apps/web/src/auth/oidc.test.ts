@@ -29,7 +29,7 @@ describe('pkce', () => {
 describe('beginSignIn', () => {
   it('адрес провайдера: код, PKCE, state, nonce, свои параметры провайдера сохранены', async () => {
     const storage = memoryStorage();
-    const url = new URL(await beginSignIn('telegram', config, 'https://site.example', storage, 1000));
+    const url = new URL(await beginSignIn('google', config, 'https://site.example', storage, 1000));
     const attempt = JSON.parse(storage.data.values().next().value ?? '{}');
     expect(url.origin + url.pathname).toBe('https://oauth.example/auth');
     expect(Object.fromEntries(url.searchParams)).toEqual({
@@ -43,7 +43,7 @@ describe('beginSignIn', () => {
       code_challenge: await codeChallenge(attempt.codeVerifier),
       code_challenge_method: 'S256',
     });
-    expect(attempt).toMatchObject({ provider: 'telegram', startedAt: 1000, redirectUri: `https://site.example${CALLBACK_PATH}` });
+    expect(attempt).toMatchObject({ provider: 'google', startedAt: 1000, redirectUri: `https://site.example${CALLBACK_PATH}` });
   });
 
   it('Apple на сайте — без scope: с name/email он требует form_post', async () => {
@@ -82,8 +82,8 @@ describe('finishSignIn', () => {
   it('без кода, устаревшая попытка, испорченная запись', async () => {
     const a = await started('/settings');
     expect(finishSignIn(new URLSearchParams({ state: a.state }), a.storage, 2000)).toEqual({ ok: false, reason: 'invalid', returnTo: '/settings' });
-    const b = await started('/step/words?source=plan#details');
-    expect(finishSignIn(new URLSearchParams({ code: 'c', state: b.state }), b.storage, 1000 + 11 * 60 * 1000)).toEqual({ ok: false, reason: 'invalid', returnTo: '/step/words?source=plan#details' });
+    const b = await started('/words?source=plan#details');
+    expect(finishSignIn(new URLSearchParams({ code: 'c', state: b.state }), b.storage, 1000 + 11 * 60 * 1000)).toEqual({ ok: false, reason: 'invalid', returnTo: '/words?source=plan#details' });
     const broken = memoryStorage();
     broken.setItem('greprep.signIn', '{not json');
     expect(finishSignIn(new URLSearchParams({ code: 'c', state: 's' }), broken)).toEqual({ ok: false, reason: 'invalid' });

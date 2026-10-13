@@ -1,73 +1,95 @@
-// Контраст WCAG 2.2 AA для пар «текст / фон», которые реально встречаются на экранах «Шагов», в обеих темах.
-// Полупрозрачные цвета сначала накладываются на то, что под ними (как их видит человек).
+// Контраст WCAG AA: поверхности, навигация и мягкие подложки стиля B.
+// Полупрозрачные цвета накладываются снизу вверх, как при отрисовке экрана.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { resolveModes } from '../build.mjs';
+import { render, resolveModes } from '../build.mjs';
 
 const modes = await resolveModes();
-
-// Свечение — радиальный градиент от strong (центр над экраном) к soft. Первая строка текста (y≈72–110 px)
-// лежит примерно на 3/4 пути к soft; проверять по полному strong — строже, чем видит человек.
-function glowUnderTitle(mode) {
-  const s = color(mode, 'color.glow.verbal.strong');
-  const w = color(mode, 'color.glow.verbal.soft');
-  return { ...s, alpha: s.alpha * 0.25 + w.alpha * 0.75 };
-}
-
-function color(mode, path) {
-  if (path === 'glow-under-title') return glowUnderTitle(mode);
-  const t = modes[mode].find((x) => x.path.join('.') === path);
-  if (!t) throw new Error(`нет токена ${path}`);
-  return t.$value;
-}
-// Наложение c поверх под-слоёв (снизу вверх), результат — непрозрачный sRGB 0–1.
-function flatten(layers) {
-  let [r, g, b] = layers[0].components;
-  for (const c of layers.slice(1)) {
-    const a = c.alpha ?? 1;
-    [r, g, b] = c.components.map((x, i) => x * a + [r, g, b][i] * (1 - a));
+const { files } = await render();
+const cssVariables = Object.fromEntries(['light', 'dark'].map((mode) => {
+  const selector = mode === 'light' ? /^:root \{([^}]+)\}/m : /^:root\[data-theme="dark"\] \{([^}]+)\}/m;
+  return [mode, new Map([...files['web/tokens.css'].match(selector)[1].matchAll(/--([\w-]+):\s*([^;]+);/g)].map((m) => [m[1], m[2]]))];
+}));
+function parseColor(raw) {
+  assert.ok(raw, 'цвет должен присутствовать на выходе');
+  if (raw.startsWith('#')) {
+    const bytes = raw.slice(1).match(/../g).map((x) => Number.parseInt(x, 16) / 255);
+    return { components: bytes.slice(-3), alpha: bytes.length === 4 ? bytes[0] : 1 };
   }
-  return [r, g, b];
+  const match = raw.match(/^rgb\((\d+) (\d+) (\d+) \/ ([\d.]+)\)$/);
+  assert.ok(match, raw);
+  return { components: match.slice(1, 4).map((x) => Number(x) / 255), alpha: Number(match[4]) };
+}
+function color(mode, path, platform) {
+  const token = modes[mode].find((t) => t.path.join('.') === path);
+  if (!token) throw new Error(`нет токена ${path}`);
+  if (platform === 'web') return parseColor(cssVariables[mode].get(path.replaceAll('.', '-')));
+  const parts = token.path.slice(token.path[0] === 'color' ? 1 : 0);
+  if (platform === 'android') {
+    const xml = files[`android/res/${mode === 'light' ? 'values' : 'values-night'}/gp_colors.xml`];
+    const name = 'gp_' + parts.join('_').replaceAll('-', '_');
+    return parseColor(xml.match(new RegExp(`<color name="${name}">([^<]+)</color>`))?.[1]);
+  }
+  if (platform === 'apple') {
+    const name = parts.join('-').replace(/-([a-z0-9])/g, (_, x) => x.toUpperCase());
+    const asset = JSON.parse(files[`apple/GPColors.xcassets/${name}.colorset/Contents.json`]);
+    const components = asset.colors[mode === 'light' ? 0 : 1].color.components;
+    return { components: ['red', 'green', 'blue'].map((c) => Number(components[c])), alpha: Number(components.alpha) };
+  }
+  return token.$value;
 }
 const lin = (x) => (x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4);
 const lum = ([r, g, b]) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
-function ratio(a, b) {
-  const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p);
-  return (x + 0.05) / (y + 0.05);
+function flatten(layers) {
+  let result = layers[0].components;
+  for (const layer of layers.slice(1)) {
+    const alpha = layer.alpha ?? 1;
+    result = layer.components.map((x, i) => x * alpha + result[i] * (1 - alpha));
+  }
+  return result;
+}
+function ratio(fg, bg) {
+  const [high, low] = [lum(fg), lum(bg)].sort((a, b) => b - a);
+  return (high + 0.05) / (low + 0.05);
 }
 
-const SECTIONS = ['verbal', 'quant', 'words', 'essay', 'wrong'];
-// [текст, [фон снизу вверх], минимум, где встречается]
+const SECTIONS = ['verbal', 'quant', 'essay', 'words', 'exam', 'reading', 'listening', 'writing', 'speaking', 'exam-gre', 'exam-toefl', 'exam-sat', 'exam-gmat'];
+const BACKGROUNDS = ['bg', 'surface', 'surface-2', 'surface-3'];
+const TEXT_BACKGROUNDS = ['bg', 'surface', 'surface-2'];
+// Цвета палитры — заливки и подписанная графика. Для текста разделов обязательны ink
+// (решение Даши 12.10.2026); томат проверяется как фон кнопки, а не как цвет текста.
+// [передний план, слои фона снизу вверх, минимальное отношение контраста]
 const PAIRS = [
-  ['color.text', ['color.bg'], 4.5, 'текст на фоне'],
-  ['color.text', ['color.surface'], 4.5, 'текст на карточке'],
-  ['color.text-secondary', ['color.bg'], 4.5, 'подписи на фоне'],
-  ['color.text-secondary', ['color.surface'], 4.5, 'подписи на карточке'],
-  ['color.text-secondary', ['color.bg', 'glow-under-title'], 4.5, 'подзаголовок под свечением'],
-  ['color.text', ['color.bg', 'glow-under-title'], 4.5, 'заголовок под свечением'],
-  ['color.on-accent', ['color.accent'], 4.5, 'главная кнопка'],
-  ['color.text', ['color.surface', 'color.fill'], 4.5, 'сегмент / наведение'],
-  ['color.text', ['color.bg', 'color.tab-selected'], 4.5, 'выбранная вкладка'],
-  ...SECTIONS.flatMap((s) => [
-    [`color.${s}`, ['color.surface'], 4.5, `${s} текстом на карточке`],
-    [`color.${s}`, ['color.bg'], 4.5, `${s} текстом на фоне`],
-    [`color.${s}`, ['color.surface', `color.${s}-tint`], 4.5, `${s} на своей подложке (чип)`],
+  ...['text', 'text-2', 'text-3'].flatMap((fg) => TEXT_BACKGROUNDS.map((bg) => [`color.${fg}`, [`color.${bg}`], 4.5])),
+  ...SECTIONS.flatMap((fg) => [
+    ...BACKGROUNDS.map((bg) => [`color.${fg}-ink`, [`color.${bg}`], 4.5]),
+    [`color.${fg}-ink`, ['color.surface', `color.${fg}-soft`], 4.5],
   ]),
-  ...['verbal', 'quant', 'words', 'essay'].map((s) => ['color.surface', [`color.${s}`], 4.5, `цифра в узле ${s} / кнопка раздела`]),
-  ['color.focus', ['color.bg'], 3, 'кольцо фокуса (не текст: 3:1)'],
-  ['color.focus', ['color.surface'], 3, 'кольцо фокуса на карточке'],
-  ['sign-in.apple.text', ['sign-in.apple.bg'], 4.5, 'кнопка Apple'],
-  ['sign-in.google.text', ['sign-in.google.bg'], 4.5, 'кнопка Google'],
-  // Кнопка Telegram — официальная, цвета не наши (решение Даши 05.10.2026). Белый на #119AF5 даёт ~3,2:1:
-  // меньше AA для обычного текста. Порог здесь 3 — чтобы тест ловил порчу, а не спорил с правилами Telegram.
-  ['sign-in.telegram.text', ['sign-in.telegram.bg'], 3, 'кнопка Telegram (официальная, исключение)'],
+  ...['right', 'wrong'].flatMap((fg) => [
+    ...BACKGROUNDS.map((bg) => [`color.${fg}`, [`color.${bg}`], 4.5]),
+    ...TEXT_BACKGROUNDS.map((bg) => [`color.${fg}`, [`color.${bg}`, `color.${fg}-soft`], 4.5]),
+  ]),
+  // Маркер выделяет основной текст разбора, а не приглушённые подписи.
+  ...TEXT_BACKGROUNDS.map((bg) => ['color.text', [`color.${bg}`, 'color.highlight'], 4.5]),
+  ...['exam-gre', 'exam-toefl', 'exam-sat', 'exam-gmat'].map((bg) => ['color.on-accent', [`color.${bg}`], 4.5]),
+  ...['text', 'text-3'].map((fg) => [`color.${fg}`, ['color.nav-bg'], 4.5]),
+  ['color.on-accent', ['color.accent'], 4.5],
+  // Фокус — графический индикатор, его порог 3:1.
+  ...BACKGROUNDS.map((bg) => ['color.focus', [`color.${bg}`], 3]),
+  ['sign-in.apple.text', ['sign-in.apple.bg'], 4.5],
+  ['sign-in.google.text', ['sign-in.google.bg'], 4.5],
 ];
 
 for (const mode of ['light', 'dark']) {
-  for (const [fg, bg, min, where] of PAIRS) {
-    test(`${mode}: ${where} — ${fg} на ${bg.join(' + ')} ≥ ${min}`, () => {
-      const r = ratio(flatten([...bg.map((p) => color(mode, p)), color(mode, fg)]).slice(0, 3), flatten(bg.map((p) => color(mode, p))));
-      assert.ok(r >= min, `${r.toFixed(2)}:1 < ${min}:1`);
-    });
+  for (const platform of ['source', 'web', 'apple', 'android']) {
+    for (const [fg, bg, aaMinimum] of PAIRS) {
+      const minimum = aaMinimum;
+      test(`${mode}/${platform}: ${fg} на ${bg.join(' + ')} ≥ ${minimum}:1`, () => {
+        const backgrounds = bg.map((path) => color(mode, path, platform));
+        assert.equal(backgrounds[0].alpha ?? 1, 1, 'нижний фон должен быть непрозрачным');
+        const value = ratio(flatten([...backgrounds, color(mode, fg, platform)]), flatten(backgrounds));
+        assert.ok(value >= minimum, `${value.toFixed(4)}:1 < ${minimum}:1`);
+      });
+    }
   }
 }

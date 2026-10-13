@@ -17,7 +17,7 @@ export function safeReturnTo(value: unknown): string {
   return '/';
 }
 
-/** «Сегодня» — адрес по умолчанию: не добавляем его в строку входа. */
+/** «Тренировка» — адрес по умолчанию: не добавляем его в строку входа. */
 export function returnToSearch(value: unknown): { returnTo?: string } {
   const returnTo = safeReturnTo(value);
   return returnTo === '/' ? {} : { returnTo };

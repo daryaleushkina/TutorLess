@@ -7,7 +7,7 @@ test('проверка на время показывает в форме пар
 test('«вопрос 1 из 10» переносится целиком', async ({ miniApp }) => { await resumeCounterStaysTogether(miniApp); });
 test('недоступное хранилище отключает тренировки, но сохраняет вход и остальное приложение', async ({ miniApp }) => { await unavailableStorageKeepsSession(miniApp); });
 
-import { practiceThroughSummary, checkWithReturn, partialCheckAnswer, timeRunsOut, reloadSession, offlineSession, startSession, nativeButtonsFit } from '../training';
+import { practiceThroughSummary, checkWithReturn, partialCheckAnswer, timeRunsOut, reloadSession, offlineSession, startSession, actionButtonsFit } from '../training';
 test('практика целиком: верный, неверный, RU/EN, «Не знаю», итог и повтор', async ({ miniApp: page }) => { await practiceThroughSummary(page); });
 test('проверка: пропустить, отметить, вернуться из списка и закончить', async ({ miniApp: page }) => { await checkWithReturn(page); });
 test('проверка: частичный TC3 не отвечен, выбор сохраняется после перезагрузки', async ({ miniApp: page }) => { await partialCheckAnswer(page); });
@@ -16,19 +16,19 @@ test('время вышло после закрытия экрана', async ({ 
 test('перезагрузка сохраняет вопрос, выбор и раскрытый разбор', async ({ miniApp: page }) => { await reloadSession(page); });
 test('без сети ответы и итог локальны, после возвращения сети сервер видит всё', async ({ miniApp: page, me }) => { await offlineSession(page, me); });
 
-test('родные кнопки: одна назад и подписи в одну строку на вопросе и итоге', async ({ miniApp: page }) => {
+test('наши кнопки действий и одна системная кнопка назад на вопросе и итоге', async ({ miniApp: page }) => {
   await startSession(page);
   await expect(page.locator('#tg-mock-back')).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Закрыть тренировку' })).toHaveCount(0);
-  await nativeButtonsFit(page);
+  await expect(page.getByRole('button', { name: 'Закрыть тренировку' })).toHaveCount(0);
+  await actionButtonsFit(page);
   for (let position = 0; position < 3; position++) {
     await page.getByRole('button', { name: 'Не знаю', exact: true }).click();
-    await nativeButtonsFit(page);
-    await page.getByRole('button', { name: position < 2 ? new RegExp(`Дальше · ${position + 2} из`) : 'Итог', exact: position === 2 }).click();
+    await actionButtonsFit(page);
+    await page.getByRole('button', { name: position < 2 ? 'Дальше' : 'К итогу', exact: position === 2 }).click();
   }
   await expect(page.getByRole('heading', { name: '0 из 3 верно' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Готово', exact: true })).toHaveCount(0);
-  await nativeButtonsFit(page);
+  await actionButtonsFit(page);
 });
 
 test('me мини-аппа не создаёт лишнюю страницу', async ({ me, context }) => {
@@ -36,15 +36,15 @@ test('me мини-аппа не создаёт лишнюю страницу', a
   expect(context.pages()).toHaveLength(0);
 });
 
-test('итог: пара нижних подписей не переносится', async ({ miniApp: page }) => {
+test('итог: пара нижних кнопок помещается', async ({ miniApp: page }) => {
   await startSession(page);
   for (let position = 0; position < 3; position++) {
     await page.getByRole('button', { name: 'Не знаю', exact: true }).click();
-    await page.getByRole('button', { name: position < 2 ? new RegExp(`Дальше · ${position + 2} из`) : 'Итог', exact: position === 2 }).click();
+    await page.getByRole('button', { name: position < 2 ? 'Дальше' : 'К итогу', exact: position === 2 }).click();
   }
   await expect(page.getByRole('heading', { name: '0 из 3 верно' })).toBeVisible();
-  await nativeButtonsFit(page);
-  await expect(page.locator('#tg-mock-bar')).toHaveCSS('flex-direction', 'column-reverse');
+  await actionButtonsFit(page);
+  await expect(page.locator('#tg-mock-bar')).toHaveCount(0);
 });
 
 import { reviewAllAnswers, reportFromQuestionAndReview } from '../training';
@@ -56,7 +56,7 @@ import { reportDraftAndLimit } from '../training';
 test('черновик жалобы после перезагрузки, лимит вставки и отмена', async ({ miniApp: page }) => { await reportDraftAndLimit(page); });
 
 import { continuousReportSwipes } from '../training';
-test('вопрос ↔ жалоба: свайп не включается до возврата на «Сегодня»', async ({ miniApp: page }) => { await continuousReportSwipes(page); });
+test('вопрос ↔ жалоба: свайп не включается до возврата на «Тренировка»', async ({ miniApp: page }) => { await continuousReportSwipes(page); });
 
 import { reportBackStorageFailure } from '../training';
 test('«Назад» уходит при сбое стирания черновика без текста в отчёте', async ({ miniApp: page }) => { await reportBackStorageFailure(page); });

@@ -1,4 +1,8 @@
-import type { Exam } from '@greprep/api-client';
+import { useAccount } from '../session/session';
 
-// Выбор экзамена в редизайне заменит эту константу (решение Даши 09.10.2026).
-export const CURRENT_EXAM: Exam = 'gre';
+/** AppGate открывает тренировку только после выбора экзамена аккаунта. */
+export function useActiveExam() {
+  const account = useAccount();
+  if (account.activeExam === null) throw new Error('training without an active exam');
+  return account.activeExam;
+}

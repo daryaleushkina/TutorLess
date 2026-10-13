@@ -32,40 +32,40 @@ struct APITests {
         API(config: server.config(), session: server.session, tokens: MemoryTokenStore(token))
     }
 
-    @Test("план дня приходит и читается")
-    func todaySuccess() async throws {
-        server.on("GET /api/today", .json(200, Fixture.todayJSON))
-        let today = try await api().today()
-        #expect(today.date == "2026-10-06")
-        #expect(today.steps.map(\.id) == ["words", "verbal", "quant"])
+    @Test("главная приходит и читает статистику")
+    func homeSuccess() async throws {
+        server.on("GET /api/home", .json(200, ShellFixture.homeJSON))
+        let home = try await api().home(exam: .gre)
+        #expect(home.sections.map(\.section) == [.verbal, .quant, .essay])
+        #expect(home.week.answers == 0)
     }
 
-    @Test("незнакомое поле в ответе не ломает приложение — сервер обновляется раньше приложения")
+    @Test("незнакомое поле не ломает главную")
     func toleratesUnknownFields() async throws {
-        server.on("GET /api/today", .json(200, #"{"date":"2026-10-06","steps":[],"streak":3}"#))
-        let today = try await api().today()
-        #expect(today.steps.isEmpty)
+        let json = ShellFixture.homeJSON.dropLast() + ",\"extra\":true}"
+        server.on("GET /api/home", .json(200, String(json)))
+        #expect(try await api().home(exam: .gre).mistakes == 0)
     }
 
     @Test("токен сессии уходит в заголовке Authorization")
     func sendsBearerToken() async throws {
-        server.on("GET /api/today", .json(200, Fixture.todayJSON))
-        _ = try await api(token: "abc").today()
-        #expect(server.requests("GET /api/today").first?.authorization == "Bearer abc")
+        server.on("GET /api/home", .json(200, ShellFixture.homeJSON))
+        _ = try await api(token: "abc").home(exam: .gre)
+        #expect(server.requests("GET /api/home").first?.authorization == "Bearer abc")
     }
 
     @Test("без токена заголовка нет")
     func noTokenNoHeader() async throws {
-        server.on("GET /api/today", .json(401, Fixture.error("unauthorized")))
-        await #expect(throws: APIFailure.unauthorized) { try await api(token: nil).today() }
-        #expect(server.requests("GET /api/today").first?.authorization == nil)
+        server.on("GET /api/home", .json(401, Fixture.error("unauthorized")))
+        await #expect(throws: APIFailure.unauthorized) { try await api(token: nil).home(exam: .gre) }
+        #expect(server.requests("GET /api/home").first?.authorization == nil)
     }
 
     @Test("ошибка сервера — с кодом и id запроса")
     func serverError() async throws {
-        server.on("GET /api/today", .json(500, Fixture.error("internal", requestID: "r-42")))
+        server.on("GET /api/home", .json(500, Fixture.error("internal", requestID: "r-42")))
         await #expect(throws: APIFailure.server(status: 500, code: "internal", requestID: "r-42")) {
-            try await api().today()
+            try await api().home(exam: .gre)
         }
     }
 
@@ -73,23 +73,23 @@ struct APITests {
         "нет сети — offline",
         arguments: [URLError.Code.notConnectedToInternet, .networkConnectionLost, .timedOut, .cannotConnectToHost])
     func offline(code: URLError.Code) async throws {
-        server.on("GET /api/today", .failure(code))
-        await #expect(throws: APIFailure.offline) { try await api().today() }
+        server.on("GET /api/home", .failure(code))
+        await #expect(throws: APIFailure.offline) { try await api().home(exam: .gre) }
     }
 
     @Test(
         "прокси ответил вместо сервера (502/503/504 без тела) — сервер недоступен, а не наша ошибка",
         arguments: [502, 503, 504])
     func proxyUnavailable(status: Int) async throws {
-        server.on("GET /api/today", .status(status))
-        await #expect(throws: APIFailure.offline) { try await api().today() }
+        server.on("GET /api/home", .status(status))
+        await #expect(throws: APIFailure.offline) { try await api().home(exam: .gre) }
     }
 
     @Test("чужой ответ не по договору — unexpected с HTTP-статусом для журнала")
     func foreignResponseKeepsStatus() async throws {
-        server.on("GET /api/today", .status(418))
+        server.on("GET /api/home", .status(418))
         await #expect {
-            try await api().today()
+            try await api().home(exam: .gre)
         } throws: { error in
             guard case let .unexpected(message) = error as? APIFailure else { return false }
             return message.contains("HTTP 418")
@@ -100,7 +100,7 @@ struct APITests {
     func reportTruncatesByUnicodeScalars() async throws {
         server.on("POST /api/client-errors", .status(204))
         // Флаг — одна графема из двух кодовых точек: 1500 флагов = 3000 точек.
-        await api().reportClientError(message: String(repeating: "🇷🇺", count: 1500), route: "today", requestID: nil)
+        await api().reportClientError(message: String(repeating: "🇷🇺", count: 1500), route: "home", requestID: nil)
         let body = try #require(server.requests("POST /api/client-errors").first).json()
         let message = try #require(body["message"] as? String)
         #expect(message.unicodeScalars.count <= 2000)
@@ -108,9 +108,9 @@ struct APITests {
 
     @Test("ответ не по договору — unexpected, а не пустой успех")
     func malformedBody() async throws {
-        server.on("GET /api/today", .json(200, #"{"date":"2026-10-06"}"#))
+        server.on("GET /api/home", .json(200, #"{"mistakes":0}"#))
         await #expect {
-            try await api().today()
+            try await api().home(exam: .gre)
         } throws: { error in
             if case .unexpected = error as? APIFailure { return true }
             return false
@@ -153,7 +153,7 @@ struct APITests {
     func codeSignIn() async throws {
         server.on("POST /api/auth/oidc/code", .json(200, Fixture.session()))
         _ = try await api(token: nil).signInWithAuthorizationCode(
-            provider: .telegram, code: "c", codeVerifier: String(repeating: "v", count: 43),
+            provider: .google, code: "c", codeVerifier: String(repeating: "v", count: 43),
             redirectURI: "dev.greprepapp.app:/oauth", nonce: "n-123456789012345"
         )
         let body = try #require(server.requests("POST /api/auth/oidc/code").first).json()
@@ -189,8 +189,8 @@ struct APITests {
     @Test("отчёт об ошибке не бросает, даже когда сервер недоступен")
     func reportClientError() async throws {
         server.on("POST /api/client-errors", .status(204), .failure(.notConnectedToInternet))
-        await api().reportClientError(message: "boom", route: "today", requestID: "r-1")
-        await api().reportClientError(message: "boom", route: "today", requestID: nil)
+        await api().reportClientError(message: "boom", route: "home", requestID: "r-1")
+        await api().reportClientError(message: "boom", route: "home", requestID: nil)
         let body = try #require(server.requests("POST /api/client-errors").first).json()
         #expect(body["message"] as? String == "boom")
         #expect(body["clientKind"] as? String == "ios")

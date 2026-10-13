@@ -11,10 +11,10 @@
 .x-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
 .x-bar-sec { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px; }
 .x-bar-sec::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--sec); }
-.x-time { font-weight: var(--thin); font-size: 30px; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.x-time { font-variant-numeric: tabular-nums; font: var(--thin) 32px/1 var(--font-body); letter-spacing: -0.04em; }
 
 .x-tools { display: flex; gap: 8px; margin-top: -6px; }
-.x-tool { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--surface-2); font-size: 14px; font-weight: 500; }
+.x-tool { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--surface-2); font: 500 15px/1.45 var(--font-body); letter-spacing: -0.005em; }
 .x-tool[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
 
 /* ---------- X1 ---------- */
@@ -33,8 +33,8 @@
 .x-row-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .x-row-body small { color: var(--text-2); font-size: 13px; }
 .x-row-stat { display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
-.x-row-stat b { font-weight: var(--thin); font-size: 20px; line-height: 1.1; white-space: nowrap; }
-.x-row-past .x-row-stat b { font-size: 16px; font-weight: 500; }
+.x-row-stat b { white-space: nowrap; font: var(--thin) 22px/1.45 var(--font-body); letter-spacing: -0.02em; }
+.x-row-past .x-row-stat b { font: 500 16px/1.1 var(--font-body); letter-spacing: -0.08px; }
 .x-row-stat small { font-size: 13px; color: var(--text-3); line-height: 1.25; }
 .x-quiet-link { align-self: flex-start; display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent); }
 
@@ -51,12 +51,12 @@
 .x-part-body small { color: var(--text-2); font-size: 13px; }
 .x-part[data-state="done"] .x-part-body b, .x-part[data-state="done"] .x-part-time { color: var(--text-3); }
 .x-part[data-state="next"] { margin-inline: -12px; padding-inline: 12px; border-radius: var(--r-m); background: var(--surface); }
-.x-part-time { font-weight: var(--thin); font-size: 20px; font-variant-numeric: tabular-nums; }
+.x-part-time { font-variant-numeric: tabular-nums; font: var(--thin) 22px/1.45 var(--font-body); letter-spacing: -0.02em; }
 
 .x-start { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 18px; }
 .x-start-map { display: flex; flex-direction: column; gap: 12px; }
 .x-start-total { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; color: var(--text-2); font-size: 14px; }
-.x-big { white-space: nowrap; font-weight: var(--thin); font-size: 30px; letter-spacing: -0.02em; color: var(--text); }
+.x-big { white-space: nowrap; color: var(--text); font: var(--thin) 28px/1.45 var(--font-body); letter-spacing: -0.03em; }
 .x-start-setup { flex: 1; display: flex; flex-direction: column; gap: 16px; }
 .x-seg { align-self: stretch; }
 .x-seg button { flex: 1; min-height: 40px; font-size: 14px; }
@@ -95,14 +95,14 @@
 .x-qc-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .x-qc-col { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 16px 10px 18px; border-radius: var(--r-m); background: var(--surface); }
 .x-qc-label { font-size: 13px; font-weight: 600; color: var(--text-2); }
-.x-qc-val { font-size: 22px; font-weight: 400; }
+.x-qc-val { font: 400 20px/1.4 var(--font-body); letter-spacing: -0.01em; }
 .x-q .opt { font-size: 15px; }
 
 /* ---------- X5: Review ---------- */
 .x-review { flex: 1; display: flex; flex-direction: column; gap: 20px; }
 .x-review-grid-wrap { display: flex; flex-direction: column; gap: 14px; }
 .x-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-.x-cell { position: relative; display: grid; place-items: center; aspect-ratio: 1; min-height: 44px; border-radius: var(--r-m); border: 0; font-weight: var(--thin); font-size: 24px; }
+.x-cell { position: relative; display: grid; place-items: center; aspect-ratio: 1; min-height: 44px; border-radius: var(--r-m); border: 0; font: var(--thin) 24px/1.05 var(--font-body); letter-spacing: -0.02em; }
 .x-cell[data-state="answered"] { background: var(--surface-2); color: var(--text); }
 .x-cell[data-state="empty"] { background: transparent; box-shadow: inset 0 0 0 1.5px var(--line-strong); color: var(--text-2); }
 .x-cell[aria-current="true"] { box-shadow: inset 0 0 0 2px var(--accent); }
@@ -125,7 +125,7 @@
 .x-results-score { display: flex; flex-direction: column; gap: 14px; }
 .x-scores { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .x-score { display: flex; flex-direction: column; gap: 4px; padding: 16px; border-radius: var(--r-m); background: var(--surface); }
-.x-score-range { font-weight: var(--thin); font-size: 34px; line-height: 1.05; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.x-score-range { font-variant-numeric: tabular-nums; white-space: nowrap; font: var(--thin) 32px/1 var(--font-body); letter-spacing: -0.04em; }
 .x-score-likely { font-size: 13px; color: var(--text-2); }
 .x-score-likely b { font-weight: 600; color: var(--text); }
 .x-results-parts { display: flex; flex-direction: column; gap: 6px; }
@@ -134,7 +134,7 @@
 .x-tally li + li { border-top: 1px solid var(--line); }
 .x-tally-name { flex: 1; font-weight: 600; }
 .x-tally-val { font-size: 14px; color: var(--text-2); }
-.x-tally-val b { font-weight: var(--thin); font-size: 22px; color: var(--text); margin-right: 2px; }
+.x-tally-val b { color: var(--text); margin-right: 2px; font: var(--thin) 22px/1.45 var(--font-body); letter-spacing: -0.02em; }
 
 /* ---------- X8 ---------- */
 .x-topics { display: flex; flex-direction: column; gap: 16px; }
@@ -149,8 +149,8 @@
 .x-score-page { flex: 1; display: flex; flex-direction: column; gap: 24px; }
 .x-essay-grade { display: flex; flex-direction: column; gap: 6px; }
 .x-grade { display: flex; align-items: baseline; gap: 10px; }
-.x-grade-num { font-weight: var(--thin); font-size: 88px; line-height: 0.95; letter-spacing: -0.04em; color: var(--sec); font-variant-numeric: tabular-nums; }
-.x-grade-of { font-weight: var(--thin); font-size: 30px; color: var(--text-2); }
+.x-grade-num { color: var(--sec); font-variant-numeric: tabular-nums; font: var(--thin) 88px/0.95 var(--font-body); letter-spacing: -0.04em; }
+.x-grade-of { color: var(--text-2); font: var(--thin) 28px/1.45 var(--font-body); letter-spacing: -0.03em; }
 .x-improve { display: flex; flex-direction: column; gap: 14px; }
 .x-tips { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; counter-reset: tip; }
 .x-tips li { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border-radius: var(--r-m); background: var(--surface); font-size: 15px; line-height: 1.5; }
@@ -169,7 +169,7 @@
   .x-start-setup .bottom-bar .btn-wide { width: 100%; }
 
   .x-bar { min-height: 56px; }
-  .x-time { font-size: 34px; }
+  .x-time { font: var(--thin) 32px/1 var(--font-body); letter-spacing: -0.04em; }
   .x-tools { margin-top: -12px; }
   .x-q { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-content: start; padding-top: 24px; }
   .x-qc { justify-content: center; }
@@ -192,11 +192,11 @@
 
   .x-results { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 56px; align-content: start; padding-top: 16px; overflow: visible; }
   .x-results-parts { padding-top: 62px; }
-  .x-score-range { font-size: 52px; }
+  .x-score-range { font: var(--thin) 52px/1.05 var(--font-body); letter-spacing: -0.03em; }
   [data-screen="x-results"] .bottom-bar .btn-wide { width: auto; }
 
   .x-topics { max-width: 760px; }
 
   .x-score-page { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 56px; align-content: start; padding-top: 24px; overflow: visible; }
-  .x-grade-num { font-size: 128px; }
+  .x-grade-num { font: var(--thin) 120px/0.95 var(--font-body); letter-spacing: -0.04em; }
 }

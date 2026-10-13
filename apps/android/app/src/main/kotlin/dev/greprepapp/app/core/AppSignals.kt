@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 
-/** Есть ли сеть: «Сегодня» обновляется сам, когда она вернулась; шаг без сети не начать. */
+/** Есть ли сеть: главной обновляется сам, когда она вернулась; новую тренировку без сети не начать. */
 interface NetworkStatus {
     val isOnline: StateFlow<Boolean>
 }

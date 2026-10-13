@@ -86,11 +86,13 @@ class TrainingRepository
 
         val trainings: StateFlow<Map<String, StoredTraining>> = store.visible
 
-        /** Незаконченная тренировка для «Продолжить» на «Сегодня» — самая свежая. */
+        /** Незаконченная тренировка для «Продолжить» на главной — самая свежая. */
         val active: Flow<StoredTraining?> =
             trainings
                 .map { all ->
-                    all.values.filterNot { it.isFinished || isExpired(it) }.maxByOrNull { it.startedAtMillis }
+                    all.values
+                        .filterNot { it.isFinished || isExpired(it) }
+                        .maxWithOrNull(compareBy<StoredTraining> { it.startedAtMillis }.thenBy { it.creationOrder })
                 }.distinctUntilChanged()
 
         /** «Проверка», у которой вышло время, пока экрана не было: её закончит ближайшая отправка. */
@@ -118,9 +120,9 @@ class TrainingRepository
 
         private fun currentSession(): Long? = (session.state.value as? SessionState.SignedIn)?.id
 
-        suspend fun options(): ApiResult<TrainingOptions> {
+        suspend fun options(exam: dev.greprepapp.api.models.Exam = dev.greprepapp.api.models.Exam.GRE): ApiResult<TrainingOptions> {
             val id = currentSession()
-            val result = apiCall { api.getTrainingOptions(CURRENT_EXAM, SUPPORTED) }
+            val result = apiCall { api.getTrainingOptions(exam, SUPPORTED) }
             if (result is ApiResult.Failed && id != null) handle(result.failure, id, "options")
             return result
         }
@@ -138,7 +140,15 @@ class TrainingRepository
                     val saved =
                         edits.withLock {
                             write(id) {
-                                store.put(stored)
+                                store.put(
+                                    stored.copy(
+                                        creationOrder =
+                                            (
+                                                store.trainings.value.values
+                                                    .maxOfOrNull { it.creationOrder } ?: 0
+                                            ) + 1,
+                                    ),
+                                )
                                 prune()
                             }
                         }
@@ -169,11 +179,11 @@ class TrainingRepository
         fun recordAnswer(
             trainingId: String,
             position: Int,
-            optionIds: List<String>,
+            response: Response,
             dontKnow: Boolean = false,
             flagged: Boolean = false,
             elapsedMs: Int = 0,
-        ) = durable { answer(trainingId, position, optionIds, dontKnow, flagged, elapsedMs) }
+        ) = durable { answer(trainingId, position, response, dontKnow, flagged, elapsedMs) }
 
         fun recordPosition(
             trainingId: String,
@@ -194,15 +204,15 @@ class TrainingRepository
         suspend fun answer(
             trainingId: String,
             position: Int,
-            optionIds: List<String>,
+            response: Response,
             dontKnow: Boolean = false,
             flagged: Boolean = false,
             elapsedMs: Int = 0,
         ) {
             val given =
-                GivenAnswer(
+                RecordedAnswer(
                     position = position,
-                    optionIds = optionIds,
+                    response = response,
                     dontKnow = dontKnow,
                     flagged = flagged,
                     answeredAt = clock.instant().toString(),
@@ -290,10 +300,14 @@ class TrainingRepository
             val all = store.trainings.value.values
             all
                 .filter { it.isFinished && it.isSynced }
-                .sortedByDescending { it.startedAtMillis }
+                .sortedWith(compareByDescending<StoredTraining> { it.startedAtMillis }.thenByDescending { it.creationOrder })
                 .drop(KEEP_FINISHED)
                 .forEach { store.remove(it.id) }
-            val unfinished = all.filterNot { it.isFinished }.sortedByDescending { it.startedAtMillis }
+            // Порядок запуска хранится в файле: порядок карты после чтения файлов не гарантирован.
+            val unfinished =
+                all
+                    .filterNot { it.isFinished }
+                    .sortedWith(compareByDescending<StoredTraining> { it.startedAtMillis }.thenByDescending { it.creationOrder })
             unfinished.drop(1).filter { it.unsent.isEmpty() }.forEach { store.remove(it.id) }
         }
 
@@ -360,7 +374,7 @@ class TrainingRepository
             id: Long,
         ): Sent {
             if (t.rejected || t.unsent.isEmpty()) return Sent.Done
-            val sent = t.unsent.sorted().mapNotNull { t.answers[it] }
+            val sent = t.unsent.sorted().mapNotNull { t.answers[it]?.toGivenAnswer() }
             return sendAnswerBatch(t.id, sent, id)
         }
 
@@ -399,7 +413,7 @@ class TrainingRepository
             }
             return settle(result, id, "answers") {
                 // Убрать из очереди только то, что не поменялось, пока ответ летел: новый ответ «Проверки» уйдёт следом.
-                edit(trainingId, id) { cur -> cur.copy(unsent = cur.unsent.filterNot { cur.answers[it] in sent }.toSet()) }
+                edit(trainingId, id) { cur -> cur.copy(unsent = cur.unsent.filterNot { cur.answers[it]?.toGivenAnswer() in sent }.toSet()) }
             }
         }
 
@@ -415,7 +429,7 @@ class TrainingRepository
 
         private suspend fun sendReports(id: Long) {
             for (pending in store.reports.value) {
-                val result = apiCallNoContent { api.reportQuestion(pending.questionId, pending.report) }
+                val result = apiCallNoContent { api.reportQuestion(pending.questionId, pending.report.copy(reportId = pending.reportId)) }
                 if (!session.isCurrent(id)) return
                 val sent =
                     settle(result, id, "report") {
@@ -477,7 +491,17 @@ class TrainingRepository
 
         companion object {
             /** Типы, которые приложение умеет показывать: о других сервер не расскажет (договор, options). */
-            val SUPPORTED: List<QuestionType> = QuestionType.entries
+            val SUPPORTED: List<QuestionType> =
+                listOf(
+                    QuestionType.TEXT_COMPLETION,
+                    QuestionType.SENTENCE_EQUIVALENCE,
+                    QuestionType.QUANTITATIVE_COMPARISON,
+                    QuestionType.MULTIPLE_CHOICE,
+                    QuestionType.MULTIPLE_CHOICE_MULTI,
+                    QuestionType.NUMERIC_ENTRY,
+                    QuestionType.SELECT_IN_PASSAGE,
+                )
+            val CAPABILITIES: String = SUPPORTED.joinToString(",") { it.value } + ",passage"
             private const val NO_QUESTIONS = "no_questions"
             private const val KEEP_FINISHED = 3
             private const val MAX_ELAPSED_MS = 86_400_000

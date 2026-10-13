@@ -451,16 +451,14 @@
 .frame .exam-main .h1 { font-size: 36px; }
 .frame .exam-card { border: 0; background: var(--surface); border-radius: var(--r-l); min-height: 124px; padding: 22px; transition: background-color 160ms cubic-bezier(0.2, 0.8, 0.2, 1); }
 .frame:not([data-theme="dark"]) .exam-card { box-shadow: inset 0 0 0 1px var(--line); }
-.frame .exam-name { font-weight: 200; font-size: 44px; letter-spacing: -0.04em; }
-.frame:not([data-theme="dark"]) .exam-name { font-weight: 300; }
+.frame .exam-name { font: var(--thin) 48px/1 var(--font-body); letter-spacing: -0.04em; }
 .frame .exam-what { font-weight: 600; }
 .frame .exam-parts { color: var(--text-3); }
 .frame .exam-go { background: var(--accent); color: var(--on-accent); box-shadow: var(--glow); width: 44px; height: 44px; }
 .frame .exam-soon { color: var(--text-3); }
 
 /* ---------- Слово ---------- */
-.frame .headword { font-weight: 200; font-size: 56px; letter-spacing: -0.04em; line-height: 1; }
-.frame:not([data-theme="dark"]) .headword { font-weight: 300; }
+.frame .headword { font: var(--thin) 56px/1 var(--font-body); letter-spacing: -0.04em; }
 .frame .word-meta { color: var(--text-2); }
 .frame .icon-btn-soft { background: var(--sec-soft); color: var(--sec); width: 44px; height: 44px; }
 .frame .sense-en { font-size: 20px; font-weight: 400; letter-spacing: -0.01em; }
@@ -500,9 +498,9 @@
 
   .frame .exam-main .h1 { font-size: 48px; }
   .frame .exam-card { width: 360px; min-height: 200px; padding: 28px; }
-  .frame .exam-name { font-size: 64px; }
+  .frame .exam-name { font: var(--thin) 60px/1 var(--font-body); letter-spacing: -0.04em; }
 
-  .frame .headword { font-size: 88px; }
+  .frame .headword { font: var(--thin) 88px/1 var(--font-body); letter-spacing: -0.04em; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -512,10 +510,11 @@
 
 /* ---------- Разделы TOEFL (решение Даши 09.10.2026) ---------- */
 .frame {
-  --c-reading: #2C5FD0; --c-reading-soft: rgb(44 95 208 / 0.1);
-  --c-listening: #00778A; --c-listening-soft: rgb(0 119 138 / 0.1);
-  --c-writing: #985800; --c-writing-soft: rgb(152 88 0 / 0.1);
-  --c-speaking: #B02F69; --c-speaking-soft: rgb(176 47 105 / 0.1);
+  /* светлота понижена под AA на «Лаванде» (10.10.2026) */
+  --c-reading: #2354C5; --c-reading-soft: rgb(35 84 197 / 0.1);
+  --c-listening: #006677; --c-listening-soft: rgb(0 102 119 / 0.1);
+  --c-writing: #894E00; --c-writing-soft: rgb(137 78 0 / 0.1);
+  --c-speaking: #A92864; --c-speaking-soft: rgb(169 40 100 / 0.1);
 }
 .frame[data-theme="dark"] {
   --c-reading: #8DB1FF; --c-reading-soft: rgb(141 177 255 / 0.16);

@@ -29,6 +29,20 @@ function rounded(value: Rational, places: number): Rational {
   return { numerator: (quotient + (half ? 1n : 0n)) * (scaled < 0n ? -1n : 1n), denominator };
 }
 
+/** Тот же ключ с округлением используется и для проверки, и для показа в разборе. */
+export function trainingNumericSolution(question: Question): NumericAnswer | undefined {
+  const spec = question.numericEntry, key = question.numericAnswer;
+  if (!spec || !key || spec.decimalPlaces === undefined) return key;
+  const value = numericValue(key, spec.format);
+  if (!value) return undefined;
+  const result = rounded(value, spec.decimalPlaces);
+  if (spec.format === 'fraction') return { numerator: String(result.numerator), denominator: String(result.denominator) };
+  const absolute = result.numerator < 0n ? -result.numerator : result.numerator;
+  const whole = absolute / result.denominator;
+  const fraction = spec.decimalPlaces === 0 ? '' : `.${String(absolute % result.denominator).padStart(spec.decimalPlaces, '0')}`;
+  return { number: `${result.numerator < 0n ? '-' : ''}${whole}${fraction}` };
+}
+
 // Общие примеры проверяют точное значение без Number: двоичная погрешность не должна менять балл.
 export function gradeTrainingAnswer(question: Question, answer: GivenAnswer): { correct: boolean; badAnswer: boolean } {
   const bad = { correct: false, badAnswer: true };

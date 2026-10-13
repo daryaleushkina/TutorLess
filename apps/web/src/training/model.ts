@@ -17,14 +17,20 @@ export const storedTrainingSchema = z.object({
   startedAtMillis: z.number().int(),
   answers: z.record(z.string(), schemas.GivenAnswer),
   drafts: z.record(z.string(), z.array(z.string())).optional(),
+  // Не меняет устройство IndexedDB: старые записи без отметок всё ещё читаются.
+  editedAt: z.record(z.string(), z.number().nonnegative()).optional(),
   unsent: z.array(z.number().int().nonnegative()),
   position: z.number().int().nonnegative(),
+  practiceReturnPosition: z.number().int().nonnegative().optional(),
   finish: schemas.TrainingFinish.optional(),
   finishSent: z.boolean(),
+  timeoutSeen: z.boolean().optional(),
 }).refine((t) => t.position < t.session.items.length &&
   t.session.items.every((item, index) => item.position === index) &&
   Object.entries(t.answers).every(([key, answer]) => key === String(answer.position) && answer.position < t.session.items.length) &&
   Object.keys(t.drafts ?? {}).every((key) => t.session.items.some((item) => String(item.position) === key)) &&
+  Object.keys(t.editedAt ?? {}).every((key) => t.session.items.some((item) => String(item.position) === key)) &&
+  (t.practiceReturnPosition === undefined || t.session.mode === 'practice' && t.practiceReturnPosition < t.session.items.length) &&
   t.unsent.every((position) => t.answers[String(position)] !== undefined), 'invalid stored positions');
 
 export type StoredTraining = z.infer<typeof storedTrainingSchema>;

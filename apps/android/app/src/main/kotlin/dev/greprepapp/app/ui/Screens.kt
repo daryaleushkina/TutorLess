@@ -17,39 +17,46 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import dev.greprepapp.app.R
 import dev.greprepapp.design.Gp
 import dev.greprepapp.design.SectionBackground
-import dev.greprepapp.design.StudySection
 import greprep.design.GpLayout
+import greprep.design.GpSpace
 
 /** Отступ заголовка верхней панели Material 3 (спецификация TopAppBar), не наш токен. */
-private val MaterialTitleInset = 16.dp
+private val MaterialTitleInset = GpSpace.s16
 
 /**
- * Экран-раздел (вкладка): крупный заголовок Material, который сворачивается при прокрутке, и свет раздела
- * сверху (DESIGN.md, «Elevation & Depth»). Фон панели прозрачный, пока содержимое не уехало под неё.
+ * Экран-раздел (вкладка): крупный заголовок Material, который сворачивается при прокрутке. Фон панели прозрачный, пока содержимое не уехало под неё.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TabScreen(
     title: String,
     modifier: Modifier = Modifier,
-    glow: StudySection? = null,
     actions: @Composable RowScope.() -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val scroll = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-    SectionBackground(section = glow, modifier = modifier) {
+    SectionBackground(modifier = modifier) {
         Scaffold(
             modifier = Modifier.nestedScroll(scroll.nestedScrollConnection),
             containerColor = Color.Transparent,
             topBar = {
                 LargeTopAppBar(
-                    // Material ставит заголовок в 16 dp от края, а лента идёт по полю gutter (20):
+                    // Material ставит заголовок в 16 dp от края, а лента идёт по полю gutter:
                     // заголовок сдвинут, чтобы стоять над лентой, как в макете.
-                    title = { Text(title, modifier = Modifier.padding(start = GpLayout.gutter - MaterialTitleInset)) },
+                    title = {
+                        Text(
+                            title,
+                            style = if (Gp.isWide) Gp.type.h1Wide else Gp.type.h1,
+                            modifier =
+                                Modifier.padding(
+                                    start =
+                                        GpLayout.gutter - MaterialTitleInset,
+                                ),
+                        )
+                    },
                     actions = actions,
                     scrollBehavior = scroll,
                     colors =
@@ -73,10 +80,9 @@ fun NestedScreen(
     title: String,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    glow: StudySection? = null,
     content: @Composable (PaddingValues) -> Unit,
 ) {
-    SectionBackground(section = glow, modifier = modifier) {
+    SectionBackground(modifier = modifier) {
         Scaffold(
             containerColor = Color.Transparent,
             topBar = {

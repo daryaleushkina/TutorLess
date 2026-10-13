@@ -22,7 +22,7 @@ struct SignInModelTests {
         return (SignInModel(app: app, discoverySession: server.session, locale: locale), app, tokens)
     }
 
-    @Test("вход подменой: токен в Keychain, человек на «Сегодня»")
+    @Test("вход подменой: токен в Keychain, человек в оболочке")
     func development() async throws {
         server.on("POST /api/auth/dev", .json(200, Fixture.session(token: "t-1")))
         let (model, app, tokens) = setUp()
@@ -81,18 +81,18 @@ struct SignInModelTests {
     }
 
     @Test(
-        "Telegram и Google без аккаунта у провайдера — честное «ещё не подключён»",
-        arguments: [WebProvider.telegram, .google])
+        "Google без аккаунта у провайдера — честное «ещё не подключён»",
+        arguments: [WebProvider.google])
     func notConnectedYet(provider: WebProvider) async {
         let (model, _, _) = setUp()
         await model.signInWithWeb(provider) { _, _ in
             Issue.record("окно входа не должно открываться")
             return URL(string: "x:/")!
         }
-        #expect(model.message == .notConnectedYet(provider == .telegram ? .telegram : .google))
+        #expect(model.message == .notConnectedYet(.google))
     }
 
-    func telegramConfig() -> WebProviderConfig {
+    func googleConfig() -> WebProviderConfig {
         WebProviderConfig(
             issuer: URL(string: "https://\(server.host)/oidc")!,
             clientID: "client-1",
@@ -100,15 +100,15 @@ struct SignInModelTests {
         )
     }
 
-    @Test("Telegram: окно входа с PKCE, код и verifier уходят на сервер")
+    @Test("Google: окно входа с PKCE, код и verifier уходят на сервер")
     func webFlow() async throws {
         server.on(
             "GET /oidc/.well-known/openid-configuration",
             .json(200, #"{"authorization_endpoint":"https://oauth.example/auth"}"#))
-        server.on("POST /api/auth/oidc/code", .json(200, Fixture.session(token: "t-tg")))
-        let (model, app, tokens) = setUp(webProviders: [.telegram: telegramConfig()], locale: Locale(identifier: "en"))
+        server.on("POST /api/auth/oidc/code", .json(200, Fixture.session(token: "t-google")))
+        let (model, app, tokens) = setUp(webProviders: [.google: googleConfig()], locale: Locale(identifier: "en"))
         var opened: URL?
-        await model.signInWithWeb(.telegram) { url, redirect in
+        await model.signInWithWeb(.google) { url, redirect in
             opened = url
             #expect(redirect.absoluteString == "dev.greprepapp.app:/oauth")
             let state =
@@ -122,7 +122,7 @@ struct SignInModelTests {
         #expect(item("client_id") == "client-1")
         let body = try #require(server.requests("POST /api/auth/oidc/code").first).json()
         #expect(body["code"] as? String == "the-code")
-        #expect(body["provider"] as? String == "telegram")
+        #expect(body["provider"] as? String == "google")
         #expect(body["locale"] as? String == "en")
         // Пары, которые сверят провайдер и сервер: verifier ↔ challenge, nonce окна ↔ nonce на сервер, один адрес
         // возврата у окна, на сервере и в настройках.
@@ -132,7 +132,7 @@ struct SignInModelTests {
         #expect(body["redirectUri"] as? String == "dev.greprepapp.app:/oauth")
         #expect(item("redirect_uri") == "dev.greprepapp.app:/oauth")
         #expect(app.phase == .signedIn)
-        #expect(try tokens.token() == "t-tg")
+        #expect(try tokens.token() == "t-google")
     }
 
     @Test("чужой state в ответе — вход не засчитывается")
@@ -141,8 +141,8 @@ struct SignInModelTests {
             "GET /oidc/.well-known/openid-configuration",
             .json(200, #"{"authorization_endpoint":"https://oauth.example/auth"}"#))
         server.on("POST /api/client-errors", .status(204))
-        let (model, app, _) = setUp(webProviders: [.telegram: telegramConfig()])
-        await model.signInWithWeb(.telegram) { _, _ in URL(string: "dev.greprepapp.app:/oauth?code=c&state=forged")! }
+        let (model, app, _) = setUp(webProviders: [.google: googleConfig()])
+        await model.signInWithWeb(.google) { _, _ in URL(string: "dev.greprepapp.app:/oauth?code=c&state=forged")! }
         #expect(model.message == .failed)
         #expect(app.phase == .signedOut(nil))
         #expect(server.requests("POST /api/auth/oidc/code").isEmpty)
@@ -153,9 +153,9 @@ struct SignInModelTests {
         server.on(
             "GET /oidc/.well-known/openid-configuration",
             .json(200, #"{"authorization_endpoint":"https://oauth.example/auth"}"#))
-        let (model, _, _) = setUp(webProviders: [.telegram: telegramConfig()])
-        await model.signInWithWeb(.telegram) { _, _ in throw ASWebAuthenticationSessionError(.canceledLogin) }
-        #expect(model.message == nil)
+        let (model, _, _) = setUp(webProviders: [.google: googleConfig()])
+        await model.signInWithWeb(.google) { _, _ in throw ASWebAuthenticationSessionError(.canceledLogin) }
+        #expect(model.message == .cancelled)
         #expect(model.busy == nil)
     }
 
@@ -165,16 +165,16 @@ struct SignInModelTests {
             "GET /oidc/.well-known/openid-configuration", .failure(.notConnectedToInternet), .json(500, "{}"),
             .json(200, #"{"authorization_endpoint":"http://insecure/auth"}"#))
         server.on("POST /api/client-errors", .status(204))
-        let (model, _, _) = setUp(webProviders: [.telegram: telegramConfig()])
+        let (model, _, _) = setUp(webProviders: [.google: googleConfig()])
         let never: (URL, URL) async throws -> URL = { _, _ in
             Issue.record("окно входа не должно открываться")
             return URL(string: "x:/")!
         }
-        await model.signInWithWeb(.telegram, authenticate: never)
+        await model.signInWithWeb(.google, authenticate: never)
         #expect(model.message == .offline)
-        await model.signInWithWeb(.telegram, authenticate: never)
+        await model.signInWithWeb(.google, authenticate: never)
         #expect(model.message == .failed)
-        await model.signInWithWeb(.telegram, authenticate: never)
+        await model.signInWithWeb(.google, authenticate: never)
         #expect(model.message == .failed)
         // В журнале — причина, а не просто «не получилось»: иначе сломанный вход у всех не разобрать.
         await eventually { server.requests("POST /api/client-errors").count == 2 }
@@ -188,7 +188,7 @@ struct SignInModelTests {
         server.on("POST /api/client-errors", .status(204))
         let (model, _, _) = setUp(appleSignInEnabled: true)
         await model.completeApple(.failure(ASAuthorizationError(.canceled)))
-        #expect(model.message == nil)
+        #expect(model.message == .cancelled)
         await model.completeApple(.failure(ASAuthorizationError(.failed)))
         #expect(model.message == .failed)
         await eventually { !server.requests("POST /api/client-errors").isEmpty }

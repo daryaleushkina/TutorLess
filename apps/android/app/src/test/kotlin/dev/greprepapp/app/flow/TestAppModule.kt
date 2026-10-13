@@ -14,12 +14,14 @@ import dev.greprepapp.app.core.NetworkStatus
 import dev.greprepapp.app.core.Ticker
 import dev.greprepapp.app.core.report.ClientErrorReporter
 import dev.greprepapp.app.core.session.TokenStore
+import dev.greprepapp.app.core.theme.ThemeStore
 import dev.greprepapp.app.di.AppModule
-import dev.greprepapp.app.feature.today.TodayCache
+import dev.greprepapp.app.feature.shell.ShellCache
 import dev.greprepapp.app.feature.training.TrainingStore
 import dev.greprepapp.app.testing.FakeForeground
 import dev.greprepapp.app.testing.FakeNetwork
 import dev.greprepapp.app.testing.ManualTicker
+import dev.greprepapp.app.testing.MemoryThemeStore
 import dev.greprepapp.app.testing.MemoryTokenStore
 import dev.greprepapp.app.testing.MutableClock
 import kotlinx.coroutines.CoroutineDispatcher
@@ -71,6 +73,13 @@ object TestAppModule {
 
     @Provides
     @Singleton
+    fun memoryTheme(): MemoryThemeStore = MemoryThemeStore()
+
+    @Provides
+    fun themeStore(store: MemoryThemeStore): ThemeStore = store
+
+    @Provides
+    @Singleton
     fun memoryTokens(): MemoryTokenStore = MemoryTokenStore()
 
     @Provides
@@ -78,10 +87,10 @@ object TestAppModule {
 
     @Provides
     @Singleton
-    fun todayCache(
+    fun shellCache(
         @ApplicationContext context: Context,
         reporter: ClientErrorReporter,
-    ): TodayCache = TodayCache(File(context.cacheDir, "flow").apply { mkdirs() }, reporter)
+    ): ShellCache = ShellCache(File(context.cacheDir, "flow").apply { mkdirs() }, reporter)
 
     @Provides
     @Singleton

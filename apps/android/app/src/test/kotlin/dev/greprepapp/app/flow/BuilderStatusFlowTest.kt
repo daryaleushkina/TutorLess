@@ -5,7 +5,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.captureToImage
-import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import dev.greprepapp.app.R
 import dev.greprepapp.app.feature.training.BuilderActions
@@ -13,6 +12,7 @@ import dev.greprepapp.app.feature.training.BuilderContent
 import dev.greprepapp.app.feature.training.StartProblem
 import dev.greprepapp.app.feature.training.startProblemText
 import dev.greprepapp.app.snapshots.TrainingScreens
+import dev.greprepapp.app.testing.createAppComposeRule
 import dev.greprepapp.app.ui.StatusLine
 import dev.greprepapp.design.GpTheme
 import greprep.design.GpSpace
@@ -27,7 +27,7 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(qualifiers = "ru-w1000dp-h800dp-land-mdpi-keyshidden-nokeys")
 class BuilderStatusFlowTest {
-    @get:Rule val compose = createComposeRule()
+    @get:Rule val compose = createAppComposeRule()
 
     @Test
     fun wideBuilderUsesTheNoNetworkIconForAnOfflineStart() {

@@ -4,7 +4,7 @@ import dev.greprepapp.app.core.AppConfig
 import dev.greprepapp.app.core.report.ClientErrorReporter
 import dev.greprepapp.app.core.session.SessionManager
 import dev.greprepapp.app.core.session.TokenHolder
-import dev.greprepapp.app.feature.today.TodayCache
+import dev.greprepapp.app.feature.shell.ShellCache
 import dev.greprepapp.app.feature.training.TrainingRepository
 import dev.greprepapp.app.feature.training.TrainingStore
 import kotlinx.coroutines.CoroutineScope
@@ -34,7 +34,7 @@ class TestGraph(
     // Не backgroundScope: его задачи advanceUntilIdle не ждёт, а тесту нужен итог фоновой работы.
     val appScope = CoroutineScope(SupervisorJob() + dispatcher)
     val reporter = ClientErrorReporter({ publicApi }, config, clock, appScope)
-    val cache = TodayCache(directory, reporter)
+    val cache = ShellCache(directory, reporter)
     val trainingStore = TrainingStore(directory)
     val serverSignOuts = mutableListOf<String>()
     var ownerCalls = 0

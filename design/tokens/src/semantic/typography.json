@@ -5,10 +5,28 @@
       "text": {
         "$value": [
           "Onest",
-          "system-ui",
+          "Helvetica Neue",
+          "Arial",
           "sans-serif"
         ],
-        "$description": "Onest: кириллица и латиница одного рисунка, открытая лицензия OFL; в приложения — вшитым файлом, без сети"
+        "$description": "Onest Variable 400–800, как в приложении B (решение Даши 12.10.2026)."
+      },
+      "mono": {
+        "$value": [
+          "IBM Plex Mono",
+          "ui-monospace",
+          "Menlo",
+          "monospace"
+        ],
+        "$description": "Моноширинный текст: транскрипция слова."
+      },
+      "math": {
+        "$value": [
+          "Source Serif 4",
+          "Georgia",
+          "serif"
+        ],
+        "$description": "Формулы Quant: семейство из .math в core.css; файлы шрифта добавляются в приложениях."
       },
       "system": {
         "$value": [
@@ -18,7 +36,7 @@
           "system-ui",
           "sans-serif"
         ],
-        "$description": "Только двойник MainButton Telegram"
+        "$description": "Системный шрифт: кнопка «Вход с Apple» (правила Apple) и невидимый измеритель MainButton Telegram (клиент рисует её системным шрифтом)"
       }
     },
     "weight": {
@@ -31,345 +49,237 @@
       },
       "semibold": {
         "$value": 600
+      },
+      "bold": {
+        "$value": 700
+      },
+      "extrabold": {
+        "$value": 800
+      },
+      "demibold": {
+        "$value": 650
+      },
+      "thin": {
+        "$value": "{font.weight.extrabold}",
+        "$description": "Устарел: ссылка на 800 для совместимости; от темы не зависит (решение Даши 12.10.2026)."
       }
     },
     "text-scale-large": {
-      "$value": 1.125,
       "$type": "number",
-      "$description": "Настройка «Крупнее»: весь текст ×1,125 (17 → 19)"
+      "$value": 1.125,
+      "$description": "Настройка «Крупнее»: весь текст ×1,125."
     }
   },
   "type": {
     "$type": "typography",
-    "$description": "Роли текста. -wide — та же роль с ширины layout.breakpoint-wide.",
-    "display": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 56,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.0714,
-        "letterSpacing": {
-          "value": -0.03,
-          "unit": "em"
-        }
-      },
-      "$description": "Крупное число итога: балл, «12 из 12»"
-    },
-    "display-wide": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 72,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.0556,
-        "letterSpacing": {
-          "value": -0.03,
-          "unit": "em"
-        }
-      }
-    },
-    "score": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 48,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.0833,
-        "letterSpacing": {
-          "value": -0.025,
-          "unit": "em"
-        }
-      },
-      "$description": "Примерный балл пробника"
-    },
-    "headword": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 36,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.1667,
-        "letterSpacing": {
-          "value": -0.025,
-          "unit": "em"
-        }
-      },
-      "$description": "Слово на карточке словаря"
-    },
-    "headword-wide": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 48,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.125,
-        "letterSpacing": {
-          "value": -0.025,
-          "unit": "em"
-        }
-      }
-    },
-    "title-1": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 32,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.1875,
-        "letterSpacing": {
-          "value": -0.025,
-          "unit": "em"
-        }
-      },
-      "$description": "Заголовок экрана-вкладки"
-    },
-    "title-1-wide": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 40,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.15,
-        "letterSpacing": {
-          "value": -0.025,
-          "unit": "em"
-        }
-      }
-    },
-    "title-2": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 28,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.2143,
-        "letterSpacing": {
-          "value": -0.025,
-          "unit": "em"
-        }
-      },
-      "$description": "Заголовок экрана сессии и итогов"
-    },
-    "title-2-wide": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 36,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.1667,
-        "letterSpacing": {
-          "value": -0.025,
-          "unit": "em"
-        }
-      }
-    },
-    "title-3": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 19,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.2632,
-        "letterSpacing": {
-          "value": 0,
-          "unit": "px"
-        }
-      },
-      "$description": "Заголовок карточки-шага"
-    },
-    "title-3-wide": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 21,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.3333,
-        "letterSpacing": {
-          "value": 0,
-          "unit": "px"
-        }
-      }
-    },
-    "timer": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 22,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.1818,
-        "letterSpacing": {
-          "value": 0,
-          "unit": "px"
-        }
-      },
-      "$description": "Таймер секции, tabular-nums"
-    },
-    "timer-wide": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 24,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.1667,
-        "letterSpacing": {
-          "value": 0,
-          "unit": "px"
-        }
-      }
-    },
-    "prompt": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 18,
-          "unit": "px"
-        },
-        "fontWeight": 400,
-        "lineHeight": 1.5,
-        "letterSpacing": {
-          "value": 0,
-          "unit": "px"
-        }
-      },
-      "$description": "Текст задания на английском: длинное чтение, межстрочный 1.5"
-    },
-    "prompt-wide": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 20,
-          "unit": "px"
-        },
-        "fontWeight": 400,
-        "lineHeight": 1.55,
-        "letterSpacing": {
-          "value": 0,
-          "unit": "px"
-        }
-      }
-    },
-    "headline": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 18,
-          "unit": "px"
-        },
-        "fontWeight": 600,
-        "lineHeight": 1.3333,
-        "letterSpacing": {
-          "value": 0,
-          "unit": "px"
-        }
-      },
-      "$description": "Название темы, карточка"
-    },
+    "$description": "Роли стиля B: Onest, плотный трекинг, крупные цифры 800. Имена прежних профилей сохранены для платформ.",
     "body": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 17,
-          "unit": "px"
-        },
-        "fontWeight": 400,
-        "lineHeight": 1.2941,
-        "letterSpacing": {
-          "value": 0,
-          "unit": "px"
-        }
-      },
-      "$description": "Основной текст интерфейса, строки списков"
-    },
-    "body-long": {
-      "$value": {
-        "fontFamily": "{font.family.text}",
-        "fontSize": {
-          "value": 17,
-          "unit": "px"
-        },
-        "fontWeight": 400,
-        "lineHeight": 1.4118,
-        "letterSpacing": {
-          "value": 0,
-          "unit": "px"
-        }
-      },
-      "$description": "Абзацы: разбор, теория"
-    },
-    "callout": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
           "value": 16,
           "unit": "px"
         },
-        "fontWeight": 500,
-        "lineHeight": 1.3125,
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 1.45,
         "letterSpacing": {
           "value": 0,
-          "unit": "px"
+          "unit": "em"
         }
       },
-      "$description": "Значение в строке, кнопки-капсулы"
+      "$description": "Профиль .frame из design/app-b/index.html."
     },
-    "subhead": {
+    "h1": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 34,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.04,
+        "letterSpacing": {
+          "value": -0.035,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .h1 из design/app-b/index.html."
+    },
+    "h1-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 44,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.04,
+        "letterSpacing": {
+          "value": -0.035,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .h1 из design/app-b/index.html."
+    },
+    "h2": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 22,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.15,
+        "letterSpacing": {
+          "value": -0.025,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .h2 из design/app-b/index.html."
+    },
+    "h3": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 17,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.bold}",
+        "lineHeight": 1.3,
+        "letterSpacing": {
+          "value": -0.01,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .h3 из design/app-b/index.html."
+    },
+    "eyebrow": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 13,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.medium}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "em"
+        }
+      },
+      "$description": "Подпись над заголовком; также legend и rel-label."
+    },
+    "lead": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 17,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.005,
+          "unit": "em"
+        }
+      },
+      "$description": "Вводный текст .lead."
+    },
+    "button": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 16.5,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.bold}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.01,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .btn из design/app-b/index.html."
+    },
+    "exam-switch": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
           "value": 15,
           "unit": "px"
         },
-        "fontWeight": 400,
-        "lineHeight": 1.3333,
+        "fontWeight": "{font.weight.bold}",
+        "lineHeight": 1.45,
         "letterSpacing": {
-          "value": 0,
-          "unit": "px"
+          "value": -0.005,
+          "unit": "em"
         }
       },
-      "$description": "Подзаголовок под заголовком, подписи разделов"
+      "$description": "Профиль .exam-switch из design/app-b/index.html."
     },
-    "footnote": {
+    "start-title": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 28,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.05,
+        "letterSpacing": {
+          "value": -0.035,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .start-title из design/app-b/index.html."
+    },
+    "start-title-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 34,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.05,
+        "letterSpacing": {
+          "value": -0.035,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .start-title из design/app-b/index.html."
+    },
+    "meta": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
           "value": 14,
           "unit": "px"
         },
-        "fontWeight": 500,
-        "lineHeight": 1.2857,
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 1.45,
         "letterSpacing": {
-          "value": 0,
-          "unit": "px"
+          "value": -0.005,
+          "unit": "em"
         }
       },
-      "$description": "Ссылки-действия второго плана, мета вопроса"
+      "$description": "Подписи start-meta, session-meta, q-instr."
+    },
+    "section-name": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 16.5,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.demibold}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.01,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .row-body b из design/app-b/index.html."
     },
     "caption": {
       "$value": {
@@ -378,46 +288,878 @@
           "value": 13,
           "unit": "px"
         },
-        "fontWeight": 400,
-        "lineHeight": 1.3846,
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 1.45,
         "letterSpacing": {
-          "value": 0,
-          "unit": "px"
+          "value": -0.005,
+          "unit": "em"
         }
       },
-      "$description": "Даты, примечания, юридический текст"
+      "$description": "section-types, section-stat small, score-note."
     },
-    "key": {
+    "section-stat": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 12,
+          "value": 16,
           "unit": "px"
         },
-        "fontWeight": 500,
+        "fontWeight": "{font.weight.bold}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .stat b из design/app-b/index.html."
+    },
+    "section-stat-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 16,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.bold}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .stat b из design/app-b/index.html."
+    },
+    "session-count": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 22,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.04,
+          "unit": "em"
+        }
+      },
+      "$description": "Крупный профиль Onest 800; имя сохранено для совместимости со шкалой платформ."
+    },
+    "session-count-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 26,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.04,
+          "unit": "em"
+        }
+      },
+      "$description": "Крупный профиль Onest 800; имя сохранено для совместимости со шкалой платформ."
+    },
+    "q-text": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 20,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 1.62,
+        "letterSpacing": {
+          "value": -0.005,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .q-text из design/app-b/index.html."
+    },
+    "q-text-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 20,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 1.62,
+        "letterSpacing": {
+          "value": -0.005,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .q-text из design/app-b/index.html."
+    },
+    "opt": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 17,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.medium}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .opt из design/app-b/index.html."
+    },
+    "answer": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 15,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.demibold}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .ans из design/app-b/index.html."
+    },
+    "explain-body": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 16,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 1.58,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .explain-body из design/app-b/index.html."
+    },
+    "action": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 15,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.semibold}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .link-row из design/app-b/index.html."
+    },
+    "seg": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 13,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.bold}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": 0.02,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .seg button из design/app-b/index.html."
+    },
+    "score-label": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 14,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.semibold}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .x-label из design/app-b/index.html."
+    },
+    "score-num": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 30,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.05,
+        "letterSpacing": {
+          "value": -0.04,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .metric-num из design/app-b/index.html."
+    },
+    "score-num-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 30,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.05,
+        "letterSpacing": {
+          "value": -0.04,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .metric-num из design/app-b/index.html."
+    },
+    "stat-value": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 16,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.bold}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .stat b из design/app-b/index.html."
+    },
+    "exam-title": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 22,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.15,
+        "letterSpacing": {
+          "value": -0.025,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .h2 из design/app-b/index.html."
+    },
+    "exam-title-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 22,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.15,
+        "letterSpacing": {
+          "value": -0.025,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .h2 из design/app-b/index.html."
+    },
+    "exam-name": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 16,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.02,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .exam-tile из design/app-b/index.html."
+    },
+    "exam-name-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 16,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.02,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .exam-tile из design/app-b/index.html."
+    },
+    "headword": {
+      "$value": "{type.num-m}",
+      "$description": "Псевдоним num-m для совместимости платформ; значения задаёт общая ступень."
+    },
+    "headword-wide": {
+      "$value": "{type.num-m-wide}",
+      "$description": "Псевдоним num-l-wide для совместимости платформ; значения задаёт общая ступень."
+    },
+    "sense-en": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 18,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .sense-en из design/app-b/index.html."
+    },
+    "word-meta": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 15,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .word-meta из design/app-b/index.html."
+    },
+    "example": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 15.5,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .example из design/app-b/index.html."
+    },
+    "nav-label": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 11.5,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.semibold}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": 0.005,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .nav-item из design/app-b/index.html."
+    },
+    "nav-label-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 15.5,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.semibold}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": 0.005,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .nav-item из design/app-b/index.html."
+    },
+    "ipa": {
+      "$value": {
+        "fontFamily": "{font.family.mono}",
+        "fontSize": {
+          "value": 14,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.005,
+          "unit": "em"
+        }
+      },
+      "$description": "Транскрипция: IBM Plex Mono."
+    },
+    "week-count": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 26,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.035,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .week b из design/app-b/index.html."
+    },
+    "num-label": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 20,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.medium}",
+        "lineHeight": 1.2,
+        "letterSpacing": {
+          "value": -0.015,
+          "unit": "em"
+        }
+      },
+      "$description": "Подпись крупного результата: основной и компактный итоги тренировки."
+    },
+    "num-label-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 28,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.medium}",
+        "lineHeight": 1.2,
+        "letterSpacing": {
+          "value": -0.015,
+          "unit": "em"
+        }
+      },
+      "$description": "Подпись основного результата на широком экране."
+    },
+    "num-unit": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 22,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.025,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .today-num span из design/app-b/index.html."
+    },
+    "prompt-title": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 24,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.semibold}",
         "lineHeight": 1.25,
         "letterSpacing": {
-          "value": 0,
-          "unit": "px"
+          "value": -0.015,
+          "unit": "em"
         }
       },
-      "$description": "Подсказки клавиш на компьютере"
+      "$description": "Заголовок задания слов: перевод в нескольких упражнениях."
     },
-    "tab-label": {
+    "prompt-title-wide": {
+      "$value": "{type.start-title}",
+      "$description": "Широкий заголовок задания слов — существующая роль start-title."
+    },
+    "input-compact": {
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": {
-          "value": 11,
+          "value": 17,
           "unit": "px"
         },
-        "fontWeight": 500,
-        "lineHeight": 1.1818,
+        "fontWeight": "{font.weight.medium}",
+        "lineHeight": 1,
         "letterSpacing": {
           "value": 0,
+          "unit": "em"
+        }
+      },
+      "$description": "Однострочный ввод: поиск слова и ячейки Complete the Words."
+    },
+    "input-compact-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 19,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.medium}",
+        "lineHeight": 1,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "em"
+        }
+      },
+      "$description": "Однострочный ввод на широком экране."
+    },
+    "input-letter": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 26,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.medium}",
+        "lineHeight": 1.45,
+        "letterSpacing": {
+          "value": -0.08,
           "unit": "px"
         }
       },
-      "$description": "Подписи вкладок — меньше не бывает: это нижняя граница шкалы"
+      "$description": "Буквы: сборка слова и сравнение введённого ответа; один размер для обоих экранов."
+    },
+    "input-display": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 26,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.medium}",
+        "lineHeight": 1.2,
+        "letterSpacing": {
+          "value": 0.01,
+          "unit": "em"
+        }
+      },
+      "$description": "Ввод ответа словом: несколько упражнений W12–W14."
+    },
+    "h1-compact": {
+      "$value": "{type.h1}",
+      "$description": "Компактный заголовок прогресса: на телефоне совпадает с h1."
+    },
+    "h1-compact-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 44,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.04,
+        "letterSpacing": {
+          "value": -0.035,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .h1 из design/app-b/index.html."
+    },
+    "complete-words-text": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 18,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 2.15,
+        "letterSpacing": {
+          "value": -0.005,
+          "unit": "em"
+        }
+      },
+      "$description": ".frame .l-ctw-text в screens/l.css."
+    },
+    "complete-words-text-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 22,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 2.2,
+        "letterSpacing": {
+          "value": -0.005,
+          "unit": "em"
+        }
+      },
+      "$description": ".frame .l-ctw-text в screens/l.css; широкая раскладка от 900 px."
+    },
+    "sentence-assembly": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 20,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 2.3,
+        "letterSpacing": {
+          "value": -0.08,
+          "unit": "px"
+        }
+      },
+      "$description": ".frame .l-frame в screens/l.css."
+    },
+    "sentence-assembly-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 24,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 2.3,
+        "letterSpacing": {
+          "value": -0.08,
+          "unit": "px"
+        }
+      },
+      "$description": ".frame .l-frame в screens/l.css; широкая раскладка от 900 px."
+    },
+    "num-s": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 48,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1,
+        "letterSpacing": {
+          "value": -0.04,
+          "unit": "em"
+        }
+      },
+      "$description": "Крупный профиль Onest 800; имя сохранено для совместимости со шкалой платформ."
+    },
+    "num-s-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 60,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1,
+        "letterSpacing": {
+          "value": -0.04,
+          "unit": "em"
+        }
+      },
+      "$description": "Крупный профиль Onest 800; имя сохранено для совместимости со шкалой платформ."
+    },
+    "num-m": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 52,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 0.98,
+        "letterSpacing": {
+          "value": -0.045,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .headword из design/app-b/index.html."
+    },
+    "num-m-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 52,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 0.98,
+        "letterSpacing": {
+          "value": -0.045,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .headword из design/app-b/index.html."
+    },
+    "num-l": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 64,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 0.9,
+        "letterSpacing": {
+          "value": -0.05,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .today-num b из design/app-b/index.html."
+    },
+    "num-l-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 64,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 0.9,
+        "letterSpacing": {
+          "value": -0.05,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .today-num b из design/app-b/index.html."
+    },
+    "num-xl": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 68,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 0.95,
+        "letterSpacing": {
+          "value": -0.05,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .x-num из design/app-b/index.html."
+    },
+    "num-xl-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 68,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 0.95,
+        "letterSpacing": {
+          "value": -0.05,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .x-num из design/app-b/index.html."
+    },
+    "num-xxl": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 120,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 0.8,
+        "letterSpacing": {
+          "value": -0.055,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .sum-num из design/app-b/index.html."
+    },
+    "num-xxl-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 120,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 0.8,
+        "letterSpacing": {
+          "value": -0.055,
+          "unit": "em"
+        }
+      },
+      "$description": "Профиль .sum-num из design/app-b/index.html."
+    },
+    "num-compact": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 36,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.05,
+        "letterSpacing": {
+          "value": -0.04,
+          "unit": "em"
+        }
+      },
+      "$description": "Крупный профиль Onest 800; имя сохранено для совместимости со шкалой платформ."
+    },
+    "num-compact-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 52,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.05,
+        "letterSpacing": {
+          "value": -0.04,
+          "unit": "em"
+        }
+      },
+      "$description": "Крупный профиль Onest 800; имя сохранено для совместимости со шкалой платформ."
+    },
+    "word-title": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 40,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.1,
+        "letterSpacing": {
+          "value": -0.045,
+          "unit": "em"
+        }
+      },
+      "$description": "Крупный профиль Onest 800; имя сохранено для совместимости со шкалой платформ."
+    },
+    "word-title-wide": {
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": {
+          "value": 56,
+          "unit": "px"
+        },
+        "fontWeight": "{font.weight.extrabold}",
+        "lineHeight": 1.1,
+        "letterSpacing": {
+          "value": -0.045,
+          "unit": "em"
+        }
+      },
+      "$description": "Крупный профиль Onest 800; имя сохранено для совместимости со шкалой платформ."
     }
   }
 }

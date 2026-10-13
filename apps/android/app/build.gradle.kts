@@ -15,6 +15,9 @@ val releaseApiBaseUrl = providers.gradleProperty("gp.apiBaseUrl").orElse("https:
 val trainingConformance = rootProject.layout.projectDirectory.dir("../../api/conformance")
 
 android {
+    // Язык выбирается аккаунтом: оба перевода должны быть в установленной сборке без загрузки из Play.
+    bundle { language { enableSplit = false } }
+
     namespace = "dev.greprepapp.app"
     compileSdk {
         version = release(37)
@@ -32,8 +35,8 @@ android {
     }
 
     androidResources {
-        // Список языков для системной настройки «Язык приложения» (Android 13+) — из папок values-*.
-        generateLocaleConfig = true
+        // Язык принадлежит аккаунту и выбирается в профиле, отдельной настройки Android нет.
+        generateLocaleConfig = false
     }
 
     buildTypes {
@@ -137,6 +140,7 @@ dependencies {
 
     implementation(libs.androidx.core)
     implementation(libs.androidx.core.splashscreen)
+    implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.lifecycle.runtime.compose)

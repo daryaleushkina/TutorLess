@@ -2,7 +2,7 @@ import AuthenticationServices
 import CryptoKit
 import Foundation
 
-/// Вход через системное окно браузера (Telegram, Google): OIDC, код авторизации с PKCE (RFC 7636). Код
+/// Вход через системное окно браузера (Google): OIDC, код авторизации с PKCE (RFC 7636). Код
 /// меняется на id_token на сервере — секрет клиента на устройство не попадает (api/openapi.yaml,
 /// /api/auth/oidc/code).
 enum WebSignIn {

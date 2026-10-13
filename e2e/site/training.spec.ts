@@ -20,7 +20,7 @@ import { keyboardSession } from '../training';
 test('клавиши выбора, Enter и стрелки', async ({ site }) => { await keyboardSession(site); });
 
 test('me — человек, вошедший на сайте', async ({ me, site }) => {
-  await expect(site.getByRole('heading', { name: 'Сегодня' })).toBeVisible();
+  await expect(site.getByRole('heading', { name: 'Тренировка' })).toBeVisible();
   expect(me.user).toEqual(schemas.User.parse(await me.api('GET', '/me')));
 });
 

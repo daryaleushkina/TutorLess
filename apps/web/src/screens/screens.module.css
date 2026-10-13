@@ -1,96 +1,30 @@
-/* Общее для простых экранов: заголовок раздела, круглая стеклянная кнопка, группа строк настроек. */
+.screen { display: flex; flex-direction: column; gap: calc(var(--space-24) - var(--space-2)); }
+.title { font: var(--font-h1); letter-spacing: var(--tracking-h1); }
+.lead { font: var(--font-lead); letter-spacing: var(--tracking-lead); color: var(--color-text-2); max-width: var(--layout-text-max); }
+@media (min-width: 900px) { .title { font: var(--font-h1-wide); } }
 
-.screen {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.title {
-  font: var(--font-title-1);
-  letter-spacing: var(--tracking-title-1);
-}
-
-.titleRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-12);
-}
-
-/* Стеклянный круг шапки (DESIGN.md, «Шапка Telegram»): тот же размер, что у кругов клиента. */
-.circle {
-  flex: none;
-  width: var(--size-header-button);
-  height: var(--size-header-button);
-  border-radius: var(--radius-full);
-  color: var(--color-text);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.circle svg {
-  width: var(--space-20);
-  height: var(--space-20);
-}
-
-@media (min-width: 600px) {
-  .narrowOnly {
-    display: none;
-  }
-}
-
-/* Низ настроек: «Выйти» и версия на одной строке (web-G2); в мини-аппе выхода нет — версия по центру (G2). */
-.settingsFooter {
-  margin-top: var(--space-32);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-16);
-}
-
-.settingsFooter[data-shell='telegram'] {
-  justify-content: center;
-}
-
-.textButton {
-  min-height: var(--size-tap-target);
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--color-text-secondary);
-  font: var(--font-subhead);
-  font-weight: var(--font-weight-medium);
-  text-decoration: underline;
-  text-decoration-thickness: var(--size-hairline);
-  text-decoration-color: var(--color-line);
-  text-underline-offset: var(--space-4);
-}
-
-.textButton:disabled {
-  opacity: var(--opacity-disabled);
-}
-
-.version {
-  font: var(--font-caption);
-  color: var(--color-text-secondary);
-  font-variant-numeric: tabular-nums;
-}
-
-.error {
-  margin-top: var(--space-8);
-  font: var(--font-subhead);
-  color: var(--color-text);
-}
-
-.disclaimer {
-  margin-top: var(--space-16);
-  font: var(--font-caption);
-  color: var(--color-text-secondary);
-}
-
-/* В мини-аппе низ настроек — по центру (G2), как версия над ним. */
-.disclaimer[data-shell='telegram'] {
-  text-align: center;
-}
+/* Профиль: CSS разделов загружается с первым пакетом, чтобы повтор импорта JS не терял вид. */
+.profileScreen { display: flex; flex-direction: column; gap: var(--space-24); }
+.profileTitle { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); font: var(--font-h1); letter-spacing: var(--tracking-h1); }
+.me { display: flex; align-items: center; gap: var(--space-14); }
+.avatar { width: var(--size-side-card); height: var(--size-side-card); border-radius: var(--radius-full); display: grid; place-items: center; background: var(--color-exam-sat); color: var(--color-on-accent); font: var(--font-h2); }
+.me > span:last-child { display: flex; flex-direction: column; gap: var(--space-6); min-width: 0; }
+.me b { font: var(--font-h2); letter-spacing: var(--tracking-h2); overflow-wrap: anywhere; }
+.me small { font: var(--font-meta); color: var(--color-text-3); }
+.profileList { border-radius: var(--radius-l); background: var(--color-surface); border: var(--size-hairline) solid var(--color-line); overflow: hidden; }
+.setting { position: relative; display: flex; align-items: center; gap: var(--space-12); min-height: calc(var(--space-56) + var(--space-2)); padding: var(--space-8) var(--space-16); width: 100%; border: 0; background: none; font: var(--font-body); font-weight: var(--font-weight-semibold); text-align: left; }
+.setting > span:not(.rowIcon) { flex: 1; }
+li + li .setting::before, li.setting + li.setting::before { position: absolute; content: ''; top: 0; left: var(--space-16); right: 0; height: var(--size-hairline); background: var(--color-line); }
+.setting:disabled { opacity: var(--opacity-disabled); cursor: default; }
+.segment { display: flex; padding: var(--space-4); border-radius: var(--radius-full); background: var(--color-surface-2); }
+.segment button { background: none; border: 0; padding: var(--space-6) var(--space-12); min-height: var(--space-32); border-radius: var(--radius-full); color: var(--color-text-3); font: var(--font-seg); letter-spacing: var(--tracking-seg); }
+.segment button[aria-pressed='true'] { background: var(--color-text); color: var(--color-bg); }
+.segment button:disabled { opacity: var(--opacity-disabled); }
+.rowIcon { width: var(--space-32); height: var(--space-32); display: grid; place-items: center; background: var(--color-surface-2); border-radius: var(--radius-s); }
+.rowIcon svg { width: var(--size-icon-sm); height: var(--size-icon-sm); }
+.legal { display: flex; flex-direction: column; gap: var(--space-8); padding: 0 var(--space-4); color: var(--color-text-3); font: var(--font-caption); }
+.error { display: flex; gap: var(--space-8); color: var(--color-text-2); font: var(--font-meta); }
+.error svg { width: var(--size-icon-sm); height: var(--size-icon-sm); color: var(--color-wrong); flex: none; }
+@media (min-width: 900px) { .profileTitle { position: static; width: auto; height: auto; overflow: visible; clip-path: none; } }
+html[data-text-size='large'] .setting { flex-wrap: wrap; }
+html[data-text-size='large'] .segment { margin-left: auto; }

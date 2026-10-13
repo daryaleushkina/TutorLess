@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { returnToSearch, safeReturnTo } from './returnTo';
 
 describe('адрес после входа', () => {
-  it.each(['/', '/settings', '/step/words?source=plan#details', '/training/new?section=quant', '/step/%D1%88%D0%B0%D0%B3'])('свой путь %s сохраняется целиком', (path) => {
+  it.each(['/', '/settings', '/words?source=plan#details', '/training/new?section=quant', '/words/%D1%81%D0%BB%D0%BE%D0%B2%D0%BE'])('свой путь %s сохраняется целиком', (path) => {
     expect(safeReturnTo(path)).toBe(path);
   });
 
@@ -11,8 +11,8 @@ describe('адрес после входа', () => {
     '//evil.example', '///evil.example', '/x//evil', '\\evil.example', '/\\evil.example', '/x\\y',
     '/\n/evil.example', '/x\r', '/x\t', '/x\0', '/x\u007f', '/x\u0085',
     '/%2f%2fevil.example', '/%5cevil.example', '/%255cevil.example', '/x%0a', '/x%250d', '/x%00', '/x%7f', '/%', '/%252525252541',
-    '/SIGNIN', '/Auth/Callback', '/%53IGNIN/', '/aUtH/cAlLbAcK?code=x', '/signin', '/signin?returnTo=/signin', '/auth/callback', '/step/../signin', '/%73ignin/',
-  ])('неподходящий адрес %j — «Сегодня»', (path) => {
+    '/SIGNIN', '/Auth/Callback', '/%53IGNIN/', '/aUtH/cAlLbAcK?code=x', '/signin', '/signin?returnTo=/signin', '/auth/callback', '/words/../signin', '/%73ignin/',
+  ])('неподходящий адрес %j — «Тренировка»', (path) => {
     expect(safeReturnTo(path)).toBe('/');
   });
 });

@@ -171,14 +171,6 @@ final class StubURLProtocol: URLProtocol, @unchecked Sendable {
 
 /// Ответы сервера, как в договоре.
 enum Fixture {
-    static let todayJSON = #"""
-        {"date":"2026-10-06","steps":[
-          {"id":"words","section":"words","title":"Слова: повторение","minutes":5,"state":"current"},
-          {"id":"verbal","section":"verbal","title":"Verbal: Text Completion","minutes":10,"state":"next"},
-          {"id":"quant","section":"quant","title":"Quant: Quantitative Comparison","minutes":10,"state":"next"}
-        ]}
-        """#
-
     static func session(token: String = "token-1", name: String = "Даша") -> String {
         #"""
         {"token":"\#(token)","expiresAt":"2026-11-05T00:00:00Z","user":{"id":"8f0c6c1e-5a43-4c1a-9b7e-0c4b1f2d3e4f","name":"\#(name)","role":"user","locale":"ru","activeExam":null,"identities":[]}}
@@ -188,12 +180,6 @@ enum Fixture {
     static func error(_ code: String, requestID: String = "req-1") -> String {
         #"{"code":"\#(code)","message":"stub","requestId":"\#(requestID)"}"#
     }
-
-    static var todayDTO: TodayDTO {
-        try! JSONDecoder().decode(TodayDTO.self, from: Data(todayJSON.utf8))
-    }
-
-    static var plan: TodayPlan { TodayPlan(todayDTO) }
 
     static var user: UserDTO {
         try! JSONDecoder().decode(
@@ -205,11 +191,11 @@ enum Fixture {
 }
 
 /// Кэш плана во временной папке: у каждого теста свой файл.
-func temporaryCache() -> TodayCache {
+func temporaryCache() -> ShellCache {
     // Пробел в пути — как в настоящей папке «Application Support».
-    TodayCache(
+    ShellCache(
         fileURL: FileManager.default.temporaryDirectory.appending(
-            path: "Application Support \(UUID().uuidString)/today.json"))
+            path: "Application Support \(UUID().uuidString)/shell.json"))
 }
 
 /// Ожидающая проверка: условие становится верным само (фоновая задача, ответ сервера). Без пауз — уступает

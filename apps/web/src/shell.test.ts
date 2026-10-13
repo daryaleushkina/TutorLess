@@ -5,7 +5,7 @@ describe('detectShell', () => {
   it.each([
     ['/tg', 'telegram'],
     ['/tg/', 'telegram'],
-    ['/tg/step/words', 'telegram'],
+    ['/tg/words', 'telegram'],
     ['/', 'site'],
     ['/signin', 'site'],
     ['/tgx', 'site'],

@@ -13,9 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasTestTag
-import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import dev.greprepapp.app.feature.training.revealReviewRow
+import dev.greprepapp.app.testing.createAppComposeRule
 import dev.greprepapp.design.GpTheme
 import greprep.design.GpSize
 import kotlinx.coroutines.CoroutineScope
@@ -32,7 +32,7 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(qualifiers = "ru-w1000dp-h800dp-land-mdpi-keyshidden-nokeys")
 class ReviewScrollFlowTest {
-    @get:Rule val compose = createComposeRule()
+    @get:Rule val compose = createAppComposeRule()
 
     @Test
     fun rowBelowTheViewportAppearsAtTheBottomInsteadOfTheTop() {
@@ -44,7 +44,7 @@ class ReviewScrollFlowTest {
             GpTheme {
                 LazyColumn(state = state, modifier = Modifier.fillMaxSize().testTag("list")) {
                     items((0 until 40).toList(), key = { it }) { index ->
-                        Text("Вопрос ${index + 1}", modifier = Modifier.fillMaxWidth().height(GpSize.rowTall).testTag("row.$index"))
+                        Text("Вопрос ${index + 1}", modifier = Modifier.fillMaxWidth().height(GpSize.opt).testTag("row.$index"))
                     }
                 }
             }

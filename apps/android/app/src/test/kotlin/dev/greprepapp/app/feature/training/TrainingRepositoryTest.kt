@@ -38,7 +38,7 @@ class TrainingRepositoryTest {
 
     private val request =
         TrainingRequest(
-            exam = CURRENT_EXAM,
+            exam = dev.greprepapp.api.models.Exam.GRE,
             section = Section.VERBAL,
             questionTypes = setOf(QuestionType.TEXT_COMPLETION),
             count = 2,
@@ -54,13 +54,35 @@ class TrainingRepositoryTest {
     private suspend fun TestGraph.started(): String = (trainings.start(request) as StartResult.Started).trainingId
 
     @Test
+    fun newestPracticeSurvivesStartingAtTheSameClockInstant() =
+        runTest(main.dispatcher) {
+            val g = graph()
+            g.trainingsApi.start = Reply.Ok(Fixtures.session(Fixtures.tc1, id = "first"))
+            g.started()
+            g.trainingsApi.start = Reply.Ok(Fixtures.session(Fixtures.tc1, id = "second"))
+            g.started()
+            advanceUntilIdle()
+            assertTrue(
+                "новая сессия не должна удаляться уборкой старых",
+                g.trainingStore.trainings.value
+                    .containsKey("second"),
+            )
+            assertEquals(
+                "second",
+                g.trainings.active
+                    .first()
+                    ?.id,
+            )
+        }
+
+    @Test
     fun expiredSessionKeepsAnswersAndReportsUntilTheSamePersonReturns() =
         runTest(main.dispatcher) {
             val g = graph()
             val id = g.started()
             g.trainingsApi.answers = Reply.NetworkDown
             g.trainingsApi.report = Reply.NetworkDown
-            g.trainings.answer(id, 0, listOf("A"))
+            g.trainings.answer(id, 0, Response.Options(listOf("A")))
             g.trainings.report(Fixtures.tc1.id, QuestionReport(QuestionReport.Kind.OTHER, "private text", id))
             g.settle()
             g.session.handleUnauthorized((g.session.state.value as SessionState.SignedIn).id)
@@ -95,8 +117,8 @@ class TrainingRepositoryTest {
             val g = graph()
             val id = g.started()
             g.trainingsApi.answers = Reply.NetworkDown
-            g.trainings.answer(id, 0, listOf("A"))
-            g.trainings.answer(id, 1, listOf("A", "C"))
+            g.trainings.answer(id, 0, Response.Options(listOf("A")))
+            g.trainings.answer(id, 1, Response.Options(listOf("A", "C")))
             g.settle()
             g.trainingsApi.sentAnswers.clear()
             g.trainingsApi.answerReply = { batch ->
@@ -132,8 +154,8 @@ class TrainingRepositoryTest {
             val id = g.started()
             g.trainingsApi.answers = Reply.NetworkDown
             g.trainingsApi.report = Reply.NetworkDown
-            g.trainings.answer(id, 0, listOf("A"))
-            g.trainings.answer(id, 1, listOf("A", "C"))
+            g.trainings.answer(id, 0, Response.Options(listOf("A")))
+            g.trainings.answer(id, 1, Response.Options(listOf("A", "C")))
             g.trainings.report(Fixtures.tc1.id, QuestionReport(QuestionReport.Kind.OTHER, "private text", id))
             g.settle()
             g.session.handleUnauthorized((g.session.state.value as SessionState.SignedIn).id)
@@ -164,7 +186,7 @@ class TrainingRepositoryTest {
             val g = graph()
             val id = g.started()
             g.trainingsApi.answers = Reply.NetworkDown
-            g.trainings.answer(id, 0, listOf("A"))
+            g.trainings.answer(id, 0, Response.Options(listOf("A")))
             g.settle()
             g.appScope.cancel()
             val again = TestGraph(this, main.dispatcher, folder.root, token = "token-1")
@@ -187,7 +209,7 @@ class TrainingRepositoryTest {
             val g = graph()
             val id = g.started()
             g.trainingsApi.answers = Reply.NetworkDown
-            g.trainings.answer(id, 0, listOf("A"))
+            g.trainings.answer(id, 0, Response.Options(listOf("A")))
             g.settle()
             g.appScope.cancel()
             val again = TestGraph(this, main.dispatcher, folder.root, token = "new-token")
@@ -245,8 +267,8 @@ class TrainingRepositoryTest {
                 val g = graph()
                 val id = g.started()
                 g.trainingsApi.answers = Reply.NetworkDown
-                g.trainings.answer(id, 0, listOf("A"))
-                g.trainings.answer(id, 1, listOf("A", "C"))
+                g.trainings.answer(id, 0, Response.Options(listOf("A")))
+                g.trainings.answer(id, 1, Response.Options(listOf("A", "C")))
                 g.settle()
                 g.trainingsApi.answerReply = { batch ->
                     if (batch.answers.size > 1 || batch.answers.single().position == 0) {
@@ -264,17 +286,22 @@ class TrainingRepositoryTest {
         }
 
     @Test
-    fun ownerConfirmationDoesNotEraseThePlanThatJustArrivedFromTheServer() =
+    fun ownerConfirmationKeepsTheSameAccountsShellCache() =
         runTest(main.dispatcher) {
             val g = TestGraph(this, main.dispatcher, folder.root, token = "token-1")
             val gate = CompletableDeferred<Unit>()
             g.ownerGate = gate
             g.trainings
             g.settle()
-            g.cache.save(dev.greprepapp.app.testing.starterPlan)
+            g.cache.connect(
+                dev.greprepapp.app.testing
+                    .session()
+                    .user.id,
+                "token-1",
+            )
             gate.complete(Unit)
             g.settle()
-            org.junit.Assert.assertNotNull(g.cache.load())
+            org.junit.Assert.assertNotNull(g.cache.load("token-1"))
         }
 
     @Test
@@ -296,8 +323,8 @@ class TrainingRepositoryTest {
                 val g = graph()
                 val id = g.started()
                 g.trainingsApi.answers = Reply.NetworkDown
-                g.trainings.answer(id, 0, listOf("A"))
-                g.trainings.answer(id, 1, listOf("A", "C"))
+                g.trainings.answer(id, 0, Response.Options(listOf("A")))
+                g.trainings.answer(id, 1, Response.Options(listOf("A", "C")))
                 g.trainings.finish(id, false)
                 g.settle()
                 g.trainingsApi.sentAnswers.clear()
@@ -318,8 +345,8 @@ class TrainingRepositoryTest {
             val g = graph()
             val id = g.started()
             g.trainingsApi.answers = Reply.NetworkDown
-            g.trainings.answer(id, 0, listOf("A"))
-            g.trainings.answer(id, 1, listOf("A", "C"))
+            g.trainings.answer(id, 0, Response.Options(listOf("A")))
+            g.trainings.answer(id, 1, Response.Options(listOf("A", "C")))
             g.settle()
             g.trainingsApi.sentAnswers.clear()
             g.trainingsApi.answerReply = { batch ->
@@ -341,8 +368,8 @@ class TrainingRepositoryTest {
             val g = graph()
             val id = g.started()
             g.trainingsApi.answers = Reply.NetworkDown
-            g.trainings.answer(id, 0, listOf("A"))
-            g.trainings.answer(id, 1, listOf("A", "C"))
+            g.trainings.answer(id, 0, Response.Options(listOf("A")))
+            g.trainings.answer(id, 1, Response.Options(listOf("A", "C")))
             g.settle()
             g.trainingsApi.sentAnswers.clear()
             g.trainingsApi.answerReply = { batch ->
@@ -352,7 +379,7 @@ class TrainingRepositoryTest {
             g.settle()
             assertEquals(2, g.trainingsApi.sentAnswers.size)
             assertEquals(1, g.publicApi.reports.count { it.message.contains("rejected") })
-            g.trainings.answer(id, 1, listOf("B", "D"))
+            g.trainings.answer(id, 1, Response.Options(listOf("B", "D")))
             g.trainings.finish(id, false)
             g.settle()
             assertEquals(2, g.trainingsApi.sentAnswers.size)
@@ -391,7 +418,7 @@ class TrainingRepositoryTest {
             File(folder.root, "trainings").deleteRecursively()
             File(folder.root, "trainings").writeText("")
             val id = g.started()
-            g.trainings.recordAnswer(id, 0, listOf("A"))
+            g.trainings.recordAnswer(id, 0, Response.Options(listOf("A")))
             g.settle()
             assertEquals(
                 "в памяти ответ есть, тренировка идёт",
@@ -409,7 +436,7 @@ class TrainingRepositoryTest {
             val g = graph()
             val id = g.started()
             g.trainings.finish(id, timedOut = true)
-            g.trainings.answer(id, 0, listOf("A"))
+            g.trainings.answer(id, 0, Response.Options(listOf("A")))
             g.trainings.finish(id, timedOut = false)
             g.settle()
             val t = g.trainingStore.get(id)!!
@@ -449,7 +476,7 @@ class TrainingRepositoryTest {
         runTest(main.dispatcher) {
             val g = graph()
             val id = g.started()
-            g.trainings.answer(id, 0, listOf("A"), elapsedMs = 4000)
+            g.trainings.answer(id, 0, Response.Options(listOf("A")), elapsedMs = 4000)
             g.settle()
             val (sentId, batch) = g.trainingsApi.sentAnswers.single()
             assertEquals(id, sentId)
@@ -469,8 +496,8 @@ class TrainingRepositoryTest {
             val g = graph()
             val id = g.started()
             g.trainingsApi.answers = Reply.NetworkDown
-            g.trainings.answer(id, 0, listOf("A"))
-            g.trainings.answer(id, 1, listOf("A", "C"))
+            g.trainings.answer(id, 0, Response.Options(listOf("A")))
+            g.trainings.answer(id, 1, Response.Options(listOf("A", "C")))
             g.trainings.finish(id, timedOut = false)
             g.settle()
             val waiting = g.trainingStore.get(id)!!
@@ -507,11 +534,11 @@ class TrainingRepositoryTest {
             val id = g.started()
             val gate = CompletableDeferred<Unit>()
             g.trainingsApi.answersGate = gate
-            g.trainings.answer(id, 0, listOf("B"))
+            g.trainings.answer(id, 0, Response.Options(listOf("B")))
             g.settle()
             // Пока первый ответ летит, человек («Проверка») меняет выбор.
             g.clock.now = g.clock.now.plusSeconds(5)
-            g.trainings.answer(id, 0, listOf("A"))
+            g.trainings.answer(id, 0, Response.Options(listOf("A")))
             gate.complete(Unit)
             g.settle()
             assertEquals(
@@ -536,7 +563,7 @@ class TrainingRepositoryTest {
             val g = graph()
             val id = g.started()
             g.trainingsApi.answers = Reply.Error(400, "bad_request")
-            g.trainings.answer(id, 0, listOf("A"))
+            g.trainings.answer(id, 0, Response.Options(listOf("A")))
             g.trainings.finish(id, timedOut = false)
             g.settle()
             assertTrue(g.trainingStore.get(id)!!.isSynced)
@@ -550,7 +577,7 @@ class TrainingRepositoryTest {
             val g = graph()
             val id = g.started()
             g.trainingsApi.answers = Reply.Error(503)
-            g.trainings.answer(id, 0, listOf("A"))
+            g.trainings.answer(id, 0, Response.Options(listOf("A")))
             g.settle()
             assertEquals("503 от прокси — «нет сети», ответ ждёт", setOf(0), g.trainingStore.get(id)!!.unsent)
             g.trainingsApi.answers = Reply.Error(500)
@@ -575,11 +602,11 @@ class TrainingRepositoryTest {
             g.trainingsApi.start = Reply.Ok(Fixtures.session(Fixtures.tc1, id = "old"))
             val old = g.started()
             g.trainingsApi.answersFor[old] = Reply.Error(500)
-            g.trainings.answer(old, 0, listOf("A"))
+            g.trainings.answer(old, 0, Response.Options(listOf("A")))
             g.clock.now = g.clock.now.plusSeconds(60)
             g.trainingsApi.start = Reply.Ok(Fixtures.session(Fixtures.tc1, id = "new"))
             val new = g.started()
-            g.trainings.answer(new, 0, listOf("A"))
+            g.trainings.answer(new, 0, Response.Options(listOf("A")))
             g.trainings.report(Fixtures.tc1.id, QuestionReport(QuestionReport.Kind.OTHER, trainingId = new))
             g.settle()
             assertEquals("старая ждёт следующего раза", setOf(0), g.trainingStore.get(old)!!.unsent)
@@ -604,7 +631,7 @@ class TrainingRepositoryTest {
             val id = g.started()
             for (status in listOf(403, 408, 429)) {
                 g.trainingsApi.answers = Reply.Error(status, "refused")
-                g.trainings.answer(id, 0, listOf("A"))
+                g.trainings.answer(id, 0, Response.Options(listOf("A")))
                 g.settle()
                 assertEquals(
                     "$status — не выбрасывать: подписка вернётся, ограничение снимется",
@@ -635,7 +662,7 @@ class TrainingRepositoryTest {
             val g = graph()
             g.trainingsApi.start = Reply.Ok(Fixtures.session(Fixtures.tc1, Fixtures.se, id = "abandoned"))
             val abandoned = g.started()
-            g.trainings.answer(abandoned, 0, listOf("A"))
+            g.trainings.answer(abandoned, 0, Response.Options(listOf("A")))
             g.clock.now = g.clock.now.plusSeconds(60)
             g.trainingsApi.start = Reply.Ok(Fixtures.session(Fixtures.tc1, id = "current"))
             val current = g.started()
@@ -702,7 +729,7 @@ class TrainingRepositoryTest {
             val gate = CompletableDeferred<Unit>()
             g.trainingsApi.answersGate = gate
             val id = g.started()
-            g.trainings.answer(id, 0, listOf("A"))
+            g.trainings.answer(id, 0, Response.Options(listOf("A")))
             g.settle()
             g.session.signOut()
             g.settle()
@@ -754,9 +781,9 @@ class TrainingRepositoryTest {
             val id = g.started()
             val gate = CompletableDeferred<Unit>()
             g.trainingsApi.answersGate = gate
-            g.trainings.answer(id, 0, listOf("A"))
+            g.trainings.answer(id, 0, Response.Options(listOf("A")))
             g.settle()
-            launch { g.trainings.answer(id, 1, listOf("A", "C")) }
+            launch { g.trainings.answer(id, 1, Response.Options(listOf("A", "C"))) }
             g.settle()
             gate.complete(Unit)
             g.settle()
@@ -765,6 +792,38 @@ class TrainingRepositoryTest {
                 g.trainingStore
                     .get(id)!!
                     .unsent
+                    .isEmpty(),
+            )
+        }
+
+    @Test fun aLostReportResponseRetriesWithTheSameLocalIdentity() =
+        runTest(main.dispatcher) {
+            val g = TestGraph(this, main.dispatcher, folder.root, token = "token").also { it.settle() }
+            g.trainingsApi.report = Reply.NetworkDown
+            g.trainings.report("q", QuestionReport(kind = QuestionReport.Kind.QUESTION, text = "Тест", trainingId = "t"))
+            g.settle()
+            val id =
+                g.trainingStore.reports.value
+                    .single()
+                    .reportId
+            assertEquals(
+                id,
+                g.trainingsApi.reports
+                    .last()
+                    .second.reportId,
+            )
+            g.trainingsApi.report = Reply.Ok(Unit)
+            g.trainings.sync()
+            g.settle()
+            assertTrue(g.trainingsApi.reports.size >= 2)
+            assertEquals(
+                setOf(id),
+                g.trainingsApi.reports
+                    .map { it.second.reportId }
+                    .toSet(),
+            )
+            assertTrue(
+                g.trainingStore.reports.value
                     .isEmpty(),
             )
         }

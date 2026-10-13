@@ -76,10 +76,10 @@ fun StatusLine(
         Icon(
             painter = painterResource(icon),
             contentDescription = null,
-            tint = Gp.colors.textSecondary,
+            tint = Gp.colors.text2,
             modifier = Modifier.size(GpSpace.s20),
         )
-        Text(text = text, style = Gp.type.subhead, color = Gp.colors.textSecondary)
+        Text(text = text, style = Gp.type.meta, color = Gp.colors.text2)
     }
 }
 
@@ -101,27 +101,27 @@ fun EmptyState(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(GpSpace.s8),
-            modifier = Modifier.widthIn(max = GpLayout.taglineMax).padding(GpSpace.s24),
+            modifier = Modifier.widthIn(max = GpLayout.textMax).padding(GpSpace.s24),
         ) {
             if (icon != null) {
                 Icon(
                     painter = painterResource(icon),
                     contentDescription = null,
-                    tint = Gp.colors.textSecondary,
+                    tint = Gp.colors.text2,
                     modifier = Modifier.size(GpSpace.s40).padding(bottom = GpSpace.s4),
                 )
             }
             Text(
                 text = title,
-                style = Gp.type.title3,
+                style = Gp.type.h2,
                 color = Gp.colors.text,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.semantics { heading() },
             )
             Text(
                 text = message,
-                style = Gp.type.subhead,
-                color = Gp.colors.textSecondary,
+                style = Gp.type.lead,
+                color = Gp.colors.text2,
                 textAlign = TextAlign.Center,
             )
             if (action != null) {
@@ -147,8 +147,8 @@ fun LoadingState(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(GpSpace.s12),
         ) {
-            CircularProgressIndicator(color = Gp.colors.textSecondary)
-            Text(text = text, style = Gp.type.subhead, color = Gp.colors.textSecondary)
+            CircularProgressIndicator(color = Gp.colors.text2)
+            Text(text = text, style = Gp.type.meta, color = Gp.colors.text2)
         }
     }
 }

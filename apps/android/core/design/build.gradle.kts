@@ -1,5 +1,5 @@
-// Дизайн-система на Compose: токены «Шагов» берутся из design/tokens/generated/android как есть (без копии —
-// правится только источник design/tokens/src), поверх — тема, шрифт Onest и общие элементы.
+// Дизайн-система на Compose: токены стиля B берутся из design/tokens/generated/android как есть (без копии —
+// правится только источник design/tokens/src), поверх — тема, вшитые шрифты и общие элементы.
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.compose)
@@ -32,6 +32,10 @@ android {
     }
     testOptions {
         unitTests.isIncludeAndroidResources = true
+        unitTests.all {
+            // Как в app: Robolectric API 37 обращается к разделяемой памяти JDK.
+            it.jvmArgs("--add-opens=java.base/jdk.internal.access=ALL-UNNAMED")
+        }
     }
 }
 
@@ -48,5 +52,7 @@ dependencies {
     api(libs.compose.material3)
     api(libs.compose.ui.tooling.preview)
     debugImplementation(libs.compose.ui.tooling)
+    testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
     lintChecks(libs.compose.lint.checks)
 }
