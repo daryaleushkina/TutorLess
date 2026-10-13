@@ -588,6 +588,152 @@ extension Components {
             case toefl = "toefl"
             case _empty_ = ""
         }
+        /// - Remark: Generated from `#/components/schemas/WordList`.
+        public struct WordList: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/WordList/words`.
+            public var words: [Components.Schemas.WordListItem]
+            /// - Remark: Generated from `#/components/schemas/WordList/nextCursor`.
+            public var nextCursor: Swift.String?
+            /// Creates a new `WordList`.
+            ///
+            /// - Parameters:
+            ///   - words:
+            ///   - nextCursor:
+            public init(
+                words: [Components.Schemas.WordListItem],
+                nextCursor: Swift.String? = nil
+            ) {
+                self.words = words
+                self.nextCursor = nextCursor
+            }
+            public enum CodingKeys: String, CodingKey {
+                case words
+                case nextCursor
+            }
+        }
+        /// - Remark: Generated from `#/components/schemas/WordListItem`.
+        public struct WordListItem: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/WordListItem/id`.
+            public var id: Swift.String
+            /// - Remark: Generated from `#/components/schemas/WordListItem/lemma`.
+            public var lemma: Swift.String
+            /// - Remark: Generated from `#/components/schemas/WordListItem/partOfSpeech`.
+            public var partOfSpeech: Swift.String?
+            /// Creates a new `WordListItem`.
+            ///
+            /// - Parameters:
+            ///   - id:
+            ///   - lemma:
+            ///   - partOfSpeech:
+            public init(
+                id: Swift.String,
+                lemma: Swift.String,
+                partOfSpeech: Swift.String? = nil
+            ) {
+                self.id = id
+                self.lemma = lemma
+                self.partOfSpeech = partOfSpeech
+            }
+            public enum CodingKeys: String, CodingKey {
+                case id
+                case lemma
+                case partOfSpeech
+            }
+        }
+        /// - Remark: Generated from `#/components/schemas/Word`.
+        public struct Word: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/Word/id`.
+            public var id: Swift.String
+            /// - Remark: Generated from `#/components/schemas/Word/lemma`.
+            public var lemma: Swift.String
+            /// - Remark: Generated from `#/components/schemas/Word/partOfSpeech`.
+            public var partOfSpeech: Swift.String?
+            /// - Remark: Generated from `#/components/schemas/Word/ipa`.
+            public var ipa: Swift.String?
+            /// - Remark: Generated from `#/components/schemas/Word/audioKey`.
+            public var audioKey: Swift.String?
+            /// - Remark: Generated from `#/components/schemas/Word/senses`.
+            public var senses: [Components.Schemas.WordSense]
+            /// - Remark: Generated from `#/components/schemas/Word/synonyms`.
+            public var synonyms: [Swift.String]
+            /// - Remark: Generated from `#/components/schemas/Word/antonyms`.
+            public var antonyms: [Swift.String]
+            /// Creates a new `Word`.
+            ///
+            /// - Parameters:
+            ///   - id:
+            ///   - lemma:
+            ///   - partOfSpeech:
+            ///   - ipa:
+            ///   - audioKey:
+            ///   - senses:
+            ///   - synonyms:
+            ///   - antonyms:
+            public init(
+                id: Swift.String,
+                lemma: Swift.String,
+                partOfSpeech: Swift.String? = nil,
+                ipa: Swift.String? = nil,
+                audioKey: Swift.String? = nil,
+                senses: [Components.Schemas.WordSense],
+                synonyms: [Swift.String],
+                antonyms: [Swift.String]
+            ) {
+                self.id = id
+                self.lemma = lemma
+                self.partOfSpeech = partOfSpeech
+                self.ipa = ipa
+                self.audioKey = audioKey
+                self.senses = senses
+                self.synonyms = synonyms
+                self.antonyms = antonyms
+            }
+            public enum CodingKeys: String, CodingKey {
+                case id
+                case lemma
+                case partOfSpeech
+                case ipa
+                case audioKey
+                case senses
+                case synonyms
+                case antonyms
+            }
+        }
+        /// - Remark: Generated from `#/components/schemas/WordSense`.
+        public struct WordSense: Codable, Hashable, Sendable {
+            /// - Remark: Generated from `#/components/schemas/WordSense/definition`.
+            public var definition: Swift.String
+            /// - Remark: Generated from `#/components/schemas/WordSense/translation`.
+            public var translation: Swift.String
+            /// - Remark: Generated from `#/components/schemas/WordSense/example`.
+            public var example: Swift.String?
+            /// - Remark: Generated from `#/components/schemas/WordSense/exampleTranslation`.
+            public var exampleTranslation: Swift.String?
+            /// Creates a new `WordSense`.
+            ///
+            /// - Parameters:
+            ///   - definition:
+            ///   - translation:
+            ///   - example:
+            ///   - exampleTranslation:
+            public init(
+                definition: Swift.String,
+                translation: Swift.String,
+                example: Swift.String? = nil,
+                exampleTranslation: Swift.String? = nil
+            ) {
+                self.definition = definition
+                self.translation = translation
+                self.example = example
+                self.exampleTranslation = exampleTranslation
+            }
+            public enum CodingKeys: String, CodingKey {
+                case definition
+                case translation
+                case example
+                case exampleTranslation
+            }
+        }
         /// - Remark: Generated from `#/components/schemas/ExamChoice`.
         public struct ExamChoice: Codable, Hashable, Sendable {
             /// - Remark: Generated from `#/components/schemas/ExamChoice/exam`.

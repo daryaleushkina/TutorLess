@@ -15,6 +15,8 @@ const (
 	GetTodayOperation                    OperationName = "GetToday"
 	GetTrainingOperation                 OperationName = "GetTraining"
 	GetTrainingOptionsOperation          OperationName = "GetTrainingOptions"
+	GetWordOperation                     OperationName = "GetWord"
+	GetWordsOperation                    OperationName = "GetWords"
 	ReportClientErrorOperation           OperationName = "ReportClientError"
 	ReportQuestionOperation              OperationName = "ReportQuestion"
 	SetActiveExamOperation               OperationName = "SetActiveExam"

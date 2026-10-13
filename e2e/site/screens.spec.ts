@@ -32,9 +32,6 @@ test('вход', async ({ page, watch }) => {
 test('главная T2, пустые вкладки и настройки', async ({ site: page }) => {
   await expect(page.getByText('После каждого ответа — разбор на вашем языке: почему верно и где ловушка в остальных вариантах.', { exact: true })).toBeVisible();
   await checkScreen(page, 'home');
-  await navLink(page, 'Слова').click();
-  await expect(page.getByText('Здесь будут слова: учить, повторять и искать.')).toBeVisible();
-  await checkScreen(page, 'words');
   await navLink(page, 'Экзамен').click();
   await expect(page.getByText('Здесь будут пробные экзамены GRE и эссе с оценкой.')).toBeVisible();
   await checkScreen(page, 'exam');
@@ -117,3 +114,6 @@ test('проверка: все ответы, отмеченные и разбо�
 
 import { newTypesScreens } from '../training-types';
 test('B новые: RC, предложения, несколько ответов, число и дробь', async ({ site }) => { await newTypesScreens(site); });
+
+import { wordsScreens } from '../words';
+test('словарь: список, пустой поиск и карточка', async ({ site }) => wordsScreens(site));

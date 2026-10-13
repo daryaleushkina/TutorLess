@@ -97,3 +97,5 @@ export const ResumeIcon = (p: IconProps) => <Icon {...p}><path d="M6 4h4v16H6zM1
 export const CardIcon = (p: IconProps) => <Icon {...p}><rect x="3" y="5" width="18" height="14" rx="3" /><path d="M3 10h18M7 15h4" /></Icon>;
 export const KeyIcon = (p: IconProps) => <Icon {...p}><circle cx="8" cy="16" r="4" /><path d="M11 13l9-9M16 8l3 3M18 6l3 3" /></Icon>;
 export const MailIcon = (p: IconProps) => <Icon {...p}><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 6l9 7 9-7" /></Icon>;
+
+export const SearchIcon = (p: IconProps) => <Icon {...p}><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 4.5 4.5" /></Icon>;

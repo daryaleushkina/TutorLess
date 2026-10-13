@@ -1458,6 +1458,337 @@ public enum Operations {
             }
         }
     }
+    /// Одобренные слова экзамена по рейтингу
+    ///
+    /// Доступ через те же права, что у тренировок; без прав — 403 до чтения слов. Поиск по началу lemma без учёта регистра, пробелы по краям q удаляются. Порядок — rank, затем id. Курсор связан с exam и q; при изменении поиска начать без after. Неизвестный exam, неверный limit или курсор — 400 bad_request.
+    ///
+    /// - Remark: HTTP `GET /api/words`.
+    /// - Remark: Generated from `#/paths//api/words/get(getWords)`.
+    public enum GetWords {
+        public static let id: Swift.String = "getWords"
+        public struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/api/words/GET/query`.
+            public struct Query: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/words/GET/query/exam`.
+                public var exam: Components.Parameters.WordExam
+                /// - Remark: Generated from `#/paths/api/words/GET/query/q`.
+                public var q: Swift.String?
+                /// - Remark: Generated from `#/paths/api/words/GET/query/limit`.
+                public var limit: Swift.Int?
+                /// - Remark: Generated from `#/paths/api/words/GET/query/after`.
+                public var after: Swift.String?
+                /// Creates a new `Query`.
+                ///
+                /// - Parameters:
+                ///   - exam:
+                ///   - q:
+                ///   - limit:
+                ///   - after:
+                public init(
+                    exam: Components.Parameters.WordExam,
+                    q: Swift.String? = nil,
+                    limit: Swift.Int? = nil,
+                    after: Swift.String? = nil
+                ) {
+                    self.exam = exam
+                    self.q = q
+                    self.limit = limit
+                    self.after = after
+                }
+            }
+            public var query: Operations.GetWords.Input.Query
+            /// - Remark: Generated from `#/paths/api/words/GET/header`.
+            public struct Headers: Sendable, Hashable {
+                public var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.GetWords.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                public init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.GetWords.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            public var headers: Operations.GetWords.Input.Headers
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - query:
+            ///   - headers:
+            public init(
+                query: Operations.GetWords.Input.Query,
+                headers: Operations.GetWords.Input.Headers = .init()
+            ) {
+                self.query = query
+                self.headers = headers
+            }
+        }
+        @frozen public enum Output: Sendable, Hashable {
+            public struct Ok: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/words/GET/responses/200/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/words/GET/responses/200/content/application\/json`.
+                    case json(Components.Schemas.WordList)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.WordList {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.GetWords.Output.Ok.Body
+                /// Creates a new `Ok`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.GetWords.Output.Ok.Body) {
+                    self.body = body
+                }
+            }
+            /// Страница слов; отсутствие nextCursor означает конец списка
+            ///
+            /// - Remark: Generated from `#/paths//api/words/get(getWords)/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            case ok(Operations.GetWords.Output.Ok)
+            /// The associated value of the enum case if `self` is `.ok`.
+            ///
+            /// - Throws: An error if `self` is not `.ok`.
+            /// - SeeAlso: `.ok`.
+            public var ok: Operations.GetWords.Output.Ok {
+                get throws {
+                    switch self {
+                    case let .ok(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "ok",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Любая ошибка — машинный код, текст для журнала, id запроса
+            ///
+            /// - Remark: Generated from `#/paths//api/words/get(getWords)/responses/default`.
+            ///
+            /// HTTP response code: `default`.
+            case `default`(statusCode: Swift.Int, Components.Responses._Error)
+            /// The associated value of the enum case if `self` is `.`default``.
+            ///
+            /// - Throws: An error if `self` is not `.`default``.
+            /// - SeeAlso: `.`default``.
+            public var `default`: Components.Responses._Error {
+                get throws {
+                    switch self {
+                    case let .`default`(_, response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "default",
+                            response: self
+                        )
+                    }
+                }
+            }
+        }
+        @frozen public enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case other(Swift.String)
+            public init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            public var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                }
+            }
+            public static var allCases: [Self] {
+                [
+                    .json
+                ]
+            }
+        }
+    }
+    /// Карточка одобренного слова своего экзамена
+    ///
+    /// Платное содержимое доступно через права тренировок. Неодобренное слово, слово другого экзамена или неизвестный id — 404. Экзамен передаётся явно. Незаполненные поля отсутствуют, массивы могут быть пустыми.
+    ///
+    /// - Remark: HTTP `GET /api/words/{wordId}`.
+    /// - Remark: Generated from `#/paths//api/words/{wordId}/get(getWord)`.
+    public enum GetWord {
+        public static let id: Swift.String = "getWord"
+        public struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/api/words/{wordId}/GET/path`.
+            public struct Path: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/words/{wordId}/GET/path/wordId`.
+                public var wordId: Swift.String
+                /// Creates a new `Path`.
+                ///
+                /// - Parameters:
+                ///   - wordId:
+                public init(wordId: Swift.String) {
+                    self.wordId = wordId
+                }
+            }
+            public var path: Operations.GetWord.Input.Path
+            /// - Remark: Generated from `#/paths/api/words/{wordId}/GET/query`.
+            public struct Query: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/words/{wordId}/GET/query/exam`.
+                public var exam: Components.Parameters.WordExam
+                /// Creates a new `Query`.
+                ///
+                /// - Parameters:
+                ///   - exam:
+                public init(exam: Components.Parameters.WordExam) {
+                    self.exam = exam
+                }
+            }
+            public var query: Operations.GetWord.Input.Query
+            /// - Remark: Generated from `#/paths/api/words/{wordId}/GET/header`.
+            public struct Headers: Sendable, Hashable {
+                public var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.GetWord.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                public init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.GetWord.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            public var headers: Operations.GetWord.Input.Headers
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - path:
+            ///   - query:
+            ///   - headers:
+            public init(
+                path: Operations.GetWord.Input.Path,
+                query: Operations.GetWord.Input.Query,
+                headers: Operations.GetWord.Input.Headers = .init()
+            ) {
+                self.path = path
+                self.query = query
+                self.headers = headers
+            }
+        }
+        @frozen public enum Output: Sendable, Hashable {
+            public struct Ok: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/words/{wordId}/GET/responses/200/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/words/{wordId}/GET/responses/200/content/application\/json`.
+                    case json(Components.Schemas.Word)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.Word {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.GetWord.Output.Ok.Body
+                /// Creates a new `Ok`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.GetWord.Output.Ok.Body) {
+                    self.body = body
+                }
+            }
+            /// Карточка слова
+            ///
+            /// - Remark: Generated from `#/paths//api/words/{wordId}/get(getWord)/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            case ok(Operations.GetWord.Output.Ok)
+            /// The associated value of the enum case if `self` is `.ok`.
+            ///
+            /// - Throws: An error if `self` is not `.ok`.
+            /// - SeeAlso: `.ok`.
+            public var ok: Operations.GetWord.Output.Ok {
+                get throws {
+                    switch self {
+                    case let .ok(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "ok",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Любая ошибка — машинный код, текст для журнала, id запроса
+            ///
+            /// - Remark: Generated from `#/paths//api/words/{wordId}/get(getWord)/responses/default`.
+            ///
+            /// HTTP response code: `default`.
+            case `default`(statusCode: Swift.Int, Components.Responses._Error)
+            /// The associated value of the enum case if `self` is `.`default``.
+            ///
+            /// - Throws: An error if `self` is not `.`default``.
+            /// - SeeAlso: `.`default``.
+            public var `default`: Components.Responses._Error {
+                get throws {
+                    switch self {
+                    case let .`default`(_, response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "default",
+                            response: self
+                        )
+                    }
+                }
+            }
+        }
+        @frozen public enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case other(Swift.String)
+            public init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            public var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                }
+            }
+            public static var allCases: [Self] {
+                [
+                    .json
+                ]
+            }
+        }
+    }
     /// Выбрать активный экзамен аккаунта (решение Даши 09.10.2026)
     ///
     /// - Remark: HTTP `PUT /api/me/exam`.

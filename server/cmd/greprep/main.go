@@ -3,6 +3,7 @@
 //	greprep serve           — API на HTTP_ADDR (за Caddy)
 //	greprep migrate up      — применить новые миграции (выкладка делает это до переключения сборки)
 //	greprep migrate status  — какие миграции применены
+//	greprep import-words   — импорт приватного CSV словаря (--exam, --file, --limit, --status)
 //	greprep seed-dev        — набор заданий для разработки (локально и на стенде; в бою запрещено)
 //
 // Настройки — переменные окружения (server/.env.example).
@@ -12,7 +13,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"flag"
 	"fmt"
+	"io"
 	"log/slog"
 	"net"
 	"net/http"
@@ -31,6 +34,7 @@ import (
 	"github.com/daryaleushkina/greprepapp/server/internal/db"
 	"github.com/daryaleushkina/greprepapp/server/internal/devseed"
 	"github.com/daryaleushkina/greprepapp/server/internal/migrations"
+	"github.com/daryaleushkina/greprepapp/server/internal/words"
 )
 
 func main() {
@@ -46,13 +50,15 @@ func main() {
 
 func run(ctx context.Context, log *slog.Logger, args []string) error {
 	if len(args) == 0 {
-		return errors.New("usage: greprep serve | migrate up | migrate status | seed-dev")
+		return errors.New("usage: greprep serve | migrate up | migrate status | seed-dev | import-words --exam gre --file <csv> --limit 1000 [--status draft|approved]")
 	}
 	cfg, err := config.Load()
 	if err != nil {
 		return err
 	}
 	switch {
+	case args[0] == "import-words":
+		return importWords(ctx, log, cfg, args[1:])
 	case args[0] == "serve":
 		return serve(ctx, log, cfg)
 	case args[0] == "migrate" && len(args) == 2 && args[1] == "up":
@@ -64,6 +70,49 @@ func run(ctx context.Context, log *slog.Logger, args []string) error {
 	default:
 		return fmt.Errorf("unknown command %q", args)
 	}
+}
+
+// importWords разрешён в бою: CSV приходит из приватного хранилища, без включения в бинарник.
+func importWords(ctx context.Context, log *slog.Logger, cfg config.Config, args []string) error {
+	flags := flag.NewFlagSet("import-words", flag.ContinueOnError)
+	flags.SetOutput(io.Discard)
+	exam := flags.String("exam", "", "exam id")
+	file := flags.String("file", "", "CSV path")
+	limit := flags.Int("limit", 1000, "top words by rank")
+	status := flags.String("status", "draft", "draft or approved")
+	if err := flags.Parse(args); err != nil {
+		return fmt.Errorf("import-words arguments: %w", err)
+	}
+	if flags.NArg() != 0 || *exam == "" || *file == "" || *limit < 1 || (*status != "draft" && *status != "approved") {
+		return errors.New("usage: import-words --exam <exam> --file <csv> --limit <positive integer> [--status draft|approved]")
+	}
+	input, err := os.Open(*file)
+	if err != nil {
+		return fmt.Errorf("open word CSV: %w", err)
+	}
+	entries, readErr := words.ReadCSV(input, *limit)
+	closeErr := input.Close()
+	if err := errors.Join(readErr, closeErr); err != nil {
+		return fmt.Errorf("read word CSV: %w", err)
+	}
+	ictx, cancel := context.WithTimeout(ctx, 5*time.Minute)
+	defer cancel()
+	pcfg, err := pgxpool.ParseConfig(cfg.DatabaseURL)
+	if err != nil {
+		return fmt.Errorf("parse import database: %w", err)
+	}
+	pcfg.MaxConns = 2
+	pool, err := pgxpool.NewWithConfig(ictx, pcfg)
+	if err != nil {
+		return fmt.Errorf("connect import database: %w", err)
+	}
+	defer pool.Close()
+	changed, err := words.Import(ictx, pool, *exam, entries, *status)
+	if err != nil {
+		return err
+	}
+	log.Info("word import", slog.Int("selected", len(entries)), slog.Int64("changed", changed), slog.String("exam", *exam), slog.String("status", *status))
+	return nil
 }
 
 func openSQL(cfg config.Config) (*pgx.ConnConfig, error) {

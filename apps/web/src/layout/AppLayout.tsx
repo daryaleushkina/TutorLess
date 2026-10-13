@@ -80,7 +80,7 @@ const TABS = [
 
 export function TabsLayout(): ReactNode {
   const matchRoute = useMatchRoute();
-  const nested = Boolean(matchRoute({ to: '/settings' }));
+  const nested = Boolean(matchRoute({ to: '/settings' }) || matchRoute({ to: '/words/$wordId' }));
   return <ShellFrame nested={nested}><Outlet /></ShellFrame>;
 }
 

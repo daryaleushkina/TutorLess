@@ -2,7 +2,7 @@ import { page } from 'vitest/browser';
 import { describe, expect, it } from 'vitest';
 import { fakeServer, json, renderApp, OPTIONS, user } from '../test/app';
 
-const signedIn = { 'GET /api/me': () => json(user()), 'GET /api/trainings/options': () => json(OPTIONS) };
+const signedIn = { 'GET /api/words': () => json({ words: [] }), 'GET /api/me': () => json(user()), 'GET /api/trainings/options': () => json(OPTIONS) };
 
 describe('разделы', () => {
   it.each([
@@ -30,7 +30,7 @@ describe('разделы', () => {
     const { screen, router } = await renderApp({ path: '/' });
     const tabs = screen.getByRole('navigation', { name: 'Разделы' }).last();
     await tabs.getByRole('link', { name: 'Слова' }).click();
-    await expect.element(screen.getByText('Здесь будут слова: учить, повторять и искать.')).toBeVisible();
+    await expect.element(screen.getByRole('searchbox', { name: 'Найти слово' })).toBeVisible();
     await expect.element(tabs.getByRole('link', { name: 'Слова' })).toHaveAttribute('aria-current', 'page');
     await tabs.getByRole('link', { name: 'Экзамен' }).click();
     await expect.element(screen.getByText('Здесь будут пробные экзамены GRE и эссе с оценкой.')).toBeVisible();

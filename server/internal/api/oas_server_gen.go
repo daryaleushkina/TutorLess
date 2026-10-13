@@ -74,6 +74,27 @@ type Handler interface {
 	//
 	// GET /api/trainings/options
 	GetTrainingOptions(ctx context.Context, params GetTrainingOptionsParams) (*TrainingOptions, error)
+	// GetWord implements getWord operation.
+	//
+	// Платное содержимое доступно через права тренировок.
+	// Неодобренное слово, слово другого экзамена или
+	// неизвестный id — 404. Экзамен передаётся явно.
+	// Незаполненные поля отсутствуют, массивы могут быть
+	// пустыми.
+	//
+	// GET /api/words/{wordId}
+	GetWord(ctx context.Context, params GetWordParams) (*Word, error)
+	// GetWords implements getWords operation.
+	//
+	// Доступ через те же права, что у тренировок; без прав —
+	// 403 до чтения слов. Поиск по началу lemma без учёта
+	// регистра, пробелы по краям q удаляются. Порядок — rank,
+	// затем id. Курсор связан с exam и q; при изменении поиска
+	// начать без after. Неизвестный exam, неверный limit или курсор
+	// — 400 bad_request.
+	//
+	// GET /api/words
+	GetWords(ctx context.Context, params GetWordsParams) (*WordList, error)
 	// ReportClientError implements reportClientError operation.
 	//
 	// Можно без входа (ошибка до входа тоже важна). Размер

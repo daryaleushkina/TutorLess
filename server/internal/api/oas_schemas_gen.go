@@ -4305,3 +4305,206 @@ func (s *WeekStats) SetAnswers(val int) {
 func (s *WeekStats) SetMinutes(val int) {
 	s.Minutes = val
 }
+
+// Ref: #/components/schemas/Word
+type Word struct {
+	ID           uuid.UUID   `json:"id"`
+	Lemma        string      `json:"lemma"`
+	PartOfSpeech OptString   `json:"partOfSpeech"`
+	Ipa          OptString   `json:"ipa"`
+	AudioKey     OptString   `json:"audioKey"`
+	Senses       []WordSense `json:"senses"`
+	Synonyms     []string    `json:"synonyms"`
+	Antonyms     []string    `json:"antonyms"`
+}
+
+// GetID returns the value of ID.
+func (s *Word) GetID() uuid.UUID {
+	return s.ID
+}
+
+// GetLemma returns the value of Lemma.
+func (s *Word) GetLemma() string {
+	return s.Lemma
+}
+
+// GetPartOfSpeech returns the value of PartOfSpeech.
+func (s *Word) GetPartOfSpeech() OptString {
+	return s.PartOfSpeech
+}
+
+// GetIpa returns the value of Ipa.
+func (s *Word) GetIpa() OptString {
+	return s.Ipa
+}
+
+// GetAudioKey returns the value of AudioKey.
+func (s *Word) GetAudioKey() OptString {
+	return s.AudioKey
+}
+
+// GetSenses returns the value of Senses.
+func (s *Word) GetSenses() []WordSense {
+	return s.Senses
+}
+
+// GetSynonyms returns the value of Synonyms.
+func (s *Word) GetSynonyms() []string {
+	return s.Synonyms
+}
+
+// GetAntonyms returns the value of Antonyms.
+func (s *Word) GetAntonyms() []string {
+	return s.Antonyms
+}
+
+// SetID sets the value of ID.
+func (s *Word) SetID(val uuid.UUID) {
+	s.ID = val
+}
+
+// SetLemma sets the value of Lemma.
+func (s *Word) SetLemma(val string) {
+	s.Lemma = val
+}
+
+// SetPartOfSpeech sets the value of PartOfSpeech.
+func (s *Word) SetPartOfSpeech(val OptString) {
+	s.PartOfSpeech = val
+}
+
+// SetIpa sets the value of Ipa.
+func (s *Word) SetIpa(val OptString) {
+	s.Ipa = val
+}
+
+// SetAudioKey sets the value of AudioKey.
+func (s *Word) SetAudioKey(val OptString) {
+	s.AudioKey = val
+}
+
+// SetSenses sets the value of Senses.
+func (s *Word) SetSenses(val []WordSense) {
+	s.Senses = val
+}
+
+// SetSynonyms sets the value of Synonyms.
+func (s *Word) SetSynonyms(val []string) {
+	s.Synonyms = val
+}
+
+// SetAntonyms sets the value of Antonyms.
+func (s *Word) SetAntonyms(val []string) {
+	s.Antonyms = val
+}
+
+// Ref: #/components/schemas/WordList
+type WordList struct {
+	Words      []WordListItem `json:"words"`
+	NextCursor OptString      `json:"nextCursor"`
+}
+
+// GetWords returns the value of Words.
+func (s *WordList) GetWords() []WordListItem {
+	return s.Words
+}
+
+// GetNextCursor returns the value of NextCursor.
+func (s *WordList) GetNextCursor() OptString {
+	return s.NextCursor
+}
+
+// SetWords sets the value of Words.
+func (s *WordList) SetWords(val []WordListItem) {
+	s.Words = val
+}
+
+// SetNextCursor sets the value of NextCursor.
+func (s *WordList) SetNextCursor(val OptString) {
+	s.NextCursor = val
+}
+
+// Ref: #/components/schemas/WordListItem
+type WordListItem struct {
+	ID           uuid.UUID `json:"id"`
+	Lemma        string    `json:"lemma"`
+	PartOfSpeech OptString `json:"partOfSpeech"`
+}
+
+// GetID returns the value of ID.
+func (s *WordListItem) GetID() uuid.UUID {
+	return s.ID
+}
+
+// GetLemma returns the value of Lemma.
+func (s *WordListItem) GetLemma() string {
+	return s.Lemma
+}
+
+// GetPartOfSpeech returns the value of PartOfSpeech.
+func (s *WordListItem) GetPartOfSpeech() OptString {
+	return s.PartOfSpeech
+}
+
+// SetID sets the value of ID.
+func (s *WordListItem) SetID(val uuid.UUID) {
+	s.ID = val
+}
+
+// SetLemma sets the value of Lemma.
+func (s *WordListItem) SetLemma(val string) {
+	s.Lemma = val
+}
+
+// SetPartOfSpeech sets the value of PartOfSpeech.
+func (s *WordListItem) SetPartOfSpeech(val OptString) {
+	s.PartOfSpeech = val
+}
+
+// Ref: #/components/schemas/WordSense
+type WordSense struct {
+	Definition         string    `json:"definition"`
+	Translation        string    `json:"translation"`
+	Example            OptString `json:"example"`
+	ExampleTranslation OptString `json:"exampleTranslation"`
+}
+
+// GetDefinition returns the value of Definition.
+func (s *WordSense) GetDefinition() string {
+	return s.Definition
+}
+
+// GetTranslation returns the value of Translation.
+func (s *WordSense) GetTranslation() string {
+	return s.Translation
+}
+
+// GetExample returns the value of Example.
+func (s *WordSense) GetExample() OptString {
+	return s.Example
+}
+
+// GetExampleTranslation returns the value of ExampleTranslation.
+func (s *WordSense) GetExampleTranslation() OptString {
+	return s.ExampleTranslation
+}
+
+// SetDefinition sets the value of Definition.
+func (s *WordSense) SetDefinition(val string) {
+	s.Definition = val
+}
+
+// SetTranslation sets the value of Translation.
+func (s *WordSense) SetTranslation(val string) {
+	s.Translation = val
+}
+
+// SetExample sets the value of Example.
+func (s *WordSense) SetExample(val OptString) {
+	s.Example = val
+}
+
+// SetExampleTranslation sets the value of ExampleTranslation.
+func (s *WordSense) SetExampleTranslation(val OptString) {
+	s.ExampleTranslation = val
+}

@@ -8,9 +8,6 @@ test('«Тренировка»', async ({ miniApp: page }) => {
 });
 
 test('пустые вкладки и настройки', async ({ miniApp: page }) => {
-  await navLink(page, 'Слова').click();
-  await expect(page.getByText('Здесь будут слова: учить, повторять и искать.')).toBeVisible();
-  await checkScreen(page, 'words');
   await navLink(page, 'Экзамен').click();
   await expect(page.getByText('Здесь будут пробные экзамены GRE и эссе с оценкой.')).toBeVisible();
   await checkScreen(page, 'exam');
@@ -128,3 +125,6 @@ test('проверка: все ответы, отмеченные и разбо�
 
 import { newTypesScreens } from '../training-types';
 test('B новые: RC, предложения, несколько ответов, число и дробь', async ({ miniApp }) => { await newTypesScreens(miniApp); });
+
+import { wordsScreens } from '../words';
+test('словарь: список, пустой поиск и карточка', async ({ miniApp }) => wordsScreens(miniApp));

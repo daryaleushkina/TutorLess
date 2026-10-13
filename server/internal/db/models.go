@@ -133,3 +133,19 @@ type User struct {
 	CreatedAt  time.Time
 	ActiveExam *string
 }
+
+type Word struct {
+	ID           uuid.UUID
+	ExamID       string
+	Lemma        string
+	Rank         int
+	Status       string
+	PartOfSpeech *string
+	Ipa          *string
+	AudioKey     *string
+	Senses       []byte
+	Synonyms     []string
+	Antonyms     []string
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+}

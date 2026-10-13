@@ -69,6 +69,20 @@ public protocol APIProtocol: Sendable {
     /// - Remark: HTTP `GET /api/exams`.
     /// - Remark: Generated from `#/paths//api/exams/get(getExams)`.
     func getExams(_ input: Operations.GetExams.Input) async throws -> Operations.GetExams.Output
+    /// Одобренные слова экзамена по рейтингу
+    ///
+    /// Доступ через те же права, что у тренировок; без прав — 403 до чтения слов. Поиск по началу lemma без учёта регистра, пробелы по краям q удаляются. Порядок — rank, затем id. Курсор связан с exam и q; при изменении поиска начать без after. Неизвестный exam, неверный limit или курсор — 400 bad_request.
+    ///
+    /// - Remark: HTTP `GET /api/words`.
+    /// - Remark: Generated from `#/paths//api/words/get(getWords)`.
+    func getWords(_ input: Operations.GetWords.Input) async throws -> Operations.GetWords.Output
+    /// Карточка одобренного слова своего экзамена
+    ///
+    /// Платное содержимое доступно через права тренировок. Неодобренное слово, слово другого экзамена или неизвестный id — 404. Экзамен передаётся явно. Незаполненные поля отсутствуют, массивы могут быть пустыми.
+    ///
+    /// - Remark: HTTP `GET /api/words/{wordId}`.
+    /// - Remark: Generated from `#/paths//api/words/{wordId}/get(getWord)`.
+    func getWord(_ input: Operations.GetWord.Input) async throws -> Operations.GetWord.Output
     /// Выбрать активный экзамен аккаунта (решение Даши 09.10.2026)
     ///
     /// - Remark: HTTP `PUT /api/me/exam`.
@@ -252,6 +266,38 @@ extension APIProtocol {
     /// - Remark: Generated from `#/paths//api/exams/get(getExams)`.
     public func getExams(headers: Operations.GetExams.Input.Headers = .init()) async throws -> Operations.GetExams.Output {
         try await getExams(Operations.GetExams.Input(headers: headers))
+    }
+    /// Одобренные слова экзамена по рейтингу
+    ///
+    /// Доступ через те же права, что у тренировок; без прав — 403 до чтения слов. Поиск по началу lemma без учёта регистра, пробелы по краям q удаляются. Порядок — rank, затем id. Курсор связан с exam и q; при изменении поиска начать без after. Неизвестный exam, неверный limit или курсор — 400 bad_request.
+    ///
+    /// - Remark: HTTP `GET /api/words`.
+    /// - Remark: Generated from `#/paths//api/words/get(getWords)`.
+    public func getWords(
+        query: Operations.GetWords.Input.Query,
+        headers: Operations.GetWords.Input.Headers = .init()
+    ) async throws -> Operations.GetWords.Output {
+        try await getWords(Operations.GetWords.Input(
+            query: query,
+            headers: headers
+        ))
+    }
+    /// Карточка одобренного слова своего экзамена
+    ///
+    /// Платное содержимое доступно через права тренировок. Неодобренное слово, слово другого экзамена или неизвестный id — 404. Экзамен передаётся явно. Незаполненные поля отсутствуют, массивы могут быть пустыми.
+    ///
+    /// - Remark: HTTP `GET /api/words/{wordId}`.
+    /// - Remark: Generated from `#/paths//api/words/{wordId}/get(getWord)`.
+    public func getWord(
+        path: Operations.GetWord.Input.Path,
+        query: Operations.GetWord.Input.Query,
+        headers: Operations.GetWord.Input.Headers = .init()
+    ) async throws -> Operations.GetWord.Output {
+        try await getWord(Operations.GetWord.Input(
+            path: path,
+            query: query,
+            headers: headers
+        ))
     }
     /// Выбрать активный экзамен аккаунта (решение Даши 09.10.2026)
     ///

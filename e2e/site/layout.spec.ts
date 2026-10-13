@@ -5,8 +5,9 @@ test('панель по ширине, экзамен аккаунта и про�
   await me.api('PUT', '/me/exam', { exam: 'toefl' });
   await page.reload();
   await expect(page.getByRole('button', { name: 'Экзамен: TOEFL, сменить' })).toHaveAttribute('aria-haspopup', 'dialog');
+  await navLink(page, 'Слова').click();
+  await expect(page.getByRole('searchbox', { name: 'Найти слово' })).toBeVisible();
   for (const [tab, text] of [
-    ['Слова', 'Здесь будут слова: учить, повторять и искать.'],
     ['Экзамен', 'Здесь будут пробные экзамены TOEFL с оценкой Writing и Speaking.'],
     ['Прогресс', 'Здесь будет точность по разделам, история тренировок и примерный балл.'],
     ['Тренировка', 'Здесь будут тренировки по четырём частям TOEFL.'],

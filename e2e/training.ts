@@ -104,7 +104,7 @@ export async function unavailableStorageKeepsSession(page: Page) {
   await expect(page.getByRole('link', { name: 'Настроить тренировку' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Начать', exact: true })).toBeDisabled();
   await page.getByRole('navigation', { name: 'Разделы' }).getByRole('link', { name: 'Слова', exact: true }).click();
-  await expect(page.getByText('Здесь будут слова: учить, повторять и искать.')).toBeVisible();
+  await expect(page.getByRole('searchbox', { name: 'Найти слово' })).toBeVisible();
 }
 
 export async function offlineBuilder(page: Page) {

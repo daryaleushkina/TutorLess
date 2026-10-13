@@ -28,3 +28,40 @@ li + li .setting::before, li.setting + li.setting::before { position: absolute; 
 @media (min-width: 900px) { .profileTitle { position: static; width: auto; height: auto; overflow: visible; clip-path: none; } }
 html[data-text-size='large'] .setting { flex-wrap: wrap; }
 html[data-text-size='large'] .segment { margin-left: auto; }
+
+/* Словарь: общий CSS разделов загружается до ленивого импорта JS по URL. */
+.wordsSearch { display: flex; align-items: center; gap: var(--space-10); min-height: calc(var(--space-48) + var(--space-4)); padding: 0 var(--space-16); border-radius: var(--radius-m); background: var(--color-surface); box-shadow: inset 0 0 0 var(--size-hairline) var(--color-line); color: var(--color-text-3); }
+.wordsSearch > svg { width: var(--size-icon); height: var(--size-icon); flex: none; }
+.wordsSearch input { width: 100%; min-width: 0; min-height: calc(var(--space-48) + var(--space-4)); border: 0; background: none; font: var(--font-body); color: var(--color-text); }
+/* Фокус остаётся на оболочке поля: внутренний прямоугольник дублировал бы её контур. */
+.wordsSearch input:focus-visible { outline: none; }
+.wordsSearch input::placeholder { color: var(--color-text-3); opacity: 1; }
+.wordsSearch:focus-within { outline: calc(var(--size-hairline) * 2) solid var(--color-focus); outline-offset: var(--space-2); }
+.wordsSrOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.wordsList { background: var(--color-surface); box-shadow: inset 0 0 0 var(--size-hairline) var(--color-line); border-radius: var(--radius-l); overflow: hidden; }
+.wordsRow { display: flex; align-items: center; gap: var(--space-12); min-height: var(--space-64); padding: var(--space-12) var(--space-16); color: var(--color-text); text-decoration: none; transition: background var(--motion-duration-press) var(--motion-easing-out); }
+li + li .wordsRow { border-top: var(--size-hairline) solid var(--color-line); }
+.wordsRowBody { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-4); }
+.wordsLemma { font: var(--font-h3); letter-spacing: var(--tracking-h3); overflow-wrap: anywhere; }
+.wordsRow small { color: var(--color-text-3); font: var(--font-meta); }
+.wordsRow svg { width: var(--size-icon-sm); height: var(--size-icon-sm); color: var(--color-text-3); flex: none; }
+.wordsRow:active { background: var(--color-surface-2); }
+.wordsMore, .wordsBack { align-self: flex-start; display: inline-flex; align-items: center; gap: var(--space-8); min-height: var(--size-tap-target); padding: var(--space-8) var(--space-16); border: var(--size-hairline) solid var(--color-line); border-radius: var(--radius-full); background: var(--color-surface); color: var(--color-text); font: var(--font-body); text-decoration: none; }
+.wordsMore:disabled { opacity: var(--opacity-disabled); }
+.wordsBack svg { width: var(--size-icon-sm); height: var(--size-icon-sm); }
+.wordsCard { display: flex; flex-direction: column; gap: var(--space-24); }
+.wordsHeadword { font: var(--font-headword); letter-spacing: var(--tracking-headword); overflow-wrap: anywhere; }
+.wordsMeta { display: flex; flex-wrap: wrap; gap: var(--space-12); color: var(--color-text-2); font: var(--font-word-meta); letter-spacing: var(--tracking-word-meta); margin-top: var(--space-10); }
+.wordsIpa { font: var(--font-ipa); letter-spacing: var(--tracking-ipa); color: var(--color-text-3); }
+.wordsSense { display: flex; flex-direction: column; gap: var(--space-6); }
+.wordsTranslation { color: var(--color-text-2); font: var(--font-body); font-weight: var(--font-weight-semibold); }
+.wordsDefinition { font: var(--font-sense-en); letter-spacing: var(--tracking-sense-en); }
+.wordsExample { margin: var(--space-8) 0 0; padding: var(--space-14) var(--space-16); border-radius: var(--radius-m); background: var(--color-surface); box-shadow: inset 0 0 0 var(--size-hairline) var(--color-line); display: flex; flex-direction: column; gap: var(--space-4); font: var(--font-example); letter-spacing: var(--tracking-example); }
+.wordsExample p[lang='ru'] { color: var(--color-text-3); font: var(--font-meta); }
+.wordsRelations { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-12); }
+.wordsRelations h2 { color: var(--color-text-3); font: var(--font-meta); }
+.wordsRelations ul { display: flex; flex-wrap: wrap; gap: var(--space-6); }
+.wordsRelations li { padding: var(--space-6) var(--space-12); border-radius: var(--radius-full); background: var(--color-surface); font: var(--font-meta); }
+.wordsNotice { color: var(--color-text-2); font: var(--font-body); }
+@media (hover: hover) and (pointer: fine) { .wordsRow:hover { background: var(--color-surface-2); } }
+@media (prefers-reduced-motion: reduce) { .wordsRow { transition: none; } }

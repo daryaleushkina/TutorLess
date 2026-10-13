@@ -47,3 +47,13 @@ test('список ответов, разбор и жалоба без нару�
   await expect(page.getByRole('heading', { name: 'Сообщить об ошибке' })).toBeVisible();
   expect(await violations(page)).toEqual([]);
 });
+
+import { navLink as wordsNav } from '../fixtures';
+test('словарь и карточка без нарушений', async ({ site: page }) => {
+ await wordsNav(page, 'Слова').click();
+ await expect(page.getByRole('link', { name: /^zorble\b/ })).toBeVisible();
+ expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+ await page.getByRole('link', { name: /^zorble\b/ }).click();
+ await expect(page.getByRole('heading', { name: /^zorble\b/ })).toBeVisible();
+ expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+});

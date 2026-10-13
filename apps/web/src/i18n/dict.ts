@@ -268,7 +268,8 @@ export interface Dict {
     offlineTitle: string; offlineText: string; failedTitle: string; failedText: string; retry: string;
     staleOffline: string; staleFailed: string; needNetwork: string; mistakes: string; mistakeCount: Plural; weakSpot: string; correct: string; week: string; days: Plural; answers: Plural; toeflEmpty: string;
   };
-  placeholder: { words: string; exam: string; toefl: string };
+  words: { search: string; loading: string; offline: string; failed: string; moreFailed: string; cardFailed: string; missing: string; notFound: string; searchHint: string; empty: string; more: string; meaning: string; synonyms: string; antonyms: string };
+  placeholder: { exam: string; toefl: string };
   progress: { emptyTitle: string; emptyText: string; first: string };
   settings: { signOut: string; signOutFailed: string; signOutOffline: string; version: (v: string) => string; language: string; theme: string; textSize: string; light: string; dark: string; normal: string; large: string; subscription: string; identities: string; contact: string; saveFailed: string; localeFailed: string; telegram: string };
   exams: { title: string; lead: string; gre: string; toefl: string; chooseFailed: string; changeFailed: string; offline: string; note: string };
@@ -316,8 +317,8 @@ const dictRu: Dict = {
     mistakes: 'Повторить мои ошибки', mistakeCount: ru({ one: '# задание из прошлых тренировок', few: '# задания из прошлых тренировок', many: '# заданий из прошлых тренировок', other: '# задания из прошлых тренировок' }),
     weakSpot: 'Слабое место', correct: 'верно', week: 'Эта неделя', days: ru({ one: '# день', few: '# дня', many: '# дней', other: '# дня' }), answers: ru({ one: '# задание', few: '# задания', many: '# заданий', other: '# задания' }), toeflEmpty: 'Здесь будут тренировки по четырём частям TOEFL.',
   },
+  words: { search: 'Найти слово', loading: 'Загружаем слова…', offline: 'Для словаря нужна сеть.', failed: 'Не получилось загрузить слова', moreFailed: 'Не получилось загрузить следующие слова.', cardFailed: 'Не получилось загрузить слово', missing: 'Слово не найдено', notFound: 'Ничего не найдено', searchHint: 'Попробуйте другое начало слова.', empty: 'В\u00a0словаре пока нет слов', more: 'Показать ещё', meaning: 'Значение', synonyms: 'Синонимы', antonyms: 'Антонимы' },
   placeholder: {
-    words: 'Здесь будут слова: учить, повторять и искать.',
     exam: 'Здесь будут пробные экзамены GRE и эссе с оценкой.', toefl: 'Здесь будут пробные экзамены TOEFL с оценкой Writing и Speaking.',
   },
   progress: {
@@ -383,8 +384,8 @@ const dictEn: Dict = {
     needNetwork: 'You need a connection to download the questions. After that, you can practice offline.',
     mistakes: 'Review my mistakes', mistakeCount: en('# question from previous practice', '# questions from previous practice'), weakSpot: 'Weak spot', correct: 'correct', week: 'This week', days: en('# day', '# days'), answers: en('# question', '# questions'), toeflEmpty: 'Practice the four TOEFL sections here.',
   },
+  words: { search: 'Find a word', loading: 'Loading words…', offline: 'You need a connection to open the dictionary.', failed: 'Couldn’t load words', moreFailed: 'Couldn’t load the next words.', cardFailed: 'Couldn’t load this word', missing: 'Word not found', notFound: 'No words found', searchHint: 'Try a different beginning of the word.', empty: 'The dictionary has no words yet', more: 'Show more', meaning: 'Meaning', synonyms: 'Synonyms', antonyms: 'Antonyms' },
   placeholder: {
-    words: 'Learn, review and look up words here.',
     exam: 'GRE practice tests and scored essays will be here.', toefl: 'TOEFL practice tests and Writing and Speaking feedback will be here.',
   },
   progress: {

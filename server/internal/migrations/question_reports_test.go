@@ -43,7 +43,8 @@ func TestQuestionReportsMigrationPreservesLegacyWrites(t *testing.T) {
 	const legacy = `INSERT INTO question_reports(user_id,question_id,kind,text)
  VALUES('00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000002','other','Legacy')`
 	exec(legacy)
-	applied, err := provider.Up(ctx)
+	// Проверяем именно миграцию жалоб, независимо от более новых миграций.
+	applied, err := provider.UpTo(ctx, 5)
 	if err != nil || len(applied) != 1 {
 		t.Fatalf("report migration: %d applied, err %v; want 1, nil", len(applied), err)
 	}

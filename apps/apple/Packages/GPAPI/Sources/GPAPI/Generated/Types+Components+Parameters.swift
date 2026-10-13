@@ -12,6 +12,8 @@ public import struct Foundation.Date
 extension Components {
     /// Types generated from the `#/components/parameters` section of the OpenAPI document.
     public enum Parameters {
+        /// - Remark: Generated from `#/components/parameters/WordExam`.
+        public typealias WordExam = Components.Schemas.Exam
         /// Через запятую: поддерживаемые QuestionType и формы passage, figure. Без заголовка — четыре старых типа и только задания без текста/рисунка. Заголовок задаёт полный список; query types на главной и в конструкторе дополнительно сужает его. Неизвестная или пустая возможность — 400 bad_request. Неподдерживаемая сессия целиком — 409 unsupported_training: позиции и итог не обрезаются. Тот же заголовок отправляется при старте, чтении, ответах и завершении.
         ///
         /// - Remark: Generated from `#/components/parameters/TrainingCapabilities`.

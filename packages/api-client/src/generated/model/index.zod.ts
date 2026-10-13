@@ -366,6 +366,106 @@ export const Home = zod.object({
 export type Home = zod.input<typeof Home>;
 export type HomeOutput = zod.output<typeof Home>;
 
+export const wordListItemLemmaMax = 128;
+
+export const wordListItemPartOfSpeechMax = 128;
+
+
+export const WordListItem = zod.object({
+  "id": zod.uuid(),
+  "lemma": zod.string().min(1).max(wordListItemLemmaMax),
+  "partOfSpeech": zod.string().min(1).max(wordListItemPartOfSpeechMax).optional()
+})
+
+export type WordListItem = zod.input<typeof WordListItem>;
+export type WordListItemOutput = zod.output<typeof WordListItem>;
+
+export const wordListWordsItemLemmaMax = 128;
+
+export const wordListWordsItemPartOfSpeechMax = 128;
+
+export const wordListWordsMax = 100;
+
+export const wordListNextCursorMax = 512;
+
+
+export const WordList = zod.object({
+  "words": zod.array(zod.object({
+  "id": zod.uuid(),
+  "lemma": zod.string().min(1).max(wordListWordsItemLemmaMax),
+  "partOfSpeech": zod.string().min(1).max(wordListWordsItemPartOfSpeechMax).optional()
+})).max(wordListWordsMax),
+  "nextCursor": zod.string().min(1).max(wordListNextCursorMax).optional()
+})
+
+export type WordList = zod.input<typeof WordList>;
+export type WordListOutput = zod.output<typeof WordList>;
+
+export const wordSenseDefinitionMax = 4096;
+
+export const wordSenseTranslationMax = 4096;
+
+export const wordSenseExampleMax = 4096;
+
+export const wordSenseExampleTranslationMax = 4096;
+
+
+export const WordSense = zod.object({
+  "definition": zod.string().min(1).max(wordSenseDefinitionMax),
+  "translation": zod.string().min(1).max(wordSenseTranslationMax),
+  "example": zod.string().min(1).max(wordSenseExampleMax).optional(),
+  "exampleTranslation": zod.string().min(1).max(wordSenseExampleTranslationMax).optional()
+})
+
+export type WordSense = zod.input<typeof WordSense>;
+export type WordSenseOutput = zod.output<typeof WordSense>;
+
+export const wordLemmaMax = 128;
+
+export const wordPartOfSpeechMax = 128;
+
+export const wordIpaMax = 256;
+
+export const wordAudioKeyMax = 512;
+
+export const wordSensesItemDefinitionMax = 4096;
+
+export const wordSensesItemTranslationMax = 4096;
+
+export const wordSensesItemExampleMax = 4096;
+
+export const wordSensesItemExampleTranslationMax = 4096;
+
+export const wordSensesMax = 100;
+
+export const wordSynonymsItemMax = 128;
+
+export const wordSynonymsMax = 100;
+
+export const wordAntonymsItemMax = 128;
+
+export const wordAntonymsMax = 100;
+
+
+export const Word = zod.object({
+  "id": zod.uuid(),
+  "lemma": zod.string().min(1).max(wordLemmaMax),
+  "partOfSpeech": zod.string().min(1).max(wordPartOfSpeechMax).optional(),
+  "ipa": zod.string().min(1).max(wordIpaMax).optional(),
+  "audioKey": zod.string().min(1).max(wordAudioKeyMax).optional(),
+  "senses": zod.array(zod.object({
+  "definition": zod.string().min(1).max(wordSensesItemDefinitionMax),
+  "translation": zod.string().min(1).max(wordSensesItemTranslationMax),
+  "example": zod.string().min(1).max(wordSensesItemExampleMax).optional(),
+  "exampleTranslation": zod.string().min(1).max(wordSensesItemExampleTranslationMax).optional()
+})).max(wordSensesMax),
+  "synonyms": zod.array(zod.string().min(1).max(wordSynonymsItemMax)).max(wordSynonymsMax),
+  "antonyms": zod.array(zod.string().min(1).max(wordAntonymsItemMax)).max(wordAntonymsMax)
+})
+
+export type Word = zod.input<typeof Word>;
+export type WordOutput = zod.output<typeof Word>;
+
 export const ExamChoice = zod.object({
   "exam": zod.enum(['gre', 'toefl'])
 })
@@ -1658,6 +1758,31 @@ export const GetHomeHeaders = zod.object({
 
 export type GetHomeHeaders = zod.input<typeof GetHomeHeaders>;
 export type GetHomeHeadersOutput = zod.output<typeof GetHomeHeaders>;
+
+export const getWordsParamsQMax = 128;
+
+export const getWordsParamsLimitDefault = 50;
+export const getWordsParamsLimitMax = 100;
+
+export const getWordsParamsAfterMax = 512;
+
+
+export const GetWordsParams = zod.object({
+  "exam": zod.enum(['gre', 'toefl']),
+  "q": zod.string().max(getWordsParamsQMax).optional(),
+  "limit": zod.int().min(1).max(getWordsParamsLimitMax).default(getWordsParamsLimitDefault),
+  "after": zod.string().min(1).max(getWordsParamsAfterMax).optional()
+})
+
+export type GetWordsParams = zod.input<typeof GetWordsParams>;
+export type GetWordsParamsOutput = zod.output<typeof GetWordsParams>;
+
+export const GetWordParams = zod.object({
+  "exam": zod.enum(['gre', 'toefl'])
+})
+
+export type GetWordParams = zod.input<typeof GetWordParams>;
+export type GetWordParamsOutput = zod.output<typeof GetWordParams>;
 
 export const SetActiveExamBody = zod.object({
   "exam": zod.enum(['gre', 'toefl'])

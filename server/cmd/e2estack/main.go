@@ -125,6 +125,9 @@ func run(ctx context.Context, log *slog.Logger) error {
 	if err != nil {
 		return fmt.Errorf("seed e2e questions: %w", err)
 	}
+	if err := seedWords(ctx, pool); err != nil {
+		return err
+	}
 	handler, err := app.Handler(cfg, pool, auth.NewOIDC(nil, cfg.Telegram, cfg.Apple, cfg.Google), log, time.Now)
 	if err != nil {
 		return err

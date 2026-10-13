@@ -14,7 +14,7 @@ test('каждая вкладка возвращает к своему экра�
   await page.getByRole('link', { name: /^Quant/ }).click();
   await page.getByRole('button', { name: '5', exact: true }).click();
   await navLink(page, 'Слова').click();
-  await expect(page.getByText('Здесь будут слова: учить, повторять и искать.')).toBeVisible();
+  await expect(page.getByRole('searchbox', { name: 'Найти слово' })).toBeVisible();
   await navLink(page, 'Экзамен').click();
   await expect(page.getByText('Здесь будут пробные экзамены GRE и эссе с оценкой.')).toBeVisible();
   await navLink(page, 'Тренировка').click();

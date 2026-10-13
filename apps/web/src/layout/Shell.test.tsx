@@ -3,7 +3,7 @@ import { expect, test } from 'vitest';
 import { fakeServer, json, renderApp, user } from '../test/app';
 import { trainingOptions } from '../test/training';
 
-const signedIn = { 'GET /api/me': () => json(user({ activeExam: 'toefl' })),
+const signedIn = { 'GET /api/words': () => json({ words: [] }), 'GET /api/me': () => json(user({ activeExam: 'toefl' })),
   'GET /api/trainings/options': () => json(trainingOptions()) };
 
 test('вкладка хранит адрес конструктора и его форму при переключении', async () => {
@@ -12,7 +12,7 @@ test('вкладка хранит адрес конструктора и его 
   await expect.element(screen.getByRole('group', { name: 'Вопросов', exact: true })).toBeVisible();
   await screen.getByRole('button', { name: '5', exact: true }).click();
   await screen.getByRole('navigation', { name: 'Разделы' }).getByRole('link', { name: 'Слова' }).click();
-  await expect.element(screen.getByText('Здесь будут слова: учить, повторять и искать.')).toBeVisible();
+  await expect.element(screen.getByRole('searchbox', { name: 'Найти слово' })).toBeVisible();
   await screen.getByRole('navigation', { name: 'Разделы' }).getByRole('link', { name: 'Тренировка', exact: true }).click();
   await expect.poll(() => router.state.location.href).toBe('/training/new?section=quant');
   await expect.element(screen.getByRole('button', { name: '5', exact: true })).toHaveAttribute('aria-pressed', 'true');

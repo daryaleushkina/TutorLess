@@ -1,6 +1,6 @@
 // Маршруты. Одно дерево на обе оболочки: мини-апп живёт под /tg (basepath), сайт — в корне.
 //   /                 «Тренировка»          (вкладка)
-//   /words /exam /progress               (вкладки; пока заглушки до своих фич)
+//   /words /exam /progress               (вкладки)
 //   /settings         настройки          (на компьютере — пункт панели, на телефоне — аватар в шапке)
 //   /training/new     конструктор        (ленивый маршрут)
 //   /training/$trainingId локальная сессия и итог
@@ -17,6 +17,7 @@ import { Crashed, reportRouteError } from './errors/ErrorBoundary';
 import { AppGate, TabsLayout } from './layout/AppLayout';
 import { SignInScreen } from './screens/signin/SignInScreen';
 import { HomeScreen } from './screens/home/HomeScreen';
+import { wordSearch } from './words/search';
 import { TELEGRAM_BASE, type Shell } from './shell';
 
 export interface RouterContext {
@@ -48,8 +49,10 @@ const tabsRoute = createRoute({ getParentRoute: () => appRoute, id: 'tabs', comp
 const homeRoute = createRoute({ getParentRoute: () => tabsRoute, path: '/', component: HomeScreen });
 // Фабрика маршрутов загружается с первым экраном. Иначе WebKit может закэшировать отказ её
 // общего чанка в офлайне; новый URL пакета разделов не сбрасывает отказ статической зависимости.
-const wordsRoute = createRoute({ getParentRoute: () => tabsRoute, path: 'words', errorComponent: SectionUnavailable })
+const wordsRoute = createRoute({ getParentRoute: () => tabsRoute, path: 'words', validateSearch: wordSearch, errorComponent: SectionUnavailable })
   .lazy(() => loadSections().then((m) => createLazyRoute('/app/tabs/words')({ component: m.WordsScreen })));
+const wordRoute = createRoute({ getParentRoute: () => tabsRoute, path: 'words/$wordId', validateSearch: wordSearch, errorComponent: SectionUnavailable })
+  .lazy(() => loadSections().then((m) => createLazyRoute('/app/tabs/words/$wordId')({ component: m.WordScreen })));
 const examRoute = createRoute({ getParentRoute: () => tabsRoute, path: 'exam', errorComponent: SectionUnavailable })
   .lazy(() => loadSections().then((m) => createLazyRoute('/app/tabs/exam')({ component: m.ExamScreen })));
 const progressRoute = createRoute({ getParentRoute: () => tabsRoute, path: 'progress', errorComponent: SectionUnavailable })
@@ -78,7 +81,7 @@ const reportRoute = createRoute({ getParentRoute: () => appRoute, path: 'trainin
 const routeTree = rootRoute.addChildren([
   signInRoute,
   callbackRoute,
-  appRoute.addChildren([tabsRoute.addChildren([homeRoute, wordsRoute, examRoute, progressRoute, settingsRoute]), builderRoute, trainingRoute, reviewRoute, reviewItemRoute, reportRoute]),
+  appRoute.addChildren([tabsRoute.addChildren([homeRoute, wordsRoute, wordRoute, examRoute, progressRoute, settingsRoute]), builderRoute, trainingRoute, reviewRoute, reviewItemRoute, reportRoute]),
 ]);
 
 /** history — для тестов (память вместо адресной строки); в приложении — адресная строка браузера. */

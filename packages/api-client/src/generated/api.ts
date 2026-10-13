@@ -34,7 +34,9 @@ import {
   TrainingOptions,
   TrainingSession,
   TrainingSummary,
-  User
+  User,
+  Word,
+  WordList
 } from './model/index.zod';
 import type {
   AnswerBatch,
@@ -45,6 +47,8 @@ import type {
   ExamChoice,
   GetHomeParams,
   GetTrainingOptionsParams,
+  GetWordParams,
+  GetWordsParams,
   IdTokenSignIn,
   LocaleChoice,
   QuestionReport,
@@ -1013,6 +1017,234 @@ export function useGetExams<TData = Awaited<ReturnType<typeof getExams>>, TError
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetExamsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetWordsUrl = (params: GetWordsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/words?${stringifiedParams}` : `/api/words`
+}
+
+/**
+ * Доступ через те же права, что у тренировок; без прав — 403 до чтения слов. Поиск по началу lemma без учёта регистра, пробелы по краям q удаляются. Порядок — rank, затем id. Курсор связан с exam и q; при изменении поиска начать без after. Неизвестный exam, неверный limit или курсор — 400 bad_request.
+ * @summary Одобренные слова экзамена по рейтингу
+ */
+export const getWords = async (params: GetWordsParams, options?: Parameters<typeof http>[1]): Promise<WordList> => {
+
+  return http<WordList>(getGetWordsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+    ,
+    schema: WordList
+  }
+);}
+
+
+
+
+
+export const getGetWordsQueryKey = (params?: GetWordsParams,) => {
+    return [
+    `/api/words`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetWordsQueryOptions = <TData = Awaited<ReturnType<typeof getWords>>, TError = ErrorType<Error>>(params: GetWordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWords>>, TError, TData>>, request?: SecondParameter<typeof http>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetWordsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getWords>>> = ({ signal }) => getWords(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getWords>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetWordsQueryResult = NonNullable<Awaited<ReturnType<typeof getWords>>>
+export type GetWordsQueryError = ErrorType<Error>
+
+
+export function useGetWords<TData = Awaited<ReturnType<typeof getWords>>, TError = ErrorType<Error>>(
+ params: GetWordsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWords>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getWords>>,
+          TError,
+          Awaited<ReturnType<typeof getWords>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof http>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetWords<TData = Awaited<ReturnType<typeof getWords>>, TError = ErrorType<Error>>(
+ params: GetWordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWords>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getWords>>,
+          TError,
+          Awaited<ReturnType<typeof getWords>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof http>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetWords<TData = Awaited<ReturnType<typeof getWords>>, TError = ErrorType<Error>>(
+ params: GetWordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWords>>, TError, TData>>, request?: SecondParameter<typeof http>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Одобренные слова экзамена по рейтингу
+ */
+
+export function useGetWords<TData = Awaited<ReturnType<typeof getWords>>, TError = ErrorType<Error>>(
+ params: GetWordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWords>>, TError, TData>>, request?: SecondParameter<typeof http>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetWordsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetWordUrl = (wordId: string,
+    params: GetWordParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/words/${wordId}?${stringifiedParams}` : `/api/words/${wordId}`
+}
+
+/**
+ * Платное содержимое доступно через права тренировок. Неодобренное слово, слово другого экзамена или неизвестный id — 404. Экзамен передаётся явно. Незаполненные поля отсутствуют, массивы могут быть пустыми.
+ * @summary Карточка одобренного слова своего экзамена
+ */
+export const getWord = async (wordId: string,
+    params: GetWordParams, options?: Parameters<typeof http>[1]): Promise<Word> => {
+
+  return http<Word>(getGetWordUrl(wordId,params),
+  {
+    ...options,
+    method: 'GET'
+
+    ,
+    schema: Word
+  }
+);}
+
+
+
+
+
+export const getGetWordQueryKey = (wordId: string,
+    params?: GetWordParams,) => {
+    return [
+    `/api/words/${wordId}`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetWordQueryOptions = <TData = Awaited<ReturnType<typeof getWord>>, TError = ErrorType<Error>>(wordId: string,
+    params: GetWordParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWord>>, TError, TData>>, request?: SecondParameter<typeof http>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetWordQueryKey(wordId,params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getWord>>> = ({ signal }) => getWord(wordId,params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: wordId !== null && wordId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getWord>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetWordQueryResult = NonNullable<Awaited<ReturnType<typeof getWord>>>
+export type GetWordQueryError = ErrorType<Error>
+
+
+export function useGetWord<TData = Awaited<ReturnType<typeof getWord>>, TError = ErrorType<Error>>(
+ wordId: string,
+    params: GetWordParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWord>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getWord>>,
+          TError,
+          Awaited<ReturnType<typeof getWord>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof http>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetWord<TData = Awaited<ReturnType<typeof getWord>>, TError = ErrorType<Error>>(
+ wordId: string,
+    params: GetWordParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWord>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getWord>>,
+          TError,
+          Awaited<ReturnType<typeof getWord>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof http>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetWord<TData = Awaited<ReturnType<typeof getWord>>, TError = ErrorType<Error>>(
+ wordId: string,
+    params: GetWordParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWord>>, TError, TData>>, request?: SecondParameter<typeof http>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Карточка одобренного слова своего экзамена
+ */
+
+export function useGetWord<TData = Awaited<ReturnType<typeof getWord>>, TError = ErrorType<Error>>(
+ wordId: string,
+    params: GetWordParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWord>>, TError, TData>>, request?: SecondParameter<typeof http>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetWordQueryOptions(wordId,params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
