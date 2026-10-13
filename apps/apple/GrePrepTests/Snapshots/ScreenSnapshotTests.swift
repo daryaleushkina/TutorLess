@@ -796,6 +796,7 @@ struct ScreenSnapshotTests {
         named name: String,
         devices: [Device] = [.phone, .pad],
         themes: [Theme] = [.light, .dark],
+        record: SnapshotTestingConfiguration.Record? = nil,
         precision: Float = ScreenSnapshotTests.precision,
         padLandscape: Bool = false,
         regularWidth: Bool = false,
@@ -873,8 +874,15 @@ struct ScreenSnapshotTests {
                                     $0.visibleViewController?.view.window != nil
                                 }
                             }
-                            return controllers.compactMap { $0 as? UINavigationController }.contains {
+                            let pushed = controllers.compactMap { $0 as? UINavigationController }.contains {
                                 $0.viewControllers.count > 1 && $0.visibleViewController?.view.window != nil
+                            }
+                            guard pushed else { return false }
+                            // Push уже показал профиль, но скрытие UITabBar заканчивается следующим проходом UIKit.
+                            return controllers.compactMap { $0 as? UITabBarController }.allSatisfy {
+                                let bar = $0.tabBar
+                                return bar.isHidden || bar.alpha == 0
+                                    || !bar.convert(bar.bounds, to: window).intersects(window.bounds)
                             }
                         }
                         window.layoutIfNeeded()
@@ -889,7 +897,7 @@ struct ScreenSnapshotTests {
                                 .comparingPersistedImage(),
                             named:
                                 "\(name)-\(device == .phone ? "iphone" : "ipad")-\(style == .dark ? "dark" : "light")",
-                            fileID: fileID, file: file, testName: testName, line: line, column: column)
+                            record: record, fileID: fileID, file: file, testName: testName, line: line, column: column)
                         continue
                     }
                     // Системное стекло панели получает тему от окна, а не только от traits контроллера.
@@ -928,7 +936,7 @@ struct ScreenSnapshotTests {
                             ).comparingPersistedImage(),
                             named:
                                 "\(name)-\(device == .phone ? "iphone" : "ipad")-\(style == .dark ? "dark" : "light")",
-                            fileID: fileID, file: file, testName: testName, line: line, column: column
+                            record: record, fileID: fileID, file: file, testName: testName, line: line, column: column
                         )
                     }
                 }
@@ -1003,7 +1011,7 @@ struct ScreenSnapshotTests {
                         of: rendered,
                         as: .image(precision: Self.precision, perceptualPrecision: Self.perceptual),
                         named: "\(name)-mac-\(dark ? "dark" : "light")",
-                        fileID: fileID, file: file, testName: testName, line: line, column: column)
+                        record: record, fileID: fileID, file: file, testName: testName, line: line, column: column)
                     continue
                 }
                 assertSnapshot(
@@ -1012,7 +1020,7 @@ struct ScreenSnapshotTests {
                         precision: Self.precision, perceptualPrecision: Self.perceptual,
                         size: CGSize(width: 1100, height: 760)),
                     named: "\(name)-mac-\(dark ? "dark" : "light")",
-                    fileID: fileID, file: file, testName: testName, line: line, column: column
+                    record: record, fileID: fileID, file: file, testName: testName, line: line, column: column
                 )
             }
         #endif

@@ -807,6 +807,7 @@ final class AppFlowTests: XCTestCase {
         let name = signIn(app)
         app.buttons["shell.profile"].firstMatch.tap()
         XCTAssertTrue(app.segmentedControls["settings.language"].waitForExistence(timeout: 5))
+        if UIDevice.current.userInterfaceIdiom == .phone { XCTAssertFalse(app.tabBars.firstMatch.isHittable) }
         for id in ["subscription", "identities", "contact"] {
             XCTAssertFalse(app.buttons["settings.inactive.\(id)"].exists)
             let row = app.descendants(matching: .any)["settings.inactive.\(id)"]
@@ -882,6 +883,24 @@ final class AppFlowTests: XCTestCase {
         XCTAssertTrue(app.otherElements["training.session"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.tabBars.firstMatch.exists == false || !app.tabBars.firstMatch.isHittable)
         try capture("mistakes-session")
+        app.buttons["training.close"].tap()
+        XCTAssertTrue(app.buttons["shell.profile"].firstMatch.waitForExistence(timeout: 5))
+        app.buttons["shell.profile"].firstMatch.tap()
+        XCTAssertTrue(app.segmentedControls["settings.language"].waitForExistence(timeout: 5))
+        app.segmentedControls["settings.language"].buttons["English"].tap()
+        XCTAssertTrue(app.buttons["Sign out"].waitForExistence(timeout: 10))
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            app.descendants(matching: .any)["shell.tab.training"].firstMatch.tap()
+        } else {
+            app.navigationBars.buttons.firstMatch.tap()
+        }
+        XCTAssertTrue(app.buttons["home.configure"].waitForExistence(timeout: 5))
+        app.scrollViews["home.screen"].swipeUp()
+        XCTAssertTrue(week.waitForExistence(timeout: 5))
+        XCTAssertTrue(
+            week.label.hasPrefix("This week,"), "VoiceOver следует английскому аккаунту при русском устройстве")
+        XCTAssertTrue(week.label.contains("1 day") && week.label.contains("1 question"))
+        try capture("week-account-en-device-ru")
     }
 
     func testShellTabHistory() throws {
@@ -908,10 +927,12 @@ final class AppFlowTests: XCTestCase {
             app.buttons["Прогресс"].firstMatch.tap()
             app.buttons["shell.profile"].firstMatch.tap()
             XCTAssertTrue(app.segmentedControls["settings.language"].waitForExistence(timeout: 5))
-            app.tabBars.buttons["Тренировка"].tap()
-            XCTAssertTrue(app.buttons["home.configure"].waitForExistence(timeout: 5))
-            app.tabBars.buttons["Прогресс"].tap()
+            XCTAssertFalse(app.tabBars.firstMatch.isHittable, "профиль iPhone скрывает панель вкладок")
+            // Других push-экранов в оболочке пока нет; фон и возврат сохраняют стек выбранной вкладки.
+            XCUIDevice.shared.press(.home)
+            app.activate()
             XCTAssertTrue(app.segmentedControls["settings.language"].waitForExistence(timeout: 5))
+            XCTAssertFalse(app.tabBars.firstMatch.isHittable)
             try capture("tab-history-profile")
             app.navigationBars.buttons.firstMatch.tap()
             XCTAssertTrue(app.scrollViews["shell.empty.progress"].waitForExistence(timeout: 5))

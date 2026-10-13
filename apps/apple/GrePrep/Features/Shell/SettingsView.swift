@@ -99,6 +99,7 @@ struct SettingsView: View {
         .navigationTitle(Text("Профиль"))
         #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar(.hidden, for: .tabBar)
         #endif
         .onAppear { shell?.clearLocaleProblem() }
         .accessibilityIdentifier("shell.profileScreen")

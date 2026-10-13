@@ -40,12 +40,6 @@ enum AppTab: String, Hashable, CaseIterable {
     }
 }
 
-enum ShellRoute: Hashable { case profile }
-private enum SidebarDestination: Hashable {
-    case tab(AppTab)
-    case profile
-}
-
 /// У каждого раздела свой стек; смена вкладки не уничтожает ни путь, ни сохранённую главную.
 struct MainView: View {
     @Environment(AppModel.self) private var app
@@ -53,9 +47,7 @@ struct MainView: View {
     @Environment(\.textScale) private var textScale
     let model: ShellModel
     var refreshesOnAppear = true
-    @State private var selection: AppTab = .training
-    @State private var sidebarSelection: SidebarDestination = .tab(.training)
-    @State private var paths: [AppTab: [ShellRoute]] = [:]
+    @State private var navigation: ShellNavigation
     @State private var trainingEntry: TrainingEntry?
     private let initialExamPicker: Bool
     #if os(iOS)
@@ -69,9 +61,7 @@ struct MainView: View {
         self.model = model
         self.refreshesOnAppear = refreshesOnAppear
         initialExamPicker = examPicker
-        _selection = State(initialValue: initialTab)
-        _sidebarSelection = State(initialValue: profile ? .profile : .tab(initialTab))
-        _paths = State(initialValue: profile ? [initialTab: [.profile]] : [:])
+        _navigation = State(initialValue: ShellNavigation(initialTab: initialTab, profile: profile))
     }
 
     private var wide: Bool {
@@ -81,7 +71,9 @@ struct MainView: View {
             true
         #endif
     }
-    private var profileIsVisible: Bool { wide ? sidebarSelection == .profile : paths[selection]?.last == .profile }
+    private var selection: AppTab { navigation.selection }
+    private var sidebarSelection: SidebarDestination { navigation.sidebarSelection }
+    private var profileIsVisible: Bool { navigation.profileIsVisible }
 
     var body: some View {
         Group {
@@ -104,6 +96,7 @@ struct MainView: View {
         .environment(\.gpWideLayout, wide)
         .environment(\.gpTrainingOffline, model.staleProblem == .offline)
         .environment(\.locale, Locale(identifier: model.locale.rawValue))
+        .onChange(of: wide, initial: true) { _, value in navigation.setWide(value) }
         .onChange(of: app.trainings.trainings) { _, _ in
             if trainingEntry == nil { refreshHome() }
         }
@@ -162,7 +155,10 @@ struct MainView: View {
             }
             .navigationSplitViewStyle(.balanced)
         } else {
-            TabView(selection: $selection) {
+            TabView(
+                selection: Binding(
+                    get: { navigation.selection }, set: { navigation.selectTab($0) })
+            ) {
                 ForEach(AppTab.allCases, id: \.self) { tab in
                     stack(tab).tabItem { Label(tab.title, systemImage: tab.symbol) }.tag(tab)
                 }
@@ -172,12 +168,13 @@ struct MainView: View {
     }
 
     private func stack(_ tab: AppTab) -> some View {
-        NavigationStack(
+        let stackIsWide = wide
+        return NavigationStack(
             path: Binding(
-                get: { paths[tab] ?? [] },
+                get: { navigation.paths[tab] ?? [] },
                 set: {
                     // Снятие неактивного стека системой не является нажатием «Назад» в этой вкладке.
-                    if selection == tab { paths[tab] = $0 }
+                    if selection == tab, navigation.wide == stackIsWide { navigation.paths[tab] = $0 }
                 })
         ) {
             Group {
@@ -215,15 +212,10 @@ struct MainView: View {
     }
 
     private func selectSidebar(_ destination: SidebarDestination) {
-        sidebarSelection = destination
-        if case let .tab(tab) = destination { selection = tab }
+        navigation.selectSidebar(destination)
     }
     private func openProfile(in tab: AppTab) {
-        if wide {
-            sidebarSelection = .profile
-            return
-        }
-        if paths[tab]?.last != .profile { paths[tab, default: []].append(.profile) }
+        navigation.openProfile(in: tab)
     }
     private func refreshHome() { if refreshesOnAppear { Task { await model.refresh() } } }
 }

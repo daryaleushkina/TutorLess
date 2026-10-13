@@ -26,7 +26,7 @@ struct ShellModelTests {
             config: server.config(), tokens: MemoryTokenStore("t"), cache: cache, network: network,
             session: server.session)
         #expect(app.shell?.user == nil)
-        #expect(app.shell?.locale == InterfaceLocale.preferredLanguage)
+        #expect(app.shell?.locale.rawValue == Bundle.main.preferredLocalizations.first)
         #expect(InterfaceLocale.preferredLanguage.rawValue == Bundle.main.preferredLocalizations.first)
     }
 
@@ -115,12 +115,85 @@ struct ShellModelTests {
     @Test("503 → 200 восстанавливается сам, без pull-to-refresh")
     func serverRecoversWhileTrainingIsOpen() async throws {
         let app = try app()
-        let model = try #require(app.shell)
-        server.on("GET /api/home", .status(503), .json(200, ShellFixture.homeJSON))
+        await app.shell?.refresh()
+        server.on("POST /api/trainings", .json(201, TrainingFixture.json(TrainingFixture.session)))
+        let id = try #require(await app.shell?.start())
+        let session = SessionModel(id: id, trainings: app.trainings)
+        let clock = RecoveryGate()
+        let model = recoveryModel(app, clock: clock)
+        let screen = TrainingScreenProbe(shell: model, session: session)
+        server.on("GET /api/home", .status(503))
         await model.refresh()
+        #expect(session.screen?.training.session.id == id)
+        #expect(model.staleProblem == .offline, "это сигнал строки T6 в открытой тренировке")
+        #expect(try await screen.showsOfflineNotice())
+        await eventually { clock.delays.count == 1 }
+        let gate = StubServer.Gate()
+        server.on("GET /api/home", .gated(gate, 503, ""))
+        clock.advance()
+        await eventually { server.requests("GET /api/home").count == 3 }
+        #expect(model.staleProblem == .offline, "успех аккаунта и каталога не снимает T6")
+        #expect(try await screen.showsOfflineNotice())
+        gate.open()
+        await eventually { clock.delays.count == 2 }
+        #expect(model.staleProblem == .offline)
+        server.on("GET /api/home", .json(200, ShellFixture.homeJSON))
+        clock.advance()
+        await eventually { model.staleProblem == nil && !model.refreshing }
+        #expect(session.screen?.training.session.id == id, "тренировка остаётся открытой после снятия T6")
+        #expect(try await !screen.showsOfflineNotice())
+        #expect(server.requests("POST /api/trainings").count == 1)
+        model.retire()
+    }
+
+    private func recoveryModel(_ app: AppModel, clock: RecoveryGate) -> ShellModel {
+        ShellModel(
+            api: app.api, cache: cache, network: network, trainings: app.trainings,
+            recoverySleep: { try await clock.sleep($0) }, unauthorized: {}, report: { _, _ in })
+    }
+
+    @Test("отмена обновления сохраняет проблему и повтор", arguments: [false, true])
+    func cancelledRefreshKeepsRecovery(duringRecovery: Bool) async throws {
+        let app = try app()
+        await app.shell?.refresh()
+        let clock = RecoveryGate()
+        let model = recoveryModel(app, clock: clock)
+        server.on("GET /api/home", .status(503))
+        await model.refresh()
+        await eventually { clock.delays.count == 1 }
+        server.on("GET /api/me", .failure(.cancelled))
+        if duringRecovery {
+            clock.advance()
+            await eventually { !model.refreshing && server.requests("GET /api/me").count == 3 }
+        } else {
+            await model.refresh()
+        }
         #expect(model.problem == .offline)
-        await eventually { model.problem == nil && model.home != nil }
-        #expect(server.requests("GET /api/home").count == 2)
+        await eventually { clock.delays.count == (duringRecovery ? 2 : 1) }
+        server.on("GET /api/me", .json(200, ShellFixture.json(ShellFixture.user())))
+        server.on("GET /api/home", .json(200, ShellFixture.homeJSON))
+        clock.advance()
+        await eventually { server.requests("GET /api/home").count == 3 && !model.refreshing }
+        #expect(model.problem == nil)
+        model.retire()
+    }
+
+    @Test("старт после неудачного обновления не ждёт ещё один запрос", arguments: [false, true])
+    func failedRefreshDoesNotStartTraining(timeout: Bool) async throws {
+        let app = try app()
+        await app.shell?.refresh()
+        let clock = RecoveryGate()
+        let model = recoveryModel(app, clock: clock)
+        server.on("GET /api/home", .status(503))
+        await model.refresh()
+        server.on("GET /api/home", timeout ? .failure(.timedOut) : .status(503))
+        server.on("POST /api/trainings", .failure(.timedOut))
+        #expect(await model.start() == nil)
+        #expect(model.startProblem == .offline && model.startProblemAction == .primary)
+        #expect(server.requests("POST /api/trainings").isEmpty)
+        #expect(server.requests("GET /api/home").count == 3)
+        model.retire()
+        clock.advance()
     }
 
     @Test("успех запроса языка снимает старую ошибку связи")
@@ -166,14 +239,20 @@ struct ShellModelTests {
             model.retire()
             clock.advance()
             await eventually { clock.completed == 1 }
+            #expect(clock.cancelled == 1, "ожидающая задача действительно отменена, а не только скрыта retired")
             #expect(server.requests("GET /api/home").count == initial + 1)
         } else {
-            clock.advance()
-            await eventually { clock.delays.count == 2 }
-            #expect(clock.delays == [.seconds(2), .seconds(4)])
+            let delays: [Duration] = [.seconds(2), .seconds(4), .seconds(8), .seconds(16), .seconds(30), .seconds(30)]
+            for count in 2...delays.count {
+                clock.advance()
+                await eventually { clock.delays.count == count }
+                #expect(clock.delays == Array(delays.prefix(count)))
+            }
             server.on("GET /api/home", .json(200, ShellFixture.homeJSON))
             clock.advance()
-            await eventually { server.requests("GET /api/home").count == initial + 3 && !model.refreshing }
+            await eventually {
+                server.requests("GET /api/home").count == initial + delays.count + 1 && !model.refreshing
+            }
             #expect(model.problem == nil)
             model.retire()
         }
@@ -480,11 +559,13 @@ struct ShellModelTests {
 private final class RecoveryGate {
     var delays: [Duration] = []
     var completed = 0
+    var cancelled = 0
     private var continuation: CheckedContinuation<Void, Never>?
     func sleep(_ duration: Duration) async throws {
         delays.append(duration)
         await withCheckedContinuation { continuation = $0 }
         completed += 1
+        if Task.isCancelled { cancelled += 1 }
         try Task.checkCancellation()
     }
     func advance() {

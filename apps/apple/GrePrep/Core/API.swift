@@ -20,6 +20,14 @@ struct API: Sendable {
     private let clientKind: Components.Schemas.ClientKind
     private let appVersion: String
     let connection: ServerConnection
+    private var confirmsConnection = true
+
+    /// Составное обновление подтверждает связь только после всех своих запросов; остальные вызовы — сразу.
+    func withoutConnectionConfirmation() -> API {
+        var api = self
+        api.confirmsConnection = false
+        return api
+    }
 
     init(
         config: AppConfig, session: URLSession = API.session, tokens: any TokenStore,
@@ -287,7 +295,7 @@ struct API: Sendable {
     }
 
     private func confirmed<T: Sendable>(_ value: T) async -> T {
-        await connection.succeeded()
+        if confirmsConnection { await connection.succeeded() }
         return value
     }
 

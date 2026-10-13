@@ -241,7 +241,7 @@ struct TrainingHomeView: View {
                 .accessibilityLabel(
                     Text(
                         verbatim:
-                            "\(String(localized: "Эта неделя", locale: locale)), \(HomeWeekCopy.text(HomeWeekCopy.days(stats.week.days), locale: locale)) · \(HomeWeekCopy.text(HomeWeekCopy.duration(stats.week.minutes), locale: locale)), \(HomeWeekCopy.text(HomeWeekCopy.answers(stats.week.answers), locale: locale))"
+                            HomeWeekCopy.accessibilityLabel(stats.week, locale: locale)
                     )
                 ).accessibilityIdentifier("home.week")
         }
@@ -323,6 +323,9 @@ extension View {
 
 /// Числа недели локализуются целиком: единица не отрывается от числа, включая VoiceOver.
 enum HomeWeekCopy {
+    static func accessibilityLabel(_ week: Components.Schemas.WeekStats, locale: Locale) -> String {
+        "\(text("Эта неделя", locale: locale)), \(text(days(week.days), locale: locale)) · \(text(duration(week.minutes), locale: locale)), \(text(answers(week.answers), locale: locale))"
+    }
     static func days(_ value: Int) -> LocalizedStringResource { "\(value) дней" }
     static func answers(_ value: Int) -> LocalizedStringResource { "\(value) заданий" }
     static func duration(_ minutes: Int) -> LocalizedStringResource {

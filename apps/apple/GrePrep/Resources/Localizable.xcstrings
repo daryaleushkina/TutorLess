@@ -2809,22 +2809,6 @@
         }
       }
     },
-    "дней": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "дней"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "days"
-          }
-        }
-      }
-    },
     "и": {
       "localizations": {
         "en": {
@@ -2861,44 +2845,12 @@
         }
       }
     },
-    "минут": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "минут"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "minutes"
-          }
-        }
-      }
-    },
     "неверно": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "incorrect"
-          }
-        }
-      }
-    },
-    "ответов": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ответов"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "answers"
           }
         }
       }

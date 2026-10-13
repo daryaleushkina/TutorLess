@@ -6,6 +6,14 @@ import Testing
 @MainActor
 @Suite("Неделя: формы числа и компактное время")
 struct HomeWeekCopyTests {
+    @Test("VoiceOver: английский аккаунт при русском языке устройства")
+    func accountLanguageOverridesDevice() {
+        #expect(Bundle.main.preferredLocalizations.first == "ru")
+        #expect(
+            HomeWeekCopy.accessibilityLabel(.init(days: 4, answers: 86, minutes: 130), locale: Locale(identifier: "en"))
+                == "This week, 4 days · 2 hr 10 min, 86 questions")
+    }
+
     @Test(arguments: [1, 2, 4, 5, 11, 21])
     func days(_ number: Int) {
         let expected = [1: "1 день", 2: "2 дня", 4: "4 дня", 5: "5 дней", 11: "11 дней", 21: "21 день"]

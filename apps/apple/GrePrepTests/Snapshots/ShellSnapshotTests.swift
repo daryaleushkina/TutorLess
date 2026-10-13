@@ -96,13 +96,20 @@ extension ScreenSnapshotTests {
         }
         let screenView = view.environment(app)
         let presentation: Presentation = screen == .profile ? .profile : screen == .examSwitch ? .examPicker : .root
-        await assertScreens(screenView, named: "shell-\(screen.rawValue)", precision: 0.995, presentation: presentation)
+        // Разовая запись ограничена возвратом профиля iPhone к G2; остальные состояния только сверяются.
+        let isPhone = await Self.isPhone()
+        let recordsProfile =
+            screen == .profile && ProcessInfo.processInfo.environment["GP_RECORD_SHELL_PROFILE"] == "1"
+            && ProcessInfo.processInfo.environment["ALLOW_RECORD"] == "1" && isPhone
+        await assertScreens(
+            screenView, named: "shell-\(screen.rawValue)", record: recordsProfile ? .all : .never, precision: 0.995,
+            presentation: presentation)
         await assertScreens(
             screenView.environment(\.textScale, GPType.textScaleLarge), named: "shell-\(screen.rawValue)-larger",
-            precision: 0.995, largerText: true, presentation: presentation)
+            record: recordsProfile ? .all : .never, precision: 0.995, largerText: true, presentation: presentation)
         #if os(iOS)
             await assertScreens(
-                screenView, named: "shell-\(screen.rawValue)-wide", devices: [.pad], precision: 0.995,
+                screenView, named: "shell-\(screen.rawValue)-wide", devices: [.pad], record: .never, precision: 0.995,
                 padLandscape: true, presentation: presentation)
         #endif
         gate.open()

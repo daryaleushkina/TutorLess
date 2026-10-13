@@ -141,12 +141,14 @@ final class ShellModel {
             if generation == epoch {
                 refreshing = false
                 if refreshAgain { Task { await refresh() } }
+                if problem == .offline { scheduleRecovery() }
             }
         }
         do {
             guard network.isOnline else { throw APIFailure.offline }
-            async let account = api.me()
-            async let catalog = api.exams()
+            let refreshAPI = api.withoutConnectionConfirmation()
+            async let account = refreshAPI.me()
+            async let catalog = refreshAPI.exams()
             let (user, exams) = try await (account, catalog)
             guard current(epoch) else { return }
             if snapshot.user?.id != user.id { snapshot.homes = [:] }
@@ -154,12 +156,15 @@ final class ShellModel {
             snapshot.exams = exams
             trainings.exam = exam
             persist()
-            if let exam { try await loadHome(exam: exam, epoch: epoch) }
+            if let exam { try await loadHome(exam: exam, epoch: epoch, api: refreshAPI) }
             guard current(epoch) else { return }
+            api.connection.succeeded()
             problem = nil
         } catch {
             guard current(epoch) else { return }
-            problem = handle(APIFailure(error), route: "home")
+            let failure = APIFailure(error)
+            // Отмена жеста обновления не сообщает ничего нового о доступности сервера.
+            if failure != .cancelled { problem = handle(failure, route: "home") }
         }
     }
 
@@ -251,9 +256,10 @@ final class ShellModel {
         defer { if current(epoch) { startingAction = nil } }
         do {
             guard network.isOnline else { throw APIFailure.offline }
-            if connectionProblem == .offline {
+            if problem == .offline {
                 await refresh()
                 guard current(epoch) else { return nil }
+                guard problem != .offline else { throw APIFailure.offline }
             }
             let candidateSections =
                 mistakes
@@ -316,7 +322,7 @@ final class ShellModel {
             }
             guard !Task.isCancelled, let self else { return }
             self.recoveryTask = nil
-            guard self.network.isOnline, self.connectionProblem == .offline, !self.retired else { return }
+            guard self.network.isOnline, self.problem == .offline, !self.retired else { return }
             await self.refresh()
         }
     }
@@ -327,7 +333,7 @@ final class ShellModel {
     }
 
     private func current(_ epoch: Int) -> Bool { !retired && generation == epoch }
-    private func loadHome(exam: Exam, epoch: Int) async throws {
+    private func loadHome(exam: Exam, epoch: Int, api: API) async throws {
         async let stats = api.home(exam: exam)
         async let options = api.trainingOptions(exam: exam)
         let content = try await HomeContent(stats: stats, options: options)
