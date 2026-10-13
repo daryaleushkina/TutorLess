@@ -3,11 +3,12 @@ import type { GivenAnswer } from '@greprep/api-client';
 import type { StoredTraining } from './model';
 import { trainingRepository } from './repository';
 import { answerFormat, draftAnswer } from './answerFormats';
-import type { LeavingDraft } from './leavingDraftStore';
+import { draftStamp, type LeavingDraft } from './leavingDraftStore';
 import { TrainingRules } from './rules';
 
-// Пауза объединяет набор числа и быстрый выбор вариантов; переходы не ждут таймер.
+// Только набор числа ждёт паузу: выбор вариантов должен пережить закрытие WebView без pagehide.
 const DRAFT_DELAY_MS = 300;
+const MAX_ELAPSED_MS = 86_400_000;
 
 const initialSelection = (training: StoredTraining) => {
   const answer = training.answers[String(training.position)];
@@ -41,6 +42,15 @@ export function useTrainingSession(incoming: StoredTraining) {
   const shownAt = useRef(Date.now());
   const id = incoming.session.id;
   const owner = useRef(trainingRepository.reportOwner());
+  const [reportJournal] = useState(() => trainingRepository.journalReporter());
+  const mounted = useRef(true);
+
+  const checkpoint = useCallback((draft: LeavingDraft) => {
+    const current = trainingRepository.reportOwner();
+    if (owner.current && current?.userId === owner.current.userId && current.revision === owner.current.revision) {
+      trainingRepository.checkpointDraft(id, draft, owner.current, reportJournal);
+    }
+  }, [id, reportJournal]);
 
   const showSelection = (ids: string[]) => { selected.current = ids; setSelection(ids); };
   const setOverview = (open: boolean) => { overviewRef.current = open; updateOverview(open); if (open) void flush(); };
@@ -56,11 +66,15 @@ export function useTrainingSession(incoming: StoredTraining) {
     if (!draft) return;
     dirty.current = undefined; persisting.current = draft;
     try {
-      if (draft.answer) await trainingRepository.answer(id, draft.answer, draft.ids);
-      else await trainingRepository.draft(id, draft.position, draft.ids);
-      trainingRepository.clearCheckpoint(id, draft, owner.current);
+      if (draft.answer) await trainingRepository.answer(id, draft.answer, draft.ids, draft.savedAt);
+      else await trainingRepository.draft(id, draft.position, draft.ids, draft.savedAt);
+      trainingRepository.clearCheckpoint(id, draft, owner.current, reportJournal);
+    } catch (error) {
+      dirty.current ??= draft;
+      checkpoint(dirty.current);
+      throw error;
     } finally { persisting.current = undefined; }
-  }, [id]);
+  }, [id, checkpoint, reportJournal]);
 
   const run = useCallback((action: () => Promise<void>, interactive = true) => {
     const version = selectionVersion.current;
@@ -95,30 +109,31 @@ export function useTrainingSession(incoming: StoredTraining) {
       } finally {
         pending.current--;
         if (interactive) { foreground.current--; setBusy(foreground.current > 0); }
-        if (!pending.current && !dirty.current) { releaseSync.current!(); releaseSync.current = undefined; }
+        if (!pending.current && (!dirty.current || !mounted.current)) { releaseSync.current?.(); releaseSync.current = undefined; }
       }
     };
     queue.current = queued ? queue.current.then(execute) : execute();
     return queue.current.then(() => succeeded);
   }, [id, persistDraft]);
 
-  const flush = useCallback(() => dirty.current ? run(async () => {}, false) : queue.current.then(() => !writeFailed.current), [run]);
+  const flush = useCallback(() => dirty.current ? run(async () => {}, false) : pending.current ? queue.current.then(() => !writeFailed.current) : Promise.resolve(true), [run]);
   useEffect(() => {
+    mounted.current = true;
     const leaving = () => {
       const draft = dirty.current ?? persisting.current;
-      if (draft) {
-        try { trainingRepository.checkpointDraft(id, draft, owner.current); }
-        catch { writeFailed.current = true; setFailed(true); }
-      }
+      if (draft) checkpoint(draft);
       void flush();
     };
     const hidden = () => { if (document.visibilityState === 'hidden') leaving(); };
     document.addEventListener('visibilitychange', hidden); window.addEventListener('pagehide', leaving);
     return () => {
       document.removeEventListener('visibilitychange', hidden); window.removeEventListener('pagehide', leaving);
+      mounted.current = false;
       leaving();
+      // Экран ушёл даже при зависшей записи; его удержание не мешает следующему входу и отправке.
+      releaseSync.current?.(); releaseSync.current = undefined;
     };
-  }, [flush, id]);
+  }, [flush, checkpoint]);
 
   const expire = useCallback(() => {
     const current = latest.current;
@@ -143,7 +158,7 @@ export function useTrainingSession(incoming: StoredTraining) {
 
   const makeAnswer = (ids: string[], dontKnow = false, flagged = latest.current.answers[String(latest.current.position)]?.flagged ?? false): GivenAnswer => ({
     position: latest.current.position, ...(answerFormat(latest.current.session.items[latest.current.position]!.question)?.encode(latest.current.session.items[latest.current.position]!.question, ids) ?? { optionIds: [] }), dontKnow, flagged,
-    answeredAt: new Date(Date.now()).toISOString(), elapsedMs: Math.max(0, Date.now() - shownAt.current),
+    answeredAt: new Date(Date.now()).toISOString(), elapsedMs: Math.min(MAX_ELAPSED_MS, Math.max(0, Date.now() - shownAt.current)),
   });
   const save = async (ids: string[], dontKnow = false, flagged?: boolean) => {
     if (expire()) return;
@@ -185,10 +200,11 @@ export function useTrainingSession(incoming: StoredTraining) {
     latest.current = { ...current, drafts: { ...current.drafts, [current.position]: ids },
       ...(answer && { answers: { ...current.answers, [current.position]: answer } }),
     }; setTraining(latest.current);
-    dirty.current = { position: current.position, ids, answer };
+    dirty.current = { position: current.position, ids, answer, savedAt: draftStamp() };
     if (!releaseSync.current) releaseSync.current = trainingRepository.holdSync(id);
     clearTimeout(draftTimer.current);
-    draftTimer.current = setTimeout(() => { void flush(); }, DRAFT_DELAY_MS);
+    if (answerFormat(current.session.items[current.position]!.question)?.component === 'numeric') draftTimer.current = setTimeout(() => { void flush(); }, DRAFT_DELAY_MS);
+    else void flush();
   };
   const position = training.position;
   const question = training.session.items[position]!.question;

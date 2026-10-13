@@ -11,6 +11,7 @@ export interface AnswerFormat {
   decode: (answer: GivenAnswer) => string[];
   encode: (question: Question, value: string[]) => Pick<GivenAnswer, 'optionIds' | 'numericAnswer' | 'sentenceId'>;
   isComplete: (question: Question, answer: GivenAnswer | undefined) => boolean;
+  canAdvance: (question: Question, answer: GivenAnswer | undefined, complete: boolean) => boolean;
   isCorrect: (question: Question, answer: GivenAnswer | undefined) => boolean;
   select: (question: Question, value: string[], input: string) => { value: string[]; limit: boolean };
   selectKey?: (question: Question, value: string[], key: string) => string | undefined;
@@ -26,6 +27,7 @@ const choiceFormat: AnswerFormat = {
   encode: (_question, value) => ({ optionIds: value }),
   isComplete: (question, answer) => Boolean(answer && !answer.dontKnow && !gradeTrainingAnswer(question, answer).badAnswer &&
     (question.questionType === 'multiple_choice_multi' && question.selectCount === 0 ? answer.optionIds.length > 0 : ChoiceRules.isComplete(question, answer.optionIds))),
+  canAdvance: (question, answer, complete) => complete || question.questionType !== 'multiple_choice_multi' && Boolean(answer?.optionIds.some(Boolean)),
   isCorrect,
   select: (question, value, input) => question.questionType === 'sentence_equivalence' && value.length >= question.selectCount && !value.includes(input)
     ? { value, limit: true } : { value: question.questionType === 'multiple_choice_multi' && question.selectCount === 0
@@ -67,6 +69,7 @@ const numericFormat: AnswerFormat = {
     return validNumeric(question, numericAnswer) ? { optionIds: [], numericAnswer } : { optionIds: [] };
   },
   isComplete: (question, answer) => Boolean(answer?.numericAnswer && !answer.dontKnow && !answer.optionIds.length && answer.sentenceId === undefined && validNumeric(question, answer.numericAnswer)),
+  canAdvance: (_question, _answer, complete) => complete,
   isCorrect, select: (_question, value) => ({ value, limit: false }),
 };
 const passageFormat: AnswerFormat = {
@@ -75,6 +78,7 @@ const passageFormat: AnswerFormat = {
   decode: (answer) => answer.sentenceId ? [answer.sentenceId] : [],
   encode: (question, value) => ({ optionIds: [], ...(value.length === 1 && question.passage?.paragraphs.some((p) => p.sentences.some((s) => s.id === value[0])) && { sentenceId: value[0] }) }),
   isComplete: (question, answer) => Boolean(answer?.sentenceId && !answer.dontKnow && !gradeTrainingAnswer(question, answer).badAnswer),
+  canAdvance: (_question, _answer, complete) => complete,
   isCorrect, select: (_question, _value, input) => ({ value: [input], limit: false }),
 };
 const ANSWER_FORMATS: Partial<Record<Question['questionType'], AnswerFormat>> = {

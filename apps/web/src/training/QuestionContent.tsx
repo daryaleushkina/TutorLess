@@ -42,9 +42,10 @@ export function Options(props: AnswerProps) {
 }
 
 function ChoiceAnswer({ question: q, selection, revealed, onSelect, compact = false }: AnswerProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [all, setAll] = useState(false);
   const many = q.groups.length > 1;
+  const multiple = q.questionType === 'multiple_choice_multi' || q.selectCount > 1;
   if (revealed && q.questionType === 'text_completion' && !all) return <div className={styles.answerTable}>
     {q.groups.map((group, index) => {
       const yours = group.options.filter((o) => selection.includes(o.id));
@@ -66,9 +67,9 @@ function ChoiceAnswer({ question: q, selection, revealed, onSelect, compact = fa
         const checked = selection.includes(option.id);
         const correct = revealed && q.answer.includes(option.id);
         const wrong = revealed && checked && !correct;
-        const content = <><span className={styles.choiceIndicator} data-many={q.selectCount !== 1} aria-hidden="true">{q.selectCount !== 1 && <CheckIcon />}</span><span lang="en" className={styles.optionText}>{option.text}</span>{revealed && (correct || wrong) && <span className={styles.optionMark}>{correct ? t.training.question_correct_mark : t.training.question_yours_mark}</span>}</>;
+        const content = <><span className={styles.choiceIndicator} data-many={q.selectCount !== 1} aria-hidden="true">{q.selectCount !== 1 && <CheckIcon />}</span><span lang="en" className={styles.optionText}>{option.text}</span>{revealed && multiple && <span lang={locale} className="visually-hidden">{answerStateLabel(t.training, checked, correct)}</span>}{revealed && (correct || wrong) && <span lang={locale} aria-hidden={multiple || undefined} className={styles.optionMark}>{correct ? t.training.question_correct_mark : t.training.question_yours_mark}</span>}</>;
         return <button key={option.id} className={styles.option} type="button" role={q.selectCount === 1 ? 'radio' : 'checkbox'}
-          disabled={revealed} aria-label={revealed ? `${option.text}, ${answerStateLabel(t.training, checked, correct)}` : undefined} aria-checked={checked} data-result={correct ? checked ? 'correct' : 'missed' : wrong ? 'wrong' : undefined}
+          disabled={revealed} aria-checked={checked} data-result={correct ? checked ? 'correct' : 'missed' : wrong ? 'wrong' : undefined}
           onClick={() => onSelect(option.id)}>{content}</button>;
       })}
     </div>

@@ -300,7 +300,7 @@ test('несколько ответов: доступность различае
   await screen.getByRole('checkbox', { name: 'B word 0', exact: true }).click();
   await screen.getByRole('button', { name: 'Проверить', exact: true }).click();
   for (const [letter, state] of [['A', 'выбран, верный'], ['C', 'не выбран, верный'], ['B', 'выбран, неверный'], ['D', 'не выбран']]) {
-    await expect.element(screen.getByRole('checkbox', { name: `${letter} word 0, ${state}`, exact: true })).toBeVisible();
+    await expect.element(screen.getByRole('checkbox', { name: `${letter} word 0 ${state}`, exact: true })).toBeVisible();
   }
 });
 
@@ -313,6 +313,7 @@ for (const [q, label] of [[rc(), 'Reading Comprehension'], [numeric(true), 'Вв
 test('скрытый h1 числового задания совпадает с шапкой', async () => {
   const { screen } = await boot([numeric(true)]);
   await expect.element(screen.getByRole('heading', { level: 1, name: 'Ввод дробью', exact: true })).toBeVisible();
+  await expect.element(screen.getByRole('heading', { level: 1 })).toHaveAttribute('lang', 'ru');
 });
 
 test('русский разбор выводит десятичный ответ с запятой', async () => {
@@ -326,6 +327,11 @@ for (const type of ['text_completion', 'sentence_equivalence'] as const) test(`�
   const q = questionFixture(type, type === 'text_completion' ? 3 : 1);
   const partial = [q.groups[0]!.options[0]!.id];
   const { screen } = await boot([q, numeric()], { answers: { 0: givenAnswer({ optionIds: partial }) } }, true);
+  await expect.element(screen.getByRole('button', { name: 'Дальше', exact: true })).toBeVisible();
+});
+
+test('проверка: полный черновик при старом неполном ответе сохраняет подпись «Дальше»', async () => {
+  const { screen } = await boot([numeric(true), numeric()], { drafts: { 0: ['9', '15'] }, answers: { 0: givenAnswer({ optionIds: [] }) } }, true);
   await expect.element(screen.getByRole('button', { name: 'Дальше', exact: true })).toBeVisible();
 });
 
@@ -356,7 +362,8 @@ for (const event of ['pagehide', 'visibilitychange'] as const) test(`уход ${
   if (event === 'visibilitychange') {
     vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden'); document.dispatchEvent(new Event(event));
   } else window.dispatchEvent(new Event(event));
-  expect(checkpoint).toHaveBeenCalledWith(training.session.id, expect.objectContaining({ ids: ['22,5'] }), trainingRepository.reportOwner());
+  expect(write).toHaveBeenCalledTimes(1);
+  expect(checkpoint).toHaveBeenCalledWith(training.session.id, expect.objectContaining({ ids: ['22,5'] }), trainingRepository.reportOwner(), expect.any(Function));
   await expect.poll(async () => (await trainingRepository.get(training.session.id))?.drafts?.['0']).toEqual(['22,5']);
 });
 
@@ -366,12 +373,13 @@ for (const fraction of [false, true]) test(`длина ${fraction ? 'дроби'
   await expect.element(screen.getByRole('alert')).toHaveTextContent('Не больше 128 символов в поле. Сократите запись числа.');
 });
 
-test('выбор предложения: доступность отмечает выбранное неверное и пропущенное верное', async () => {
+test('выбор предложения: доступность сохраняет знаки «Ваш» и «Верный»', async () => {
   const q = sentence();
   const { screen } = await boot([q]);
   await screen.getByRole('button', { name: q.passage!.paragraphs[0]!.sentences[0]!.text, exact: true }).click();
   await screen.getByRole('button', { name: 'Проверить', exact: true }).click();
-  await expect.element(screen.getByRole('button', { name: `${q.passage!.paragraphs[0]!.sentences[0]!.text}, выбран, неверный`, exact: true })).toBeVisible();
+  await expect.element(screen.getByRole('button', { name: `${q.passage!.paragraphs[0]!.sentences[0]!.text}ваше`, exact: true })).toBeVisible();
+  await expect.element(screen.getByRole('button', { name: `${q.passage!.paragraphs[0]!.sentences[1]!.text}верное`, exact: true })).toBeVisible();
 });
 
 
@@ -398,10 +406,138 @@ test('журнал ухода не подменяет нового владел�
   window.dispatchEvent(new Event('pagehide'));
   await expect.poll(() => failed.mock.calls.length).toBe(1);
   await expect.poll(async () => (await trainingRepository.list())[0]?.drafts?.['0']).toEqual(['2']);
+  await expect.element(screen.getByRole('alert')).not.toBeInTheDocument();
+  await expect.element(screen.getByRole('textbox', { name: 'Ответ', exact: true })).toHaveValue('2');
   const owner = trainingRepository.reportOwner()!;
   const id = (await trainingRepository.list())[0]!.session.id;
-  expect(() => trainingRepository.checkpointDraft(id, { position: 0, ids: ['wrong'] }, { ...owner, revision: owner.revision + 1 })).toThrow();
+  expect(() => trainingRepository.checkpointDraft(id, { savedAt: 1, position: 0, ids: ['wrong'] }, { ...owner, revision: owner.revision + 1 })).toThrow();
   vi.spyOn(trainingRepository.store.leavingDrafts, 'remove').mockImplementationOnce(() => { throw new Error('storage unavailable'); });
   await screen.getByRole('textbox', { name: 'Ответ', exact: true }).fill('22');
   await expect.poll(async () => (await trainingRepository.list())[0]?.drafts?.['0']).toEqual(['22']);
+  await expect.element(screen.getByRole('alert')).not.toBeInTheDocument();
+  await expect.element(screen.getByRole('textbox', { name: 'Ответ', exact: true })).toHaveValue('22');
+});
+
+test('RC: Enter после нажатия варианта проверяет ответ', async () => {
+  const { screen } = await boot([rc()]);
+  await expect.element(screen.getByRole('heading', { level: 1 })).toHaveAttribute('lang', 'en');
+  await screen.getByRole('tab', { name: 'Вопрос', exact: true }).click();
+  await screen.getByRole('radio', { name: 'A word 0', exact: true }).click();
+  await userEvent.keyboard('{Enter}');
+  await expect.element(screen.getByTestId('explanation')).toBeVisible();
+});
+
+test('RC: A–F на самой панели текста выбирают варианты, Enter вкладки остаётся нативным', async () => {
+  const q = rc();
+  q.groups[0]!.options = 'ABCDEF'.split('').map((id) => ({ id, text: `${id} fixture` }));
+  const { screen } = await boot([q]);
+  const panel = screen.getByRole('tabpanel', { name: 'Текст', exact: true });
+  for (const letter of 'abcdef') {
+    (panel.element() as HTMLElement).focus();
+    await userEvent.keyboard(letter);
+    await screen.getByRole('tab', { name: 'Вопрос', exact: true }).click();
+    await expect.element(screen.getByRole('radio', { name: `${letter.toUpperCase()} fixture`, exact: true })).toHaveAttribute('aria-checked', 'true');
+    await screen.getByRole('tab', { name: 'Текст', exact: true }).click();
+  }
+  await userEvent.keyboard('{Enter}');
+  await expect.element(screen.getByTestId('explanation')).not.toBeInTheDocument();
+});
+
+for (const type of ['text_completion', 'quantitative_comparison', 'multiple_choice', 'rc'] as const) test(`старые имена доступности после проверки: ${type}`, async () => {
+  const q = type === 'rc' ? rc() : questionFixture(type);
+  const { screen } = await boot([q, numeric()], { answers: { 0: givenAnswer({ optionIds: ['B'] }) }, practiceReturnPosition: 1 });
+  if (type === 'rc') await screen.getByRole('tab', { name: 'Вопрос', exact: true }).click();
+  await screen.getByRole('button', { name: 'Все варианты', exact: true }).click();
+  for (const [letter, mark] of [['A', 'верный'], ['B', 'ваш ответ'], ['C', '']]) {
+    await expect.element(screen.getByRole('radio', { name: `${letter} word 0${mark ? ` ${mark}` : ''}`, exact: true })).toBeVisible();
+  }
+});
+
+for (const type of ['multiple_choice_multi', 'sentence_equivalence'] as const) test(`состояния ${type} внутри кнопки сохраняют языки текста`, async () => {
+  const q = type === 'multiple_choice_multi' ? multi() : questionFixture(type);
+  q.answer = ['A', 'C'];
+  q.groups[0]!.options.push({ id: 'D', text: 'D word 0' });
+  const { screen } = await boot([q], { answers: { 0: givenAnswer({ optionIds: ['A', 'B'] }) } });
+  for (const [letter, state] of [['A', 'выбран, верный'], ['C', 'не выбран, верный'], ['B', 'выбран, неверный'], ['D', 'не выбран']]) {
+    const button = screen.getByRole('checkbox', { name: `${letter} word 0 ${state}`, exact: true });
+    await expect.element(button).not.toHaveAttribute('aria-label');
+    expect(button.element().querySelector('[lang="en"]')?.textContent).toBe(`${letter} word 0`);
+    expect(button.element().querySelector('.visually-hidden[lang="ru"]')?.textContent).toBe(state);
+  }
+});
+
+for (const device of [
+  { platform: 'ios', agent: 'Macintosh', touch: 0, mode: 'text' },
+  { platform: 'android', agent: 'iPhone', touch: 5, mode: 'decimal' },
+  ...['web', 'weba', 'webk'].flatMap((platform) => [
+    { platform, agent: 'iPhone', touch: 5, mode: 'text' },
+    { platform, agent: 'Macintosh', touch: 0, mode: 'decimal' },
+  ]),
+]) test(`клавиатура Telegram: ${device.platform} + ${device.agent} + ${device.touch} касаний`, async () => {
+  vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(device.agent);
+  vi.spyOn(navigator, 'maxTouchPoints', 'get').mockReturnValue(device.touch);
+  await render(<ShellProvider value={{ shell: 'telegram', launch: { initDataRaw: '', languageCode: 'ru', platform: device.platform } }}>
+    <NumericInput value="" onChange={() => {}} label="Keyboard fixture" />
+  </ShellProvider>);
+  await expect.element(page.getByRole('textbox')).toHaveAttribute('inputmode', device.mode);
+});
+
+for (const kind of ['choice', 'sentence'] as const) test(`нажатие ${kind} запускает запись сразу, кнопка свободна`, async () => {
+  const { screen } = await boot([kind === 'choice' ? multi() : sentence()]);
+  const write = vi.spyOn(trainingRepository, 'draft');
+  const button = kind === 'choice' ? screen.getByRole('checkbox', { name: 'A word 0', exact: true }) : screen.getByRole('button', { name: /^Synthetic paragraph 1, sentence 1/ });
+  (button.element() as HTMLElement).click();
+  expect(write).toHaveBeenCalledTimes(1);
+  await expect.element(screen.getByRole('button', { name: 'Проверить', exact: true })).toBeEnabled();
+});
+
+for (const action of ['check', 'dontKnow'] as const) test(`вопрос открыт больше суток: ${action} сохраняется`, async () => {
+  const { screen, training } = await boot([numeric()]);
+  vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 2 * 86_400_000);
+  if (action === 'check') {
+    await screen.getByRole('textbox', { name: 'Ответ', exact: true }).fill('22,5');
+    await screen.getByRole('button', { name: 'Проверить', exact: true }).click();
+  } else await screen.getByRole('button', { name: 'Не знаю', exact: true }).click();
+  await expect.element(screen.getByTestId('explanation')).toBeVisible();
+  expect((await trainingRepository.get(training.session.id))?.answers['0']?.elapsedMs).toBe(86_400_000);
+});
+
+test('крестик выходит после неудачной записи; отказ оставляет черновик для следующего входа', async () => {
+  const { screen, router, training } = await boot([numeric()]);
+  vi.spyOn(trainingRepository, 'draft').mockRejectedValue(new Error('fixture write failed'));
+  await screen.getByRole('textbox', { name: 'Ответ', exact: true }).fill('22,5');
+  await expect.element(screen.getByRole('alert')).toBeVisible();
+  await screen.getByRole('button', { name: 'Закрыть тренировку', exact: true }).click();
+  await expect.poll(() => router.state.location.pathname).toBe('/');
+  expect(trainingRepository.store.leavingDrafts.take(trainingRepository.reportOwner()!)).toEqual([expect.objectContaining({ id: training.session.id, draft: expect.objectContaining({ ids: ['22,5'] }) })]);
+});
+
+test('зависшая запись: крестик ждёт не больше 1,5 с и выходит', async () => {
+  const { screen, router } = await boot([numeric()]);
+  let release = () => {};
+  const held = new Promise<void>((resolve) => { release = resolve; });
+  const draft = trainingRepository.draft.bind(trainingRepository);
+  const write = vi.spyOn(trainingRepository, 'draft').mockImplementation(async (...args) => { await held; await draft(...args); });
+  try {
+    await screen.getByRole('textbox', { name: 'Ответ', exact: true }).fill('22,5');
+    await expect.poll(() => write.mock.calls.length).toBe(1);
+    const started = performance.now();
+    (screen.getByRole('button', { name: 'Закрыть тренировку', exact: true }).element() as HTMLElement).click();
+    expect(router.state.location.pathname).toContain('/training/');
+    await expect.poll(() => router.state.location.pathname).toBe('/');
+    expect(performance.now() - started).toBeGreaterThanOrEqual(1450);
+    expect(performance.now() - started).toBeLessThan(2200);
+  } finally { release(); }
+});
+
+test('отказ журнала ухода сообщается один раз за экран, без общей ошибки и потери поля', async () => {
+  const { screen } = await boot([numeric()]);
+  const report = vi.spyOn(console, 'error').mockImplementation(() => {});
+  vi.spyOn(trainingRepository.store.leavingDrafts, 'put').mockImplementation(() => { throw new Error('fixture journal failure'); });
+  paste(screen.getByRole('textbox', { name: 'Ответ', exact: true }).element(), '22,5');
+  window.dispatchEvent(new Event('pagehide'));
+  window.dispatchEvent(new Event('pagehide'));
+  expect(report).toHaveBeenCalledTimes(1);
+  await expect.element(screen.getByRole('alert')).not.toBeInTheDocument();
+  await expect.element(screen.getByRole('textbox', { name: 'Ответ', exact: true })).toHaveValue('22,5');
 });

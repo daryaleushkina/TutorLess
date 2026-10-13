@@ -1,5 +1,5 @@
 import { test } from '../fixtures';
-import { NEW_TYPES, newTypesSession, numericConformanceUi, numericInvalidPaste, readingScroll, explicitNumericExamples, flaggedHover, readingKeyboard, partialBatch } from '../training-types';
+import { NEW_TYPES, newTypesSession, numericConformanceUi, numericInvalidPaste, readingScroll, explicitNumericExamples, flaggedHover, readingKeyboard, readingShortcuts, longOpenQuestion, suspendedWriteExit, partialBatch } from '../training-types';
 
 for (const type of NEW_TYPES) test(`B новые: сессия ${type[0]} ${type[1]}, перезагрузка и очередь без сети`, async ({ site }) => { await newTypesSession(site, type); });
 test('B новые: ввод по общим примерам правил', async ({ site }) => { await numericConformanceUi(site); });
@@ -11,3 +11,6 @@ test('B новые: отметка проверки читается под ук
 for (const type of NEW_TYPES) test(`B новые: проверка ${type[0]} ${type[1]}, очередь без сети`, async ({ site }) => { await newTypesSession(site, type, 'check'); });
 test('B новые: пустые и частичные поля не попадают в пачку проверки', async ({ site }) => { await partialBatch(site); });
 for (const mode of ['practice', 'check'] as const) test(`B новые: стрелки RC на втором вопросе ${mode}`, async ({ site }) => { await readingKeyboard(site, mode); });
+test('B новые: RC выбирает буквами на тексте и проверяет Enter после варианта', async ({ site }) => { await readingShortcuts(site); });
+test('B новые: проверка вопроса, открытого больше суток', async ({ site }) => { await longOpenQuestion(site); });
+test('B новые: крестик выходит при зависшей записи', async ({ site }) => { await suspendedWriteExit(site); });

@@ -27,6 +27,8 @@ import { SessionHeader } from './SessionHeader';
 import { questionTitle } from './answerFormats';
 import { PassageQuestion } from './Passage';
 
+const EXIT_WAIT_MS = 1500;
+
 export function SessionScreen() {
   const { trainingId } = useParams({ from: '/app/training/$trainingId' });
   const { t } = useI18n();
@@ -60,11 +62,20 @@ function ActiveSession({ incoming }: { incoming: StoredTraining }) {
   const [confirmation, setConfirmation] = useState<'exit' | 'finish'>();
   const [pastExplanation, setPastExplanation] = useState(false);
   useEffect(() => { setPastExplanation(false); }, [s.position]);
-  const close = () => { if (s.checkMode && !s.training.finish) setConfirmation('exit'); else void s.flush().then((saved) => { if (saved) void navigate({ to: '/' }); }); };
+  const exiting = useRef(false);
+  const exit = () => {
+    if (exiting.current) return;
+    exiting.current = true;
+    let timer: ReturnType<typeof setTimeout>;
+    const deadline = new Promise<void>((resolve) => { timer = setTimeout(resolve, EXIT_WAIT_MS); });
+    // Черновик страхует журнал ухода; отказ или зависание записи не удерживают человека на экране.
+    void Promise.race([s.flush(), deadline]).then(() => { clearTimeout(timer); void navigate({ to: '/' }); });
+  };
+  const close = () => { if (s.checkMode && !s.training.finish) setConfirmation('exit'); else exit(); };
   useBackButton(shell === 'telegram' && (s.training.finish || !s.overview && !confirmation) ? close : null);
   const total = s.training.session.items.length;
   const last = s.position === total - 1;
-  const primary = s.browsingPast ? text.overview_back(s.returnPosition + 1) : s.overview ? text.overview_finish : s.checkMode ? last ? text.question_to_list : (s.complete || s.answer && answerFormat(s.question)?.decode(s.answer).some(Boolean) && answerFormat(s.question)?.component === 'choice' && s.question.questionType !== 'multiple_choice_multi') ? text.question_next(s.position + 2, total) : text.question_skip : s.revealed ? last ? text.question_result : text.question_next(s.position + 2, total) : text.question_check;
+  const primary = s.browsingPast ? text.overview_back(s.returnPosition + 1) : s.overview ? text.overview_finish : s.checkMode ? last ? text.question_to_list : answerFormat(s.question)?.canAdvance(s.question, s.answer, s.complete) ? text.question_next(s.position + 2, total) : text.question_skip : s.revealed ? last ? text.question_result : text.question_next(s.position + 2, total) : text.question_check;
   const unanswered = s.training.session.items.filter((item) => !answerFormat(item.question)?.isComplete(item.question, s.training.answers[String(item.position)])).length;
   const act = () => { if (s.overview && unanswered) setConfirmation('finish'); else s.primary(); };
   const secondary = s.overview ? { text: text.overview_back(s.position + 1), onClick: () => s.setOverview(false) } : s.checkMode && s.position > 0 ? { text: text.previous_question, icon: <BackIcon />, onClick: s.previous } : s.checkMode ? undefined : !s.revealed ? { text: text.question_dont_know, onClick: s.dontKnow } : undefined;
@@ -80,7 +91,10 @@ function ActiveSession({ incoming }: { incoming: StoredTraining }) {
     const key = (event: KeyboardEvent) => {
       const s = keyboard.current;
       if (event.defaultPrevented || event.repeat || event.ctrlKey || event.altKey || event.metaKey || s.training.finish || s.overview || document.querySelector('dialog[open]')) return;
-      if (event.target instanceof Element && event.target.closest('input, textarea, select, [contenteditable="true"], a, [role="tab"], [role="tabpanel"]')) return;
+      if (event.target instanceof Element) {
+        if (event.target.closest('input, textarea, select, [contenteditable="true"], a') || event.target.matches('[role="tab"]')) return;
+        if (event.target.matches('[role="tabpanel"]') && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) return;
+      }
       // Enter всегда соответствует подсказке; пробел сохраняет нативный выбор сфокусированного варианта.
       if (/^[a-f]$/i.test(event.key) && !s.revealed) {
         event.preventDefault(); s.selectKey(event.key);
@@ -129,7 +143,7 @@ function ActiveSession({ incoming }: { incoming: StoredTraining }) {
   }>
     <div className={`${styles.session} ${styles.screen}`} data-shell={shell} data-section={s.training.session.section}>
       <SessionHeader section={s.training.session.section} label={s.checkMode ? text.mode_check : questionTitle(s.question, text)} position={s.position} total={total} remaining={s.remaining} busy={s.busy} onClose={close} onPrevious={!s.checkMode && s.position > 0 ? s.previous : undefined} />
-      <h1 ref={heading} tabIndex={-1} className={styles.questionType}>{questionTitle(s.question, text)}{typeNote && ` · ${typeNote}`}</h1>
+      <h1 ref={heading} tabIndex={-1} className={styles.questionType} lang={s.question.passage || !answerFormat(s.question)?.title ? 'en' : locale}>{questionTitle(s.question, text)}{typeNote && <span lang={locale} className="visually-hidden"> · {typeNote}</span>}</h1>
       <TrainingFeedback />
       {!online && <p className={styles.offlineNotice} role="status"><OfflineIcon />{text.question_offline}</p>}
       {s.overview && !confirmation && <TrainingSheet title={text.question_overview} onClose={() => s.setOverview(false)}><section className={styles.overview}>
@@ -146,7 +160,7 @@ function ActiveSession({ incoming }: { incoming: StoredTraining }) {
       <Link to="/training/$trainingId/report/$position" params={{ trainingId: s.training.session.id, position: s.position }} search={{ returnTo: 'session', language }} className={styles.reportLink}><Flag />{text.question_report}</Link>
       {confirmation && <TrainingSheet title={confirmation === 'finish' ? text.finish_confirm(unanswered) : s.checkMode ? text.exit_check : text.exit_practice} onClose={() => setConfirmation(undefined)}>
         {confirmation === 'exit' && <p>{text.exit_save}</p>}
-        <TrainingActions secondary={{ text: text.continue_check, disabled: s.busy, onClick: () => setConfirmation(undefined) }} primary={{ text: confirmation === 'finish' ? text.overview_finish : text.exit_action, disabled: s.busy, onClick: () => { if (confirmation === 'finish') s.primary(); else void s.flush().then((saved) => { if (saved) void navigate({ to: '/' }); }); setConfirmation(undefined); } }} />
+        <TrainingActions secondary={{ text: text.continue_check, disabled: s.busy, onClick: () => setConfirmation(undefined) }} primary={{ text: confirmation === 'finish' ? text.overview_finish : text.exit_action, disabled: confirmation === 'finish' && s.busy, onClick: () => { if (confirmation === 'finish') s.primary(); else exit(); setConfirmation(undefined); } }} />
       </TrainingSheet>}
     </div>
   </FocusLayout>;

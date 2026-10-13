@@ -64,8 +64,8 @@ function writeGate() {
 function holdDraft() {
   const gate = writeGate();
   const original = trainingRepository.draft.bind(trainingRepository);
-  const spy = vi.spyOn(trainingRepository, 'draft').mockImplementationOnce(async (id, position, ids) => {
-    await gate.promise; await original(id, position, ids);
+  const spy = vi.spyOn(trainingRepository, 'draft').mockImplementationOnce(async (...args) => {
+    await gate.promise; await original(...args);
   });
   return { release: gate.release, spy };
 }
@@ -73,8 +73,8 @@ function holdDraft() {
 function holdAnswer() {
   const gate = writeGate();
   const original = trainingRepository.answer.bind(trainingRepository);
-  const spy = vi.spyOn(trainingRepository, 'answer').mockImplementationOnce(async (id, answer) => {
-    await gate.promise; await original(id, answer);
+  const spy = vi.spyOn(trainingRepository, 'answer').mockImplementationOnce(async (...args) => {
+    await gate.promise; await original(...args);
   });
   return { release: gate.release, spy };
 }
@@ -93,7 +93,7 @@ for (const key of ['Enter', 'ArrowRight']) test(`Enter и сразу ${key}: о�
   expect(held.spy).toHaveBeenCalledTimes(1);
 });
 
-for (const [type, blanks, keys] of [['sentence_equivalence', 1, ['a', 'b']], ['text_completion', 3, ['a', 'b', 'c']]] as const) test(`быстрые клавиши ${type}: выбор сразу и одна запись после паузы`, async () => {
+for (const [type, blanks, keys] of [['sentence_equivalence', 1, ['a', 'b']], ['text_completion', 3, ['a', 'b', 'c']]] as const) test(`быстрые клавиши ${type}: первый выбор пишется сразу, последний ждёт текущую запись`, async () => {
   const q = questionFixture(type, blanks);
   const { screen } = await boot(storedTraining(trainingSession({ items: [{ position: 0, question: q }] }), Date.now()));
   const held = holdDraft();
@@ -105,7 +105,7 @@ for (const [type, blanks, keys] of [['sentence_equivalence', 1, ['a', 'b']], ['t
   } finally { held.release(); }
   const expected = type === 'sentence_equivalence' ? ['A', 'B'] : ['A0', 'B1', 'C2'];
   await expect.poll(async () => (await trainingRepository.get(trainingSession().id))?.drafts?.['0']).toEqual(expected);
-  expect(held.spy.mock.calls.map((call) => call[2])).toEqual([expected]);
+  expect(held.spy.mock.calls.map((call) => call[2])).toEqual([[expected[0]], expected]);
 });
 
 test('быстрые касания в проверке: последняя запись побеждает без отката выбора', async () => {
@@ -118,7 +118,7 @@ test('быстрые касания в проверке: последняя за
     await expect.element(screen.getByRole('radio', { name: 'A', exact: true })).toBeEnabled();
   } finally { held.release(); }
   await expect.poll(async () => (await trainingRepository.get(trainingSession().id))?.answers['0']?.optionIds).toEqual(['B']);
-  expect(held.spy.mock.calls.map((call) => call[1].optionIds)).toEqual([['B']]);
+  expect(held.spy.mock.calls.map((call) => call[1].optionIds)).toEqual([['A'], ['B']]);
 });
 
 test('Enter на варианте SE проверяет ответ; пробел меняет выбор', async () => {

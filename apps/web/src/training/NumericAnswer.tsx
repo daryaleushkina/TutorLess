@@ -14,8 +14,9 @@ export function NumericInput({ value, onChange, externalValue, integer = false, 
 }) {
   const { shell, launch } = useShell();
   // Полная клавиатура на iPhone и iPad даёт минус, которого нет в decimal/numeric (решение Даши 13.10.2026).
-  // Telegram сообщает платформу сам; iPadOS на сайте может представляться компьютером.
-  const ios = shell === 'telegram' ? launch?.platform === 'ios' : /iPhone|iPad|iPod/.test(navigator.userAgent) || /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+  // Telegram Web сообщает платформу браузера; iPadOS может представляться компьютером.
+  const browserIos = /iPhone|iPad|iPod/.test(navigator.userAgent) || /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+  const ios = shell === 'telegram' && !['web', 'weba', 'webk'].includes(launch?.platform ?? '') ? launch?.platform === 'ios' : browserIos;
   const unitId = useId();
   const hasUnits = Boolean(unitBefore || unitAfter);
   const latestChange = useRef(onChange);

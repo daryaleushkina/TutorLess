@@ -298,6 +298,68 @@ export async function readingKeyboard(page: Page, mode: 'practice' | 'check') {
   await expect(page.getByLabel('Вопрос 2 из 3', { exact: true })).toBeVisible();
 }
 
+export async function readingShortcuts(page: Page) {
+  await page.route('**/api/trainings', async (route) => {
+    const response = await route.fetch(); const session = schemas.TrainingSession.parse(await response.json());
+    const q = session.items.find((i) => i.question.passage)!.question;
+    await route.fulfill({ response, json: { ...session, items: [0, 1].map((position) => ({ position, question: { ...q, id: `00000000-0000-4000-8000-00000000009${position}` } })) } });
+  });
+  await page.route('**/api/trainings/*/answers', (route) => route.fulfill({ status: 204 }));
+  const session = await startSession(page, 'practice', 50, 'Verbal', 'multiple_choice');
+  const q = session.items[0]!.question;
+  const text = page.getByRole('tabpanel', { name: 'Текст', exact: true });
+  const textTab = page.getByRole('tab', { name: 'Текст', exact: true });
+  const questionTab = page.getByRole('tab', { name: 'Вопрос', exact: true });
+  for (const [index, option] of q.groups[0]!.options.entries()) {
+    if (page.viewportSize()!.width < 900) await textTab.click();
+    await text.focus(); await page.keyboard.press(String.fromCharCode(65 + index));
+    if (page.viewportSize()!.width < 900) await questionTab.click();
+    await expect(page.getByRole('radio', { name: option.text, exact: true })).toHaveAttribute('aria-checked', 'true');
+  }
+  if (page.viewportSize()!.width < 900) {
+    await questionTab.focus(); await page.keyboard.press('Enter');
+    await expect(page.getByRole('button', { name: 'Проверить', exact: true })).toBeVisible();
+  }
+  await chooseAnswer(page, q);
+  await page.keyboard.press('Enter');
+  await expect(page.getByText('Верно.', { exact: true })).toBeVisible();
+}
+
+export async function longOpenQuestion(page: Page) {
+  await page.route('**/api/trainings/*/answers', (route) => {
+    const answers = schemas.AnswerBatch.parse(route.request().postDataJSON()).answers;
+    expect(answers[0]!.elapsedMs).toBe(86_400_000);
+    return route.fulfill({ status: 204 });
+  });
+  const session = await startSession(page, 'practice', 50, 'Quant', 'numeric_entry');
+  await page.clock.setFixedTime(new Date(Date.now() + 2 * 86_400_000));
+  await chooseAnswer(page, session.items[0]!.question);
+  await page.getByRole('button', { name: 'Проверить', exact: true }).click();
+  await expect(page.getByText('Верно.', { exact: true })).toBeVisible();
+}
+
+export async function suspendedWriteExit(page: Page, telegram = false) {
+  const home = new URL(page.url()).pathname;
+  const session = await startSession(page, 'practice', 50, 'Quant', 'numeric_entry');
+  await page.evaluate(() => {
+    const original = IDBObjectStore.prototype.put;
+    IDBObjectStore.prototype.put = function (value: unknown, key?: IDBValidKey) {
+      const request = original.call(this, value, key);
+      if (this.name === 'trainings') {
+        // Транзакция не сообщает о завершении: экран обязан выйти, не дожидаясь её.
+        request.addEventListener = () => {};
+        document.documentElement.dataset.fixtureWrite = 'pending';
+      }
+      return request;
+    };
+  });
+  await chooseAnswer(page, session.items[0]!.question);
+  await expect(page.locator('html')).toHaveAttribute('data-fixture-write', 'pending');
+  await page.locator(telegram ? '#tg-mock-back' : 'button[aria-label="Закрыть тренировку"]').click();
+  await expect(page.getByRole('heading', { name: 'Тренировка', exact: true })).toBeVisible();
+  await expect(page).toHaveURL((url) => url.pathname === home);
+}
+
 export async function partialBatch(page: Page) {
   const number = conformance.answers.find((c) => c.correct && c.question.questionType === 'numeric_entry' && c.question.numericEntry?.format === 'number')!.question;
   const fraction = conformance.answers.find((c) => c.correct && c.question.questionType === 'numeric_entry' && c.question.numericEntry?.format === 'fraction')!.question;
