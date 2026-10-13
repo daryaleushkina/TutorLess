@@ -47,3 +47,4 @@ tools/dev/backlog.sh           # пересобрать это зеркало
 - [#44](https://github.com/daryaleushkina/TutorLess/issues/44) Токены тени и затемнения для стиля B (шторка, всплывающее окно)
 - [#45](https://github.com/daryaleushkina/TutorLess/issues/45) Numeric entry: optional unit before and after the answer box ($ ___ , ___ %)
 - [#46](https://github.com/daryaleushkina/TutorLess/issues/46) Verdict and "why not" lines double the punctuation when an option ends with a period
+- [#47](https://github.com/daryaleushkina/TutorLess/issues/47) Numeric review shows " / " as the correct answer when the answer key is missing
