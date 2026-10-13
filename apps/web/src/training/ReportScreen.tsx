@@ -13,7 +13,7 @@ import { trainingRepository } from './repository';
 import { TrainingMissingError, TrainingOwnerChangedError } from './store';
 import styles from './Training.module.css';
 import { TrainingSheet } from './TrainingSheet';
-import { QuestionPrompt } from './QuestionContent';
+import { answerFormat, QuestionPrompt } from './QuestionContent';
 import { clearReportFeedback, reportSavedFeedback } from './TrainingFeedback';
 
 const KINDS = ['question', 'answer', 'explanation', 'translation', 'other'] as const;
@@ -46,7 +46,7 @@ export function ReportScreen() {
   const cancel = () => cancelRef.current();
   const fallbackBack = returnTo === 'review' ? <Link to="/training/$trainingId/review/$position" params={{ trainingId, position }} search={{ filter, language }} className={styles.back}><BackIcon />{t.back}</Link> : <Link to="/training/$trainingId" params={{ trainingId }} search={{ language }} className={styles.back}><BackIcon />{t.back}</Link>;
   return <ReadTraining id={trainingId} back={fallbackBack} backInContent backButton="fallback" onBack={cancel}>
-    {(training) => <>{training.session.items[position ?? -1] && <QuestionPrompt question={training.session.items[position!]!.question} selection={training.answers[String(position)]?.optionIds ?? []} />}<TrainingSheet title={t.training.question_report} onClose={cancel}><ReportForm key={`${trainingId}/${position}`} training={training} position={position} onBack={back} cancelRef={cancelRef} /></TrainingSheet></>}
+    {(training) => <>{training.session.items[position ?? -1] && <QuestionPrompt question={training.session.items[position!]!.question} selection={training.answers[String(position)] ? answerFormat(training.session.items[position!]!.question)?.decode(training.answers[String(position)]!) ?? [] : []} />}<TrainingSheet title={t.training.question_report} onClose={cancel}><ReportForm key={`${trainingId}/${position}`} training={training} position={position} onBack={back} cancelRef={cancelRef} /></TrainingSheet></>}
   </ReadTraining>;
 }
 

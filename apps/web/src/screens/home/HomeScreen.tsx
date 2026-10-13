@@ -1,4 +1,5 @@
 import { isApiError, getHome, useGetExams, type TrainingRequest } from '@greprep/api-client';
+import { TRAINING_HEADERS } from '../../training/capabilities';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
@@ -22,7 +23,7 @@ export function HomeScreen() {
   const storage = useTrainingStorage();
   const owner = account.id;
   const options = useQuery({ queryKey: ['training-options', owner, exam], queryFn: ({ signal }) => trainingRepository.options(exam, signal), staleTime: 0 });
-  const home = useQuery({ queryKey: ['home', owner, exam], queryFn: ({ signal }) => getHome({ exam, tz: Intl.DateTimeFormat().resolvedOptions().timeZone, types: SUPPORTED_TYPES }, { signal }), staleTime: 0 });
+  const home = useQuery({ queryKey: ['home', owner, exam], queryFn: ({ signal }) => getHome({ exam, tz: Intl.DateTimeFormat().resolvedOptions().timeZone, types: SUPPORTED_TYPES }, { signal, headers: TRAINING_HEADERS }), staleTime: 0 });
   const exams = useGetExams();
   const stored = useQuery({ queryKey: ['training', owner, 'active', exam], queryFn: async () => homeActive(await trainingRepository.list(), Date.now(), exam) ?? null, enabled: storage === 'ready', networkMode: 'always' });
   const active = storage === 'ready' ? stored.data : null;

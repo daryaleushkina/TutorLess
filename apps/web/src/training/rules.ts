@@ -1,31 +1,14 @@
-import type { LocalizedText, Question } from '@greprep/api-client';
+import type { LocalizedText } from '@greprep/api-client';
 import type { StoredTraining } from './model';
+import { answerFormat } from './answerFormats';
+import { ChoiceRules } from './choiceRules';
 
 export interface TopicReview { topicId: string; title: LocalizedText; mistakes: number; positions: number[] }
 
 export const TrainingRules = {
   repeatCount: (mistakes: number) => Math.min(10, Math.max(5, mistakes * 2)),
   timeLimitSeconds: (count: number, paceSeconds: number) => count * paceSeconds,
-  isCorrect(question: Question, optionIds: string[]): boolean {
-    return optionIds.length === question.answer.length && new Set(optionIds).size === new Set(question.answer).size &&
-      question.answer.every((id) => optionIds.includes(id));
-  },
-  missingGroups(question: Question, optionIds: string[]): number[] {
-    return question.groups.flatMap((group, index) => group.options.filter((option) => optionIds.includes(option.id)).length < question.selectCount ? [index] : []);
-  },
-  isComplete(question: Question, optionIds: string[]): boolean {
-    return this.missingGroups(question, optionIds).length === 0;
-  },
-  toggle(question: Question, selection: string[], optionId: string): string[] {
-    const group = question.groups.find((group) => group.options.some((option) => option.id === optionId));
-    if (!group) return selection;
-    const inGroup = (id: string) => group.options.some((option) => option.id === id);
-    if (question.selectCount === 1) return [...selection.filter((id) => !inGroup(id)), optionId];
-    if (selection.includes(optionId)) return selection.filter((id) => id !== optionId);
-    const chosen = selection.filter(inGroup);
-    const trimmed = chosen.length >= question.selectCount ? selection.filter((id) => id !== chosen[0]) : selection;
-    return [...trimmed, optionId];
-  },
+  ...ChoiceRules,
   remainingSeconds(training: StoredTraining, nowMillis: number): number | undefined {
     const limit = training.session.timeLimitSeconds;
     if (training.session.mode !== 'check' || limit === undefined) return undefined;
@@ -48,9 +31,9 @@ export const TrainingRules = {
     const byTopic = new Map<string, TopicReview>();
     for (const item of training.session.items) {
       const answer = training.answers[String(item.position)];
-      const chosen = answer?.optionIds ?? [];
-      if (chosen.length > 0 && this.isCorrect(item.question, chosen)) { correct++; continue; }
-      if (chosen.length === 0) { unanswered++; if (timedOut && !answer?.dontKnow) continue; }
+      const format = answerFormat(item.question);
+      if (format?.isCorrect(item.question, answer)) { correct++; continue; }
+      if (!answer || !format?.decode(answer).some(Boolean)) { unanswered++; if (timedOut && !answer?.dontKnow) continue; }
       const q = item.question;
       const previous = byTopic.get(q.topicId);
       if (previous) { previous.mistakes++; previous.positions.push(item.position); }

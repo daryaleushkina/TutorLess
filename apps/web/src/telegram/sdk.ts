@@ -13,6 +13,8 @@ export interface TelegramLaunch {
   /** Язык Telegram — для экрана загрузки до входа; после входа — язык аккаунта. */
   languageCode: string | undefined;
   startParam?: string;
+  /** Платформа Telegram нужна для выбора клавиатуры числового ответа. */
+  platform?: string;
 }
 
 export type TelegramStart =
@@ -71,11 +73,11 @@ export async function startTelegram(): Promise<TelegramStart> {
     }
   }
 
-  await enterFullscreenOnPhone();
+  const platform = await enterFullscreenOnPhone();
 
   const raw = initData.raw();
   if (!raw) return { kind: 'failed', error: new Error('Telegram launched the mini app without initData') };
-  return { kind: 'ok', launch: { initDataRaw: raw, languageCode: initData.user()?.language_code, startParam: new URLSearchParams(raw).get('start_param') ?? undefined } };
+  return { kind: 'ok', launch: { initDataRaw: raw, platform, languageCode: initData.user()?.language_code, startParam: new URLSearchParams(raw).get('start_param') ?? undefined } };
 }
 
 /**
@@ -83,20 +85,21 @@ export async function startTelegram(): Promise<TelegramStart> {
  * содержимого, а свет раздела доходит до верха, как на холсте; отступ под кругами даёт content safe area. На
  * компьютере (Telegram Desktop, веб) — обычное окно.
  */
-async function enterFullscreenOnPhone(): Promise<void> {
+async function enterFullscreenOnPhone(): Promise<string | undefined> {
   let platform = '';
   try {
     platform = retrieveLaunchParams().tgWebAppPlatform;
   } catch {
     return;
   }
-  if ((platform !== 'ios' && platform !== 'android') || !viewport.requestFullscreen.isAvailable() || viewport.isFullscreen()) return;
+  if ((platform !== 'ios' && platform !== 'android') || !viewport.requestFullscreen.isAvailable() || viewport.isFullscreen()) return platform;
   try {
     await viewport.requestFullscreen();
   } catch (e) {
     // Клиент отказал (старая версия, уже полноэкранный) — остаёмся в обычном режиме, это не ошибка человека.
     console.warn('requestFullscreen failed', e);
   }
+  return platform;
 }
 
 /**

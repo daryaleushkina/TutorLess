@@ -1,11 +1,13 @@
 import type { GivenAnswer, Question } from '@greprep/api-client';
 import { useEffect, useId, useState, type ReactNode } from 'react';
 import { CheckIcon } from '../components/icons';
-import { dictionaries, type Dict } from '../i18n/dict';
+import { dictionaries } from '../i18n/dict';
 import { useI18n } from '../i18n/i18n';
 import type { Locale } from '../i18n/locale';
-import { TrainingRules } from './rules';
+import { answerFormat, answerStateLabel } from './answerFormats';
 import styles from './Training.module.css';
+import { NumericAnswer } from './NumericAnswer';
+import { Passage } from './Passage';
 
 export const BLANKS = ['(i)', '(ii)', '(iii)'];
 
@@ -28,41 +30,22 @@ export function QuestionPrompt({ question: q, selection, revealed = false }: { q
   })}</p>;
 }
 
-export interface AnswerProps { question: Question; selection: string[]; revealed: boolean; onSelect: (id: string) => void; compact?: boolean }
+export interface AnswerProps { question: Question; selection: string[]; revealed: boolean; onSelect: (id: string) => void; onChange?: (value: string[]) => void; onSubmit?: () => void; compact?: boolean }
 
-/** Сессия передаёт выбор компоненту ответа; новый формат добавляется в эту таблицу. */
-interface AnswerFormat {
-  render: (props: AnswerProps) => ReactNode;
-  instruction: (question: Question, text: Dict['training']) => string;
-  decode: (answer: GivenAnswer) => string[];
-  encode: (value: string[]) => Pick<GivenAnswer, 'optionIds' | 'numericAnswer' | 'sentenceId'>;
-  complete: (question: Question, value: string[]) => boolean;
-  select: (question: Question, value: string[], input: string) => { value: string[]; limit: boolean };
-}
-const choiceFormat: AnswerFormat = {
-  render: ChoiceAnswer,
-  instruction: (question, text) => question.selectCount === 2 ? text.instruction_two : question.groups.length > 1 ? text.instruction_blanks : text.instruction_one,
-  decode: (answer) => answer.optionIds,
-  encode: (value) => ({ optionIds: value }),
-  complete: (question, value) => TrainingRules.isComplete(question, value),
-  select: (question, value, input) => question.questionType === 'sentence_equivalence' && value.length >= question.selectCount && !value.includes(input)
-    ? { value, limit: true } : { value: TrainingRules.toggle(question, value, input), limit: false },
-};
-const ANSWER_FORMATS: Partial<Record<Question['questionType'], AnswerFormat>> = {
-  text_completion: choiceFormat, sentence_equivalence: choiceFormat,
-  quantitative_comparison: choiceFormat, multiple_choice: choiceFormat,
-};
-export function answerFormat(question: Question) { return ANSWER_FORMATS[question.questionType]; }
+export { answerFormat, draftAnswer } from './answerFormats';
+const ANSWER_COMPONENTS = { choice: ChoiceAnswer, numeric: NumericAnswer, passage: Passage };
 
 export function Options(props: AnswerProps) {
-  const Answer = answerFormat(props.question)?.render;
+  const component = answerFormat(props.question)?.component;
+  const Answer = component && ANSWER_COMPONENTS[component];
   return Answer ? <Answer {...props} /> : null;
 }
 
 function ChoiceAnswer({ question: q, selection, revealed, onSelect, compact = false }: AnswerProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [all, setAll] = useState(false);
   const many = q.groups.length > 1;
+  const multiple = q.questionType === 'multiple_choice_multi' || q.selectCount > 1;
   if (revealed && q.questionType === 'text_completion' && !all) return <div className={styles.answerTable}>
     {q.groups.map((group, index) => {
       const yours = group.options.filter((o) => selection.includes(o.id));
@@ -84,7 +67,7 @@ function ChoiceAnswer({ question: q, selection, revealed, onSelect, compact = fa
         const checked = selection.includes(option.id);
         const correct = revealed && q.answer.includes(option.id);
         const wrong = revealed && checked && !correct;
-        const content = <><span className={styles.choiceIndicator} data-many={q.selectCount > 1} aria-hidden="true">{q.selectCount > 1 && <CheckIcon />}</span><span lang="en" className={styles.optionText}>{option.text}</span>{revealed && (correct || wrong) && <span className={styles.optionMark}>{correct ? t.training.question_correct_mark : t.training.question_yours_mark}</span>}</>;
+        const content = <><span className={styles.choiceIndicator} data-many={q.selectCount !== 1} aria-hidden="true">{q.selectCount !== 1 && <CheckIcon />}</span><span lang="en" className={styles.optionText}>{option.text}</span>{revealed && multiple && <span lang={locale} className="visually-hidden">{answerStateLabel(t.training, checked, correct)}</span>}{revealed && (correct || wrong) && <span lang={locale} aria-hidden={multiple || undefined} className={styles.optionMark}>{correct ? t.training.question_correct_mark : t.training.question_yours_mark}</span>}</>;
         return <button key={option.id} className={styles.option} type="button" role={q.selectCount === 1 ? 'radio' : 'checkbox'}
           disabled={revealed} aria-checked={checked} data-result={correct ? checked ? 'correct' : 'missed' : wrong ? 'wrong' : undefined}
           onClick={() => onSelect(option.id)}>{content}</button>;
@@ -93,13 +76,15 @@ function ChoiceAnswer({ question: q, selection, revealed, onSelect, compact = fa
   </div>)}{revealed && compact && <button className={styles.textButton} onClick={() => setAll(!all)}>{all ? t.training.hide_options : t.training.all_options}</button>}</div>;
 }
 
-export function Verdict({ question, chosen, dontKnow = false, language }: { question: Question; chosen: string[]; dontKnow?: boolean; language?: Locale }) {
+export function Verdict({ question, answer, language }: { question: Question; answer?: GivenAnswer; language?: Locale }) {
   const { t } = useI18n();
   const text = language ? dictionaries[language].training : t.training;
-  const correct = TrainingRules.isCorrect(question, chosen);
+  const correct = answerFormat(question)?.isCorrect(question, answer) ?? false;
+  const dontKnow = answer?.dontKnow ?? false;
+  const hasValue = answer && answerFormat(question)?.decode(answer).some(Boolean);
   return <div className={styles.verdict} data-correct={correct} data-dont-know={dontKnow} role="status">
     <span className={styles.verdictDot} data-correct={correct} data-dont-know={dontKnow} aria-hidden="true">{dontKnow ? <SessionIcon><path d="M4 4h6l2 2 2-2h6v15h-6l-2 2-2-2H4zM12 6v15" /></SessionIcon> : correct ? <CheckIcon /> : <Cross />}</span>
-    <div><strong>{dontKnow ? text.verdict_dont_know : chosen.length ? correct ? text.verdict_correct : text.verdict_wrong : t.training.review_unanswered}</strong>{dontKnow && <p className={styles.note}>{t.training.dont_know_note}</p>}</div>
+    <div><strong>{dontKnow ? text.verdict_dont_know : hasValue ? correct ? text.verdict_correct : text.verdict_wrong : t.training.review_unanswered}</strong>{dontKnow && <p className={styles.note}>{t.training.dont_know_note}</p>}</div>
   </div>;
 }
 

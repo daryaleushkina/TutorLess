@@ -124,3 +124,10 @@
 .tab { padding-top: var(--space-4); }
 .tab svg { width: var(--size-icon); height: var(--size-icon); }
 @media (min-width: 900px) { .frame[data-tabs] .column:has([data-extras]) { max-width: none; } }
+
+/* Только RC занимает доступную высоту: у текста и вопроса собственные прокрутки. */
+.frame:has([data-passage-question]) { min-height: 0; }
+.frame:has([data-passage-question]) .main { overflow: hidden; display: flex; flex-direction: column; }
+.frame:has([data-passage-question]) .main::after { display: none; }
+.frame:has([data-passage-question]) .column { min-height: 0; flex: 1; display: flex; flex-direction: column; }
+.frame:has([data-passage-question]) .column > div { min-height: 0; flex: 1; }

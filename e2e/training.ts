@@ -57,8 +57,8 @@ export async function presetMatchesForm(page: Page) {
   const posted = page.waitForRequest((req) => req.method() === 'POST' && new URL(req.url()).pathname === '/api/trainings');
   await page.getByRole('button', { name: /^(Начать ·|Начинаем…)/ }).click();
   expect(schemas.TrainingRequest.parse((await posted).postDataJSON())).toMatchObject({ exam: 'gre', section: 'verbal', count: 12, mode: 'check',
-    questionTypes: ['text_completion', 'sentence_equivalence'] });
-  await expect(page.getByRole('heading', { name: /Text Completion|Sentence Equivalence/ })).toBeVisible();
+    questionTypes: ['text_completion', 'sentence_equivalence', 'multiple_choice', 'multiple_choice_multi', 'select_in_passage'] });
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Text Completion|Sentence Equivalence|Multiple Choice|Multiple Answer|Select in Passage|Несколько ответов|Reading Comprehension/);
 }
 
 export async function resumeCounterStaysTogether(page: Page) {
@@ -140,7 +140,7 @@ export async function startSession(page: Page, mode: 'practice' | 'check' = 'pra
   const response = page.waitForResponse((r) => r.request().method() === 'POST' && new URL(r.url()).pathname === '/api/trainings');
   await page.getByRole('button', { name: /^(Начать ·|Начинаем…)/ }).click();
   const session = schemas.TrainingSession.parse(await (await response).json());
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(new RegExp('Text Completion|Sentence Equivalence|Quantitative Comparison|Multiple Choice'));
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Text Completion|Sentence Equivalence|Quantitative Comparison|Multiple Choice|Multiple Answer|Numeric Entry|Select in Passage|Несколько ответов|Ввод числа|Ввод дробью|Reading Comprehension/);
   return session;
 }
 
@@ -318,7 +318,10 @@ export async function stableTrainingScreens(page: Page, capture = true) {
   });
   await page.route('**/api/trainings/*/answers', (route) => route.fulfill({ status: 204 }));
   await page.route('**/api/trainings/*/finish', (route) => route.fulfill({ status: 200, json: { correct: 0, total: 3, unanswered: 0, durationSeconds: 60, review: [] } }));
-  await page.clock.setFixedTime(new Date());
+  const epoch = Date.now(); let phase = 0;
+  // Каждая сессия получает отдельную отметку: одинаковые часы делают выбор активной тренировки неоднозначным.
+  const nextClock = () => page.clock.setFixedTime(new Date(epoch + phase++ * 1000));
+  await nextClock();
   const session = await startSession(page, 'practice', 50);
   if (capture) {
     await checkScreen(page, 'training-b-question');
@@ -345,9 +348,18 @@ export async function stableTrainingScreens(page: Page, capture = true) {
   await expect(page.getByRole('heading', { name: '0 из 3 верно' })).toBeVisible();
   if (capture) await checkScreen(page, 'training-b-summary');
   await page.getByRole('button', { name: 'Готово', exact: true }).click();
+  await nextClock();
   const check = await startSession(page, 'check', 50);
   await page.getByRole('button', { name: 'Отметить, чтобы вернуться' }).click();
+  // Снимок нужен после сохранения отметки: иначе в эталон попадает временно неактивная кнопка.
+  await expect(page.getByRole('button', { name: 'Снять отметку', exact: true })).toBeEnabled();
   if (capture) {
+    await expect.poll(() => page.getByRole('button', { name: 'Вопросы', exact: true }).locator('..').evaluate((tools) => {
+      const first = tools.firstElementChild!.getBoundingClientRect();
+      const last = tools.lastElementChild!.getBoundingClientRect();
+      const row = tools.getBoundingClientRect();
+      return Math.abs(first.left - row.left) < 1 && Math.abs(last.right - row.right) < 1;
+    }), { message: 'R14: «Вопросы» и «Вернуться» у разных краёв строки' }).toBe(true);
     await checkScreen(page, 'training-b-timed');
     if (new URL(page.url()).pathname.startsWith('/tg/')) await trainingBack(page);
     else await page.getByRole('button', { name: 'Закрыть тренировку', exact: true }).click();
@@ -374,6 +386,7 @@ export async function stableTrainingScreens(page: Page, capture = true) {
     ['sentence_equivalence', 'Verbal', 1, 'training-b-se'], ['quantitative_comparison', 'Quant', 1, 'training-b-qc'], ['multiple_choice', 'Quant', 1, 'training-b-mc'],
   ] as const) {
     blanks = count;
+    await nextClock();
     const session = await startSession(page, 'practice', 50, section, type);
     await checkScreen(page, name);
     if (type === 'sentence_equivalence' || type === 'quantitative_comparison' || count === 3) {
@@ -670,13 +683,14 @@ export async function reportDraftWritesAndQuota(page: Page) {
 }
 
 export async function chooseTrainingType(page: Page, type: string) {
-  const labels: Record<string, string> = { text_completion: 'Text Completion', sentence_equivalence: 'Sentence Equivalence', quantitative_comparison: 'Quantitative Comparison', multiple_choice: 'Multiple Choice' };
+  const labels: Record<string, string> = { text_completion: 'Text Completion', sentence_equivalence: 'Sentence Equivalence', quantitative_comparison: 'Quantitative Comparison', multiple_choice: 'Multiple Choice', multiple_choice_multi: 'Multiple Answer', numeric_entry: 'Numeric Entry', select_in_passage: 'Select in Passage' };
   await page.getByRole('button', { name: /^Тип/ }).click();
   await page.getByRole('radio', { name: labels[type], exact: true }).click();
 }
 export async function finishCheck(page: Page) {
   await page.getByRole('button', { name: 'Завершить проверку', exact: true }).click();
   const confirmation = page.getByRole('dialog', { name: /^Без ответа:/ });
+  await expect(confirmation.or(page.getByRole('heading', { name: /^\d+ из \d+ верно$/ }))).toBeVisible();
   if (await confirmation.count()) await confirmation.getByRole('button', { name: 'Завершить проверку', exact: true }).click();
 }
 

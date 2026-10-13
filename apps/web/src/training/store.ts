@@ -2,6 +2,7 @@ import { openDB, type DBSchema, type IDBPDatabase, type IDBPTransaction } from '
 import { z } from 'zod';
 import { reportError } from '../errors/report';
 import { pendingReportSchema, storedTrainingSchema, type PendingReport, type StoredTraining } from './model';
+import { LeavingDraftStore } from './leavingDraftStore';
 import { ReportDraftStore } from './reportDraftStore';
 
 const ownerSchema = z.object({ userId: z.string().nullable(), revision: z.number().int().nonnegative() });
@@ -35,9 +36,11 @@ export class TrainingStore {
   private listeners = new Set<(change: TrainingChange) => void>();
   private channel: BroadcastChannel;
   readonly reportDrafts: ReportDraftStore;
+  readonly leavingDrafts: LeavingDraftStore;
 
   constructor(private name = 'greprep-trainings', private report: (e: unknown) => void = reportError) {
     this.reportDrafts = new ReportDraftStore(name, report);
+    this.leavingDrafts = new LeavingDraftStore(name);
     this.channel = new BroadcastChannel(name);
     this.channel.onmessage = (event: MessageEvent<unknown>) => {
       const parsed = changeSchema.safeParse(event.data);

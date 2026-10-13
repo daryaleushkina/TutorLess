@@ -189,9 +189,9 @@ test('новый вход того же человека ждёт очистки
   await expect(m.repo.start({ ...request, questionTypes: [...request.questionTypes] })).resolves.toBe(trainingSession().id);
 });
 
-test('опции запрашиваются с четырьмя типами; старт скачивает всё и сохраняет до открытия', async () => {
+test('опции объявляют реализованные типы и passage; старт скачивает всё и сохраняет до открытия', async () => {
   const m = make(); await m.repo.signedIn('a'); expect(await m.repo.options('gre')).toEqual(trainingOptions());
-  expect(m.api.options).toHaveBeenCalledWith({ exam: 'gre', types: ['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice'] }, { signal: undefined });
+  expect(m.api.options).toHaveBeenCalledWith({ exam: 'gre', types: ['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice', 'multiple_choice_multi', 'numeric_entry', 'select_in_passage'] }, { signal: undefined, headers: { 'X-Training-Capabilities': 'text_completion,sentence_equivalence,quantitative_comparison,multiple_choice,multiple_choice_multi,numeric_entry,select_in_passage,passage' } });
   const id = await m.repo.start({ ...request, questionTypes: [...request.questionTypes] });
   expect(await m.repo.get(id)).toEqual(savedTraining(id, NOW));
   expect((await m.repo.active())?.session.id).toBe(id);
@@ -488,4 +488,119 @@ test('запись сессии старого формата без exam чит
   const loaded = await m.repo.get(session.id);
   expect(loaded?.session).toEqual(session);
   expect(loaded?.session).not.toHaveProperty('exam');
+});
+
+for (const mode of ['practice', 'check'] as const) test(`журнал ухода восстанавливает ${mode} до отправки, не раскрывая неполную форму`, async () => {
+  const m = make(); await m.repo.signedIn('a');
+  const owner = m.repo.reportOwner()!, session = trainingSession({ mode });
+  await m.store.put(owner, storedTraining(session, NOW));
+  const ids = [session.items[0]!.question.groups[0]!.options[0]!.id];
+  const draft = { savedAt: NOW, position: 0, ids, ...(mode === 'check' && { answer: givenAnswer({ optionIds: ids }) }) };
+  m.repo.checkpointDraft(session.id, draft);
+  const next = make(m.name); await next.repo.signedIn('a');
+  expect((await next.repo.get(session.id))?.drafts?.['0']).toEqual(ids);
+  expect((await next.repo.get(session.id))?.unsent).toEqual(mode === 'check' ? [0] : []);
+  expect(m.store.leavingDrafts.take(owner)).toEqual([]);
+  await next.repo.sync();
+  expect(next.api.answers).toHaveBeenCalledTimes(mode === 'check' ? 1 : 0);
+});
+
+test('журнал ухода не возвращает ответы законченной сессии, отсутствующие вопросы и чужой аккаунт', async () => {
+  const m = make(); const { owner, t } = await seed(m, trainingSession().id, true);
+  m.repo.checkpointDraft(t.session.id, { savedAt: NOW, position: 0, ids: ['B'] });
+  await m.repo.signedIn('a');
+  expect((await m.repo.get(t.session.id))?.answers['0']?.optionIds).toEqual(['A']);
+  m.repo.checkpointDraft(t.session.id, { savedAt: NOW, position: 100, ids: ['B'] });
+  await m.repo.signedIn('a');
+  m.repo.checkpointDraft('00000000-0000-4000-8000-000000000099', { savedAt: NOW, position: 0, ids: ['B'] });
+  await m.repo.signedIn('a');
+  m.repo.checkpointDraft(t.session.id, { savedAt: NOW, position: 0, ids: ['B'] });
+  await m.repo.signedIn('b');
+  expect(await m.repo.list()).toEqual([]); expect(m.store.leavingDrafts.take(owner)).toEqual([]);
+  await m.repo.signOut();
+  expect(() => m.repo.checkpointDraft(t.session.id, { savedAt: NOW, position: 0, ids: [] })).toThrow();
+  m.repo.clearCheckpoint(t.session.id, { savedAt: NOW, position: 0, ids: [] });
+});
+
+test('отказ журнала не блокирует основной IndexedDB и не раскрывает текст ошибки', async () => {
+  const m = make(); vi.spyOn(m.store.leavingDrafts, 'take').mockImplementation(() => { throw new Error('synthetic private input'); });
+  await m.repo.signedIn('a'); expect(m.repo.storageStatus()).toBe('ready');
+  expect(m.report).toHaveBeenCalledWith(expect.objectContaining({ message: 'training storage failed: Error' }));
+  vi.spyOn(m.store.leavingDrafts, 'clear').mockImplementation(() => { throw new Error('synthetic private input'); });
+  await m.repo.signOut(); expect(m.repo.reportOwner()).toBeNull();
+});
+
+test('журнал: неполный ввод не восстанавливает устаревший числовой ответ, отметка сохраняется', async () => {
+  const m = make(); await m.repo.signedIn('a');
+  const owner = m.repo.reportOwner()!;
+  const question = { ...trainingSession().items[0]!.question, questionType: 'numeric_entry' as const, groups: [], selectCount: 0, answer: [], numericEntry: { format: 'fraction' as const }, numericAnswer: { numerator: '3', denominator: '5' } };
+  const session = trainingSession({ mode: 'check', items: [{ position: 0, question }] });
+  await m.store.put(owner, storedTraining(session, NOW));
+  // Схема журнала допускает оба поля, но ответ на сервер определяется последним вводом, а не старой записью.
+  m.repo.checkpointDraft(session.id, { savedAt: NOW, position: 0, ids: ['9', ''], answer: givenAnswer({ optionIds: [], numericAnswer: { numerator: '9', denominator: '15' }, flagged: true }) });
+  await m.repo.signedIn('a');
+  const answer = (await m.repo.get(session.id))?.answers['0'];
+  expect(answer).toMatchObject({ optionIds: [], flagged: true });
+  expect(answer).not.toHaveProperty('numericAnswer');
+  await m.repo.sync();
+  expect(m.api.answers).toHaveBeenCalledWith(session.id, { answers: [answer] });
+});
+
+test('репозиторий использует текущие часы, даже если они подменены после создания', async () => {
+  const m = make();
+  const repo = new TrainingRepository(m.store, m.api, m.report);
+  vi.spyOn(repo, 'requestSync').mockImplementation(() => {});
+  await repo.signedIn('a');
+  const now = Date.parse('2026-10-13T09:00:00Z');
+  vi.spyOn(Date, 'now').mockReturnValue(now);
+  const id = await repo.start({ ...request, questionTypes: [...request.questionTypes] });
+  expect((await repo.get(id))?.startedAtMillis).toBe(now);
+});
+
+for (const mode of ['check', 'practice'] as const) test(`старый журнал не перекрывает свежий ${mode} из другой вкладки`, async () => {
+  const m = make(); await m.repo.signedIn('a');
+  const owner = m.repo.reportOwner()!, session = trainingSession({ mode });
+  await m.store.put(owner, storedTraining(session, NOW));
+  const other = make(m.name); await other.repo.signedIn('a');
+  m.repo.checkpointDraft(session.id, { savedAt: NOW, position: 0, ids: ['A'], ...(mode === 'check' && { answer: givenAnswer() }) });
+  if (mode === 'check') await other.repo.answer(session.id, givenAnswer({ optionIds: ['B'] }), ['B']);
+  else await other.repo.draft(session.id, 0, ['B']);
+  const next = make(m.name); await next.repo.signedIn('a');
+  expect((await next.repo.get(session.id))?.drafts?.['0']).toEqual(['B']);
+  if (mode === 'check') expect((await next.repo.get(session.id))?.answers['0']?.optionIds).toEqual(['B']);
+});
+
+test('журнал сверяет свежесть внутри транзакции, включая старый ответ без отметки', async () => {
+  const m = make(); await m.repo.signedIn('a');
+  const owner = m.repo.reportOwner()!, session = trainingSession({ mode: 'check' });
+  await m.store.put(owner, { ...storedTraining(session, NOW), answers: { 0: givenAnswer({ optionIds: ['B'], answeredAt: new Date(NOW + 1).toISOString() }) } });
+  const old = { savedAt: NOW, position: 0, ids: ['A'], answer: givenAnswer() };
+  m.repo.checkpointDraft(session.id, old);
+  await m.repo.signedIn('a');
+  expect((await m.repo.get(session.id))?.answers['0']?.optionIds).toEqual(['B']);
+  expect((await m.repo.get(session.id))?.drafts).toBeUndefined();
+  const other = make(m.name); await other.repo.signedIn('a');
+  const next = make(m.name);
+  m.repo.checkpointDraft(session.id, { ...old, savedAt: NOW + 2 });
+  const update = next.store.update.bind(next.store);
+  vi.spyOn(next.store, 'update').mockImplementationOnce(async (...args) => {
+    await other.repo.answer(session.id, givenAnswer({ optionIds: ['C'] }), ['C'], NOW + 3);
+    return update(...args);
+  });
+  await next.repo.signedIn('a');
+  expect((await next.repo.get(session.id))?.answers['0']?.optionIds).toEqual(['C']);
+});
+
+test('позднее завершение записи старого экрана не перекрывает новый выбор', async () => {
+  const m = make(); await m.repo.signedIn('a');
+  const owner = m.repo.reportOwner()!, session = trainingSession({ mode: 'check' });
+  await m.store.put(owner, storedTraining(session, NOW));
+  await m.repo.answer(session.id, givenAnswer({ optionIds: ['B'] }), ['B'], NOW + 2);
+  await m.repo.answer(session.id, givenAnswer(), ['A'], NOW + 1);
+  expect((await m.repo.get(session.id))?.answers['0']?.optionIds).toEqual(['B']);
+  const practice = trainingSession({ id: '00000000-0000-4000-8000-000000000099' });
+  await m.store.put(owner, storedTraining(practice, NOW));
+  await m.repo.draft(practice.id, 0, ['B'], NOW + 2);
+  await m.repo.draft(practice.id, 0, ['A'], NOW + 1);
+  expect((await m.repo.get(practice.id))?.drafts?.['0']).toEqual(['B']);
 });

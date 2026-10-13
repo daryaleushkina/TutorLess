@@ -89,7 +89,7 @@ describe('startTelegram', () => {
   });
   it('запуск из Telegram: параметры, язык; на телефоне — полноэкранный режим', async () => {
     environment({ hash: '#tgWebAppData=x' });
-    expect(await startTelegram()).toEqual({ kind: 'ok', launch: { initDataRaw: 'query_id=1&hash=x', languageCode: 'en' } });
+    expect(await startTelegram()).toEqual({ kind: 'ok', launch: { initDataRaw: 'query_id=1&hash=x', languageCode: 'en', platform: 'ios' } });
     expect(sdk.themeParams.mount).toHaveBeenCalled();
     expect(sdk.viewport.bindCssVars).toHaveBeenCalled();
     expect(sdk.viewport.requestFullscreen).toHaveBeenCalled();

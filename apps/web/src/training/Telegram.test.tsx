@@ -21,6 +21,18 @@ const signedIn = { 'POST /api/auth/telegram-mini-app': () => json({ token: 'fixt
 const launch = { initDataRaw: 'fixture', languageCode: 'ru' };
 const back = () => sdk.clickBack();
 
+test('Telegram «назад» выходит после отказа записи ответа', async () => {
+  fakeServer({ ...signedIn, 'POST /api/trainings': () => json(trainingSession()) });
+  vi.spyOn(trainingRepository, 'requestSync').mockImplementation(() => {});
+  const { screen, router } = await renderApp({ path: '/training/new', shell: 'telegram', launch });
+  await screen.getByRole('button', { name: /Начать ·/ }).click();
+  vi.spyOn(trainingRepository, 'answer').mockRejectedValue(new Error('fixture write failed'));
+  await screen.getByRole('button', { name: 'Не знаю', exact: true }).click();
+  await expect.element(screen.getByRole('alert')).toBeVisible();
+  back();
+  await expect.poll(() => router.state.location.pathname).toBe('/');
+});
+
 for (const state of ['missing', 'loading', 'unavailable', 'blocked'] as const) test(`жалоба: Telegram «назад» доступна при состоянии ${state}`, async () => {
   fakeServer(signedIn);
   let release = () => {};

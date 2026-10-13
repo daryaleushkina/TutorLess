@@ -24,6 +24,10 @@ import { SessionFooter } from './SessionFooter';
 import { TrainingSheet } from './TrainingSheet';
 import { TrainingFeedback } from './TrainingFeedback';
 import { SessionHeader } from './SessionHeader';
+import { questionTitle } from './answerFormats';
+import { PassageQuestion } from './Passage';
+
+const EXIT_WAIT_MS = 1500;
 
 export function SessionScreen() {
   const { trainingId } = useParams({ from: '/app/training/$trainingId' });
@@ -58,12 +62,21 @@ function ActiveSession({ incoming }: { incoming: StoredTraining }) {
   const [confirmation, setConfirmation] = useState<'exit' | 'finish'>();
   const [pastExplanation, setPastExplanation] = useState(false);
   useEffect(() => { setPastExplanation(false); }, [s.position]);
-  const close = () => { if (s.checkMode && !s.training.finish) setConfirmation('exit'); else void navigate({ to: '/' }); };
+  const exiting = useRef(false);
+  const exit = () => {
+    if (exiting.current) return;
+    exiting.current = true;
+    let timer: ReturnType<typeof setTimeout>;
+    const deadline = new Promise<void>((resolve) => { timer = setTimeout(resolve, EXIT_WAIT_MS); });
+    // Черновик страхует журнал ухода; отказ или зависание записи не удерживают человека на экране.
+    void Promise.race([s.flush(), deadline]).then(() => { clearTimeout(timer); void navigate({ to: '/' }); });
+  };
+  const close = () => { if (s.checkMode && !s.training.finish) setConfirmation('exit'); else exit(); };
   useBackButton(shell === 'telegram' && (s.training.finish || !s.overview && !confirmation) ? close : null);
   const total = s.training.session.items.length;
   const last = s.position === total - 1;
-  const primary = s.browsingPast ? text.overview_back(s.returnPosition + 1) : s.overview ? text.overview_finish : s.checkMode ? last ? text.question_to_list : s.selection.length ? text.question_next(s.position + 2, total) : text.question_skip : s.revealed ? last ? text.question_result : text.question_next(s.position + 2, total) : text.question_check;
-  const unanswered = s.training.session.items.filter((item) => !TrainingRules.isComplete(item.question, s.training.answers[String(item.position)]?.optionIds ?? [])).length;
+  const primary = s.browsingPast ? text.overview_back(s.returnPosition + 1) : s.overview ? text.overview_finish : s.checkMode ? last ? text.question_to_list : answerFormat(s.question)?.canAdvance(s.question, s.answer, s.complete) ? text.question_next(s.position + 2, total) : text.question_skip : s.revealed ? last ? text.question_result : text.question_next(s.position + 2, total) : text.question_check;
+  const unanswered = s.training.session.items.filter((item) => !answerFormat(item.question)?.isComplete(item.question, s.training.answers[String(item.position)])).length;
   const act = () => { if (s.overview && unanswered) setConfirmation('finish'); else s.primary(); };
   const secondary = s.overview ? { text: text.overview_back(s.position + 1), onClick: () => s.setOverview(false) } : s.checkMode && s.position > 0 ? { text: text.previous_question, icon: <BackIcon />, onClick: s.previous } : s.checkMode ? undefined : !s.revealed ? { text: text.question_dont_know, onClick: s.dontKnow } : undefined;
   const heading = useRef<HTMLHeadingElement>(null);
@@ -77,8 +90,11 @@ function ActiveSession({ incoming }: { incoming: StoredTraining }) {
     if (shell !== 'site') return;
     const key = (event: KeyboardEvent) => {
       const s = keyboard.current;
-      if (event.repeat || event.ctrlKey || event.altKey || event.metaKey || s.training.finish || s.overview || document.querySelector('dialog[open]')) return;
-      if (event.target instanceof Element && event.target.closest('input, textarea, select, [contenteditable="true"], a')) return;
+      if (event.defaultPrevented || event.repeat || event.ctrlKey || event.altKey || event.metaKey || s.training.finish || s.overview || document.querySelector('dialog[open]')) return;
+      if (event.target instanceof Element) {
+        if (event.target.closest('input, textarea, select, [contenteditable="true"], a') || event.target.matches('[role="tab"]')) return;
+        if (event.target.matches('[role="tabpanel"]') && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) return;
+      }
       // Enter всегда соответствует подсказке; пробел сохраняет нативный выбор сфокусированного варианта.
       if (/^[a-f]$/i.test(event.key) && !s.revealed) {
         event.preventDefault(); s.selectKey(event.key);
@@ -100,10 +116,22 @@ function ActiveSession({ incoming }: { incoming: StoredTraining }) {
   const typeNote = s.question.groups.length === 3 ? text.type_three_blanks : s.question.groups.length === 2 ? text.type_two_blanks : s.question.selectCount === 2 ? text.type_two_answers : undefined;
   // Неполный ответ ещё требует возврата к вопросу: отметка «отвечен» — только когда заполнены все пропуски, итог считает частичный ответ неверным.
   const overviewItems = s.training.session.items.map(({ position, question }) => ({ position,
-    answered: TrainingRules.isComplete(question, s.training.answers[String(position)]?.optionIds ?? []),
+    answered: answerFormat(question)?.isComplete(question, s.training.answers[String(position)]) ?? false,
   }));
   const answered = overviewItems.filter((item) => item.answered).length;
   const flags = Object.values(s.training.answers).filter((answer) => answer.flagged).length;
+  const questionContent = <div className={styles.questionLayout}>
+        <section className={styles.question} data-revealed={s.revealed}>
+          {s.browsingPast && <p className={styles.pastNotice}>{text.previous_notice(s.position + 1, s.returnPosition + 1)}</p>}
+          {s.checkMode && <div className={styles.questionTools}><button className={styles.secondaryAction} aria-haspopup="dialog" onClick={() => s.setOverview(true)}><Grid />{text.question_overview}</button><button className={styles.secondaryAction} disabled={s.busy} aria-label={s.flagged ? text.question_unflag : text.question_flag} aria-pressed={s.flagged} onClick={s.flag}><Flag filled={s.flagged} />{text.question_return}</button></div>}
+          {s.revealed && <Verdict question={s.question} answer={s.answer} language={language} />}
+          {!s.revealed && <p className={styles.note} role={s.selectionLimit ? 'status' : undefined}>{answerFormat(s.question)?.instruction(s.question, text)}</p>}
+          <QuestionPrompt question={s.question} selection={s.revealed ? s.question.answer : s.selection} revealed={s.revealed} />
+          <Options key={s.question.id} question={s.question} selection={s.selection} revealed={s.revealed} compact={s.browsingPast} onSelect={s.select} onChange={s.change} onSubmit={s.primary} />
+        </section>
+        {s.browsingPast && !pastExplanation && <button className={styles.textButton} onClick={() => setPastExplanation(true)}>{text.show_explanation}</button>}
+        {s.revealed && (!s.browsingPast || pastExplanation) && <Explanation question={s.question} chosen={s.answer ? answerFormat(s.question)?.decode(s.answer) ?? [] : []} language={language} onLanguage={(language) => { setLanguage(language); void navigate({ to: '/training/$trainingId', params: { trainingId: s.training.session.id }, search: { language }, replace: true }); }} />}
+      </div>;
   return <FocusLayout training wide session footer={
     <SessionFooter>
       {s.failed && <p role="alert" className={styles.note}>{text.training_storage_message}</p>}
@@ -114,7 +142,8 @@ function ActiveSession({ incoming }: { incoming: StoredTraining }) {
     </SessionFooter>
   }>
     <div className={`${styles.session} ${styles.screen}`} data-shell={shell} data-section={s.training.session.section}>
-      <SessionHeader section={s.training.session.section} label={s.checkMode ? text.mode_check : TYPE_LABELS[s.question.questionType]} position={s.position} total={total} remaining={s.remaining} busy={s.busy} onClose={close} onPrevious={!s.checkMode && s.position > 0 ? s.previous : undefined} />
+      <SessionHeader section={s.training.session.section} label={s.checkMode ? text.mode_check : questionTitle(s.question, text)} position={s.position} total={total} remaining={s.remaining} busy={s.busy} onClose={close} onPrevious={!s.checkMode && s.position > 0 ? s.previous : undefined} />
+      <h1 ref={heading} tabIndex={-1} className={styles.questionType} lang={s.question.passage || !answerFormat(s.question)?.title ? 'en' : locale}>{questionTitle(s.question, text)}{typeNote && <span lang={locale} className="visually-hidden"> · {typeNote}</span>}</h1>
       <TrainingFeedback />
       {!online && <p className={styles.offlineNotice} role="status"><OfflineIcon />{text.question_offline}</p>}
       {s.overview && !confirmation && <TrainingSheet title={text.question_overview} onClose={() => s.setOverview(false)}><section className={styles.overview}>
@@ -127,23 +156,11 @@ function ActiveSession({ incoming }: { incoming: StoredTraining }) {
         })}</div>
         <TrainingActions primary={{ text: text.overview_finish, disabled: s.busy, onClick: act }} />
       </section></TrainingSheet>}
-      <div className={styles.questionLayout}>
-        <section className={styles.question} data-revealed={s.revealed}>
-          {s.browsingPast && <p className={styles.pastNotice}>{text.previous_notice(s.position + 1, s.returnPosition + 1)}</p>}
-          {s.checkMode && <div className={styles.questionTools}><button className={styles.secondaryAction} aria-haspopup="dialog" onClick={() => s.setOverview(true)}><Grid />{text.question_overview}</button><button className={styles.secondaryAction} disabled={s.busy} aria-label={s.flagged ? text.question_unflag : text.question_flag} aria-pressed={s.flagged} onClick={s.flag}><Flag filled={s.flagged} />{text.question_return}</button></div>}
-          {s.revealed && <Verdict question={s.question} chosen={s.answer?.optionIds ?? []} dontKnow={s.answer?.dontKnow} language={language} />}
-          <h1 ref={heading} tabIndex={-1} className={styles.questionType}>{TYPE_LABELS[s.question.questionType]}{typeNote && ` · ${typeNote}`}</h1>
-          {!s.revealed && <p className={styles.note} role={s.selectionLimit ? 'status' : undefined}>{answerFormat(s.question)?.instruction(s.question, text)}</p>}
-          <QuestionPrompt question={s.question} selection={s.revealed ? s.question.answer : s.selection} revealed={s.revealed} />
-          <Options key={s.question.id} question={s.question} selection={s.selection} revealed={s.revealed} compact={s.browsingPast} onSelect={s.select} />
-        </section>
-        {s.browsingPast && !pastExplanation && <button className={styles.textButton} onClick={() => setPastExplanation(true)}>{text.show_explanation}</button>}
-        {s.revealed && (!s.browsingPast || pastExplanation) && <Explanation question={s.question} chosen={s.answer?.optionIds ?? []} language={language} onLanguage={(language) => { setLanguage(language); void navigate({ to: '/training/$trainingId', params: { trainingId: s.training.session.id }, search: { language }, replace: true }); }} />}
-      </div>
+      {s.question.passage && s.question.questionType !== 'select_in_passage' ? <PassageQuestion key={s.question.passage.id} question={s.question} first={s.training.session.items.find((item) => item.question.passage?.id === s.question.passage?.id)?.position === s.position}>{questionContent}</PassageQuestion> : questionContent}
       <Link to="/training/$trainingId/report/$position" params={{ trainingId: s.training.session.id, position: s.position }} search={{ returnTo: 'session', language }} className={styles.reportLink}><Flag />{text.question_report}</Link>
       {confirmation && <TrainingSheet title={confirmation === 'finish' ? text.finish_confirm(unanswered) : s.checkMode ? text.exit_check : text.exit_practice} onClose={() => setConfirmation(undefined)}>
         {confirmation === 'exit' && <p>{text.exit_save}</p>}
-        <TrainingActions secondary={{ text: text.continue_check, disabled: s.busy, onClick: () => setConfirmation(undefined) }} primary={{ text: confirmation === 'finish' ? text.overview_finish : text.exit_action, disabled: s.busy, onClick: () => { if (confirmation === 'finish') s.primary(); else void navigate({ to: '/' }); setConfirmation(undefined); } }} />
+        <TrainingActions secondary={{ text: text.continue_check, disabled: s.busy, onClick: () => setConfirmation(undefined) }} primary={{ text: confirmation === 'finish' ? text.overview_finish : text.exit_action, disabled: confirmation === 'finish' && s.busy, onClick: () => { if (confirmation === 'finish') s.primary(); else exit(); setConfirmation(undefined); } }} />
       </TrainingSheet>}
     </div>
   </FocusLayout>;
@@ -189,7 +206,7 @@ function Summary({ training }: { training: StoredTraining }) {
         <p className={styles.note}>{line}</p>
         <h1 className={styles.score} aria-label={text.summary_correct_of(result.correct, result.total)}><span>{result.correct}</span><small><span>{text.summary_of(result.total)}</span><span>{text.review_correct}</span></small></h1>
         <ol className={styles.marks} aria-label={text.summary_all_answers}>{training.session.items.map((item) => {
-          const correct = TrainingRules.isCorrect(item.question, training.answers[String(item.position)]?.optionIds ?? []);
+          const correct = answerFormat(item.question)?.isCorrect(item.question, training.answers[String(item.position)]) ?? false;
           return <li key={item.position} data-correct={correct}><span className="visually-hidden">{text.review_question(item.position + 1)}: {correct ? text.review_correct : text.review_wrong}</span>{correct ? <SessionIcon><path d="m5 12 4 4 10-10" /></SessionIcon> : <Cross />}</li>;
         })}</ol>
       </section>

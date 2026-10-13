@@ -3,9 +3,11 @@ import { reportError } from '../errors/report';
 import { type ReportDraft, pendingReportSchema, storedTraining, type StoredTraining } from './model';
 import { TrainingRules } from './rules';
 import { TrainingStore, TrainingOwnerChangedError, TrainingStorageBlockedError, type TrainingOwner } from './store';
+import { answerFormat } from './answerFormats';
+import { draftStamp, type LeavingDraft } from './leavingDraftStore';
+import { SUPPORTED_TYPES, TRAINING_HEADERS } from './capabilities';
 
-export const SUPPORTED_TYPES = schemas.QuestionType.options.filter((type) =>
-  type === 'text_completion' || type === 'sentence_equivalence' || type === 'quantitative_comparison' || type === 'multiple_choice');
+export { SUPPORTED_TYPES } from './capabilities';
 const PERMANENT = new Set([400, 404, 409, 410, 422]);
 export const SYNC_LOCK = 'greprep-training-sync';
 interface TrainingApi {
@@ -19,8 +21,8 @@ const TRAINING_API: TrainingApi = {
   options: getTrainingOptions, start: startTraining,
   // Пачка ограничена договором (50 ответов, по три id до 16 знаков): keepalive переживает перезагрузку в WebKit.
   // Неотправленное остаётся на диске; повтор того же ответа после открытия подтверждается сервером идемпотентно.
-  answers: (id, answers, options) => submitTrainingAnswers(id, answers, { ...options, keepalive: true }),
-  finish: (id, finish, options) => finishTraining(id, finish, { ...options, keepalive: true }),
+  answers: (id, answers, options) => submitTrainingAnswers(id, answers, { ...options, headers: TRAINING_HEADERS, keepalive: true }),
+  finish: (id, finish, options) => finishTraining(id, finish, { ...options, headers: TRAINING_HEADERS, keepalive: true }),
   report: (id, report, options) => reportQuestion(id, report, { ...options, keepalive: true }),
 };
 
@@ -41,8 +43,9 @@ export class TrainingRepository {
   private unauthorized: (error: ApiError) => void = () => {};
   private edits = new Map<string, number>();
 
+  // Позднее чтение часов сохраняет единое время репозитория и экрана при подмене часов в проверках.
   constructor(readonly store = new TrainingStore(), private api: TrainingApi = TRAINING_API, private report = reportError,
-    private now: () => number = Date.now, private locks: LockManager | null | undefined = globalThis.navigator?.locks) {
+    private now: () => number = () => Date.now(), private locks: LockManager | null | undefined = globalThis.navigator?.locks) {
     store.subscribe((change) => {
       if (change.kind === 'owner' || change.kind === 'training' && change.activeChanged) this.activeKnown = false;
       if (change.remote) void this.refreshOwner().catch((error: unknown) => this.storageFailed(error));
@@ -97,11 +100,62 @@ export class TrainingRepository {
       try {
         const owner = await this.store.signIn(userId);
         if (generation !== this.generation) return;
-        this.owner = owner; this.authenticated = true; this.setStatus('ready'); this.requestSync();
+        this.owner = owner;
+        await this.restoreLeavingDrafts(owner);
+        if (generation !== this.generation) return;
+        this.authenticated = true; this.setStatus('ready'); this.requestSync();
       } catch (error) { if (generation === this.generation) this.storageFailed(error); }
     });
     this.authChanges = this.initializing;
     return this.initializing;
+  }
+
+  journalReporter(): (error: unknown) => void {
+    let reported = false;
+    return (error) => { if (!reported) { reported = true; this.reportStorage(error); } };
+  }
+
+  checkpointDraft(id: string, draft: LeavingDraft, owner: TrainingOwner | null = this.owner ?? null, report = (error: unknown) => this.reportStorage(error)): void {
+    if (!this.draftOwner(owner) || !owner) throw new TrainingOwnerChangedError();
+    try { this.store.leavingDrafts.put(owner, id, draft); }
+    catch (error) { report(error); }
+  }
+  clearCheckpoint(id: string, draft: LeavingDraft, owner: TrainingOwner | null = this.owner ?? null, report = (error: unknown) => this.reportStorage(error)): void {
+    if (!this.draftOwner(owner) || !owner) return;
+    try { this.store.leavingDrafts.remove(owner, id, draft); }
+    catch (error) {
+      // Ответ уже в IndexedDB; отказ очистки страховочного журнала не отменяет сохранение.
+      report(error);
+    }
+  }
+  private async restoreLeavingDrafts(owner: TrainingOwner): Promise<void> {
+    let checkpoints: { id: string; draft: LeavingDraft }[];
+    try { checkpoints = this.store.leavingDrafts.take(owner); }
+    catch (error) {
+      // При запрете localStorage IndexedDB остаётся основным хранилищем; журнал не мог сохраниться.
+      this.reportStorage(error); return;
+    }
+    for (const { id, draft } of checkpoints) {
+      const training = await this.store.get(owner, id);
+      if (training && !training.finish && training.session.items[draft.position]) {
+        await this.store.update(owner, id, (t) => {
+          if (t.finish || t.session.mode === 'practice' && t.answers[String(draft.position)]) return t;
+          // Сверяем внутри транзакции: другая вкладка могла записать ответ уже после чтения журнала.
+          const fresh = t.editedAt?.[String(draft.position)] ?? (t.answers[String(draft.position)] ? Date.parse(t.answers[String(draft.position)]!.answeredAt) : undefined);
+          if (fresh !== undefined && fresh >= draft.savedAt) return t;
+          // Из журнала берём метаданные; поля ответа заново собирает кодек, чтобы старое число не пережило неполный ввод.
+          const answer = t.session.mode === 'check' && draft.answer ? {
+            position: draft.position, dontKnow: false, flagged: draft.answer.flagged,
+            answeredAt: draft.answer.answeredAt, elapsedMs: draft.answer.elapsedMs,
+            ...(answerFormat(t.session.items[draft.position]!.question)?.encode(t.session.items[draft.position]!.question, draft.ids) ?? { optionIds: [] }),
+          } : undefined;
+          return { ...t, drafts: { ...t.drafts, [draft.position]: draft.ids }, editedAt: { ...t.editedAt, [draft.position]: draft.savedAt },
+            ...(answer && { answers: { ...t.answers, [draft.position]: answer }, unsent: [...new Set([...t.unsent, draft.position])] }),
+          };
+        });
+      }
+      this.clearCheckpoint(id, draft, owner);
+    }
   }
 
   /** 401 оставляет владельца и его очередь на диске до следующего входа. */
@@ -110,6 +164,7 @@ export class TrainingRepository {
   async signOut(): Promise<void> {
     const userId = this.userId;
     this.pause();
+    try { this.store.leavingDrafts.clear(); } catch (error) { this.reportStorage(error); }
     this.userId = undefined; this.owner = undefined; this.activeKnown = false;
     const cleared = this.authChanges.then(async () => {
       try {
@@ -126,7 +181,7 @@ export class TrainingRepository {
 
   async options(exam: Exam, signal?: AbortSignal) {
     const generation = this.generation;
-    try { return await this.api.options({ exam, types: SUPPORTED_TYPES }, { signal }); }
+    try { return await this.api.options({ exam, types: SUPPORTED_TYPES }, { signal, headers: TRAINING_HEADERS }); }
     catch (error) { if (generation === this.generation) this.handle(error); throw error; }
   }
 
@@ -137,7 +192,7 @@ export class TrainingRepository {
     if (!owner) throw new Error('training start without session');
     let saving = false;
     try {
-      const session = await this.api.start(request);
+      const session = await this.api.start(request, { headers: TRAINING_HEADERS });
       if (!this.isCurrent(owner, generation)) throw new Error('training session changed during start');
       saving = true;
       if (!await this.store.put(owner, storedTraining(session, this.now()))) throw new Error('training owner changed during start');
@@ -166,17 +221,17 @@ export class TrainingRepository {
     return active;
   }
 
-  async answer(id: string, answer: GivenAnswer): Promise<void> {
+  async answer(id: string, answer: GivenAnswer, draft?: string[], savedAt = draftStamp()): Promise<void> {
     const checked = schemas.GivenAnswer.parse(answer);
-    await this.edit(id, (t) => t.finish || checked.position >= t.session.items.length ? t : {
-      ...t, answers: { ...t.answers, [checked.position]: checked }, unsent: [...new Set([...t.unsent, checked.position])],
+    await this.edit(id, (t) => t.finish || checked.position >= t.session.items.length || (t.editedAt?.[String(checked.position)] ?? 0) > savedAt ? t : {
+      ...t, editedAt: { ...t.editedAt, [checked.position]: savedAt }, ...(draft && t.session.mode === 'check' && { drafts: { ...t.drafts, [checked.position]: draft } }), answers: { ...t.answers, [checked.position]: checked }, unsent: [...new Set([...t.unsent, checked.position])],
     });
     this.requestSync();
   }
 
-  async draft(id: string, position: number, selection: string[]): Promise<void> {
-    await this.edit(id, (t) => t.finish || t.session.mode !== 'practice' || t.answers[String(position)] || !t.session.items[position] ? t :
-      { ...t, drafts: { ...t.drafts, [position]: selection } });
+  async draft(id: string, position: number, selection: string[], savedAt = draftStamp()): Promise<void> {
+    await this.edit(id, (t) => t.finish || t.session.mode !== 'practice' || t.answers[String(position)] || !t.session.items[position] || (t.editedAt?.[String(position)] ?? 0) > savedAt ? t :
+      { ...t, drafts: { ...t.drafts, [position]: selection }, editedAt: { ...t.editedAt, [position]: savedAt } });
   }
 
   async moveTo(id: string, position: number, practiceReturnPosition?: number): Promise<void> {
