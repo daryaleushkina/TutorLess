@@ -131,11 +131,11 @@ actor TrainingRepository {
         await publish([:], revision)
     }
 
-    func options(epoch: Int) async throws(APIFailure) -> TrainingOptions {
+    func options(exam: Exam, epoch: Int) async throws(APIFailure) -> TrainingOptions {
         guard let api, revision == epoch, access.isCurrent(epoch) else { throw .cancelled }
         guard storageAvailable else { throw .unexpected("training storage unavailable") }
         do {
-            let options = try await api.trainingOptions()
+            let options = try await api.trainingOptions(exam: exam)
             guard access.isCurrent(epoch) else { throw APIFailure.cancelled }
             return options
         } catch {

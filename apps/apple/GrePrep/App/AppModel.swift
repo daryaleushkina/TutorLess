@@ -16,34 +16,41 @@ final class AppModel {
     }
 
     private(set) var phase: Phase
-    /// Экран «Сегодня» живёт, пока человек вошёл: выход сбрасывает его вместе с данными.
-    private(set) var today: TodayModel?
+    /// Экран оболочки живёт, пока человек вошёл: выход сбрасывает его вместе с данными.
+    private(set) var shell: ShellModel?
+    private(set) var signingOut = false
+    private(set) var signOutProblem: ShellModel.Problem?
 
     let api: API
     let config: AppConfig
     let network: NetworkMonitor
     let trainings: TrainingModel
     @ObservationIgnored private let tokens: any TokenStore
-    @ObservationIgnored private let cache: TodayCache
+    @ObservationIgnored private let cache: ShellCache
+    @ObservationIgnored private let preferences: UserDefaults
     @ObservationIgnored private let makeAPI: @Sendable (_ token: String) -> API
     @ObservationIgnored private var tokenReadFailed = false
 
     init(
         config: AppConfig,
         tokens: any TokenStore,
-        cache: TodayCache,
+        cache: ShellCache,
         network: NetworkMonitor,
-        session: URLSession = API.session
+        session: URLSession = API.session,
+        preferences: UserDefaults = .standard
     ) {
         // Токен — в памяти поверх Keychain: запросов много, а каждое чтение Keychain — обращение к системе.
         let tokens = CachedTokenStore(tokens)
         self.config = config
         self.tokens = tokens
         self.cache = cache
+        self.preferences = preferences
         self.network = network
         let api = API(config: config, session: session, tokens: tokens)
         self.api = api
-        makeAPI = { token in API(config: config, session: session, tokens: MemoryTokenStore(token)) }
+        makeAPI = { token in
+            API(config: config, session: session, tokens: MemoryTokenStore(token), connection: api.connection)
+        }
         trainings = TrainingModel(
             store: TrainingStore.live(beside: cache),
             report: { message, requestID in
@@ -56,7 +63,7 @@ final class AppModel {
         restoreSession()
     }
 
-    /// Вход живёт в Keychain: открыл приложение — сразу «Сегодня», без ожидания сети. Протух — первый же
+    /// Вход живёт в Keychain: открыл приложение — сразу оболочки, без ожидания сети. Протух — первый же
     /// запрос ответит 401 и вернёт на вход (handleUnauthorized).
     private func restoreSession() {
         do {
@@ -81,9 +88,11 @@ final class AppModel {
         /// Чистое устройство для сценариев UI (аргумент запуска -GPResetState, только отладочная сборка).
         static func resetLocalState() {
             UserDefaults.standard.removeObject(forKey: AppTheme.storageKey)
+            UserDefaults.standard.removeObject(forKey: TextSizePreference.storageKey)
+            UserDefaults.standard.removeObject(forKey: InterfaceLocale.storageKey)
             // Необязательный фон: стереть то, чего может и не быть.
             _ = try? KeychainTokenStore.live().clear()
-            _ = try? TodayCache.live().clear()
+            _ = try? ShellCache.live().clear()
             _ = try? TrainingStore.live().clear()
         }
     #endif
@@ -95,30 +104,34 @@ final class AppModel {
             try cache.clear()
         } catch {
             let error = error as NSError
-            report("today cache clear failed: \(error.domain) \(error.code)", route: "sign-in")
+            report("shell cache clear failed: \(error.domain) \(error.code)", route: "sign-in")
         }
-        becomeSignedIn()
+        becomeSignedIn(user: signedIn.user)
         trainings.connect(
             api: makeAPI(signedIn.token), ownerID: signedIn.user.id,
             credentialID: TrainingStore.credentialID(signedIn.token))
     }
 
-    /// Выход: на устройстве — сразу и до конца (токен, план), на сервере — следом, без ожидания. Не дошло до
-    /// сервера (нет сети) — токена на устройстве уже нет, а сессия на сервере истечёт сама.
-    func signOut() {
-        let token: String?
+    /// Нажатие в профиле подтверждается сервером: при сбое человек остаётся на прежнем экране.
+    func requestSignOut() async {
+        guard phase == .signedIn, !signingOut else { return }
+        signingOut = true
+        signOutProblem = nil
+        let currentShell = shell
+        defer { signingOut = false }
         do {
-            token = try tokens.token()
+            try await api.signOut()
+            guard shell === currentShell else { return }
+            forgetSession(reason: nil)
         } catch {
-            token = nil
-            report("keychain read failed on sign-out: \(error)", route: "sign-out")
-        }
-        forgetSession(reason: nil)
-        if let token {
-            let api = makeAPI(token)
-            Task {
-                // Необязательный фон: на устройстве человек уже вышел, сервер — уборка.
-                _ = try? await api.signOut()
+            guard shell === currentShell else { return }
+            if error == .unauthorized {
+                forgetSession(reason: nil)
+            } else {
+                signOutProblem = error == .offline ? .offline : .failed
+                if error != .offline {
+                    report("sign-out failed: \(error)", route: "sign-out", requestID: error.requestID)
+                }
             }
         }
     }
@@ -141,22 +154,19 @@ final class AppModel {
         Task { await api.reportClientError(message: message, route: route, requestID: requestID) }
     }
 
-    private func becomeSignedIn() {
-        today?.retire()
-        today = TodayModel(
-            api: api,
-            cache: cache,
-            network: network,
-            onUnauthorized: { [weak self] in self?.handleUnauthorized() },
-            report: { [weak self] message, requestID in self?.report(message, route: "today", requestID: requestID) }
-        )
+    private func becomeSignedIn(user: UserDTO? = nil) {
+        shell?.retire()
+        shell = ShellModel(
+            api: api, cache: cache, network: network, trainings: trainings, user: user, preferences: preferences,
+            unauthorized: { [weak self] in self?.handleUnauthorized() },
+            report: { [weak self] message, requestID in self?.report(message, route: "shell", requestID: requestID) })
         phase = .signedIn
     }
 
     private func forgetSession(reason: SignOutReason?) {
         // 401 оставляет ответы до следующего входа; явный выход стирает их (решение Даши 08.10.2026).
         trainings.disconnect(clear: reason != .sessionExpired)
-        today?.retire()
+        shell?.retire()
         do {
             try tokens.clear()
         } catch {
@@ -169,9 +179,10 @@ final class AppModel {
             try cache.clear()
         } catch {
             let error = error as NSError
-            report("today cache clear failed: \(error.domain) \(error.code)", route: "sign-out")
+            report("shell cache clear failed: \(error.domain) \(error.code)", route: "sign-out")
         }
-        today = nil
+        shell = nil
+        preferences.removeObject(forKey: InterfaceLocale.storageKey)
         phase = .signedOut(reason)
     }
 }

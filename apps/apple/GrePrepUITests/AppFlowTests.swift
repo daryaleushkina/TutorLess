@@ -68,10 +68,10 @@ final class AppFlowTests: XCTestCase {
         XCTAssertTrue(app.buttons["signin.apple"].waitForExistence(timeout: 10))
         try capture("signin")
         signIn(app)
-        try capture("today")
+        try capture("home")
         // На iPad родная навигация переезжает в верхнюю панель и не имеет роли TabBar.
         app.buttons["Прогресс"].firstMatch.tap()
-        app.buttons["progress.settings"].firstMatch.tap()
+        app.buttons["shell.profile"].firstMatch.tap()
         XCTAssertTrue(app.staticTexts["settings.etsDisclaimer"].waitForExistence(timeout: 5))
         try capture("settings")
     }
@@ -97,7 +97,7 @@ final class AppFlowTests: XCTestCase {
         let app = launch(reset: true)
         signIn(app)
         app.swipeUp()
-        app.buttons["today.newTraining"].tap()
+        app.buttons["home.configure"].tap()
         let count = app.textFields["builder.count"]
         XCTAssertTrue(count.waitForExistence(timeout: 10))
         count.tap()
@@ -116,7 +116,7 @@ final class AppFlowTests: XCTestCase {
         let app = launch(reset: true)
         signIn(app)
         app.swipeUp()
-        app.buttons["today.newTraining"].tap()
+        app.buttons["home.configure"].tap()
         let count = app.textFields["builder.count"]
         XCTAssertTrue(count.waitForExistence(timeout: 10))
         count.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
@@ -209,7 +209,10 @@ final class AppFlowTests: XCTestCase {
         let userName = "\(userPrefix)-\(UUID().uuidString.prefix(12).lowercased())"
         name.typeText(userName)
         app.buttons["signin.dev.submit"].tap()
-        XCTAssertTrue(app.staticTexts["today.summary"].waitForExistence(timeout: 15), "после входа нет «Сегодня»")
+        let choice = app.buttons["exam.choose.gre"]
+        XCTAssertTrue(choice.waitForExistence(timeout: 15), "после первого входа нет выбора экзамена")
+        choice.tap()
+        XCTAssertTrue(app.buttons["home.configure"].waitForExistence(timeout: 15), "нет главной тренировки")
         return userName
     }
 
@@ -231,27 +234,21 @@ final class AppFlowTests: XCTestCase {
         }
         XCTAssertEqual(try JSONDecoder().decode(Session.self, from: data).user.locale, "en")
         app.tabBars.buttons["Progress"].firstMatch.tap()
-        app.buttons["progress.settings"].firstMatch.tap()
+        app.buttons["shell.profile"].firstMatch.tap()
         XCTAssertTrue(app.staticTexts["settings.etsDisclaimer"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["settings.etsDisclaimer"].label.hasPrefix("GRE® is a registered trademark"))
+        XCTAssertTrue(
+            app.staticTexts["settings.etsDisclaimer"].label.hasPrefix("GRE® and TOEFL® are registered trademarks"))
     }
 
-    func testSignInShowsTodayAndOpensStep() {
+    func testFirstEntryChoosesExamAndEmptyTabs() {
         let app = launch(reset: true)
-        XCTAssertTrue(app.buttons["signin.apple"].waitForExistence(timeout: 10))
-        XCTAssertTrue(app.buttons["signin.google"].exists)
         signIn(app)
-        XCTAssertEqual(app.staticTexts["today.summary"].label, "Три шага · около 25 минут")
-        // Названия шагов — от сервера (server/internal/today): дело без раздела, раздел — строкой ниже.
-        XCTAssertTrue(app.staticTexts["Повторение"].exists)
-        XCTAssertTrue(app.staticTexts["Text Completion"].exists)
-
-        app.buttons["today.start"].tap()
-        // Открылся шаг: заголовок экрана — раздел шага, ленты под ним нет.
-        XCTAssertTrue(app.navigationBars["Слова"].waitForExistence(timeout: 5), "шаг не открылся")
-        XCTAssertFalse(app.staticTexts["today.summary"].exists)
-        app.navigationBars["Слова"].buttons.element(boundBy: 0).tap()
-        XCTAssertTrue(app.staticTexts["today.summary"].waitForExistence(timeout: 5))
+        app.buttons["Слова"].firstMatch.tap()
+        XCTAssertTrue(app.scrollViews["shell.empty.words"].waitForExistence(timeout: 5))
+        app.buttons["Экзамен"].firstMatch.tap()
+        XCTAssertTrue(app.scrollViews["shell.empty.exam"].waitForExistence(timeout: 5))
+        app.buttons["Тренировка"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["home.configure"].waitForExistence(timeout: 5))
     }
 
     func testSessionSurvivesRelaunch() {
@@ -260,7 +257,7 @@ final class AppFlowTests: XCTestCase {
         app.terminate()
 
         let again = launch(reset: false)
-        XCTAssertTrue(again.staticTexts["today.summary"].waitForExistence(timeout: 15))
+        XCTAssertTrue(again.buttons["home.configure"].waitForExistence(timeout: 15))
         XCTAssertFalse(again.buttons["signin.apple"].exists)
     }
 
@@ -268,12 +265,12 @@ final class AppFlowTests: XCTestCase {
         let app = launch(reset: true)
         signIn(app)
         app.tabBars.buttons["Прогресс"].firstMatch.tap()
-        app.buttons["progress.settings"].firstMatch.tap()
+        app.buttons["shell.profile"].firstMatch.tap()
         let disclaimer = app.staticTexts["settings.etsDisclaimer"]
         XCTAssertTrue(disclaimer.waitForExistence(timeout: 5))
         XCTAssertEqual(
             disclaimer.label,
-            "GRE® is a registered trademark of Educational Testing Service (ETS). This product is not endorsed or approved by ETS."
+            "GRE® and TOEFL® are registered trademarks of Educational Testing Service (ETS). This product is not endorsed or approved by ETS."
         )
         app.buttons["settings.signOut"].tap()
         XCTAssertTrue(app.buttons["signin.apple"].waitForExistence(timeout: 5))
@@ -285,18 +282,23 @@ final class AppFlowTests: XCTestCase {
             "после выхода и перезапуска вход не должен вернуться")
     }
 
-    func testOfflineKeepsLastPlanAndExplainsStart() {
+    func testOfflineKeepsCachedHomeAndExplainsStart() {
         let app = launch(reset: true)
         signIn(app)
         app.terminate()
 
         let offline = launch(reset: false, server: unreachableServer)
         XCTAssertTrue(
-            offline.staticTexts["today.summary"].waitForExistence(timeout: 10), "без сети должен остаться прошлый план")
-        XCTAssertTrue(offline.staticTexts["today.stale"].waitForExistence(timeout: 15), "нет строки «Нет сети»")
-        offline.buttons["today.start"].tap()
+            offline.buttons["home.configure"].waitForExistence(timeout: 10),
+            "без сети должна остаться сохранённая главная")
+        // ShellNotice объединён для VoiceOver и имеет роль текста; прежний контейнер Today имел роль Other.
+        let notice = offline.descendants(matching: .any)["home.stale"]
+        XCTAssertTrue(notice.waitForExistence(timeout: 15), "нет строки «Нет сети»")
+        XCTAssertTrue(notice.label.contains("Нет сети"))
+        offline.buttons["home.start"].tap()
         XCTAssertTrue(
-            offline.staticTexts["today.needsNetwork"].waitForExistence(timeout: 5), "нет объяснения, что нужна сеть")
+            offline.descendants(matching: .any)["home.startError"].waitForExistence(timeout: 5),
+            "нет объяснения, что нужна сеть")
         XCTAssertFalse(offline.navigationBars["Слова"].exists, "без сети шаг не должен открываться")
     }
 
@@ -314,7 +316,7 @@ final class AppFlowTests: XCTestCase {
         let app = launch(reset: true)
         signIn(app)
         app.swipeUp()
-        app.buttons["today.newTraining"].tap()
+        app.buttons["home.configure"].tap()
         XCTAssertTrue(app.buttons["builder.start"].waitForExistence(timeout: 10))
         // Full-screen cover сохраняет TabView в иерархии; под экраном тренировки вкладки недоступны.
         let hiddenTabs = expectation(
@@ -353,21 +355,21 @@ final class AppFlowTests: XCTestCase {
         app.terminate()
 
         let again = launch(reset: false, server: unreachableServer)
-        let resume = again.buttons["today.continueTraining"]
+        let resume = again.buttons["home.continue"]
         XCTAssertTrue(resume.waitForExistence(timeout: 10), "тренировка должна пережить перезапуск без сети")
         XCTAssertTrue(
-            resume.label.replacingOccurrences(of: "\u{00A0}", with: " ").contains("вопрос 1 из 3"), resume.label)
+            resume.label.replacingOccurrences(of: "\u{00A0}", with: " ").contains("Вопрос 1 из 3"), resume.label)
         resume.tap()
         XCTAssertTrue(again.otherElements["training.session"].waitForExistence(timeout: 5))
         again.buttons["training.close"].tap()
-        XCTAssertTrue(again.staticTexts["today.summary"].waitForExistence(timeout: 5))
+        XCTAssertTrue(again.buttons["home.configure"].waitForExistence(timeout: 5))
     }
 
-    func testTrainingClosePreservesTodayScroll() {
+    func testTrainingClosePreservesHomeScroll() {
         let app = launch(reset: true, largeText: true)
         signIn(app)
         app.swipeUp()
-        let entry = app.buttons["today.newTraining"]
+        let entry = app.buttons["home.configure"]
         XCTAssertTrue(entry.isHittable)
         let originalY = entry.frame.midY
         entry.tap()
@@ -383,7 +385,7 @@ final class AppFlowTests: XCTestCase {
     ) {
         signIn(app)
         app.swipeUp()
-        app.buttons["today.newTraining"].tap()
+        app.buttons["home.configure"].tap()
         XCTAssertTrue(app.buttons["builder.start"].waitForExistence(timeout: 10))
         let count = app.textFields["builder.count"]
         count.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
@@ -471,8 +473,8 @@ final class AppFlowTests: XCTestCase {
             app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "вопросы 2 и 3")).firstMatch.exists)
         try capture("summary")
         app.buttons["summary.done"].tap()
-        XCTAssertTrue(app.buttons["today.newTraining"].waitForExistence(timeout: 5))
-        XCTAssertFalse(app.buttons["today.continueTraining"].exists)
+        XCTAssertTrue(app.buttons["home.configure"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["home.continue"].exists)
         XCUIDevice.shared.orientation = .portrait
     }
 
@@ -540,7 +542,7 @@ final class AppFlowTests: XCTestCase {
         XCUIDevice.shared.orientation = .portrait
     }
 
-    func testTrainingRelaunchResumesSameQuestionAndAnswerOffline() {
+    func testTrainingRelaunchResumesSameQuestionAndAnswerOffline() throws {
         let app = launch(reset: true)
         startSession(app, check: true)
         choose(app, correct: true)
@@ -548,14 +550,24 @@ final class AppFlowTests: XCTestCase {
         choose(app, correct: false)
         app.terminate()
         let offline = launch(reset: false, server: unreachableServer)
-        XCTAssertTrue(offline.buttons["today.continueTraining"].waitForExistence(timeout: 10))
-        offline.buttons["today.continueTraining"].tap()
+        XCTAssertTrue(offline.buttons["home.continue"].waitForExistence(timeout: 10))
+        offline.buttons["home.continue"].tap()
         XCTAssertTrue(offline.staticTexts["session.progress"].waitForExistence(timeout: 5))
         XCTAssertEqual(offline.staticTexts["session.progress"].label, "Вопрос 2 из 3")
         XCTAssertTrue(offline.buttons["option.C"].isSelected)
-        offline.buttons["question.overview"].tap()
-        offline.buttons["overview.finish"].tap()
-        XCTAssertTrue(offline.buttons["summary.repeat"].waitForExistence(timeout: 5))
+        let notice = offline.descendants(matching: .any)["session.offline"]
+        XCTAssertTrue(notice.waitForExistence(timeout: 10))
+        XCTAssertTrue(notice.label.contains("ответы сохранятся"))
+        try capture("question-offline")
+        offline.terminate()
+        let online = launch(reset: false)
+        XCTAssertTrue(online.buttons["home.continue"].waitForExistence(timeout: 10))
+        online.buttons["home.continue"].tap()
+        XCTAssertTrue(online.staticTexts["session.progress"].waitForExistence(timeout: 5))
+        XCTAssertFalse(online.descendants(matching: .any)["session.offline"].exists)
+        online.buttons["question.overview"].tap()
+        online.buttons["overview.finish"].tap()
+        XCTAssertTrue(online.buttons["summary.repeat"].waitForExistence(timeout: 5))
     }
 
     func testTrainingReviewAnswersAndBack() throws {
@@ -599,7 +611,7 @@ final class AppFlowTests: XCTestCase {
         XCTAssertEqual(UIDevice.current.userInterfaceIdiom, .pad)
         signIn(app)
         app.swipeUp()
-        app.buttons["today.newTraining"].tap()
+        app.buttons["home.configure"].tap()
         XCTAssertTrue(app.buttons["builder.start"].waitForExistence(timeout: 10))
         // Для клавиш достаточно штатной проверки: этот путь не зависит от редактирования числа вопросов.
         app.buttons["builder.preset.timed"].tap()
@@ -680,8 +692,8 @@ final class AppFlowTests: XCTestCase {
         text.typeText("ui-report-fixture")
         app.terminate()
         let again = launch(reset: false)
-        XCTAssertTrue(again.buttons["today.continueTraining"].waitForExistence(timeout: 10))
-        again.buttons["today.continueTraining"].tap()
+        XCTAssertTrue(again.buttons["home.continue"].waitForExistence(timeout: 10))
+        again.buttons["home.continue"].tap()
         XCTAssertTrue(again.buttons["question.report"].waitForExistence(timeout: 5))
         again.buttons["question.report"].tap()
         XCTAssertTrue(reportText(again).waitForExistence(timeout: 5))
@@ -703,7 +715,7 @@ final class AppFlowTests: XCTestCase {
         let app = launch(reset: true)
         signIn(app)
         app.swipeUp()
-        app.buttons["today.newTraining"].tap()
+        app.buttons["home.configure"].tap()
         XCTAssertTrue(app.buttons["builder.start"].waitForExistence(timeout: 10))
         let output = ProcessInfo.processInfo.environment["GP_REVIEW_OUTPUT"]
         let theme = ProcessInfo.processInfo.environment["GP_REVIEW_THEME"] ?? "dark"
@@ -732,13 +744,199 @@ final class AppFlowTests: XCTestCase {
             XCTAssertTrue(app.otherElements["training.session"].waitForExistence(timeout: 10))
             app.buttons["training.close"].tap()
             app.swipeDown()
-            XCTAssertTrue(app.buttons["today.continueTraining"].waitForExistence(timeout: 5))
+            XCTAssertTrue(app.buttons["home.continue"].waitForExistence(timeout: 5))
             for (orientation, name) in orientations {
                 XCUIDevice.shared.orientation = orientation
                 try XCUIScreen.main.screenshot().pngRepresentation.write(
-                    to: URL(filePath: output).appending(path: "today-\(device)-\(name)-\(theme).png"))
+                    to: URL(filePath: output).appending(path: "home-\(device)-\(name)-\(theme).png"))
             }
         }
         if output == nil { XCUIDevice.shared.orientation = .portrait }
     }
+    private struct AccountSession: Decodable {
+        let token: String
+        struct User: Decodable {
+            let activeExam: String?
+            let locale: String
+        }
+        let user: User
+    }
+
+    private func account(_ name: String) async throws -> AccountSession {
+        var request = URLRequest(url: try XCTUnwrap(URL(string: serverURL + "/api/auth/dev")))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: [
+            "name": name, "transport": "bearer", "clientKind": "ios",
+        ])
+        let (data, response) = try await URLSession.shared.data(for: request)
+        XCTAssertEqual((response as? HTTPURLResponse)?.statusCode, 200)
+        return try JSONDecoder().decode(AccountSession.self, from: data)
+    }
+
+    func testShellExamSwitchSavesAccountAndToeflSectionsAreInactive() async throws {
+        let app = launch(reset: true)
+        let name = signIn(app)
+        let savedAccount0 = try await account(name)
+        XCTAssertEqual(savedAccount0.user.activeExam, "gre")
+        app.buttons["shell.exam"].firstMatch.tap()
+        let toefl = app.buttons["exam.choose.toefl"]
+        XCTAssertTrue(toefl.waitForExistence(timeout: 5))
+        let presented = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in toefl.isHittable }, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [presented], timeout: 5), .completed)
+        try capture("exam-picker-open")
+        toefl.tap()
+        let empty = app.staticTexts["home.empty"]
+        XCTAssertTrue(empty.waitForExistence(timeout: 10))
+        let savedAccount1 = try await account(name)
+        XCTAssertEqual(savedAccount1.user.activeExam, "toefl")
+        XCTAssertFalse(app.buttons["home.start"].exists)
+        for section in ["reading", "listening", "writing", "speaking"] {
+            XCTAssertFalse(app.buttons["home.section.\(section)"].exists)
+            XCTAssertTrue(app.descendants(matching: .any)["home.section.\(section)"].exists)
+        }
+        try capture("toefl-empty")
+        app.buttons["shell.exam"].firstMatch.tap()
+        app.buttons["exam.choose.gre"].tap()
+        XCTAssertTrue(app.buttons["home.configure"].waitForExistence(timeout: 10))
+    }
+
+    func testShellProfileLanguageThemeTextSizeAndInactiveRows() async throws {
+        var app = launch(reset: true, useReviewTheme: false)
+        let name = signIn(app)
+        app.buttons["shell.profile"].firstMatch.tap()
+        XCTAssertTrue(app.segmentedControls["settings.language"].waitForExistence(timeout: 5))
+        if UIDevice.current.userInterfaceIdiom == .phone { XCTAssertFalse(app.tabBars.firstMatch.isHittable) }
+        for id in ["subscription", "identities", "contact"] {
+            XCTAssertFalse(app.buttons["settings.inactive.\(id)"].exists)
+            let row = app.descendants(matching: .any)["settings.inactive.\(id)"]
+            XCTAssertTrue(row.exists)
+            XCTAssertEqual(row.value as? String, "Недоступно")
+        }
+        let profile = app.scrollViews["shell.profileScreen"]
+        XCTAssertTrue(profile.exists)
+        XCTAssertFalse(profile.buttons["Экзамен"].exists)
+        app.segmentedControls["settings.language"].buttons["English"].tap()
+        XCTAssertTrue(app.buttons["Sign out"].waitForExistence(timeout: 10))
+        let savedAccount2 = try await account(name)
+        XCTAssertEqual(savedAccount2.user.locale, "en")
+        app.segmentedControls["settings.theme"].buttons["Light"].tap()
+        app.segmentedControls["settings.textSize"].buttons["Larger"].tap()
+        try capture("profile-en-light-larger")
+        app.terminate()
+        app = launch(reset: false, useReviewTheme: false)
+        XCTAssertTrue(app.buttons["home.configure"].waitForExistence(timeout: 15))
+        app.buttons["shell.profile"].firstMatch.tap()
+        XCTAssertTrue(app.segmentedControls["settings.theme"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.segmentedControls["settings.theme"].buttons["Light"].isSelected)
+        XCTAssertTrue(app.segmentedControls["settings.textSize"].buttons["Larger"].isSelected)
+        XCTAssertTrue(app.segmentedControls["settings.language"].buttons["English"].isSelected)
+    }
+
+    func testShellLocaleOfflineRollsBackAndAccountRetainsLanguage() async throws {
+        let app = launch(reset: true)
+        let name = signIn(app)
+        app.terminate()
+        let offline = launch(reset: false, server: unreachableServer)
+        XCTAssertTrue(offline.buttons["home.configure"].waitForExistence(timeout: 10))
+        offline.buttons["shell.profile"].firstMatch.tap()
+        offline.segmentedControls["settings.language"].buttons["English"].tap()
+        let error = offline.descendants(matching: .any)["settings.languageError"]
+        XCTAssertTrue(error.waitForExistence(timeout: 10))
+        XCTAssertTrue(offline.segmentedControls["settings.language"].buttons["Русский"].isSelected)
+        let savedAccount3 = try await account(name)
+        XCTAssertEqual(savedAccount3.user.locale, "ru")
+        try capture("profile-locale-offline")
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            offline.descendants(matching: .any)["shell.tab.training"].firstMatch.tap()
+        } else {
+            offline.navigationBars.buttons.firstMatch.tap()
+        }
+        XCTAssertTrue(offline.buttons["home.configure"].waitForExistence(timeout: 5))
+        offline.buttons["shell.profile"].firstMatch.tap()
+        XCTAssertTrue(offline.segmentedControls["settings.language"].waitForExistence(timeout: 5))
+        XCTAssertFalse(error.exists, "ошибка прежнего выбора языка не должна возвращаться при открытии профиля")
+    }
+
+    func testShellRepeatMistakesStartsFromSavedWrongAnswer() async throws {
+        let app = launch(reset: true)
+        startSession(app)
+        XCTAssertTrue(app.buttons["question.dontKnow"].waitForExistence(timeout: 5))
+        app.buttons["question.dontKnow"].tap()
+        app.buttons["training.close"].tap()
+        let mistakes = app.buttons["home.mistakes"]
+        XCTAssertTrue(mistakes.waitForExistence(timeout: 15))
+        let week = app.descendants(matching: .any)["home.week"]
+        XCTAssertTrue(week.waitForExistence(timeout: 5))
+        app.scrollViews["home.screen"].swipeUp()
+        XCTAssertTrue(week.label.contains("1 день"))
+        XCTAssertTrue(week.label.contains("1 задание"))
+        XCTAssertTrue(
+            week.staticTexts.allElementsBoundByIndex.allSatisfy { $0.label != "1" },
+            "число и подпись недели должны читаться вместе")
+        let visible = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in mistakes.isHittable }, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [visible], timeout: 5), .completed)
+        try capture("week-saved-answer")
+        mistakes.tap()
+        XCTAssertTrue(app.otherElements["training.session"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.tabBars.firstMatch.exists == false || !app.tabBars.firstMatch.isHittable)
+        try capture("mistakes-session")
+        app.buttons["training.close"].tap()
+        XCTAssertTrue(app.buttons["shell.profile"].firstMatch.waitForExistence(timeout: 5))
+        app.buttons["shell.profile"].firstMatch.tap()
+        XCTAssertTrue(app.segmentedControls["settings.language"].waitForExistence(timeout: 5))
+        app.segmentedControls["settings.language"].buttons["English"].tap()
+        XCTAssertTrue(app.buttons["Sign out"].waitForExistence(timeout: 10))
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            app.descendants(matching: .any)["shell.tab.training"].firstMatch.tap()
+        } else {
+            app.navigationBars.buttons.firstMatch.tap()
+        }
+        XCTAssertTrue(app.buttons["home.configure"].waitForExistence(timeout: 5))
+        app.scrollViews["home.screen"].swipeUp()
+        XCTAssertTrue(week.waitForExistence(timeout: 5))
+        XCTAssertTrue(
+            week.label.hasPrefix("This week,"), "VoiceOver следует английскому аккаунту при русском устройстве")
+        XCTAssertTrue(week.label.contains("1 day") && week.label.contains("1 question"))
+        try capture("week-account-en-device-ru")
+    }
+
+    func testShellTabHistory() throws {
+        let app = launch(reset: true)
+        signIn(app)
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            app.buttons["shell.profile"].firstMatch.tap()
+            XCTAssertTrue(app.segmentedControls["settings.language"].waitForExistence(timeout: 5))
+            app.descendants(matching: .any)["shell.tab.training"].firstMatch.tap()
+            XCTAssertTrue(app.buttons["home.configure"].waitForExistence(timeout: 5))
+            XCTAssertFalse(app.segmentedControls["settings.language"].exists)
+            app.buttons["shell.profile"].firstMatch.tap()
+            XCTAssertTrue(app.segmentedControls["settings.language"].waitForExistence(timeout: 5))
+            app.descendants(matching: .any)["shell.tab.words"].firstMatch.tap()
+            XCTAssertTrue(app.scrollViews["shell.empty.words"].waitForExistence(timeout: 5))
+            app.descendants(matching: .any)["shell.tab.training"].firstMatch.tap()
+            XCTAssertTrue(
+                app.buttons["home.configure"].waitForExistence(timeout: 5),
+                "профиль не должен входить в историю вкладки на iPad")
+            app.buttons["shell.profile"].firstMatch.tap()
+            XCTAssertTrue(app.segmentedControls["settings.language"].waitForExistence(timeout: 5))
+            try capture("sidebar-profile")
+        } else {
+            app.buttons["Прогресс"].firstMatch.tap()
+            app.buttons["shell.profile"].firstMatch.tap()
+            XCTAssertTrue(app.segmentedControls["settings.language"].waitForExistence(timeout: 5))
+            XCTAssertFalse(app.tabBars.firstMatch.isHittable, "профиль iPhone скрывает панель вкладок")
+            // Других push-экранов в оболочке пока нет; фон и возврат сохраняют стек выбранной вкладки.
+            XCUIDevice.shared.press(.home)
+            app.activate()
+            XCTAssertTrue(app.segmentedControls["settings.language"].waitForExistence(timeout: 5))
+            XCTAssertFalse(app.tabBars.firstMatch.isHittable)
+            try capture("tab-history-profile")
+            app.navigationBars.buttons.firstMatch.tap()
+            XCTAssertTrue(app.scrollViews["shell.empty.progress"].waitForExistence(timeout: 5))
+        }
+    }
+
 }

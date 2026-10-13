@@ -16,6 +16,7 @@ final class TrainingModel {
     @ObservationIgnored private var needsClear = false
     private(set) var revision = 0
     var reviewClosed = false
+    var exam: Exam? = .gre
 
     @ObservationIgnored lazy var repository = TrainingRepository(
         store: store, access: access, now: now, report: report,
@@ -89,7 +90,7 @@ final class TrainingModel {
         let epoch = revision
         await connection?.value
         guard revision == epoch else { throw .cancelled }
-        return try await repository.options(epoch: epoch)
+        return try await repository.options(exam: exam ?? .gre, epoch: epoch)
     }
 
     func start(_ request: TrainingRequest) async throws(APIFailure) -> String {

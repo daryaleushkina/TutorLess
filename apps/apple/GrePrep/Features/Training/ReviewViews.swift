@@ -167,7 +167,7 @@ private struct TrainingReviewContent: View {
                                 in: RoundedRectangle(cornerRadius: GPRadius.m))
                     }.buttonStyle(PressScaleStyle()).accessibilityElement(children: .combine)
                         .accessibilityLabel(
-                            "Вопрос \(p + 1), \(String(localized: outcome.label)), \(TrainingText.typeLabel(q)), \(q.topicTitle.localized)"
+                            "Вопрос \(p + 1), \(String(interface: outcome.label)), \(TrainingText.typeLabel(q)), \(q.topicTitle.localized)"
                         )
                         .accessibilityAddTraits(wide && selectedPosition == p ? .isSelected : [])
                         .accessibilityIdentifier("review.item.\(p)")

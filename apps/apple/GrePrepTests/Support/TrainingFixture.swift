@@ -16,6 +16,8 @@ enum TrainingFixture {
     }
     private struct Summary: Decodable { let session: TrainingSession }
     private struct Seed: Decodable {
+        enum CodingKeys: String, CodingKey { case questions, topics }
+        enum ItemKeys: String, CodingKey { case type }
         struct Item: Decodable {
             struct Body: Decodable {
                 let prompt: String
@@ -33,24 +35,30 @@ enum TrainingFixture {
             let answer: [String]
             let explanation: Components.Schemas.Explanation
         }
-        /// Общий сид держит и новые типы заданий, а нативный договор Apple — только те, что клиент рисует
-        /// (`api/native-question-types.json`). Фикстура берёт задания известных типов, как сервер отдаёт клиенту
-        /// только объявленные в `X-Training-Capabilities`; ошибка в задании известного типа по-прежнему роняет тест.
-        struct Entry: Decodable {
-            let item: Item?
-            private enum CodingKeys: String, CodingKey { case type }
-            init(from decoder: any Decoder) throws {
-                let type = try decoder.container(keyedBy: CodingKeys.self).decode(String.self, forKey: .type)
-                item = Components.Schemas.QuestionType(rawValue: type) == nil ? nil : try Item(from: decoder)
-            }
-        }
-        private let questions: [Entry]
-        var items: [Item] { questions.compactMap(\.item) }
+        private let questions: [Item]
+        var items: [Item] { questions }
         struct Topic: Decodable {
             let id: String
             let title: Components.Schemas.LocalizedText
         }
         let topics: [Topic]
+
+        init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            var source = try container.nestedUnkeyedContainer(forKey: .questions)
+            var supported: [Item] = []
+            while !source.isAtEnd {
+                let item = try source.superDecoder()
+                let header = try item.container(keyedBy: ItemKeys.self)
+                let type = try header.decode(String.self, forKey: .type)
+                // Общий seed уже содержит формы части 3; Apple проверяет только объявленные возможности.
+                if API.trainingTypes.contains(where: { $0.rawValue == type }) {
+                    supported.append(try Item(from: item))
+                }
+            }
+            questions = supported
+            topics = try container.decode([Topic].self, forKey: .topics)
+        }
     }
     static func sample(_ type: Components.Schemas.QuestionType, blanks: Int = 1) -> Question {
         let url = Bundle(for: ResourceBundle.self).url(forResource: "questions", withExtension: "json")!
@@ -109,11 +117,11 @@ enum TrainingFixture {
             .init(
                 kind: "last",
                 request: .init(
-                    exam: currentExam, section: .verbal, questionTypes: [.textCompletion], count: 10, mode: .practice)),
+                    exam: .gre, section: .verbal, questionTypes: [.textCompletion], count: 10, mode: .practice)),
             .init(
                 kind: "timed",
                 request: .init(
-                    exam: currentExam, section: .verbal, questionTypes: [.textCompletion, .sentenceEquivalence],
+                    exam: .gre, section: .verbal, questionTypes: [.textCompletion, .sentenceEquivalence],
                     count: 12, mode: .check)),
         ],
         maxQuestions: 30)

@@ -8,7 +8,7 @@ enum TrainingText {
         case .listening: "Listening"
         case .writing: "Writing"
         case .speaking: "Speaking"
-        case .verbal, .quant, .words, .essay: String(localized: StudySection(section).label)
+        case .verbal, .quant, .words, .essay: String(interface: StudySection(section).label)
         }
     }
 
@@ -76,8 +76,8 @@ enum TrainingText {
     }
 
     static func typeLabel(_ q: Question) -> String {
-        if q.groups.count > 1 { return q.questionType.label + " · " + String(localized: "\(q.groups.count) пропуска") }
-        if q.selectCount > 1 { return q.questionType.label + " · " + String(localized: "два ответа") }
+        if q.groups.count > 1 { return q.questionType.label + " · " + String(interface: "\(q.groups.count) пропуска") }
+        if q.selectCount > 1 { return q.questionType.label + " · " + String(interface: "два ответа") }
         return q.questionType.label
     }
 
@@ -86,10 +86,10 @@ enum TrainingText {
         if s.question.groups.count > 1 {
             let numbers = s.missing.map(blankLabel).joined(separator: ", ")
             return s.missing.count == 1
-                ? String(localized: "Осталось выбрать слово для пропуска \(numbers)")
-                : String(localized: "Осталось выбрать слова для пропусков \(numbers)")
+                ? String(interface: "Осталось выбрать слово для пропуска \(numbers)")
+                : String(interface: "Осталось выбрать слова для пропусков \(numbers)")
         }
-        return s.question.selectCount > 1 ? String(localized: "Выберите ещё один ответ") : nil
+        return s.question.selectCount > 1 ? String(interface: "Выберите ещё один ответ") : nil
     }
 
     static func answerList(_ q: Question, english: Bool) -> String {
@@ -211,7 +211,7 @@ struct SessionQuestion: View {
             case let .text(literal): return literal
             case let .blank(index):
                 let option = question.groups[index].options.first { chosen.contains($0.id) }
-                return " " + (option?.text ?? String(localized: "Пропуск \(index + 1)")) + " "
+                return " " + (option?.text ?? String(interface: "Пропуск \(index + 1)")) + " "
             }
         }.joined()
     }
@@ -320,8 +320,8 @@ struct SessionQuestion: View {
                 .accessibilityValue(
                     Text(
                         verbatim: [
-                            question.answer.contains(option.id) ? String(localized: "верный") : "",
-                            screen.selection.contains(option.id) ? String(localized: "ваш ответ") : "",
+                            question.answer.contains(option.id) ? String(interface: "верный") : "",
+                            screen.selection.contains(option.id) ? String(interface: "ваш ответ") : "",
                         ].filter { !$0.isEmpty }.joined(separator: ", ")))
             }
             let rest = group.options.filter { !question.answer.contains($0.id) && !screen.selection.contains($0.id) }
