@@ -198,6 +198,10 @@ export async function checkScreen(page: Page, name: string, opts: { mask?: Locat
     if (document.documentElement.scrollWidth > innerWidth + 1) out.push(`страница шире экрана: ${document.documentElement.scrollWidth} > ${innerWidth}`);
     if (main.scrollWidth > main.clientWidth + 1) out.push(`содержимое шире экрана: ${main.scrollWidth} > ${main.clientWidth}`);
     for (const el of main.querySelectorAll('*')) {
+      // Широкие данные намеренно прокручиваются в своей рамке; проверяем саму рамку,
+      // а скрытые ею столбцы не считаем содержимым за пределами экрана.
+      const frame = el.closest('[data-figure-scroll]');
+      if (frame && frame !== el && getComputedStyle(frame).overflowX === 'auto') continue;
       const r = el.getBoundingClientRect();
       if (r.width && r.right > innerWidth + 2) {
         out.push(`вылезает вправо: ${label(el)} (${Math.round(r.right)} > ${innerWidth})`);

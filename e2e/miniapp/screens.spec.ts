@@ -128,3 +128,6 @@ test('B новые: RC, предложения, несколько ответо�
 
 import { wordsScreens } from '../words';
 test('словарь: список, пустой поиск и карточка', async ({ miniApp }) => wordsScreens(miniApp));
+
+import { figureScreens } from '../figures';
+test('R12: bar, line, table и широкая таблица', async ({ miniApp }) => { await figureScreens(miniApp); });

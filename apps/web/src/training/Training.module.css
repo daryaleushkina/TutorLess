@@ -140,6 +140,7 @@
 .reviewFilters button { min-width: 0; padding-inline: var(--space-8); }
 .reviewList { list-style: none; padding: 0; margin: 0; background: var(--color-surface); border-radius: var(--radius-l); border: var(--size-hairline) solid var(--color-line); }
 .reviewList li + li { border-top: var(--size-hairline) solid var(--color-line); }
+.reviewMaterial { padding: var(--space-16); }
 .reviewRow { display: flex; align-items: center; gap: var(--space-12); min-height: var(--size-opt); padding: var(--space-12) var(--space-16); color: var(--color-text); text-decoration: none; font: var(--font-body); border-radius: var(--radius-m); }
 .reviewNumber, .reviewTime { font: var(--font-meta); font-variant-numeric: tabular-nums; color: var(--color-text-3); }
 .reviewNumber { display: grid; place-items: center; width: var(--space-32); height: var(--space-32); flex: none; border-radius: calc(var(--radius-s) / 2); background: var(--color-surface-2); color: var(--color-text); font-weight: var(--font-weight-semibold); }
@@ -255,4 +256,8 @@
   .rc[data-tab] .rcText, .rc[data-tab] .rcQuestion { display: block; }
   .session[data-shell='site'] .rc .questionLayout, .readTraining[data-shell='site'] .rc .reviewQuestionLayout { grid-template-columns: minmax(0, 1fr); }
   .rc .explanation { border-top: var(--size-hairline) solid var(--color-line); padding-top: var(--space-24); }
+}
+
+@media (min-width: 900px) {
+  .session[data-shell='site'] [data-figure-question] .questionLayout, .readTraining[data-shell='site'] [data-figure-question] .reviewQuestionLayout { grid-template-columns: minmax(0, 1fr); max-width: none; }
 }

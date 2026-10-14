@@ -26,6 +26,7 @@ import { TrainingFeedback } from './TrainingFeedback';
 import { SessionHeader } from './SessionHeader';
 import { questionTitle } from './answerFormats';
 import { PassageQuestion } from './Passage';
+import { FigureQuestion } from './DataFigure';
 
 const EXIT_WAIT_MS = 1500;
 
@@ -94,6 +95,8 @@ function ActiveSession({ incoming }: { incoming: StoredTraining }) {
       if (event.target instanceof Element) {
         if (event.target.closest('input, textarea, select, [contenteditable="true"], a') || event.target.matches('[role="tab"]')) return;
         if (event.target.matches('[role="tabpanel"]') && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) return;
+        // Стрелки внутри рисунка принадлежат прокрутке данных, а не смене вопроса.
+        if (event.target.closest('[data-figure-scroll]') && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown', ' '].includes(event.key)) return;
       }
       // Enter всегда соответствует подсказке; пробел сохраняет нативный выбор сфокусированного варианта.
       if (/^[a-f]$/i.test(event.key) && !s.revealed) {
@@ -156,7 +159,7 @@ function ActiveSession({ incoming }: { incoming: StoredTraining }) {
         })}</div>
         <TrainingActions primary={{ text: text.overview_finish, disabled: s.busy, onClick: act }} />
       </section></TrainingSheet>}
-      {s.question.passage && s.question.questionType !== 'select_in_passage' ? <PassageQuestion key={s.question.passage.id} question={s.question} first={s.training.session.items.find((item) => item.question.passage?.id === s.question.passage?.id)?.position === s.position}>{questionContent}</PassageQuestion> : questionContent}
+      {s.question.figure ? <FigureQuestion figure={s.question.figure}>{questionContent}</FigureQuestion> : s.question.passage && s.question.questionType !== 'select_in_passage' ? <PassageQuestion key={s.question.passage.id} question={s.question} first={s.training.session.items.find((item) => item.question.passage?.id === s.question.passage?.id)?.position === s.position}>{questionContent}</PassageQuestion> : questionContent}
       <Link to="/training/$trainingId/report/$position" params={{ trainingId: s.training.session.id, position: s.position }} search={{ returnTo: 'session', language }} className={styles.reportLink}><Flag />{text.question_report}</Link>
       {confirmation && <TrainingSheet title={confirmation === 'finish' ? text.finish_confirm(unanswered) : s.checkMode ? text.exit_check : text.exit_practice} onClose={() => setConfirmation(undefined)}>
         {confirmation === 'exit' && <p>{text.exit_save}</p>}

@@ -12,3 +12,9 @@ for (const type of NEW_TYPES) test(`B новые: проверка ${type[0]} ${
 test('B новые: пустые и частичные поля не попадают в пачку проверки', async ({ miniApp }) => { await partialBatch(miniApp); });
 test('B новые: проверка вопроса, открытого больше суток', async ({ miniApp }) => { await longOpenQuestion(miniApp); });
 test('B новые: Telegram «Назад» выходит при зависшей записи', async ({ miniApp }) => { await suspendedWriteExit(miniApp, true); });
+
+import { allTypesSession, seedFigureSession } from '../figures';
+for (const mode of ['practice', 'check'] as const) {
+  test(`все типы GRE в одной сессии: ${mode}`, async ({ miniApp }) => { await allTypesSession(miniApp, mode); });
+  test(`рисунок из сида: сервер, сессия, жалоба и разбор ${mode}`, async ({ miniApp }) => { await seedFigureSession(miniApp, mode); });
+}

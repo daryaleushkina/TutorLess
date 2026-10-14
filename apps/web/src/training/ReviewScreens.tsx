@@ -16,6 +16,7 @@ import { TrainingActions } from './Action';
 import { useRef } from 'react';
 import { SessionHeader } from './SessionHeader';
 import { PassageQuestion } from './Passage';
+import { DataFigure, FigureQuestion } from './DataFigure';
 import { useShell } from '../shellContext';
 
 export function ReviewScreen() {
@@ -60,7 +61,7 @@ function ReviewList({ training }: { training: StoredTraining }) {
     {shown.length === 0 ? <p>{filter === 'flagged' ? text.review_no_flagged : text.review_no_mistakes}</p> : <ul className={styles.reviewList}>{shown.map(({ position, question }) => {
       const state = outcome(position);
       const description = state === 'correct' ? text.review_correct : state === 'wrong' ? text.review_wrong : text.review_unanswered;
-      return <li key={position}><Link to="/training/$trainingId/review/$position" params={{ trainingId: training.session.id, position }} search={{ filter, language: selectedLanguage }} className={styles.reviewRow} aria-label={`${text.review_question(position + 1)}, ${description}, ${questionTitle(question, text)}, ${question.topicTitle[locale]}`}>
+      return <li key={position}>{question.figure && <div className={styles.reviewMaterial}><DataFigure figure={question.figure} /></div>}<Link to="/training/$trainingId/review/$position" params={{ trainingId: training.session.id, position }} search={{ filter, language: selectedLanguage }} className={styles.reviewRow} aria-label={`${text.review_question(position + 1)}, ${description}, ${questionTitle(question, text)}, ${question.topicTitle[locale]}`}>
         <span className={styles.reviewNumber}>{position + 1}</span>
         <span className={styles.grow}><span lang={question.passage || !answerFormat(question)?.title ? 'en' : locale}>{questionTitle(question, text)}</span><span className={styles.note}>{description}{training.answers[String(position)]?.flagged && ` · ${text.overview_flagged}`}</span></span>
         <span className={styles.reviewOutcome} data-outcome={state} aria-hidden="true">{state === 'correct' ? <CheckIcon /> : state === 'wrong' ? <Cross /> : <SessionIcon><path d="M7 12h10" /></SessionIcon>}</span>
@@ -117,7 +118,7 @@ function ReviewItem({ training, position }: { training: StoredTraining; position
   return <>
     <SessionHeader section={training.session.section} label={t.training.explanation_title} position={index} total={training.session.items.length} onClose={() => void navigate({ to: '/training/$trainingId/review', params: { trainingId: training.session.id }, search: { filter, language } })} onPrevious={previous ? () => go(previous.position) : undefined} onNext={next ? () => go(next.position) : undefined} />
     <TrainingHeading className={styles.questionType}>{t.training.review_question(index + 1)}</TrainingHeading>
-    {item.question.passage && item.question.questionType !== 'select_in_passage' ? <PassageQuestion question={item.question} first={false}>{questionContent}</PassageQuestion> : questionContent}
+    {item.question.figure ? <FigureQuestion figure={item.question.figure}>{questionContent}</FigureQuestion> : item.question.passage && item.question.questionType !== 'select_in_passage' ? <PassageQuestion question={item.question} first={false}>{questionContent}</PassageQuestion> : questionContent}
     <Link to="/training/$trainingId/report/$position" params={{ trainingId: training.session.id, position }} search={{ returnTo: 'review', language, filter }} className={styles.reportLink}>{t.training.question_report}</Link>
     <FocusFooter><SessionFooter><TrainingActions secondary={next ? { text: t.training.to_summary, disabled: false, onClick: summary } : undefined} primary={{ text: next ? t.training.review_next : t.training.to_summary, disabled: false, onClick: next ? () => go(next.position) : summary }} /></SessionFooter></FocusFooter>
   </>;
