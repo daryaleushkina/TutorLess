@@ -14,3 +14,9 @@ for (const mode of ['practice', 'check'] as const) test(`B новые: стре�
 test('B новые: RC выбирает буквами на тексте и проверяет Enter после варианта', async ({ site }) => { await readingShortcuts(site); });
 test('B новые: проверка вопроса, открытого больше суток', async ({ site }) => { await longOpenQuestion(site); });
 test('B новые: крестик выходит при зависшей записи', async ({ site }) => { await suspendedWriteExit(site); });
+
+import { allTypesSession, seedFigureSession } from '../figures';
+for (const mode of ['practice', 'check'] as const) {
+  test(`все типы GRE в одной сессии: ${mode}`, async ({ site }) => { await allTypesSession(site, mode); });
+  test(`рисунок из сида: сервер, сессия, жалоба и разбор ${mode}`, async ({ site }) => { await seedFigureSession(site, mode); });
+}

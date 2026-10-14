@@ -117,3 +117,6 @@ test('B новые: RC, предложения, несколько ответо�
 
 import { wordsScreens } from '../words';
 test('словарь: список, пустой поиск и карточка', async ({ site }) => wordsScreens(site));
+
+import { figureScreens } from '../figures';
+test('R12: bar, line, table и широкая таблица', async ({ site }) => { await figureScreens(site); });
