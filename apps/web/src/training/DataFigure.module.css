@@ -7,8 +7,9 @@
 .legend span { overflow-wrap: anywhere; }
 .legend svg { width: var(--space-32); height: var(--space-16); flex: none; }
 .legend line, .line { stroke: currentColor; stroke-width: calc(var(--size-hairline) * 2); fill: none; stroke-linejoin: round; }
-.scroll { min-width: 0; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; border-radius: calc(var(--radius-s) / 2); font: var(--font-body); }
-.chart { width: 100%; height: auto; display: block; }
+.fontMetric { position: absolute; width: 1em; height: 1em; font: var(--font-caption); visibility: hidden; pointer-events: none; }
+.scroll { position: relative; min-width: 0; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; border-radius: calc(var(--radius-s) / 2); font: var(--font-body); }
+.chart { display: block; }
 .grid line { stroke: var(--color-line); stroke-width: var(--size-hairline); }
 .zero { stroke: var(--color-line-strong); stroke-width: var(--size-hairline); }
 .tick, .category { fill: var(--color-text-3); font: var(--font-caption); }
@@ -19,10 +20,10 @@
 .marker { fill: var(--color-surface); stroke: currentColor; stroke-width: calc(var(--size-hairline) * 2); }
 .connector { stroke: var(--color-line-strong); stroke-width: var(--size-hairline); stroke-dasharray: none; }
 .scroll table { min-width: 100%; width: max-content; border-collapse: collapse; font: var(--font-meta); color: var(--color-text-2); }
-.scroll th, .scroll td { padding: var(--space-10) var(--space-14); border-bottom: var(--size-hairline) solid var(--color-line); min-width: calc(var(--space-48) * 2); max-width: calc(var(--space-72) * 3); overflow-wrap: anywhere; }
+.scroll th, .scroll thead th:not(:first-child), .scroll td { padding: var(--space-10) var(--space-14); border-bottom: var(--size-hairline) solid var(--color-line); min-width: calc(var(--space-48) * 2); max-width: calc(var(--space-72) * 3); overflow-wrap: anywhere; }
 .scroll th { text-align: left; font-weight: var(--font-weight-semibold); }
-.scroll td { text-align: right; font-variant-numeric: tabular-nums; }
-.scroll tr:last-child > * { border-bottom: 0; }
+.scroll thead th:not(:first-child), .scroll td { text-align: right; font-variant-numeric: tabular-nums; }
+.scroll tbody tr:last-child > * { border-bottom: 0; }
 .columns { display: grid; gap: var(--space-24); min-width: 0; }
 .question { min-width: 0; }
 @media (min-width: 900px) { .columns[data-shell='site'] { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: var(--space-48); align-items: start; } }

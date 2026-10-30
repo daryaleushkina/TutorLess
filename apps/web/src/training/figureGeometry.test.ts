@@ -14,13 +14,13 @@ test('шкала общая для всех рядов, отрицательны
   const scale = figureScale([...figure.series, { id: 'b', label: 'B', values: [60, 20, 0] }]);
   expect(scale.ratio(-12)).toBeGreaterThan(scale.ratio(0));
   expect(scale.ratio(60)).toBe(0);
-  expect(scale.ratio(30)).toBeCloseTo(5 / 12);
+  expect(scale.ratio(30)).toBeCloseTo(3 / 8);
 });
 test('числа не округляются и не теряют точность, минус читаем, −0 показан как 0', () => {
   expect(figureValue(-0)).toBe('0'); expect(figureValue(-12.34567)).toBe('−12.34567'); expect(figureValue(1e30)).toBe('1e+30');
 });
 test('переносы сохраняют длинные слова и пробелы между словами', () => {
-  expect(figureLabel('one two three four', 7)).toEqual(['one two', 'three', 'four']);
+  expect(figureLabel('one two three four', 7.5)).toEqual(['one two', 'three', 'four']);
   expect(figureLabel('a'.repeat(200)).join('')).toBe('a'.repeat(200));
   expect(figureLabel('😀'.repeat(20), 3).join('')).toBe('😀'.repeat(20));
   expect(figureLabel('')).toEqual([]);
@@ -44,5 +44,30 @@ test('перенос учитывает ширину заглавных букв
     const lines = figureLabel(label);
     expect(lines.join('')).toBe(label);
     expect(lines.every((line) => figureLabelUnits(line) <= 18)).toBe(true);
+  }
+});
+
+
+for (const letter of ['m', 'w']) test(`широкая строчная ${letter} учитывается при переносе`, () => {
+  expect(figureLabelUnits(letter.repeat(200))).toBeGreaterThanOrEqual(300);
+  expect(figureLabel(letter.repeat(200)).every((line) => line.length <= 12)).toBe(true);
+});
+
+for (const space of ['\u00a0', '\u202f']) test(`неразрывная группа не делится: ${space.codePointAt(0)}`, () => {
+  expect(figureLabel(`run 5${space}km`, 4)).toEqual(['run', `5${space}km`]);
+});
+
+test('перенос по графемам сохраняет составной символ целиком', () => {
+  const symbol = '👩🏽‍🔬';
+  expect(figureLabel(symbol.repeat(4), 2)).toEqual(Array(4).fill(symbol));
+  expect(figureLabel('a\u0301'.repeat(4), 1)).toEqual(Array(4).fill('a\u0301'));
+});
+
+for (const [values, expected] of [ [[0, 30], [0, 10, 20, 30]], [[-12, 30], [-20, 0, 20, 40]], [[0, 0.3], [0, 0.1, 0.2, 0.3]], [[0, 12345678], [0, 5000000, 10000000, 15000000]], [[0, 0], [0, 0.5, 1]] ]) test(`красивые десятичные деления: ${values}`, () => {
+  const scale = figureScale([{ id: 's', label: 'Series', values: values! }]);
+  expect(scale.ticks.map((tick) => tick.value)).toEqual(expected);
+  expect(scale.ticks.some((tick) => tick.value === 0)).toBe(true);
+  for (const tick of scale.ticks) {
+    expect(tick.ratio).toBe(scale.ratio(Number(figureValue(tick.value).replace('−', '-'))));
   }
 });

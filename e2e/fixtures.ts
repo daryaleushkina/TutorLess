@@ -5,6 +5,7 @@ import { expect, test as base, type BrowserContext, type Locator, type Page } fr
 import { E2E_BOT_TOKEN, type TgOptions } from '../playwright.config';
 import { schemas, type User } from '../packages/api-client/src';
 import { telegramLocale } from '../apps/web/src/i18n/locale';
+import { screenHorizontalIssues } from './screenLayout';
 import { THEME_STORAGE_KEY } from '../apps/web/src/styles/theme';
 
 export interface TelegramUser {
@@ -190,24 +191,12 @@ export function navLink(page: Page, name: string): Locator {
  * видно над ней, длинное листается) и эталонный снимок.
  */
 export async function checkScreen(page: Page, name: string, opts: { mask?: Locator[] } = {}) {
+  const horizontal = await page.evaluate(screenHorizontalIssues);
   const issues = await page.evaluate(() => {
     const out: string[] = [];
     const main = document.querySelector<HTMLElement>('main.app-shell');
     if (!main) return ['нет main.app-shell'];
     const label = (el: Element) => `${el.tagName.toLowerCase()}.${String(el.className).split(' ')[0]}`;
-    if (document.documentElement.scrollWidth > innerWidth + 1) out.push(`страница шире экрана: ${document.documentElement.scrollWidth} > ${innerWidth}`);
-    if (main.scrollWidth > main.clientWidth + 1) out.push(`содержимое шире экрана: ${main.scrollWidth} > ${main.clientWidth}`);
-    for (const el of main.querySelectorAll('*')) {
-      // Широкие данные намеренно прокручиваются в своей рамке; проверяем саму рамку,
-      // а скрытые ею столбцы не считаем содержимым за пределами экрана.
-      const frame = el.closest('[data-figure-scroll]');
-      if (frame && frame !== el && getComputedStyle(frame).overflowX === 'auto') continue;
-      const r = el.getBoundingClientRect();
-      if (r.width && r.right > innerWidth + 2) {
-        out.push(`вылезает вправо: ${label(el)} (${Math.round(r.right)} > ${innerWidth})`);
-        break;
-      }
-    }
     const scrollable = main.scrollHeight > main.clientHeight + 4;
     if (scrollable) {
       main.scrollTop = main.scrollHeight;
@@ -256,7 +245,7 @@ export async function checkScreen(page: Page, name: string, opts: { mask?: Locat
     main.scrollTop = 0;
     return out;
   });
-  expect(issues, `вёрстка «${name}»`).toEqual([]);
+  expect([...horizontal, ...issues], `вёрстка «${name}»`).toEqual([]);
   await page.evaluate(() => document.fonts.ready);
   await expect(page).toHaveScreenshot(`${name}.png`, { ...(opts.mask && { mask: opts.mask }) });
 }

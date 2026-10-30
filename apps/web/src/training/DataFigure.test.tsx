@@ -9,6 +9,9 @@ import { questionFixture, trainingSession } from '../test/training';
 import { storedTraining } from './model';
 import { trainingRepository } from './repository';
 import { vi } from 'vitest';
+import { useState } from 'react';
+import * as geometry from './figureGeometry';
+vi.mock('./figureGeometry', { spy: true });
 
 const figure: Figure = { id: 'synthetic', kind: 'bar', title: 'Synthetic data', xLabel: 'Day', yLabel: 'Orders', unit: 'orders',
   categories: ['Monday', 'Tuesday', 'Wednesday'], series: [{ id: 'east', label: 'East', values: [-12, 0, 30] }], description: 'East: Monday −12, Tuesday 0, Wednesday 30 orders.' };
@@ -56,7 +59,7 @@ test('нулевой график и единственная точка не д
 test('нет подписей осей и единицы; язык и категория берутся из словаря', async () => {
   const view = await render(<I18nProvider locale="en"><DataFigure figure={{ ...figure, kind: 'table', unit: '', xLabel: '', yLabel: '' }} /></I18nProvider>);
   await expect.element(view.getByRole('columnheader', { name: 'Category' })).toBeVisible();
-  await expect.element(view.getByRole('region', { name: 'Figure data: scroll horizontally' })).toBeVisible();
+  expect(view.container.querySelector('[data-figure-scroll]')?.hasAttribute('role')).toBe(false);
 });
 
 test('повреждённые данные: вместо мусора текстовое описание и понятное сообщение', async () => {
@@ -88,7 +91,9 @@ test('общий рисунок остаётся после ответа, наз
   await app.screen.getByRole('button', { name: 'Предыдущий вопрос', exact: true }).click();
   await expect.element(drawn()).toBeVisible();
   await app.screen.getByRole('link', { name: 'Сообщить об ошибке' }).click();
-  expect(document.querySelector('[data-data-figure]')?.getAttribute('aria-label')).toBe(figure.description);
+  await expect.element(app.screen.getByRole('heading', { name: 'Сообщить об ошибке', exact: true })).toBeVisible();
+  await expect.poll(() => document.querySelectorAll('[data-data-figure]').length).toBe(1);
+  await expect.element(drawn()).toBeVisible();
 });
 
 for (const [yLabel, unit, expected] of [['Orders', 'orders', 'Orders'], ['Orders', 'thousands', 'Orders · thousands'], ['', 'orders', 'orders']]) test(`подпись оси и единица: ${expected}`, async () => {
@@ -96,14 +101,14 @@ for (const [yLabel, unit, expected] of [['Orders', 'orders', 'Orders'], ['Orders
   await expect.element(view.getByText(expected!, { exact: true }).first()).toBeVisible();
 });
 
-async function bootFigures(data = figure, check = false) {
+async function bootFigures(data = figure, check = false, nextData = data) {
   fakeServer({ 'GET /api/me': () => json(user()), 'GET /api/trainings/options': () => json(OPTIONS) });
   vi.spyOn(trainingRepository, 'requestSync').mockImplementation(() => {});
   const app = await renderApp({ path: '/' });
   await expect.element(app.screen.getByRole('heading', { name: 'Тренировка' })).toBeVisible();
   const owner = await trainingRepository.store.currentOwner(); if (!owner) throw new Error('fixture owner missing');
   const q = { ...questionFixture('multiple_choice'), figure: data };
-  const training = storedTraining(trainingSession({ mode: check ? 'check' : 'practice', timeLimitSeconds: check ? 300 : undefined, section: 'quant', items: [0, 1].map((position) => ({ position, question: { ...q, id: `00000000-0000-4000-8000-00000000000${position}` } })) }), Date.now());
+  const training = storedTraining(trainingSession({ mode: check ? 'check' : 'practice', timeLimitSeconds: check ? 300 : undefined, section: 'quant', items: [0, 1].map((position) => ({ position, question: { ...q, figure: position === 0 ? data : nextData, id: `00000000-0000-4000-8000-00000000000${position}` } })) }), Date.now());
   await trainingRepository.store.put(owner, training);
   await app.router.navigate({ to: '/training/$trainingId', params: { trainingId: training.session.id } });
   await expect.element(app.screen.getByRole('figure', { name: data.description })).toBeVisible();
@@ -123,4 +128,120 @@ test('длинные широкие буквы в соседних катего�
   const labels = document.querySelectorAll<SVGTextElement>('svg > text');
   const first = labels[0]!.getBBox(); const second = labels[1]!.getBBox();
   expect(first.x + first.width).toBeLessThanOrEqual(second.x);
+});
+
+
+test('непереполненный график не получает роль, подпись прокрутки и место в табуляции; стрелка меняет вопрос после клика', async () => {
+  const data = { ...figure, categories: ['A'], series: [{ id: 's', label: 'S', values: [1] }] };
+  const { app } = await bootFigures(data, true);
+  const scroll = document.querySelector<HTMLElement>('[data-figure-scroll]')!;
+  expect(scroll.scrollWidth).toBe(scroll.clientWidth);
+  expect(scroll.hasAttribute('tabindex')).toBe(false);
+  expect(scroll.hasAttribute('role')).toBe(false);
+  expect(scroll.hasAttribute('aria-label')).toBe(false);
+  await userEvent.click(scroll);
+  await userEvent.keyboard('{ArrowRight}');
+  await expect.element(app.screen.getByLabelText('Вопрос 2 из 2', { exact: true })).toBeVisible();
+});
+
+test('ResizeObserver включает и снимает доступность прокрутки при изменении размеров', async () => {
+  let notify = () => {};
+  const disconnect = vi.fn();
+  vi.stubGlobal('ResizeObserver', class {
+    constructor(callback: () => void) { notify = callback; }
+    observe() {} disconnect = disconnect;
+  });
+  const view = await render(<DataFigure figure={{ ...figure, kind: 'table' }} />);
+  const scroll = view.container.querySelector<HTMLElement>('[data-figure-scroll]')!;
+  Object.defineProperties(scroll, { scrollWidth: { configurable: true, value: 1000 }, clientWidth: { configurable: true, value: 500 } });
+  notify();
+  await expect.element(view.getByRole('region', { name: /Synthetic data/ })).toBeVisible();
+  expect(scroll.tabIndex).toBe(0);
+  Object.defineProperty(scroll, 'clientWidth', { configurable: true, value: 1000 });
+  notify();
+  await expect.poll(() => scroll.hasAttribute('tabindex')).toBe(false);
+  await view.unmount(); expect(disconnect).toHaveBeenCalled();
+});
+
+test('без ResizeObserver рисунок остаётся доступен и измеряется при первом показе', async () => {
+  vi.stubGlobal('ResizeObserver', undefined);
+  const view = await render(<DataFigure figure={{ ...figure, kind: 'table', series: Array.from({ length: 20 }, (_, i) => ({ ...figure.series[0]!, id: String(i), label: `Series ${i}` })) }} />);
+  await expect.element(view.getByRole('region', { name: /Synthetic data/ })).toBeVisible();
+});
+
+for (const kind of ['bar', 'line'] as const) test(`${kind}: SVG имеет масштаб 1:1, увеличенный шрифт не сталкивает категории`, async () => {
+  const view = await render(<div style={{ width: 500 }}><DataFigure figure={{ ...figure, kind, categories: ['mmmmmmmmmmmmmmmmmm', 'wwwwwwwwwwwwwwwwww'], series: [{ id: 's', label: 'Series', values: [1, 2] }] }} /></div>);
+  const svg = view.container.querySelector<SVGSVGElement>('[data-figure-scroll] svg')!;
+  await expect.poll(() => svg.getBoundingClientRect().width / svg.viewBox.baseVal.width).toBeCloseTo(1);
+  const originalHeight = svg.viewBox.baseVal.height;
+  document.documentElement.dataset.textSize = 'large';
+  await expect.poll(() => svg.viewBox.baseVal.height).toBeGreaterThan(originalHeight);
+  await expect.poll(() => {
+    const labels = svg.querySelectorAll<SVGTextElement>('svg > text');
+    const first = labels[0]!.getBBox(); const second = labels[1]!.getBBox();
+    return first.x + first.width <= second.x;
+  }).toBe(true);
+  expect(svg.getBoundingClientRect().width / svg.viewBox.baseVal.width).toBeCloseTo(1);
+});
+
+test('геометрия не пересчитывается от несвязанного состояния родителя; bar не разводит метки линий', async () => {
+  vi.mocked(geometry.figureScale).mockClear(); vi.mocked(geometry.figureLabelPositions).mockClear();
+  function Parent() { const [count, setCount] = useState(0); return <><button onClick={() => setCount(count + 1)}>Count {count}</button><DataFigure figure={figure} /></>; }
+  const view = await render(<Parent />);
+  await expect.element(view.getByRole('figure')).toBeVisible();
+  const calls = vi.mocked(geometry.figureScale).mock.calls.length;
+  await view.getByRole('button', { name: 'Count 0' }).click();
+  expect(vi.mocked(geometry.figureScale).mock.calls.length).toBe(calls);
+  expect(geometry.figureLabelPositions).not.toHaveBeenCalled();
+});
+
+for (const review of [false, true]) test(`новый рисунок сбрасывает прокрутку и фокус: ${review ? 'разбор' : 'сессия'}`, async () => {
+  const data = { ...figure, kind: 'table' as const, series: Array.from({ length: 10 }, (_, i) => ({ ...figure.series[0]!, id: String(i), label: `Series ${i}` })) };
+  const next = { ...data, id: 'another-table', title: 'Another table' };
+  const { app, training } = await bootFigures(data, true, next);
+  if (review) {
+    const owner = await trainingRepository.store.currentOwner(); if (!owner) throw new Error('fixture owner missing');
+    await trainingRepository.store.put(owner, { ...training, finish: { finishedAt: new Date().toISOString(), timedOut: false } });
+  }
+  if (review) await app.router.navigate({ to: '/training/$trainingId/review/$position', params: { trainingId: training.session.id, position: 0 } });
+  await expect.element(app.screen.getByRole('figure')).toBeVisible();
+  const scroll = document.querySelector<HTMLElement>('[data-figure-scroll]')!;
+  scroll.scrollLeft = scroll.scrollWidth; scroll.focus();
+  expect(scroll.scrollLeft).toBeGreaterThan(0);
+  await app.screen.getByRole('button', { name: review ? 'Следующий' : 'Пропустить', exact: true }).click();
+  await expect.element(app.screen.getByText('Another table', { exact: true })).toBeVisible();
+  expect(document.querySelector('[data-figure-scroll]')).not.toBe(scroll);
+  expect(document.querySelector('[data-figure-scroll]')?.scrollLeft).toBe(0);
+  expect(document.activeElement).not.toBe(scroll);
+});
+
+test('таблица отделяет шапку линией и выравнивает заголовки чисел над значениями', async () => {
+  const view = await render(<DataFigure figure={{ ...figure, kind: 'table' }} />);
+  const headers = view.container.querySelectorAll('thead th');
+  expect(getComputedStyle(headers[0]!).borderBottomWidth).not.toBe('0px');
+  expect(getComputedStyle(headers[0]!).textAlign).toBe('left');
+  expect(getComputedStyle(headers[1]!).textAlign).toBe('right');
+  expect(getComputedStyle(view.container.querySelector('tbody tr:last-child th')!).borderBottomWidth).toBe('0px');
+});
+
+test('подписи осей обрезают внешние пробелы; пустая подпись таблицы берёт перевод', async () => {
+  const view = await render(<I18nProvider locale="en"><DataFigure figure={{ ...figure, kind: 'table', xLabel: '  ', yLabel: ' Orders ', unit: ' orders ' }} /></I18nProvider>);
+  await expect.element(view.getByRole('columnheader', { name: 'Category', exact: true })).toBeVisible();
+  await expect.element(view.getByText('Orders', { exact: true })).toBeVisible();
+});
+
+for (const theme of ['light', 'dark']) test(`все пять цветов графики имеют контраст не ниже 3:1: ${theme}`, async () => {
+  document.documentElement.dataset.theme = theme;
+  const view = await render(<DataFigure figure={{ ...figure, series: Array.from({ length: 5 }, (_, i) => ({ ...figure.series[0]!, id: String(i), label: `Series ${i}` })) }} />);
+  const root = getComputedStyle(view.container.querySelector('figure')!);
+  const luminance = (color: string) => {
+    const channels = color.match(/\d+/g)!.slice(0, 3).map(Number).map((v) => { const s = v / 255; return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; });
+    return channels[0]! * 0.2126 + channels[1]! * 0.7152 + channels[2]! * 0.0722;
+  };
+  const background = luminance(root.backgroundColor);
+  for (const series of view.container.querySelectorAll('[data-series]')) {
+    const color = luminance(getComputedStyle(series).color);
+    expect((Math.max(color, background) + 0.05) / (Math.min(color, background) + 0.05)).toBeGreaterThanOrEqual(3);
+  }
+  expect((view.container.querySelector('[data-series]') as SVGElement).style.color).toBe('var(--color-quant)');
 });
