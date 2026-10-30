@@ -1,4 +1,4 @@
-import { test } from '../fixtures';
+import { expect, test } from '../fixtures';
 import { checkStatesB, equivalenceB, existingAnswersB, EXISTING_ANSWERS_B, practiceBackB, quantBuilderB, invalidReviewBackB } from '../training-b';
 test('B: назад в практике с неизменным ответом и черновиком', async ({ miniApp }) => { await practiceBackB(miniApp); });
 test('B: Sentence Equivalence — ровно два слова без подсказок клавиш', async ({ miniApp }) => { await equivalenceB(miniApp); });
@@ -13,4 +13,10 @@ for (const overlay of ['overview', 'exit'] as const) test(`B ревью: тай�
 test('B ревью: недоступная жалоба и неверные параметры сохраняют возврат', async ({ miniApp }) => { await missingReportB(miniApp); });
 
 import { reportRetryB } from '../training-b';
+import { calculatorFlow } from '../calculator';
+for (const mode of ['practice', 'check'] as const) test(`R13: калькулятор Quant, память и перенос (${mode})`, async ({ miniApp }) => calculatorFlow(miniApp, mode));
+test('R13: калькулятора в Verbal нет', async ({ miniApp }) => {
+  const { startSession } = await import('../training'); await startSession(miniApp);
+  await expect(miniApp.getByRole('button', { name: 'Калькулятор', exact: true })).toHaveCount(0);
+});
 test('B ревью: потерянный ответ жалобы повторяется с тем же id', async ({ miniApp, me }) => { await reportRetryB(miniApp, me, true); });

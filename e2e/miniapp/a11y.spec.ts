@@ -14,6 +14,12 @@ test('«Тренировка» и настройки без нарушений',
 });
 
 import { startSession } from '../training';
+import { startCalculator, calculatorKeys } from '../calculator';
+test('R13: калькулятор и ошибка без нарушений', async ({ miniApp }) => {
+  await startCalculator(miniApp); expect((await axe(miniApp).analyze()).violations).toEqual([]);
+  await calculatorKeys(miniApp, ['1', '÷', '0', '=']); expect((await axe(miniApp).analyze()).violations).toEqual([]);
+  await miniApp.evaluate(() => { document.documentElement.dataset.textSize = 'large'; }); expect((await axe(miniApp).analyze()).violations).toEqual([]);
+});
 test('вопрос и итог тренировки без нарушений', async ({ miniApp: page }) => {
   const session = await startSession(page);
   expect((await axe(page).analyze()).violations).toEqual([]);

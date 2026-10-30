@@ -23,6 +23,12 @@ test('«Тренировка» без нарушений', async ({ site: page }
 });
 
 import { startSession } from '../training';
+import { startCalculator, calculatorKeys } from '../calculator';
+test('R13: калькулятор и ошибка без нарушений', async ({ site }) => {
+  await startCalculator(site); expect(await violations(site)).toEqual([]);
+  await calculatorKeys(site, ['1', '÷', '0', '=']); expect(await violations(site)).toEqual([]);
+  await site.evaluate(() => { document.documentElement.dataset.textSize = 'large'; }); expect(await violations(site)).toEqual([]);
+});
 test('вопрос и итог тренировки без нарушений', async ({ site: page }) => {
   const session = await startSession(page);
   expect(await violations(page)).toEqual([]);

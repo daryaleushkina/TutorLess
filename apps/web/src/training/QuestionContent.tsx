@@ -30,7 +30,7 @@ export function QuestionPrompt({ question: q, selection, revealed = false }: { q
   })}</p>;
 }
 
-export interface AnswerProps { question: Question; selection: string[]; revealed: boolean; onSelect: (id: string) => void; onChange?: (value: string[]) => void; onSubmit?: () => void; compact?: boolean }
+export interface AnswerProps { question: Question; selection: string[]; revealed: boolean; onSelect: (id: string) => void; onChange?: (value: string[]) => void; onSubmit?: () => void; compact?: boolean; externalValue?: string }
 
 export { answerFormat, draftAnswer } from './answerFormats';
 const ANSWER_COMPONENTS = { choice: ChoiceAnswer, numeric: NumericAnswer, passage: Passage };

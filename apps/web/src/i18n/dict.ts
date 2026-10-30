@@ -30,6 +30,11 @@ const questionCountEn = en('# question', '# questions');
 const topicCountEn = en('# topic', '# topics');
 
 const trainingRu = {
+  calculator: 'Калькулятор', calculator_close: 'Закрыть калькулятор', calculator_transfer: 'Перенести в\u00a0ответ',
+  calculator_empty: 'Сначала введите число', calculator_invalid: 'Исправьте ошибку перед переносом', calculator_long: 'Число длиннее лимита поля',
+  calculator_drag: 'Перетащите за заголовок', calculator_move: 'Переместить окно', calculator_reset_position: 'Вернуть окно справа', calculator_memory: 'В\u00a0памяти есть число', calculator_result: 'Результат',
+  calculator_keys: { '+': 'Плюс', '−': 'Минус', '×': 'Умножить', '÷': 'Разделить', '√': 'Корень', '±': 'Плюс-минус', 'MR': 'Память: вызвать', 'MC': 'Память: очистить', 'M+': 'Память: прибавить', 'C': 'Очистить всё', 'CE': 'Очистить последний ввод', '=': 'Равно', '.': 'Десятичный разделитель', '(': 'Открыть скобку', ')': 'Закрыть скобку' },
+  calculator_errors: { division_zero: 'На\u00a0ноль делить нельзя', negative_root: 'Корень из\u00a0отрицательного числа', overflow: 'Число вне диапазона', parentheses: 'Проверьте скобки', incomplete: 'Закончите выражение' },
   review_next: 'Следующий',
   report_toast: 'Спасибо — проверим и поправим',
   topics_title: 'Темы', builder_starting: 'Начинаем…', topics_done_count: (selected: number, total: number) => `Готово · ${topicCountRu(selected)} из ${total}`,
@@ -143,6 +148,11 @@ const trainingRu = {
   topics_done: (count: string) => `Готово · ${count}`,
 };
 const trainingEn = {
+  calculator: 'Calculator', calculator_close: 'Close calculator', calculator_transfer: 'Transfer to answer',
+  calculator_empty: 'Enter a number first', calculator_invalid: 'Fix the error before transferring', calculator_long: 'The number exceeds the field limit',
+  calculator_drag: 'Drag by the heading', calculator_move: 'Move window', calculator_reset_position: 'Return window to the right', calculator_memory: 'A number is stored in memory', calculator_result: 'Result',
+  calculator_keys: { '+': 'Plus', '−': 'Minus', '×': 'Multiply', '÷': 'Divide', '√': 'Square root', '±': 'Change sign', 'MR': 'Memory: recall', 'MC': 'Memory: clear', 'M+': 'Memory: add', 'C': 'Clear all', 'CE': 'Clear last entry', '=': 'Equals', '.': 'Decimal separator', '(': 'Open parenthesis', ')': 'Close parenthesis' },
+  calculator_errors: { division_zero: 'Cannot divide by zero', negative_root: 'Square root of a negative number', overflow: 'Number outside the supported range', parentheses: 'Check the parentheses', incomplete: 'Complete the expression' },
   review_next: 'Next',
   report_toast: 'Thank you — we’ll check and fix it',
   topics_title: 'Topics', builder_starting: 'Starting…', topics_done_count: (selected: number, total: number) => `Done · ${selected} of ${topicCountEn(total)}`,

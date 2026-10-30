@@ -26,6 +26,8 @@ import { TrainingFeedback } from './TrainingFeedback';
 import { SessionHeader } from './SessionHeader';
 import { questionTitle } from './answerFormats';
 import { PassageQuestion } from './Passage';
+import { Calculator, CalculatorButton } from './calculator/Calculator';
+import { clearSessionCalculator } from './calculator/store';
 
 const EXIT_WAIT_MS = 1500;
 
@@ -61,6 +63,14 @@ function ActiveSession({ incoming }: { incoming: StoredTraining }) {
   const navigate = useNavigate();
   const [confirmation, setConfirmation] = useState<'exit' | 'finish'>();
   const [pastExplanation, setPastExplanation] = useState(false);
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
+  const [externalValue, setExternalValue] = useState<string>();
+  const calculatorButton = useRef<HTMLButtonElement>(null);
+  const calculatorAvailable = s.training.session.section === 'quant' && !s.revealed && !s.overview && !confirmation && !s.training.finish;
+  const closeCalculator = () => { setCalculatorOpen(false); calculatorButton.current?.focus({ preventScroll: true }); };
+  useEffect(() => { if (!calculatorAvailable) setCalculatorOpen(false); }, [calculatorAvailable]);
+  useEffect(() => { setExternalValue(undefined); }, [s.position]);
+  useEffect(() => { if (s.training.finish) clearSessionCalculator(s.training.session.id); }, [s.training.finish, s.training.session.id]);
   useEffect(() => { setPastExplanation(false); }, [s.position]);
   const exiting = useRef(false);
   const exit = () => {
@@ -72,7 +82,7 @@ function ActiveSession({ incoming }: { incoming: StoredTraining }) {
     void Promise.race([s.flush(), deadline]).then(() => { clearTimeout(timer); void navigate({ to: '/' }); });
   };
   const close = () => { if (s.checkMode && !s.training.finish) setConfirmation('exit'); else exit(); };
-  useBackButton(shell === 'telegram' && (s.training.finish || !s.overview && !confirmation) ? close : null);
+  useBackButton(shell === 'telegram' && (s.training.finish || !s.overview && !confirmation) ? calculatorOpen && calculatorAvailable ? closeCalculator : close : null);
   const total = s.training.session.items.length;
   const last = s.position === total - 1;
   const primary = s.browsingPast ? text.overview_back(s.returnPosition + 1) : s.overview ? text.overview_finish : s.checkMode ? last ? text.question_to_list : answerFormat(s.question)?.canAdvance(s.question, s.answer, s.complete) ? text.question_next(s.position + 2, total) : text.question_skip : s.revealed ? last ? text.question_result : text.question_next(s.position + 2, total) : text.question_check;
@@ -92,7 +102,7 @@ function ActiveSession({ incoming }: { incoming: StoredTraining }) {
       const s = keyboard.current;
       if (event.defaultPrevented || event.repeat || event.ctrlKey || event.altKey || event.metaKey || s.training.finish || s.overview || document.querySelector('dialog[open]')) return;
       if (event.target instanceof Element) {
-        if (event.target.closest('input, textarea, select, [contenteditable="true"], a') || event.target.matches('[role="tab"]')) return;
+        if (event.target.closest('input, textarea, select, [contenteditable="true"], a, [data-calculator]') || event.target.matches('[role="tab"]')) return;
         if (event.target.matches('[role="tabpanel"]') && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) return;
       }
       // Enter всегда соответствует подсказке; пробел сохраняет нативный выбор сфокусированного варианта.
@@ -127,7 +137,7 @@ function ActiveSession({ incoming }: { incoming: StoredTraining }) {
           {s.revealed && <Verdict question={s.question} answer={s.answer} language={language} />}
           {!s.revealed && <p className={styles.note} role={s.selectionLimit ? 'status' : undefined}>{answerFormat(s.question)?.instruction(s.question, text)}</p>}
           <QuestionPrompt question={s.question} selection={s.revealed ? s.question.answer : s.selection} revealed={s.revealed} />
-          <Options key={s.question.id} question={s.question} selection={s.selection} revealed={s.revealed} compact={s.browsingPast} onSelect={s.select} onChange={s.change} onSubmit={s.primary} />
+          <Options key={s.question.id} question={s.question} selection={s.selection} revealed={s.revealed} compact={s.browsingPast} onSelect={s.select} onChange={(values) => { s.change(values); setExternalValue(undefined); }} onSubmit={s.primary} externalValue={externalValue} />
         </section>
         {s.browsingPast && !pastExplanation && <button className={styles.textButton} onClick={() => setPastExplanation(true)}>{text.show_explanation}</button>}
         {s.revealed && (!s.browsingPast || pastExplanation) && <Explanation question={s.question} chosen={s.answer ? answerFormat(s.question)?.decode(s.answer) ?? [] : []} language={language} onLanguage={(language) => { setLanguage(language); void navigate({ to: '/training/$trainingId', params: { trainingId: s.training.session.id }, search: { language }, replace: true }); }} />}
@@ -141,8 +151,14 @@ function ActiveSession({ incoming }: { incoming: StoredTraining }) {
 
     </SessionFooter>
   }>
-    <div className={`${styles.session} ${styles.screen}`} data-shell={shell} data-section={s.training.session.section}>
-      <SessionHeader section={s.training.session.section} label={s.checkMode ? text.mode_check : questionTitle(s.question, text)} position={s.position} total={total} remaining={s.remaining} busy={s.busy} onClose={close} onPrevious={!s.checkMode && s.position > 0 ? s.previous : undefined} />
+    <div className={`${styles.session} ${styles.screen}`} data-shell={shell} data-section={s.training.session.section} data-calculator-open={calculatorOpen && calculatorAvailable}>
+      <SessionHeader section={s.training.session.section} label={s.checkMode ? text.mode_check : questionTitle(s.question, text)} position={s.position} total={total} remaining={s.remaining} busy={s.busy} onClose={close} onPrevious={!s.checkMode && s.position > 0 ? s.previous : undefined}
+        calculator={calculatorAvailable && <CalculatorButton buttonRef={calculatorButton} open={calculatorOpen} onClick={() => calculatorOpen ? closeCalculator() : setCalculatorOpen(true)} />} />
+      {calculatorAvailable && <Calculator sessionId={s.training.session.id} open={calculatorOpen} onClose={closeCalculator}
+        onTransfer={s.question.questionType === 'numeric_entry' && s.question.numericEntry?.format === 'number' ? (value) => {
+          setExternalValue(value); setCalculatorOpen(false);
+          document.querySelector<HTMLInputElement>('main input')?.focus();
+        } : undefined} />}
       <h1 ref={heading} tabIndex={-1} className={styles.questionType} lang={s.question.passage || !answerFormat(s.question)?.title ? 'en' : locale}>{questionTitle(s.question, text)}{typeNote && <span lang={locale} className="visually-hidden"> · {typeNote}</span>}</h1>
       <TrainingFeedback />
       {!online && <p className={styles.offlineNotice} role="status"><OfflineIcon />{text.question_offline}</p>}

@@ -116,4 +116,6 @@ import { newTypesScreens } from '../training-types';
 test('B новые: RC, предложения, несколько ответов, число и дробь', async ({ site }) => { await newTypesScreens(site); });
 
 import { wordsScreens } from '../words';
+import { calculatorScreens } from '../calculator';
+test('R13: калькулятор, ошибка и крупный текст', async ({ site }) => calculatorScreens(site));
 test('словарь: список, пустой поиск и карточка', async ({ site }) => wordsScreens(site));

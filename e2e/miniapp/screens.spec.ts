@@ -127,4 +127,6 @@ import { newTypesScreens } from '../training-types';
 test('B новые: RC, предложения, несколько ответов, число и дробь', async ({ miniApp }) => { await newTypesScreens(miniApp); });
 
 import { wordsScreens } from '../words';
+import { calculatorScreens } from '../calculator';
+test('R13: калькулятор, ошибка и крупный текст', async ({ miniApp }) => calculatorScreens(miniApp));
 test('словарь: список, пустой поиск и карточка', async ({ miniApp }) => wordsScreens(miniApp));

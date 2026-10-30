@@ -46,7 +46,7 @@ export function NumericInput({ value, onChange, externalValue, integer = false, 
   </div> : field;
 }
 
-export function NumericAnswer({ question, selection, revealed, onChange, onSubmit }: AnswerProps) {
+export function NumericAnswer({ question, selection, revealed, onChange, onSubmit, externalValue }: AnswerProps) {
   const { t, locale } = useI18n();
   const text = t.training;
   const errorId = useId();
@@ -72,7 +72,7 @@ export function NumericAnswer({ question, selection, revealed, onChange, onSubmi
   return <div className={styles.numericAnswer}>
     <div className={fraction ? styles.fractionWrap : styles.numericEntry}>
       <div className={fraction ? styles.fraction : undefined}>
-        <NumericInput value={selection[0] ?? ''} onChange={(value) => change(0, value)} label={fraction ? text.numeric_numerator : text.numeric_answer}
+        <NumericInput value={selection[0] ?? ''} externalValue={fraction ? undefined : externalValue} onChange={(value) => change(0, value)} label={fraction ? text.numeric_numerator : text.numeric_answer}
           integer={fraction} enterKeyHint={fraction ? 'next' : 'done'} invalid={Boolean(invalid)} describedBy={invalid ? errorId : undefined} onSubmit={fraction ? () => document.getElementById(`${errorId}-denominator`)?.querySelector('input')?.focus() : complete ? onSubmit : undefined} />
         {fraction && <><span className={styles.fractionLine} aria-hidden="true" /><div id={`${errorId}-denominator`}><NumericInput value={denominator} onChange={(value) => change(1, value)} label={text.numeric_denominator}
           integer invalid={Boolean(invalid)} describedBy={invalid ? errorId : undefined} onSubmit={complete ? onSubmit : undefined} /></div></>}
