@@ -34,6 +34,8 @@ export async function seedFigureSession(page: Page, mode: 'practice' | 'check') 
       await expect(page.getByRole('figure', { name: q.figure.description, exact: true })).toBeVisible();
       expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       await page.getByRole('link', { name: 'Сообщить об ошибке' }).click();
+      await expect(page.getByRole('heading', { name: 'Сообщить об ошибке', exact: true })).toBeVisible();
+      await expect(page.locator('[data-data-figure]')).toHaveCount(1);
       await expect(page.locator('[data-data-figure]')).toHaveAttribute('aria-label', q.figure.description);
       await trainingBack(page);
       await expect(page.getByRole('figure', { name: q.figure.description, exact: true })).toBeVisible();
@@ -164,6 +166,11 @@ export async function figureScreens(page: Page) {
       expect(figure!.x + figure!.width).toBeLessThanOrEqual(question!.x);
     }
     await checkScreen(page, `training-figure-${names[item.position]}`);
+    if (item.position < 2) {
+      await page.locator('html').evaluate((el) => { el.setAttribute('data-text-size', 'large'); });
+      await checkScreen(page, `training-figure-${names[item.position]}-large`);
+      await page.locator('html').evaluate((el) => { el.removeAttribute('data-text-size'); });
+    }
     if (item.position === 3) {
       const scroll = page.locator('[data-figure-scroll]');
       await scroll.focus(); await page.keyboard.press('ArrowRight');
