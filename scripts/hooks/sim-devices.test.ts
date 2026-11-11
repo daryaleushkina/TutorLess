@@ -49,6 +49,8 @@ function fixture({ adb = true } = {}) {
     write(file, `#!/bin/sh\nset -eu\n${value}\n`);
     fs.chmodSync(path.join(dir, file), 0o755);
   };
+  // Настоящий cleanup теперь убирает и .app: здесь проверяем устройства, а сборки остаются во временном дереве.
+  executable('scripts/hooks/remove-app-copies', ':');
   // PATH изолирован: отсутствие adb не должно случайно найти SDK машины, а xcrun всегда подменён.
   for (const command of ['cat', 'dirname', 'grep', 'mktemp', 'rm', 'sh']) {
     const real = fs.existsSync(`/bin/${command}`) ? `/bin/${command}` : `/usr/bin/${command}`;
@@ -123,6 +125,7 @@ if [ -f "$GP_TEST_STATE/on-poll" ]; then . "$GP_TEST_STATE/on-poll"; fi
     PATH: bin,
     ANDROID_HOME: path.join(dir, 'sdk'),
     GP_TEST_STATE: stateDir,
+    GP_TEST_ROOT: dir,
     GP_HELPER: path.join(HOOKS, 'sim-devices'),
     GP_DEVICES_MAX: '5',
     GP_DEVICES_WAIT_SEC: '20',
@@ -132,6 +135,8 @@ if [ -f "$GP_TEST_STATE/on-poll" ]; then . "$GP_TEST_STATE/on-poll"; fi
 set -eu
 . "$GP_HELPER"
 ${cleanup ? `
+root="$GP_TEST_ROOT"
+app="$root/apps/apple"
 work="$GP_TEST_STATE/work"
 server_pid=""
 ${gateCleanup}

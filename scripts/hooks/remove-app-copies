@@ -1,0 +1,41 @@
+#!/bin/sh
+# Разовые сборки Mac тоже оставляют копии в LaunchServices. Убираем только .app своего дерева,
+# сохраняя промежуточные файлы Xcode; руками: sh scripts/hooks/remove-app-copies.
+set -eu
+
+root="$(CDPATH='' cd "$(dirname "$0")/../.." && pwd -P)"
+expected="$root/apps/apple/build"
+build_root="${1-$expected}"
+if [ "$#" -gt 1 ] || [ -z "$build_root" ] || [ ! -d "$build_root" ]; then
+  printf 'remove-app-copies: неверный корень «%s»; нужен %s\n' "$build_root" "$expected" >&2
+  exit 1
+fi
+# Физический путь исключает подмену build или его родителей ссылкой за пределы своего дерева.
+if ! physical_root="$(CDPATH='' cd "$build_root" && pwd -P)" || [ "$physical_root" != "$expected" ]; then
+  printf 'remove-app-copies: неверный корень «%s»; нужен %s\n' "$build_root" "$expected" >&2
+  exit 1
+fi
+
+lsregister="${LSREGISTER:-/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister}"
+# find не следует по ссылкам, а -type d отсекает и саму ссылку с именем .app: lsregister пошёл бы по ней
+# за пределы дерева. Исходники пакетов SPM — чужие файлы, их .app не наши копии. -depth нужен для вложенных
+# .app: сначала снимаем регистрацию дочерних, пока они ещё существуют. -exec передаёт пути целиком.
+if ! find "$physical_root" -depth -type d -name '*.app' ! -path '*/SourcePackages/*' -exec sh -c '
+  lsregister="$1"
+  shift
+  status=0
+  for app do
+    if ! "$lsregister" -u "$app"; then
+      printf "remove-app-copies: предупреждение — не удалось снять регистрацию: %s\n" "$app" >&2
+      status=1
+    fi
+    if ! rm -rf -- "$app"; then
+      printf "remove-app-copies: предупреждение — не удалось удалить: %s\n" "$app" >&2
+      status=1
+    fi
+  done
+  exit "$status"
+' sh "$lsregister" {} +; then
+  printf 'remove-app-copies: предупреждение — уборка не завершена: %s\n' "$physical_root" >&2
+  exit 1
+fi

@@ -35,6 +35,11 @@ cleanup() {
   if [ -n "$server_pid" ]; then kill "$server_pid" 2>/dev/null || true; fi
   # Ошибка основного шага сохраняется, а неудачное выключение своего делает красным и успешный прогон.
   if ! sim_cleanup; then cleanup_status=1; fi
+  # Копии .app регистрируются в macOS даже из build. Уборка косметическая (решение Даши 30.10.2026).
+  # Без build (гейт упал до первой сборки) убирать нечего; ссылку на месте build проверяет сам скрипт.
+  if { [ -e "$app/build" ] || [ -L "$app/build" ]; } && ! "$root/scripts/hooks/remove-app-copies"; then
+    echo "gate: Apple — предупреждение: не удалось убрать все копии из $app/build" >&2
+  fi
   if rm -rf "$work"; then :; else
     removal_status=$?
     if [ "$cleanup_status" -eq 0 ]; then cleanup_status="$removal_status"; fi
