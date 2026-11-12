@@ -180,7 +180,16 @@ export async function figureScreens(page: Page) {
       await scroll.evaluate((el) => { el.scrollLeft = el.scrollWidth; });
       await expect.poll(() => scroll.evaluate((el) => el.scrollLeft)).toBeGreaterThan(0);
       await checkScreen(page, 'training-figure-table-wide-scrolled');
+      // Крупный текст расширяет столбцы, и браузер иногда сдвигает прокрутку рамки вслед за ними (снимок
+      // гейта 13.11.2026 ушёл на ~37 px). Снимаем на той же прокрутке, что до увеличения, когда вёрстка устоялась.
+      const left = await scroll.evaluate((el) => el.scrollLeft);
       await page.locator('html').evaluate((el) => { el.setAttribute('data-text-size', 'large'); });
+      await page.evaluate(async () => {
+        await document.fonts.ready;
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      });
+      await scroll.evaluate((el, value) => { el.scrollLeft = value; }, left);
+      await expect.poll(() => scroll.evaluate((el) => el.scrollLeft)).toBe(left);
       await checkScreen(page, 'training-figure-table-wide-large');
       return;
     }
