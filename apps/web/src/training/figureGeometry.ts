@@ -1,4 +1,4 @@
-import type { DataFigure } from '@greprep/api-client';
+import { schemas, type DataFigure } from '@greprep/api-client';
 
 // Десятичные целые дают шаги 1/2/5 без накопления ошибки float. Пределы оси
 // нормализуются до вычитания: даже диапазон ±Number.MAX_VALUE остаётся конечным.
@@ -39,8 +39,12 @@ export function figureScale(series: DataFigure['series']) {
 
 export function figureValue(value: number) { return String(value).replace(/^-/, '−'); }
 
-const segmenter = new Intl.Segmenter('en', { granularity: 'grapheme' });
-const graphemes = (text: string) => Array.from(segmenter.segment(text), (part) => part.segment);
+// Модуль грузят все экраны тренировки, а Intl.Segmenter есть не везде (Firefox до 125): без него — кодовые точки.
+let segmenter: Intl.Segmenter | null | undefined;
+const graphemes = (text: string) => {
+  if (segmenter === undefined) segmenter = typeof Intl.Segmenter === 'function' ? new Intl.Segmenter('en', { granularity: 'grapheme' }) : null;
+  return segmenter ? Array.from(segmenter.segment(text), (part) => part.segment) : Array.from(text);
+};
 
 /** Консервативная ширина в долях обычной буквы: широкие глифы не налезают на соседнюю категорию. */
 export function figureLabelUnits(label: string): number {
@@ -79,6 +83,6 @@ export function figureLabelPositions(positions: number[], top: number, bottom: n
 }
 
 export function validFigure(figure: DataFigure) {
-  return figure.categories.length > 0 && figure.categories.length <= 100 && figure.categories.every((label) => label.trim().length > 0)
-    && figure.series.length > 0 && figure.series.length <= 20 && figure.series.every((s) => s.values.length === figure.categories.length && s.values.every(Number.isFinite));
+  return figure.categories.length > 0 && figure.categories.length <= schemas.dataFigureCategoriesMax && figure.categories.every((label) => label.trim().length > 0)
+    && figure.series.length > 0 && figure.series.length <= schemas.dataFigureSeriesMax && figure.series.every((s) => s.values.length === figure.categories.length && s.values.every(Number.isFinite));
 }

@@ -1,5 +1,19 @@
-import { expect, test } from 'vitest';
+import { expect, test, vi } from 'vitest';
 import { figureLabel, figureLabelUnits, figureLabelPositions, figureScale, figureValue, validFigure } from './figureGeometry';
+
+// Модуль грузят все экраны тренировки: движок без Intl.Segmenter (Firefox до 125) не должен их ронять.
+test('без Intl.Segmenter модуль грузится и переносит метки по кодовым точкам', async () => {
+  vi.resetModules();
+  vi.stubGlobal('Intl', Object.create(Intl, { Segmenter: { value: undefined } }));
+  try {
+    const geometry = await import('./figureGeometry');
+    expect(geometry.figureLabel('a'.repeat(40)).join('')).toBe('a'.repeat(40));
+    expect(geometry.figureLabelUnits('WW')).toBe(4);
+  } finally {
+    vi.unstubAllGlobals();
+    vi.resetModules();
+  }
+});
 
 const figure = { id: 'test', kind: 'bar' as const, title: 'Synthetic', xLabel: '', yLabel: '', unit: '', description: 'Synthetic data.', categories: ['A', 'B', 'C'], series: [{ id: 's', label: 'Series', values: [-12, 0, 30] }] };
 

@@ -13,13 +13,15 @@ const seriesStyle = (index: number): CSSProperties => ({ color: `var(--color-${S
 // Координаты символов SVG, а не отступы интерфейса. Размер текста берётся из токена.
 const MARKER_SHAPES = 4;
 const MARKER_RADIUS = 4;
+// Треугольник и ромб на четверть крупнее: при той же площади, что у круга, они не выглядят мельче.
+const MARKER_POINT = MARKER_RADIUS * 1.25;
 const LEGEND_WIDTH = 32;
 const LEGEND_HEIGHT = 16;
 
 function Marker({ index, x = 0, y = 0 }: { index: number; x?: number; y?: number }) {
   const shape = index % MARKER_SHAPES;
   return <g transform={`translate(${x} ${y})`} className={styles.marker} data-marker={index}>
-    {shape === 0 ? <circle r={MARKER_RADIUS} /> : shape === 1 ? <rect x={-MARKER_RADIUS} y={-MARKER_RADIUS} width={MARKER_RADIUS * 2} height={MARKER_RADIUS * 2} /> : <path d={shape === 2 ? 'M0 -5 5 4 -5 4Z' : 'M0 -5 5 0 0 5 -5 0Z'} />}
+    {shape === 0 ? <circle r={MARKER_RADIUS} /> : shape === 1 ? <rect x={-MARKER_RADIUS} y={-MARKER_RADIUS} width={MARKER_RADIUS * 2} height={MARKER_RADIUS * 2} /> : <path d={shape === 2 ? `M0 ${-MARKER_POINT} ${MARKER_POINT} ${MARKER_RADIUS} ${-MARKER_POINT} ${MARKER_RADIUS}Z` : `M0 ${-MARKER_POINT} ${MARKER_POINT} 0 0 ${MARKER_POINT} ${-MARKER_POINT} 0Z`} />}
   </g>;
 }
 

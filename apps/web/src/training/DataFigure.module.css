@@ -17,7 +17,8 @@
 .category, .value { text-anchor: middle; }
 .value { fill: var(--color-text-2); font: var(--font-caption); font-weight: var(--font-weight-semibold); font-variant-numeric: tabular-nums; }
 .bar { fill: currentColor; rx: calc(var(--radius-s) / 3); }
-.marker { fill: var(--color-surface); stroke: currentColor; stroke-width: calc(var(--size-hairline) * 2); }
+/* Пунктир ряда задан на всей группе ради линии; контур маркера остаётся сплошным, иначе фигура рвётся. */
+.marker { fill: var(--color-surface); stroke: currentColor; stroke-width: calc(var(--size-hairline) * 2); stroke-dasharray: none; }
 .connector { stroke: var(--color-line-strong); stroke-width: var(--size-hairline); stroke-dasharray: none; }
 .scroll table { min-width: 100%; width: max-content; border-collapse: collapse; font: var(--font-meta); color: var(--color-text-2); }
 .scroll th, .scroll thead th:not(:first-child), .scroll td { padding: var(--space-10) var(--space-14); border-bottom: var(--size-hairline) solid var(--color-line); min-width: calc(var(--space-48) * 2); max-width: calc(var(--space-72) * 3); overflow-wrap: anywhere; }

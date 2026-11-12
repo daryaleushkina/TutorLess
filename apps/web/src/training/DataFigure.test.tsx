@@ -48,6 +48,15 @@ for (const kind of ['bar', 'line'] as const) test(`${kind}: 100 длинных �
   expect(new Set([...shapes].map((node) => node.querySelector('g')!.innerHTML + (node instanceof SVGElement ? node.style.strokeDasharray : ''))).size).toBe(20);
 });
 
+// Пунктир различает линии рядов; рваный контур маленького маркера только мешает его узнать.
+test('пунктир ряда не переходит на контур маркеров — на графике и в легенде', async () => {
+  const series = Array.from({ length: 5 }, (_, i) => ({ id: String(i), label: `Series ${i}`, values: [1, 2, 3] }));
+  await render(<DataFigure figure={{ ...figure, kind: 'line', series }} />);
+  const markers = document.querySelectorAll('[data-marker="4"] > *');
+  expect(markers.length).toBe(4);
+  for (const marker of markers) expect(getComputedStyle(marker).strokeDasharray).toBe('none');
+});
+
 test('нулевой график и единственная точка не дают вырожденную геометрию', async () => {
   for (const kind of ['bar', 'line'] as const) {
     const view = await render(<DataFigure figure={{ ...figure, kind, categories: ['Only point'], series: [{ id: 'one', label: 'One', values: [0] }] }} />);

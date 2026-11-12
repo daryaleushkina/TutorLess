@@ -2,9 +2,16 @@ import { expect, test } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { screenHorizontalIssues } from '../../../../e2e/screenLayout';
 
-for (const overflowX of ['auto', 'scroll'] as const) test(`checkScreen допускает внутреннюю прокрутку любого блока: ${overflowX}`, async () => {
-  await render(<main className="app-shell" style={{ width: 300 }}><div style={{ width: 280, overflowX }}><div style={{ width: innerWidth * 2 }}>Wide content</div></div></main>);
+test('checkScreen допускает широкое содержимое внутри рамки рисунка', async () => {
+  await render(<main className="app-shell" style={{ width: 300 }}><div data-figure-scroll style={{ width: 280, overflowX: 'auto' }}><div style={{ width: innerWidth * 2 }}>Wide content</div></div></main>);
   expect(screenHorizontalIssues()).toEqual([]);
+});
+
+// overflow-y: auto делает auto и вычисленный overflow-x, поэтому признак «прокрутка» есть у каждой панели текста и шторки.
+// Без пометки рисунка широкое содержимое в них — ошибка вёрстки, а не задуманная прокрутка.
+for (const overflow of [{ overflowY: 'auto' }, { overflowX: 'auto' }] as const) test(`checkScreen ловит широкое содержимое прокрутки без пометки рисунка: ${JSON.stringify(overflow)}`, async () => {
+  await render(<main className="app-shell" style={{ width: 300 }}><div style={{ width: 280, height: 100, ...overflow }}><div style={{ width: innerWidth * 2 }}>Wide content</div></div></main>);
+  expect(screenHorizontalIssues().some((issue) => issue.startsWith('вылезает вправо:'))).toBe(true);
 });
 
 test('checkScreen проверяет саму рамку и обычное содержимое без прокрутки', async () => {
