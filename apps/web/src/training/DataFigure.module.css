@@ -1,0 +1,30 @@
+.figure { min-width: 0; max-width: 100%; margin: 0; padding: var(--space-16) var(--space-14) var(--space-10); display: grid; gap: var(--space-8); border-radius: var(--radius-m); background: var(--color-surface); border: var(--size-hairline) solid var(--color-line); }
+.title { font: var(--font-meta); font-weight: var(--font-weight-semibold); color: var(--color-text-2); overflow-wrap: anywhere; }
+.axis, .xAxis { font: var(--font-caption); color: var(--color-text-3); overflow-wrap: anywhere; }
+.xAxis { text-align: center; }
+.legend { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: var(--space-8) var(--space-16); font: var(--font-caption); color: var(--color-text-2); }
+.legend li { display: flex; gap: var(--space-6); align-items: center; min-width: 0; }
+.legend span { overflow-wrap: anywhere; }
+.legend svg { width: var(--space-32); height: var(--space-16); flex: none; }
+.legend line, .line { stroke: currentColor; stroke-width: calc(var(--size-hairline) * 2); fill: none; stroke-linejoin: round; }
+.fontMetric { position: absolute; width: 1em; height: 1em; font: var(--font-caption); visibility: hidden; pointer-events: none; }
+.scroll { position: relative; min-width: 0; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; border-radius: calc(var(--radius-s) / 2); font: var(--font-body); }
+.chart { display: block; }
+.grid line { stroke: var(--color-line); stroke-width: var(--size-hairline); }
+.zero { stroke: var(--color-line-strong); stroke-width: var(--size-hairline); }
+.tick, .category { fill: var(--color-text-3); font: var(--font-caption); }
+.tick { text-anchor: end; }
+.category, .value { text-anchor: middle; }
+.value { fill: var(--color-text-2); font: var(--font-caption); font-weight: var(--font-weight-semibold); font-variant-numeric: tabular-nums; }
+.bar { fill: currentColor; rx: calc(var(--radius-s) / 3); }
+/* Пунктир ряда задан на всей группе ради линии; контур маркера остаётся сплошным, иначе фигура рвётся. */
+.marker { fill: var(--color-surface); stroke: currentColor; stroke-width: calc(var(--size-hairline) * 2); stroke-dasharray: none; }
+.connector { stroke: var(--color-line-strong); stroke-width: var(--size-hairline); stroke-dasharray: none; }
+.scroll table { min-width: 100%; width: max-content; border-collapse: collapse; font: var(--font-meta); color: var(--color-text-2); }
+.scroll th, .scroll thead th:not(:first-child), .scroll td { padding: var(--space-10) var(--space-14); border-bottom: var(--size-hairline) solid var(--color-line); min-width: calc(var(--space-48) * 2); max-width: calc(var(--space-72) * 3); overflow-wrap: anywhere; }
+.scroll th { text-align: left; font-weight: var(--font-weight-semibold); }
+.scroll thead th:not(:first-child), .scroll td { text-align: right; font-variant-numeric: tabular-nums; }
+.scroll tbody tr:last-child > * { border-bottom: 0; }
+.columns { display: grid; gap: var(--space-24); min-width: 0; }
+.question { min-width: 0; }
+@media (min-width: 900px) { .columns[data-shell='site'] { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: var(--space-48); align-items: start; } }

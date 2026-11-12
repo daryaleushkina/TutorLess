@@ -13,7 +13,7 @@ const conformance = { answers: raw.answers.map((value: unknown) => {
 
 export const NEW_TYPES = [['multiple_choice_multi', 'Quant'], ['numeric_entry', 'Quant'], ['select_in_passage', 'Verbal'], ['multiple_choice', 'Verbal']] as const;
 
-async function chooseAnswer(page: Page, q: Question, partial = false) {
+export async function chooseAnswer(page: Page, q: Question, partial = false) {
   if (q.passage && q.questionType !== 'select_in_passage' && page.viewportSize()!.width < 900) await page.getByRole('tab', { name: 'Вопрос', exact: true }).click();
   if (q.questionType === 'select_in_passage') {
     const correct = q.passage!.paragraphs.flatMap((p) => p.sentences).find((s) => q.answer.includes(s.id))!;
@@ -24,8 +24,14 @@ async function chooseAnswer(page: Page, q: Question, partial = false) {
     if (value.number !== undefined) await page.getByRole('textbox', { name: 'Ответ', exact: true }).fill(value.number.replace('.', ','));
     else {
       // Несокращённый ответ — значение, а не строковое совпадение с ключом.
-      await page.getByRole('textbox', { name: 'Числитель', exact: true }).fill(String(BigInt(value.numerator!) * 3n));
-      await page.getByRole('textbox', { name: 'Знаменатель', exact: true }).fill(String(BigInt(value.denominator!) * 3n));
+      const numerator = page.getByRole('textbox', { name: 'Числитель', exact: true });
+      const entered = String(BigInt(value.numerator!) * 3n);
+      await numerator.fill(entered);
+      await expect(numerator).toHaveAttribute('value', entered);
+      const denominator = page.getByRole('textbox', { name: 'Знаменатель', exact: true });
+      const enteredDenominator = String(BigInt(value.denominator!) * 3n);
+      await denominator.fill(enteredDenominator);
+      await expect(denominator).toHaveAttribute('value', enteredDenominator);
     }
     return;
   }
@@ -40,21 +46,21 @@ export async function newTypesSession(page: Page, [type, section]: typeof NEW_TY
   page.on('request', (request) => {
     const path = new URL(request.url()).pathname;
     if (path === '/api/home' || request.method() === 'POST' && /^\/api\/trainings(?:$|\/[^/]+\/(?:answers|finish)$)/.test(path)) {
-      expect(request.headers()['x-training-capabilities']?.split(',')).toEqual(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice', 'multiple_choice_multi', 'numeric_entry', 'select_in_passage', 'passage']);
+      expect(request.headers()['x-training-capabilities']?.split(',')).toEqual(['text_completion', 'sentence_equivalence', 'quantitative_comparison', 'multiple_choice', 'multiple_choice_multi', 'numeric_entry', 'select_in_passage', 'passage', 'figure']);
       announced.add(path === '/api/home' ? 'home' : path.endsWith('/answers') ? 'answers' : path.endsWith('/finish') ? 'finish' : 'start');
     }
   });
   const home = page.waitForResponse((r) => new URL(r.url()).pathname === '/api/home');
   await page.reload(); await home;
   const session = await startSession(page, mode, 50, section, type);
-  expect(session.items.every((i) => !i.question.figure)).toBe(true);
+  if (section === 'Quant') expect(session.items.some((i) => i.question.figure)).toBe(true);
   if (section === 'Verbal') expect(session.items.some((i) => i.question.passage)).toBe(true);
   const delivered = new Set<number>();
   let sync = false;
   await page.route('**/api/trainings/*/answers', async (route) => {
     const capabilities = route.request().headers()['x-training-capabilities']!.split(',');
     expect(capabilities).toEqual(expect.arrayContaining(['multiple_choice_multi', 'numeric_entry', 'select_in_passage', 'passage']));
-    expect(capabilities).not.toContain('figure');
+    expect(capabilities).toContain('figure');
     if (!sync) { await route.abort('internetdisconnected'); return; }
     const response = await route.fetch();
     expect(response.status()).toBe(204);

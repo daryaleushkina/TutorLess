@@ -51,6 +51,7 @@ describe('все строки-функции отвечают текстом н�
     typeof value === 'function' ? [`${prefix}${key}`] : value && typeof value === 'object' ? functionNames(value, `${prefix}${key}.`) : []);
   // Аргументы проверяет TypeScript: у текстов тренировки теперь разные подписи, вызова всех с одним числом недостаточно.
   const samples = (t: Dict): Record<string, string> => ({
+    'training.figure_scroll': t.training.figure_scroll('Synthetic data'),
     'training.passage_paragraph': t.training.passage_paragraph(1),
     'training.instruction_count': t.training.instruction_count(2),
     'training.previous_notice': t.training.previous_notice(1, 3),
