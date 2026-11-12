@@ -33,6 +33,7 @@ tools/dev/backlog.sh           # пересобрать это зеркало
 - [#15](https://github.com/daryaleushkina/TutorLess/issues/15) Приложение Apple: правила вёрстки в тестах и прогон на iOS 18 в CI
 - [#28](https://github.com/daryaleushkina/TutorLess/issues/28) e2e: вход на сайте в WebKit нестабилен, когда Мак перегружен — гейт краснеет на «flaky»
 - [#38](https://github.com/daryaleushkina/TutorLess/issues/38) Агенты gp-explorer и gp-click-path: стенд под наш сервер вместо LifeCommit
+- [#48](https://github.com/daryaleushkina/TutorLess/issues/48) Android-гейт возвращает в src/test/snapshots 102 старых снимка удалённых тестов
 
 ## Без метки
 
